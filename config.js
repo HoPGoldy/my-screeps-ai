@@ -1,11 +1,4 @@
 // 爬虫数量控制
-const creepNumberMap = {
-    worker: 4,
-    upgrader: 2,
-    builder: 0,
-    transfer: 1
-}
-
 const creepNumberConfig = [
     {
         custom: true,
@@ -63,7 +56,6 @@ const creepDefaultMemory = {
 }
 
 module.exports = {
-    creepNumberMap,
     creepDefaultMemory,
     creepNumberConfig
 }

@@ -8,41 +8,6 @@ const { creepNumberMap, creepDefaultMemory, creepNumberConfig } = require('confi
  * 在基地正在生成时关闭
 */
 
-/** 
- * 下个矿工采矿索引 Memory.NextSourceIndex
- * 存于内存中 用于创建下一个矿工时给其设置采矿位置
- * 
- * 会在生成蠕虫处被修改
-*/
-
-// 检查每个工种的数量是否足够，不够则按照 creepNumberMap 里指定的数量生成
-const creepNumberControllerOld = () => {
-    const Home = Game.spawns['Spawn1']
-    for (const creepType in creepNumberMap) {
-        var creeps = _.filter(Game.creeps, (creep) => creep.memory.role == creepType)
-        if (creeps.length < creepNumberMap[creepType] && !Home.spawning) {
-            console.log(`蠕虫类型: ${creepType} 存活数量低于要求 (${creeps.length}/${creepNumberMap[creepType]}) 正在生成...`)
-            Memory.engryLock = true
-            createNewCreep(Home, creepType, [WORK, CARRY, MOVE])
-            break
-        }
-    }
-    if (Home.spawning) {
-        Memory.engryLock = false
-    }
-}
-// 生成蠕虫
-const createNewCreep = (Spawn, creepType, creepBodys) => {
-    const creepName = creepType + Game.time
-    let creepMemory = _.cloneDeep(creepDefaultMemory)
-    creepMemory.memory.role = creepType
-
-    if (creepType === 'worker') {
-        creepMemory.memory.sourceIndex = getSourceIndex(Spawn)
-    }
-    Spawn.spawnCreep(creepBodys, creepName, creepMemory)
-}
-
 // 如果蠕虫死亡，则清除其记忆
 const clearDiedCreep = () => {
     for(var name in Memory.creeps) {
@@ -52,15 +17,6 @@ const clearDiedCreep = () => {
         }
     }
 }
-
-const getSourceIndex = (Spawn) => {
-    const sourceIndex = Memory.nextSourceIndex
-    const sourceLength = Spawn.room.find(FIND_SOURCES).length
-    Memory.nextSourceIndex = Memory.nextSourceIndex + 1 >= sourceLength ? 0 : sourceIndex + 1
-
-    return sourceIndex
-}
-
 
 // 新数量控制
 const creepNumberController = () => {
@@ -91,7 +47,8 @@ const customCreepController = (creepConfig) => {
         
         // 查找是那个蠕虫死掉了
         for (const unitName in creepConfig.units) {
-            if (!creeps[unitName]) {
+            
+            if (!Game.creeps[unitName]) {
                 const creepMemory = { memory: creepConfig.units[unitName] }
                 // 生成蠕虫
                 Home.spawnCreep([WORK, CARRY, MOVE], unitName, creepMemory)
@@ -116,13 +73,24 @@ const normalCreepController = (creepConfig) => {
     return false
 }
 
+// 生成蠕虫
+const createNewCreep = (Spawn, creepType, creepBodys) => {
+    const creepName = creepType + Game.time
+    let creepMemory = _.cloneDeep(creepDefaultMemory)
+    creepMemory.memory.role = creepType
+
+    if (creepType === 'worker') {
+        creepMemory.memory.sourceIndex = getSourceIndex(Spawn)
+    }
+    Spawn.spawnCreep(creepBodys, creepName, creepMemory)
+}
+
 // 获取指定类型的蠕虫的数量
 const getCreepByRole = (role) => {
     return _.filter(Game.creeps, (creep) => creep.memory.role == role)
 }
 
 module.exports = {
-    creepNumberControllerOld,
     creepNumberController,
     clearDiedCreep
 }
