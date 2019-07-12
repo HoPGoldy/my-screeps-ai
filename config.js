@@ -3,6 +3,7 @@ const creepNumberConfig = [
     {
         custom: true,
         role: 'worker',
+        bodys: [WORK, CARRY, MOVE],
         units: {
             worker0: {
                 role: 'worker',
@@ -28,14 +29,17 @@ const creepNumberConfig = [
     }, {
         custom: false,
         role: 'upgrader',
-        number: 2
+        bodys: [WORK, CARRY, MOVE],
+        number: 1
     }, {
         custom: false,
         role: 'builder',
-        number: 1
+        bodys: [WORK, CARRY, MOVE],
+        number: 2
     }, {
         custom: true,
         role: 'transfer',
+        bodys: [WORK, CARRY, MOVE],
         units: {
             transfer0: {
                 role: 'transfer',

@@ -51,7 +51,7 @@ const customCreepController = (creepConfig) => {
             if (!Game.creeps[unitName]) {
                 const creepMemory = { memory: creepConfig.units[unitName] }
                 // 生成蠕虫
-                Home.spawnCreep([WORK, CARRY, MOVE], unitName, creepMemory)
+                Home.spawnCreep(creepConfig.bodys, unitName, creepMemory)
                 return true
             }
         }
@@ -67,7 +67,7 @@ const normalCreepController = (creepConfig) => {
         Memory.engryLock = true
         console.log(`蠕虫类型: ${creepConfig.role} 存活数量低于要求 (${creeps.length}/${creepConfig.number}) 正在生成...`)
         
-        createNewCreep(Home, creepConfig.role, [WORK, CARRY, MOVE])
+        createNewCreep(Home, creepConfig.role, creepConfig.bodys)
         return true
     }
     return false
