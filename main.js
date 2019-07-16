@@ -4,10 +4,8 @@ const builder = require('role.builder')
 const transfer = require('role.transfer')
 const spawnWork = require('spawnWork')
 const structureWork = require('structureWork')
-// const helloStr = require('./role/test')
 
 module.exports.loop = function() {
-    // console.log(helloStr)
     spawnWork.clearDiedCreep()
     spawnWork.creepNumberController()
     structureWork.repair()

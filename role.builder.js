@@ -1,43 +1,42 @@
 const defaultPath = require('moveSetting').defaultPath
-const { getEngryFrom, findExtensionWithEngry } = require('utils')
+const upgrader = require('role.upgrader')
+const { harvestEngry } = require('utils')
 
 const run = (creep) => {
-    const state = updateState(creep)
+    const working = updateState(creep)
 
-    switch (state) {
-        case 'harvest':
-            const engryExtension = findExtensionWithEngry(creep)
-            const target = engryExtension ? engryExtension : Game.spawns['Spawn1']
-            // console.log(target)
-            getEngryFrom(creep, target)
-        break
-        case 'build':
-            build(creep)
-        break
+    if (working) {
+        const targets = creep.room.find(FIND_CONSTRUCTION_SITES)
+        if (targets.length > 0) {
+            build(creep, targets[0])
+        }
+        else {
+            upgrader.run(creep)
+        }
+    }
+    else {
+        harvestEngry(creep)
     }
 }
 
 // 更新并返回当前蠕虫状态
 const updateState = (creep) => {
-    if(creep.carry.energy == 0) {
-        creep.memory.state = 'harvest'
-        creep.say('🔄 harvest')
+    if(creep.carry.energy <= 0) {
+        creep.memory.working = false
+        creep.say('⚡ 挖矿')
     }
-    if(creep.carry.energy == creep.carryCapacity) {
-        creep.memory.state = 'build'
-        creep.say('🚧 build')
+    if(creep.carry.energy >= creep.carryCapacity) {
+        creep.memory.working = true
+        creep.say('🚧 建造')
     }
 
-    return creep.memory.state
+    return creep.memory.working
 }
 
 // 寻找存在的工地并建造
-const build = (creep) => {
-    const targets = creep.room.find(FIND_CONSTRUCTION_SITES)
-    if(targets.length) {
-        if(creep.build(targets[0]) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(targets[0], defaultPath)
-        }
+const build = (creep, target) => {
+    if(creep.build(target) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, defaultPath)
     }
 }
 

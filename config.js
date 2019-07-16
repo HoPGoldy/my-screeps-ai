@@ -1,41 +1,15 @@
 // 爬虫数量控制
 const creepNumberConfig = [
     {
-        custom: true,
+        custom: false,
         role: 'worker',
-        bodys: [WORK, WORK, CARRY, MOVE, MOVE],
-        units: {
-            worker0: {
-                role: 'worker',
-                state: '',
-                sourceIndex: 1
-            },
-            worker1: {
-                role: 'worker',
-                state: '',
-                sourceIndex: 1
-            },
-            worker2: {
-                role: 'worker',
-                state: '',
-                sourceIndex: 0
-            },
-            worker3: {
-                role: 'worker',
-                state: '',
-                sourceIndex: 0
-            }
-        }
+        bodys: [WORK, WORK, CARRY, MOVE],
+        number: 2
     }, {
         custom: false,
         role: 'upgrader',
-        bodys: [WORK, WORK, CARRY, CARRY, MOVE],
+        bodys: [WORK, WORK, CARRY, MOVE],
         number: 3
-    }, {
-        custom: false,
-        role: 'builder',
-        bodys: [WORK, CARRY, MOVE],
-        number: 0
     }, {
         custom: true,
         role: 'transfer',
@@ -47,6 +21,11 @@ const creepNumberConfig = [
                 sourceIndex: 1
             }
         }
+    }, {
+        custom: false,
+        role: 'builder',
+        bodys: [WORK, CARRY, MOVE],
+        number: 2
     }
 ]
 

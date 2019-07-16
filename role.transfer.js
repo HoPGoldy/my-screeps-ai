@@ -1,27 +1,23 @@
-const { getEngryFrom, findExtensionWithEngry } = require('utils')
+const { harvestEngry } = require('utils')
 
 const run = (creep) => {
-    const state = updateState(creep)
-    const targets = creep.room.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-            // 结构为塔
-            return structure.structureType == STRUCTURE_TOWER
-        }
-    })
+    const working = updateState(creep)
 
-    switch (state) {
-        case 'harvest':
-            const engryExtension = findExtensionWithEngry(creep)
-            const target = engryExtension ? engryExtension : Game.spawns['Spawn1']
-            // console.log(target)
-            getEngryFrom(creep, target)
-        break
-        case 'transfe':
-            if(targets.length > 0) {
-                transformTo(creep, targets[0])
+    if (working) {
+        const targets = creep.room.find(FIND_STRUCTURES, {
+            filter: (structure) => {
+                // 结构为塔
+                return structure.structureType == STRUCTURE_TOWER
             }
-        break
-    }    
+        })
+
+        if(targets.length > 0) {
+            transformTo(creep, targets[0])
+        }
+    }
+    else {
+        harvestEngry(creep)
+    } 
 }
 
 const transformTo = (creep, target) => {
@@ -33,15 +29,15 @@ const transformTo = (creep, target) => {
 // 更新并返回当前蠕虫状态
 const updateState = (creep) => {
     if(creep.carry.energy <= 0) {
-        creep.memory.state = 'harvest'
-        // creep.say('🔄 harvest')
+        creep.memory.working = false
+        creep.say('⚡ 挖矿')
     }
     if(creep.carry.energy >= creep.carryCapacity) {
-        creep.memory.state = 'transfe'
-        // creep.say('🚧 upgrade')
+        creep.memory.working = true
+        creep.say('🚚 转移')
     }
 
-    return creep.memory.state
+    return creep.memory.working
 }
 
 module.exports = {

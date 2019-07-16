@@ -1,35 +1,29 @@
 const defaultPath = require('moveSetting').defaultPath
-const { getEngryFrom, findExtensionWithEngry } = require('utils')
+const { harvestEngry } = require('utils')
 
 const run = (creep) => {
-    // upgrade / harvest
-    const state = updateState(creep)
+    const working = updateState(creep)
 
-    switch (state) {
-        case 'harvest':
-            const engryExtension = findExtensionWithEngry(creep)
-            const target = engryExtension ? engryExtension : Game.spawns['Spawn1']
-            // console.log(target)
-            getEngryFrom(creep, target)
-        break
-        case 'upgrade':
-            upgradeController(creep)
-        break
+    if (working) {
+        upgradeController(creep)
+    }
+    else {
+        harvestEngry(creep)
     }
 }
 
 // 更新并返回当前蠕虫状态
 const updateState = (creep) => {
     if(creep.carry.energy <= 0) {
-        creep.memory.state = 'harvest'
-        creep.say('🔄 harvest')
+        creep.memory.working = false
+        creep.say('⚡ 挖矿')
     }
     if(creep.carry.energy >= creep.carryCapacity) {
-        creep.memory.state = 'upgrade'
-        creep.say('🚧 upgrade')
+        creep.memory.working = true
+        creep.say('🔧 升级')
     }
 
-    return creep.memory.state
+    return creep.memory.working
 }
 
 // 升级房间控制器

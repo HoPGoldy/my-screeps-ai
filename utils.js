@@ -1,6 +1,6 @@
 const defaultPath = require('moveSetting').defaultPath
 
-// 去 target 建筑获取能量
+// 去 target 建筑转移能量
 const getEngryFrom = (creep, target) => {
     // 能量锁启用时不可获取能量
     if (!Memory.engryLock) {
@@ -9,6 +9,16 @@ const getEngryFrom = (creep, target) => {
         }
     }
     else {
+        creep.moveTo(target, defaultPath)
+    }
+}
+
+// 去资源点挖矿
+const harvestEngry = (creep) => {
+    let target = creep.pos.findClosestByPath(FIND_SOURCES)
+    // if (!target) target = creep.room.find(FIND_SOURCES)
+
+    if (creep.harvest(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(target, defaultPath)
     }
 }
@@ -24,5 +34,6 @@ const findExtensionWithEngry = (creep) => {
 
 module.exports = {
     getEngryFrom,
+    harvestEngry,
     findExtensionWithEngry
 }
