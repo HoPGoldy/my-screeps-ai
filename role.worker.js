@@ -53,7 +53,7 @@ const carryBack = (creep) => {
     })
     // 转移能量实现
     if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, defaultPath)
+        creep.moveTo(target, havestPath)
     }
 }
 

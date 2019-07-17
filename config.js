@@ -11,17 +11,17 @@ const creepsConfig = [
     {
         custom: false,
         role: 'worker',
-        bodys: [WORK, WORK, CARRY, MOVE],
+        bodys: [WORK, WORK, CARRY, MOVE, MOVE],
         number: 3
     }, {
         custom: false,
         role: 'upgrader',
-        bodys: [WORK, WORK, CARRY, MOVE],
+        bodys: [WORK, WORK, CARRY, MOVE, MOVE],
         number: 1
     }, {
         custom: true,
         role: 'transfer',
-        bodys: [WORK, CARRY, MOVE],
+        bodys: [WORK, WORK, CARRY, MOVE, MOVE],
         units: {
             transfer0: {
                 role: 'transfer',
