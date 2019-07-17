@@ -1,8 +1,8 @@
 const defaultPath = require('moveSetting').defaultPath
-const { harvestEngry } = require('utils')
+const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
-    const working = updateState(creep)
+    const working = updateState(creep, '🚛 带回')
 
     if (working) {
         carryBack(creep)
@@ -38,20 +38,6 @@ const carryBack = (creep) => {
     if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(target, defaultPath)
     }
-}
-
-// 更新并返回当前蠕虫状态
-const updateState = (creep) => {
-    if(creep.carry.energy <= 0) {
-        creep.memory.working = false
-        creep.say('⚡ 挖矿')
-    }
-    if(creep.carry.energy >= creep.carryCapacity) {
-        creep.memory.working = true
-        creep.say('🚛 带回')
-    }
-
-    return creep.memory.working
 }
 
 module.exports = {

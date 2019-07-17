@@ -79,9 +79,6 @@ const createNewCreep = (Spawn, creepType, creepBodys) => {
     let creepMemory = _.cloneDeep(creepDefaultMemory)
     creepMemory.memory.role = creepType
 
-    if (creepType === 'worker') {
-        creepMemory.memory.sourceIndex = getSourceIndex(Spawn)
-    }
     Spawn.spawnCreep(creepBodys, creepName, creepMemory)
 }
 

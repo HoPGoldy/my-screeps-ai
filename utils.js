@@ -1,21 +1,8 @@
 const defaultPath = require('moveSetting').defaultPath
 
-// 去 target 建筑转移能量
-const getEngryFrom = (creep, target) => {
-    // 能量锁启用时不可获取能量
-    if (!Memory.engryLock) {
-        if (creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, defaultPath)
-        }
-    }
-    else {
-        creep.moveTo(target, defaultPath)
-    }
-}
-
 // 去资源点挖矿
 const harvestEngry = (creep) => {
-    let target = creep.pos.findClosestByPath(FIND_SOURCES)
+    let target = creep.memory.targetSourceId ? Game.getObjectById(creep.memory.targetSourceId) : creep.pos.findClosestByPath(FIND_SOURCES)
     // if (!target) target = creep.room.find(FIND_SOURCES)
 
     if (creep.harvest(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -23,17 +10,25 @@ const harvestEngry = (creep) => {
     }
 }
 
-// 查找最近的有能量的 extension
-const findExtensionWithEngry = (creep) => {
-    return creep.pos.findClosestByRange(FIND_STRUCTURES, {
-        filter: (structure) => {
-            return structure.structureType == STRUCTURE_EXTENSION && structure.energy != 0
-        }
-    })
+// 状态更新
+const updateState = (creep, workingMsg) => {
+    if(creep.carry.energy <= 0  && creep.memory.working) {
+        creep.memory.working = false
+        creep.say('⚡ 挖矿')
+
+        const targetSource = creep.pos.findClosestByPath(FIND_SOURCES)
+        if (targetSource) creep.memory.targetSourceId = targetSource.id
+    }
+    if(creep.carry.energy >= creep.carryCapacity && !creep.memory.working) {
+        creep.memory.working = true
+        creep.say(workingMsg)
+    }
+
+    return creep.memory.working
 }
 
+
 module.exports = {
-    getEngryFrom,
     harvestEngry,
-    findExtensionWithEngry
+    updateState
 }

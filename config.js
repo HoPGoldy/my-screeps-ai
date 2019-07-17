@@ -9,7 +9,7 @@ const creepNumberConfig = [
         custom: false,
         role: 'upgrader',
         bodys: [WORK, WORK, CARRY, MOVE],
-        number: 3
+        number: 1
     }, {
         custom: true,
         role: 'transfer',
@@ -17,15 +17,14 @@ const creepNumberConfig = [
         units: {
             transfer0: {
                 role: 'transfer',
-                state: '',
-                sourceIndex: 1
+                state: ''
             }
         }
     }, {
         custom: false,
         role: 'builder',
         bodys: [WORK, CARRY, MOVE],
-        number: 2
+        number: 4
     }
 ]
 
@@ -33,8 +32,8 @@ const creepNumberConfig = [
 const creepDefaultMemory = {
     memory: {
         role: 'worker',
-        state: '',
-        sourceIndex: 1
+        working: false,
+        targetSourceId: ''
     }
 }
 

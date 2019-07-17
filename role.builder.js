@@ -1,9 +1,9 @@
 const defaultPath = require('moveSetting').defaultPath
 const upgrader = require('role.upgrader')
-const { harvestEngry } = require('utils')
+const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
-    const working = updateState(creep)
+    const working = updateState(creep, '🚧 建造')
 
     if (working) {
         const targets = creep.room.find(FIND_CONSTRUCTION_SITES)
@@ -17,20 +17,6 @@ const run = (creep) => {
     else {
         harvestEngry(creep)
     }
-}
-
-// 更新并返回当前蠕虫状态
-const updateState = (creep) => {
-    if(creep.carry.energy <= 0) {
-        creep.memory.working = false
-        creep.say('⚡ 挖矿')
-    }
-    if(creep.carry.energy >= creep.carryCapacity) {
-        creep.memory.working = true
-        creep.say('🚧 建造')
-    }
-
-    return creep.memory.working
 }
 
 // 寻找存在的工地并建造
