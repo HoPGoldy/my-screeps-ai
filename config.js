@@ -1,18 +1,21 @@
 // 爬虫数量控制
-const creepNumberConfig = [
+const creepsConfig = [
     {
         custom: false,
         role: 'worker',
+        workingMsg: '',
         bodys: [WORK, WORK, CARRY, MOVE],
         number: 2
     }, {
         custom: false,
         role: 'upgrader',
+        workingMsg: '',
         bodys: [WORK, WORK, CARRY, MOVE],
         number: 1
     }, {
         custom: true,
         role: 'transfer',
+        workingMsg: '',
         bodys: [WORK, CARRY, MOVE],
         units: {
             transfer0: {
@@ -23,6 +26,7 @@ const creepNumberConfig = [
     }, {
         custom: false,
         role: 'builder',
+        workingMsg: '',
         bodys: [WORK, CARRY, MOVE],
         number: 4
     }
@@ -39,5 +43,5 @@ const creepDefaultMemory = {
 
 module.exports = {
     creepDefaultMemory,
-    creepNumberConfig
+    creepsConfig
 }

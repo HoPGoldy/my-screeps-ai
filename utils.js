@@ -1,10 +1,20 @@
 const defaultPath = require('moveSetting').defaultPath
+const { creepsConfig } = require('config')
 
 // 去资源点挖矿
 const harvestEngry = (creep) => {
-    let target = creep.memory.targetSourceId ? Game.getObjectById(creep.memory.targetSourceId) : creep.pos.findClosestByPath(FIND_SOURCES)
-    // if (!target) target = creep.room.find(FIND_SOURCES)
-
+    // 从 creep 内存中读取目标资源点
+    let target = Game.getObjectById(creep.memory.targetSourceId)
+    // 如果目标不存在就尝试重新获取资源点
+    if (!target) {
+        const closestSource = creep.pos.findClosestByPath(FIND_SOURCES)
+        // 如果有可用资源点，就存进内存
+        if (closestSource) {
+            creep.memory.targetSourceId = closestSource.id
+            target = closestSource
+        }
+    }
+    // 挖掘实现
     if (creep.harvest(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(target, defaultPath)
     }

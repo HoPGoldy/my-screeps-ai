@@ -1,4 +1,4 @@
-const { creepNumberMap, creepDefaultMemory, creepNumberConfig } = require('config')
+const { creepDefaultMemory, creepsConfig } = require('config')
 
 /** 
  * 能量锁 Memory.engryLock
@@ -21,7 +21,7 @@ const clearDiedCreep = () => {
 // 新数量控制
 const creepNumberController = () => {
     const Home = Game.spawns['Spawn1']
-    for (const creepConfig of creepNumberConfig) {
+    for (const creepConfig of creepsConfig) {
         // 通过返回值判断是否生成了蠕虫，生成了的话就不继续循环了
         let needSpawn = creepConfig.custom ? 
             customCreepController(creepConfig) :
