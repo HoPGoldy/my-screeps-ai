@@ -1,4 +1,4 @@
-const defaultPath = require('moveSetting').defaultPath
+const havestPath = require('moveSetting').getPath('havest')
 const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
@@ -30,7 +30,7 @@ const run = (creep) => {
  */
 const pickDropEngry = (creep, dropEngry) => {
     if(creep.pickup(dropEngry) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(dropEngry, defaultPath)
+        creep.moveTo(dropEngry, havestPath)
     }
 }
 

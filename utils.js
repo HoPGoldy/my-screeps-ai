@@ -1,4 +1,4 @@
-const defaultPath = require('moveSetting').defaultPath
+const havestPath = require('moveSetting').getPath('havest')
 
 /**
  * 去资源点挖矿
@@ -19,7 +19,7 @@ const harvestEngry = (creep) => {
     }
     // 挖掘实现
     if (creep.harvest(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, defaultPath)
+        creep.moveTo(target, havestPath)
     }
 }
 

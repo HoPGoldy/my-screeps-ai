@@ -32,7 +32,7 @@ const creepsConfig = [
         custom: false,
         role: 'builder',
         bodys: [WORK, CARRY, MOVE],
-        number: 3
+        number: 2
     }
 ]
 

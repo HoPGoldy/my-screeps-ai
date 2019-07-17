@@ -1,4 +1,4 @@
-const defaultPath = require('moveSetting').defaultPath
+const buildPath = require('moveSetting').getPath('build')
 const upgrader = require('role.upgrader')
 const { harvestEngry, updateState } = require('utils')
 
@@ -25,7 +25,7 @@ const run = (creep) => {
 // 寻找存在的工地并建造
 const build = (creep, target) => {
     if(creep.build(target) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, defaultPath)
+        creep.moveTo(target, buildPath)
     }
 }
 

@@ -1,4 +1,4 @@
-const defaultPath = require('moveSetting').defaultPath
+const upgradePath = require('moveSetting').getPath('upgrade')
 const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
@@ -20,7 +20,7 @@ const run = (creep) => {
 const upgradeController = (creep) => {
     const controller = creep.room.controller
     if(creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(controller, defaultPath)
+        creep.moveTo(controller, upgradePath)
     }
 }
 
