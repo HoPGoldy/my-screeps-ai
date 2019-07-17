@@ -12,7 +12,9 @@ const run = (creep) => {
         })
 
         if(targets.length > 0) {
-            // TODO 可以自主寻找防御塔进行运输
+            /**
+             * @todo 可以自主寻找防御塔进行运输
+             */
             transformTo(creep, targets[0])
         }
     }
