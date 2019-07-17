@@ -1,7 +1,10 @@
 const defaultPath = require('moveSetting').defaultPath
-const { creepsConfig } = require('config')
 
-// 去资源点挖矿
+/**
+ * 去资源点挖矿
+ * 
+ * @param {object} creep 
+ */
 const harvestEngry = (creep) => {
     // 从 creep 内存中读取目标资源点
     let target = Game.getObjectById(creep.memory.targetSourceId)
@@ -20,16 +23,26 @@ const harvestEngry = (creep) => {
     }
 }
 
-// 状态更新
+/**
+ * 状态更新
+ * 
+ * @param {object} creep 
+ * @param {object} workingMsg 切换为工作状态时的语音提示
+ */
 const updateState = (creep, workingMsg) => {
-    if(creep.carry.energy <= 0  && creep.memory.working) {
+    // creep 身上没有能量 && creep 之前的状态为“工作”
+    if(creep.carry.energy <= 0 && creep.memory.working) {
+        // 切换状态
         creep.memory.working = false
         creep.say('⚡ 挖矿')
-
+        // 首次获取可用资源点
         const targetSource = creep.pos.findClosestByPath(FIND_SOURCES)
-        if (targetSource) creep.memory.targetSourceId = targetSource.id
+        // 如果获取到了就用，获取不到就置为空，交给 harvestEngry() 尝试获取
+        creep.memory.targetSourceId = targetSource ? targetSource.id : undefined
     }
+    // creep 身上能量满了 && creep 之前的状态为“不工作”
     if(creep.carry.energy >= creep.carryCapacity && !creep.memory.working) {
+        // 切换状态
         creep.memory.working = true
         creep.say(workingMsg)
     }

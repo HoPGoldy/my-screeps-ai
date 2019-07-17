@@ -6,10 +6,13 @@ const run = (creep) => {
     const working = updateState(creep, '🚧 建造')
 
     if (working) {
+        // 搜索建筑工地
         const targets = creep.room.find(FIND_CONSTRUCTION_SITES)
+        // 找到就去建造
         if (targets.length > 0) {
             build(creep, targets[0])
         }
+        // 找不到就变身 upgrader
         else {
             upgrader.run(creep)
         }

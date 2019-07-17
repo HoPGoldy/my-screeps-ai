@@ -12,7 +12,11 @@ const run = (creep) => {
     }
 }
 
-// 升级房间控制器
+/**
+ * 升级房间控制器
+ * 
+ * @param {object} creep 
+ */
 const upgradeController = (creep) => {
     const controller = creep.room.controller
     if(creep.upgradeController(controller) == ERR_NOT_IN_RANGE) {

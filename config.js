@@ -1,21 +1,26 @@
-// 爬虫数量控制
+/**
+ * creep 数量控制
+ * 
+ * @param custom 是否启用自定义
+ * @param role 角色
+ * @param bodys 身体的组成部分
+ * @param number 该 creep 的数量
+ * @param units 启用自定义后的 creep 详细信息
+ */
 const creepsConfig = [
     {
         custom: false,
         role: 'worker',
-        workingMsg: '',
         bodys: [WORK, WORK, CARRY, MOVE],
-        number: 2
+        number: 3
     }, {
         custom: false,
         role: 'upgrader',
-        workingMsg: '',
         bodys: [WORK, WORK, CARRY, MOVE],
         number: 1
     }, {
         custom: true,
         role: 'transfer',
-        workingMsg: '',
         bodys: [WORK, CARRY, MOVE],
         units: {
             transfer0: {
@@ -26,13 +31,12 @@ const creepsConfig = [
     }, {
         custom: false,
         role: 'builder',
-        workingMsg: '',
         bodys: [WORK, CARRY, MOVE],
-        number: 4
+        number: 3
     }
 ]
 
-// 新爬虫的默认记忆
+// 新 creep 的默认记忆
 const creepDefaultMemory = {
     memory: {
         role: 'worker',
