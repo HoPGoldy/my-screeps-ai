@@ -1,4 +1,5 @@
 const havestPath = require('moveSetting').getPath('havest')
+const roleTransfer = require('role.transfer')
 const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
@@ -6,7 +7,9 @@ const run = (creep) => {
 
     // worker 型 creep 的工作就是将能量带回基地
     if (working) {
-        carryBack(creep)
+        if (!carryBack(creep)) {
+            roleTransfer.run(creep)
+        }
     }
     else {
         // 检查地上的垃圾
@@ -51,10 +54,14 @@ const carryBack = (creep) => {
                     structure.structureType == STRUCTURE_SPAWN)
         }
     })
+    
+    if(!target) return false
+    
     // 转移能量实现
     if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(target, havestPath)
     }
+    return true
 }
 
 module.exports = {
