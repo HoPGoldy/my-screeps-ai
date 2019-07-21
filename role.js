@@ -5,6 +5,7 @@ const roleMap = {
     upgrader: require('role.upgrader'),
     builder: require('role.builder'),
     transfer: require('role.transfer'),
+    repairer: require('role.repairer'),
 }
 
 /**
