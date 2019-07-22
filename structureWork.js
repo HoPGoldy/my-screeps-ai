@@ -1,3 +1,5 @@
+const { myInfo } = require('config')
+
 const towerWork = () => {
     const Home = Game.spawns['Spawn1']
     const towers = Home.room.find(FIND_MY_STRUCTURES, {
@@ -6,17 +8,28 @@ const towerWork = () => {
 
     towers.map(tower => {
         if (attack(tower)) {
-            console.log('attack!')
+            // console.log('attack!')
         }
         else if (repair(tower)) {
-            console.log('repair')
+            // console.log('repair')
         }
     })
 }
 
 const attack = (tower) => {
-    // const enemy = 
-    return false
+    const enemy = tower.pos.findClosestByRange(FIND_CREEPS, {
+        filter: creep => {
+            return creep.owner.username != myInfo.name
+        }
+    })
+
+    if (enemy) {
+        tower.attack(enemy)
+        return true
+    }
+    else {
+        return false
+    }
 }
 
 const repair = (tower) => {
@@ -30,6 +43,7 @@ const repair = (tower) => {
         // 如果有的话则进行修复
         if(closestDamagedStructure) {
             tower.repair(closestDamagedStructure)
+            return true
         }
     }
     else {

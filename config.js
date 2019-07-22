@@ -11,17 +11,17 @@ const creepsConfig = [
     {
         custom: false,
         role: 'worker',
-        bodys: [WORK, WORK, WORK, CARRY, CARRY, MOVE, MOVE, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         custom: false,
         role: 'upgrader',
-        bodys: [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
-        number: 1
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, MOVE],
+        number: 3
     }, {
         custom: true,
         role: 'transfer',
-        bodys: [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         units: {
             transfer0: {
                 role: 'transfer',
@@ -31,12 +31,12 @@ const creepsConfig = [
     }, {
         custom: false,
         role: 'builder',
-        bodys: [WORK, WORK, WORK, CARRY, MOVE, MOVE],
-        number: 2
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, MOVE],
+        number: 3
     }, {
         custom: false,
         role: 'repairer',
-        bodys: [WORK, WORK, CARRY, CARRY, MOVE, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }
 ]
@@ -50,7 +50,12 @@ const creepDefaultMemory = {
     }
 }
 
+const myInfo = {
+    name: 'HoPGoldy'
+}
+
 module.exports = {
     creepDefaultMemory,
-    creepsConfig
+    creepsConfig,
+    myInfo
 }

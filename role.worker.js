@@ -4,7 +4,7 @@ const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
     const working = updateState(creep, '🚛 带回')
-
+    
     // worker 型 creep 的工作就是将能量带回基地
     if (working) {
         if (!carryBack(creep)) {
@@ -12,16 +12,18 @@ const run = (creep) => {
         }
     }
     else {
-        // 检查地上的垃圾
-        const dropEngry = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES)
-        // 优先捡垃圾
-        if (dropEngry) {
-            pickDropEngry(creep, dropEngry)
-        }
-        // 没有再去采矿
-        else {
-            harvestEngry(creep)
-        }
+        // // 检查地上的垃圾
+        // const dropEngry = creep.pos.findClosestByRange(FIND_DROPPED_RESOURCES)
+        // // 优先捡垃圾
+        // if (dropEngry) {
+        //     pickDropEngry(creep, dropEngry)
+        // }
+        // // 没有再去采矿
+        // else {
+        //     harvestEngry(creep)
+        // }
+        
+        harvestEngry(creep)
     }
 }
 
@@ -32,6 +34,7 @@ const run = (creep) => {
  * @param {object} dropEngry 掉地上的能量
  */
 const pickDropEngry = (creep, dropEngry) => {
+    creep.say('捡垃圾！')
     if(creep.pickup(dropEngry) == ERR_NOT_IN_RANGE) {
         creep.moveTo(dropEngry, havestPath)
     }
@@ -51,7 +54,8 @@ const carryBack = (creep) => {
              */
             return structure.energy < structure.energyCapacity && 
                    (structure.structureType == STRUCTURE_EXTENSION || 
-                    structure.structureType == STRUCTURE_SPAWN)
+                    structure.structureType == STRUCTURE_SPAWN ||
+                    structure.structureType == STRUCTURE_CONTAINER)
         }
     })
     

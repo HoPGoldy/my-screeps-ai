@@ -5,8 +5,8 @@ const structureWork = require('structureWork')
 module.exports.loop = function() {
     spawnWork.clearDiedCreep()
     spawnWork.creepNumberController()
-    // structureWork.towerWork()
-    structureWork.repair()
+    structureWork.towerWork()
+    // structureWork.repair()
 
     for (const creepName in Game.creeps) {
         const creep = Game.creeps[creepName]
