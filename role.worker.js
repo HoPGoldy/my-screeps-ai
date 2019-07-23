@@ -52,8 +52,8 @@ const carryBack = (creep) => {
              * 
              * 然后根据排序挑选建筑：拓展 > 重生点 > 容器
              */
-            return structure.energy < structure.energyCapacity && 
-                   (structure.structureType == STRUCTURE_EXTENSION || 
+            return structure.energy < structure.energyCapacity &&
+                   (structure.structureType == STRUCTURE_EXTENSION ||
                     structure.structureType == STRUCTURE_SPAWN ||
                     structure.structureType == STRUCTURE_CONTAINER)
         }

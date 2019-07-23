@@ -3,7 +3,8 @@ const pathMap = {
     default: '#ffffff',
     havest: '#CCFF99',
     upgrade: '#99CCFF',
-    build: '#FFCC99'
+    build: '#FFCC99',
+    attack: '#DC143C' // 猩红
 }
 
 /**

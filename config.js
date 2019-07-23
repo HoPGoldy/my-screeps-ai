@@ -16,8 +16,8 @@ const creepsConfig = [
     }, {
         custom: false,
         role: 'upgrader',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, MOVE],
-        number: 3
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        number: 2
     }, {
         custom: true,
         role: 'transfer',
@@ -31,13 +31,18 @@ const creepsConfig = [
     }, {
         custom: false,
         role: 'builder',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, MOVE],
-        number: 3
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        number: 2
     }, {
         custom: false,
         role: 'repairer',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
+    }, {
+        custom: false,
+        role: 'defender',
+        bodys: [TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
+        number: 3
     }
 ]
 
