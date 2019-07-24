@@ -1,48 +1,36 @@
 /**
  * creep 数量控制
+ * 下面所有以房间名称命名的对象都是其房间的数量配置项
  * 
- * @param custom 是否启用自定义
  * @param role 角色
  * @param bodys 身体的组成部分
  * @param number 该 creep 的数量
- * @param units 启用自定义后的 creep 详细信息
  */
-const creepsConfig = [
+const W47S6 = [
     {
-        custom: false,
         role: 'worker',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
-        custom: false,
         role: 'upgrader',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
-        custom: true,
         role: 'transfer',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
-        units: {
-            transfer0: {
-                role: 'transfer',
-                state: ''
-            }
-        }
+        number: 1
     }, {
-        custom: false,
         role: 'builder',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
-        custom: false,
         role: 'repairer',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
-        custom: false,
         role: 'defender',
         bodys: [TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
-        number: 3
+        number: 4
     }
 ]
 
@@ -61,6 +49,6 @@ const myInfo = {
 
 module.exports = {
     creepDefaultMemory,
-    creepsConfig,
+    creepsNumberConfig: { W47S6 },
     myInfo
 }

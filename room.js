@@ -1,5 +1,7 @@
 // 引入雷达
 const { scan } = require('room.radar')
+// 引入 creep 数量控制汽车
+const numberController = require('room.creepNumberController')
 
 /**
  * 房间控制
@@ -13,6 +15,7 @@ const roomWork = (roomName) => {
     if (!(roomName in Memory)) initRoom(room)
 
     scan(room)
+    numberController(room)
 }
 
 /**
