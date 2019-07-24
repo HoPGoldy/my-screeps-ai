@@ -25,7 +25,6 @@ const getRoomList = () => {
 const clearDiedCreep = () => {
     // 每 1000 tick 执行一次
     if (Game.time % 1000) return false
-    console.log('执行记忆清除！')
 
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
@@ -36,17 +35,21 @@ const clearDiedCreep = () => {
 }
 
 module.exports.loop = function() {
+    // 遍历每一个房间
     for (const roomName of getRoomList()) {
+        // 执行房间内的工作
         roomWork(roomName)
     }
 
-     
-    clearDiedCreep()
     structureWork.towerWork()
 
+    // 遍历每一个蠕虫
     for (const creepName in Game.creeps) {
         const creep = Game.creeps[creepName]
-
+        // 通过其内存中的 role 来分配工作
         distributeWork(creep, creep.memory.role)
     }
+
+    // 清理死去的蠕虫记忆
+    clearDiedCreep()
 }

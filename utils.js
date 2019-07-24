@@ -7,15 +7,10 @@ const havestPath = require('moveSetting').getPath('havest')
  */
 const harvestEngry = (creep) => {
     const closestSource = creep.pos.findClosestByPath(FIND_SOURCES)
-    // 如果有可用资源点，就存进内存
-    if (closestSource) {
-        creep.memory.targetSourceId = closestSource.id
-        target = closestSource
-    }
 
     // 挖掘实现
-    if (creep.harvest(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target, havestPath)
+    if (creep.harvest(closestSource, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(closestSource, havestPath)
     }
 }
 

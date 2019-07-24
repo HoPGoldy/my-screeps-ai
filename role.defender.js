@@ -1,5 +1,4 @@
 const attackPath = require('moveSetting').getPath('attack')
-const { myInfo } = require('config')
 
 const run = (creep) => {
     const enemy = checkEnemy(creep)
@@ -13,14 +12,15 @@ const run = (creep) => {
 
 /**
  * 检查是否有敌人
+ * 
  * @param {object} creep 
+ * @returns {object|null} 返回最近的敌人或null
  */
 const checkEnemy = (creep) => {
-    const enemy = creep.pos.findClosestByRange(FIND_CREEPS, {
-        filter: creep => creep.owner.username != myInfo.name
-    })
-
-    if (enemy) return enemy
+    // 从雷达扫描结果中获取敌人
+    const enemys = Memory[creep.room.name].radarResult.enemys
+    // 如果有敌人就返回最近的那个
+    return enemys ? creep.pos.findClosestByRange(enemys) : null
 }
 
 /**

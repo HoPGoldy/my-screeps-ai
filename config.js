@@ -38,8 +38,7 @@ const W47S6 = [
 const creepDefaultMemory = {
     memory: {
         role: 'worker',
-        working: false,
-        targetSourceId: ''
+        working: false
     }
 }
 
