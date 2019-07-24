@@ -1,5 +1,10 @@
+// 引入工作分发器
 const distributeWork = require('role')
+// 引入房间工作
+const roomWork = require('room')
+// 引入出生点工作
 const spawnWork = require('spawnWork')
+// 引入结构工作
 const structureWork = require('structureWork')
 
 /**
@@ -16,30 +21,10 @@ const getRoomList = () => {
     return _.uniq(rooms)
 }
 
-/**
- * 房间控制
- * 执行每个房间的任务
- * 
- * @param {string} roomName 房间名称
- */
-const roomWork = (roomName) => {
-    if (!(roomName in Memory)) initRoom(roomName)
-}
-
-/**
- * 房间初始化
- * 初始化房间的 Memory ，包括矿注册表以及雷达扫描结果
- * 
- * @param {string} roomName 房间名称
- */
-const initRoom = (roomName) => {
-    console.log('房间初始化！')
-}
-
 module.exports.loop = function() {
-    // for (const roomName in getRoomList()) {
-    //     roomWork(roomName)
-    // }
+    for (const roomName of getRoomList()) {
+        roomWork(roomName)
+    }
 
 
     spawnWork.clearDiedCreep()

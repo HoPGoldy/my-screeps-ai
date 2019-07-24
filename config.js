@@ -41,7 +41,7 @@ const creepsConfig = [
     }, {
         custom: false,
         role: 'defender',
-        bodys: [TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
+        bodys: [TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
         number: 3
     }
 ]
