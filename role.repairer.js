@@ -1,5 +1,5 @@
 const havestPath = require('moveSetting').getPath('havest')
-const { harvestEngry, updateState } = require('utils')
+const { getEngry, updateState } = require('utils')
 
 const run = (creep) => {
     const working = updateState(creep, '⚙ 修复')
@@ -8,7 +8,7 @@ const run = (creep) => {
         repair(creep)
     }
     else {
-        harvestEngry(creep)
+        getEngry(creep)
     }
 }
 

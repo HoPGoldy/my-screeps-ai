@@ -8,7 +8,7 @@
  */
 const W48S6 = [
     {
-        role: 'worker',
+        role: 'harvester',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
@@ -22,7 +22,7 @@ const W48S6 = [
     }, {
         role: 'builder',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
-        number: 1
+        number: 2
     }
 ]
 const W47S6 = [
@@ -48,8 +48,8 @@ const W47S6 = [
         number: 1
     }, {
         role: 'defender',
-        bodys: [TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
-        number: 4
+        bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
+        number: 2
     }, {
         role: 'claimer',
         bodys: [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, CLAIM],

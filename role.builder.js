@@ -1,6 +1,6 @@
 const buildPath = require('moveSetting').getPath('build')
 const upgrader = require('role.upgrader')
-const { harvestEngry, updateState } = require('utils')
+const { updateState, getEngry } = require('utils')
 
 const run = (creep) => {
     // if (creep.room.name != 'W48S6') {
@@ -22,7 +22,7 @@ const run = (creep) => {
         }
     }
     else {
-        harvestEngry(creep)
+        getEngry(creep)
     }
 }
 

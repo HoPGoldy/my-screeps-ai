@@ -66,8 +66,8 @@ function carryBack(creep) {
     let target = storeStructureId ? 
         Game.getObjectById(storeStructureId) :
         getStoreStructure(creep)
-    
-    if(!target) return false
+
+        if(!target) return false
     
     // 转移能量实现
     if(creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
@@ -96,16 +96,21 @@ function getStoreStructure(creep) {
         else creep.memory.storeStructureId = storeStructure.id
     }
     else {
-        storeStructure = creep.pos.findClosestByPath(FIND_MY_STRUCTURES, {
-            filter: (structure) => {
+        storeStructure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+            filter: structure => {
                 /**
                  * 条件优先满足：能量没有到达上限
                  * 然后根据排序挑选建筑：拓展 > 重生点 > 容器
                  */
-                return structure.energy < structure.energyCapacity &&
-                       (structure.structureType == STRUCTURE_EXTENSION ||
-                        structure.structureType == STRUCTURE_SPAWN ||
-                        structure.structureType == STRUCTURE_CONTAINER)
+                if (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) {
+                    return structure.energy < structure.energyCapacity
+                }
+                else if (structure.structureType == STRUCTURE_CONTAINER) {
+                    return _.sum(structure.store) < structure.storeCapacity
+                }
+                else {
+                    return false
+                }
             }
         })
     }

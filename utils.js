@@ -15,6 +15,26 @@ const harvestEngry = (creep) => {
 }
 
 /**
+ * 获取能量
+ * 优先从 container 中获取，没有的话再去挖矿
+ * 
+ * @param {object} creep 
+ */
+function getEngry(creep) {
+    const target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: structure => structure.structureType == STRUCTURE_CONTAINER && structure.store[RESOURCE_ENERGY] > 0
+    })
+    if (target) {
+        if(creep.withdraw(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+            creep.moveTo(target, havestPath)
+        }
+    }
+    else {
+        harvestEngry(creep)
+    }
+}
+
+/**
  * 状态更新
  * 
  * @param {object} creep 
@@ -53,9 +73,9 @@ function getClosestStructureByFlag(flag, STRUCTURE_NAME) {
     })
 }
 
-
 module.exports = {
     harvestEngry,
+    getEngry,
     updateState,
     getClosestStructureByFlag
 }

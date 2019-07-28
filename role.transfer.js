@@ -1,4 +1,4 @@
-const { harvestEngry, updateState } = require('utils')
+const { getEngry, updateState } = require('utils')
 
 const run = (creep) => {
     const working = updateState(creep, '🚚 转移')
@@ -22,7 +22,7 @@ const run = (creep) => {
         }
     }
     else {
-        harvestEngry(creep)
+        getEngry(creep)
     }
 }
 

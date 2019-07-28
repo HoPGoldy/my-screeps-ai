@@ -1,5 +1,5 @@
 const upgradePath = require('moveSetting').getPath('upgrade')
-const { harvestEngry, updateState } = require('utils')
+const { updateState, getEngry } = require('utils')
 
 const run = (creep) => {
     const working = updateState(creep, '🔧 升级')
@@ -8,7 +8,7 @@ const run = (creep) => {
         upgradeController(creep)
     }
     else {
-        harvestEngry(creep)
+        getEngry(creep)
     }
 }
 
