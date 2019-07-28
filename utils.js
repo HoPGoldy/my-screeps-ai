@@ -37,8 +37,25 @@ const updateState = (creep, workingMsg) => {
     return creep.memory.working
 }
 
+/**
+ * 获取旗子周边最近的指定结构
+ * 只能搜索自己的结构 FIND_MY_STRUCTURES
+ * 
+ * @param {object} flag 旗子对象
+ * @param {string} STRUCTURE_NAME 结构名称，STRUCTURE_*
+ * @returns {object|undefined} 指定的结构对象 没找到则返回undefined
+ */
+function getClosestStructureByFlag(flag, STRUCTURE_NAME) {
+    return flag.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+        filter: structure => {
+            return structure.structureType === STRUCTURE_NAME
+        }
+    })
+}
+
 
 module.exports = {
     harvestEngry,
-    updateState
+    updateState,
+    getClosestStructureByFlag
 }

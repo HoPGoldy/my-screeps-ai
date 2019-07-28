@@ -2,11 +2,14 @@
 // 添加新角色只需要在这里添加对应关系即可
 const roleMap = {
     worker: require('role.worker'),
+    harvester: require('role.harvester'),
     upgrader: require('role.upgrader'),
     builder: require('role.builder'),
     transfer: require('role.transfer'),
     repairer: require('role.repairer'),
     defender: require('role.defender'),
+    soldier: require('role.soldier'),
+    claimer: require('role.claimer'),
 }
 
 /**

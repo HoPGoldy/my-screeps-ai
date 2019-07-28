@@ -3,6 +3,10 @@ const upgrader = require('role.upgrader')
 const { harvestEngry, updateState } = require('utils')
 
 const run = (creep) => {
+    // if (creep.room.name != 'W48S6') {
+    //     creep.moveTo(new RoomPosition(24, 21, 'W48S6'))
+    //     return
+    // }
     const working = updateState(creep, '🚧 建造')
 
     if (working) {

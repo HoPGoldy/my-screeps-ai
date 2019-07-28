@@ -6,22 +6,41 @@
  * @param bodys 身体的组成部分
  * @param number 该 creep 的数量
  */
-const W47S6 = [
+const W48S6 = [
     {
         role: 'worker',
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        number: 2
+    }, {
+        role: 'upgrader',
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        number: 1
+    }, {
+        role: 'repairer',
+        bodys: [WORK, CARRY, MOVE],
+        number: 1
+    }, {
+        role: 'builder',
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        number: 1
+    }
+]
+const W47S6 = [
+    {
+        role: 'harvester',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         role: 'upgrader',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
-        number: 2
+        number: 1
     }, {
         role: 'transfer',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
         role: 'builder',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         role: 'repairer',
@@ -31,7 +50,12 @@ const W47S6 = [
         role: 'defender',
         bodys: [TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
         number: 4
-    }
+    }, {
+        role: 'claimer',
+        bodys: [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, CLAIM],
+        number: 0
+    },
+
 ]
 
 // 新 creep 的默认记忆
@@ -48,6 +72,6 @@ const myInfo = {
 
 module.exports = {
     creepDefaultMemory,
-    creepsNumberConfig: { W47S6 },
+    creepsNumberConfig: { W47S6, W48S6 },
     myInfo
 }

@@ -12,10 +12,13 @@ const run = (creep) => {
         })
 
         if(targets.length > 0) {
-            /**
-             * @todo 可以自主寻找防御塔进行运输
-             */
-            transformTo(creep, targets[0])
+            // 找到能量最少的那个 tower
+            const target = targets.reduce((smallTarget, target) => {
+                // console.log(smallTarget.enrgy, target.enrgy)
+                return smallTarget.enrgy < target.enrgy ? smallTarget : target
+            })
+            
+            transformTo(creep, target)
         }
     }
     else {
