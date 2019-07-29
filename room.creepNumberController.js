@@ -59,7 +59,7 @@ const createNewCreep = (Spawn, creepType, creepBodys) => {
     let spawnResult = Spawn.spawnCreep(creepBodys, creepName, creepMemory)
     
     // 如果能量不足并且挖矿 creep 都死了，则构建简单 creep
-    if (spawnResult == ERR_NOT_ENOUGH_ENERGY && getCreepByRole('worker', Spawn.room.name).length <= 0) {
+    if (spawnResult == ERR_NOT_ENOUGH_ENERGY && getCreepByRole('harvester', Spawn.room.name).length <= 0) {
         Spawn.spawnCreep([WORK, CARRY, MOVE], creepName, creepMemory)
     }
 }

@@ -21,8 +21,12 @@ const W48S6 = [
         number: 1
     }, {
         role: 'builder',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
+    }, {
+        role: 'transfer',
+        bodys: [CARRY, CARRY, MOVE],
+        number: 1
     }
 ]
 const W47S6 = [
@@ -36,7 +40,7 @@ const W47S6 = [
         number: 1
     }, {
         role: 'transfer',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [CARRY, CARRY, MOVE, CARRY, CARRY, MOVE],
         number: 1
     }, {
         role: 'builder',
@@ -49,7 +53,7 @@ const W47S6 = [
     }, {
         role: 'defender',
         bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
-        number: 2
+        number: 1
     }, {
         role: 'claimer',
         bodys: [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, CLAIM],
