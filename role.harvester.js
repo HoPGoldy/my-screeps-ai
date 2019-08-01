@@ -1,4 +1,4 @@
-const { harvestEngry, updateState, getClosestStructureByFlag } = require('utils')
+const { updateState, getClosestStructureByFlag } = require('utils')
 const havestPath = require('moveSetting').getPath('havest')
 const roleTransfer = require('role.transfer')
 
@@ -13,6 +13,18 @@ function run(creep) {
     }
     else {
         harvestEngry(creep)
+    }
+}
+
+function harvestEngry(creep) {
+    const sourceId = creep.memory.sourceId
+    const closestSource = sourceId ? 
+        Game.getObjectById(sourceId) : 
+        creep.pos.findClosestByPath(FIND_SOURCES)
+
+    // 挖掘实现
+    if (creep.harvest(closestSource, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(closestSource, havestPath)
     }
 }
 
