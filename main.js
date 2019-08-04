@@ -2,8 +2,8 @@
 const distributeWork = require('role')
 // 引入房间工作
 const roomWork = require('room')
-// 引入结构工作
-const structureWork = require('structureWork')
+
+const { getRunTime } = require('utils')
 
 /**
  * 获取房间名
@@ -28,8 +28,8 @@ const clearDiedCreep = () => {
 
     for(var name in Memory.creeps) {
         if(!Game.creeps[name]) {
-            delete Memory.creeps[name];
-            console.log('清除死去蠕虫记忆', name);
+            delete Memory.creeps[name]
+            console.log('清除死去蠕虫记忆', name)
         }
     }
 }
@@ -40,8 +40,6 @@ module.exports.loop = function() {
         // 执行房间内的工作
         roomWork(roomName)
     }
-
-    structureWork.towerWork()
 
     // 遍历每一个蠕虫
     for (const creepName in Game.creeps) {

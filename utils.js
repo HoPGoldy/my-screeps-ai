@@ -62,20 +62,27 @@ const updateState = (creep, workingMsg) => {
  * 只能搜索自己的结构 FIND_MY_STRUCTURES
  * 
  * @param {object} flag 旗子对象
- * @param {string} STRUCTURE_NAME 结构名称，STRUCTURE_*
+ * @param {string} STRUCTURE_TYPE 结构名称，STRUCTURE_*
  * @returns {object|undefined} 指定的结构对象 没找到则返回undefined
  */
-function getClosestStructureByFlag(flag, STRUCTURE_NAME) {
-    return flag.pos.findClosestByRange(FIND_MY_STRUCTURES, {
-        filter: structure => {
-            return structure.structureType === STRUCTURE_NAME
-        }
-    })
+function getClosestStructureByFlag(flag, STRUCTURE_TYPE) {
+    const targets = flag.room.lookForAtArea(LOOK_STRUCTURES, flag.pos.y, flag.pos.x, flag.pos.y, flag.pos.x, true)
+
+    return targets.find(target => target.structure.structureType = STRUCTURE_TYPE)
+}
+
+function getRunTime(func, ...args) {
+    const startTime = new Date().getTime()
+    func(...args)
+    const endTime = new Date().getTime()
+
+    console.log(`代码块执行共用时 ${endTime - startTime} 毫秒`)
 }
 
 module.exports = {
     harvestEngry,
     getEngry,
     updateState,
-    getClosestStructureByFlag
+    getClosestStructureByFlag,
+    getRunTime
 }

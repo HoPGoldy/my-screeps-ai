@@ -9,11 +9,11 @@
 const W48S6 = [
     {
         role: 'harvester',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         role: 'upgrader',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
         role: 'repairer',
@@ -27,7 +27,11 @@ const W48S6 = [
         role: 'transfer',
         bodys: [CARRY, CARRY, MOVE],
         number: 1
-    }
+    }, {
+        role: 'defender',
+        bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, HEAL],
+        number: 2
+    },
 ]
 const W47S6 = [
     {
@@ -41,7 +45,7 @@ const W47S6 = [
     }, {
         role: 'transfer',
         bodys: [CARRY, CARRY, MOVE, CARRY, CARRY, MOVE],
-        number: 1
+        number: 0
     }, {
         role: 'builder',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
@@ -52,7 +56,7 @@ const W47S6 = [
         number: 1
     }, {
         role: 'defender',
-        bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE],
+        bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, HEAL],
         number: 1
     }, {
         role: 'claimer',
@@ -65,7 +69,7 @@ const W47S6 = [
 // 新 creep 的默认记忆
 const creepDefaultMemory = {
     memory: {
-        role: 'worker',
+        role: 'harvester',
         working: false
     }
 }

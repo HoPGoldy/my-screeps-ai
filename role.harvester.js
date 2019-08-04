@@ -22,6 +22,7 @@ function harvestEngry(creep) {
         Game.getObjectById(sourceId) : 
         creep.pos.findClosestByPath(FIND_SOURCES)
 
+
     // 挖掘实现
     if (creep.harvest(closestSource, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) {
         creep.moveTo(closestSource, havestPath)
@@ -35,17 +36,22 @@ function harvestEngry(creep) {
  * @returns {boolean} 可以工作返回 true, 不可以工作返回 false
  */
 function checkSource(creep) {
+    
     const sourcesMap = Memory[creep.room.name].sourcesMap
     // 如果只剩 10 ticks 的生命，则主动注销自己与矿的绑定
-    if (creep.ticksToLive <= 10) {
+    if (creep.ticksToLive <= 50) {
+        creep.say('我快不行了！')
         Memory[creep.room.name].sourcesMap[creep.memory.sourceId] = null
         return true
     }
     // 检查内存中是否包含 sourceId，没有的话尝试在 sourcesMap 中进行查找
-    if (creep.memory.sourceId) {
+    if (creep.memory.sourceId && creep.memory.sourceId != 'undefined') {
         return true
     }
     else {
+        if (creep.name == 'harvester9241251') {
+            console.log(typeof creep.memory.sourceId)
+        }
         let availableSourceId = null
         // 检查到可用矿源就 break
         for (const sourceId in sourcesMap) {
@@ -59,8 +65,10 @@ function checkSource(creep) {
             creep.memory.sourceId = availableSourceId
             Memory[creep.room.name].sourcesMap[creep.memory.sourceId] = creep.name
         }
-        else console.log(`${creep.name} 未找到可用的矿源`)
-       
+        else {
+            console.log(`${creep.name} 未找到可用的矿源，情况 sourceMap`)
+            clearSoureceMap(creep)
+        }
     }
 }
 
@@ -128,6 +136,20 @@ function getStoreStructure(creep) {
     }
 
     return storeStructure
+}
+
+/**
+ * 清空资源 sourceMap
+ * 本方法为应急措施，sourceMap 主要由 creep 在濒死时取消注册
+ * 但是若 creep 被杀死，则无法正常取消注册，就会导致其他新的 creep 无法从 sourceMap 中获取可用的资源
+ * 从而卡死
+ * 
+ * @param {object} creep 
+ */
+function clearSoureceMap(creep) {
+    for (const sourceId in Memory[creep.room.name].sourcesMap) {
+        Memory[creep.room.name].sourcesMap[sourceId] = null
+    }
 }
 
 module.exports = {

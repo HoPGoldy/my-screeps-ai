@@ -19,9 +19,7 @@ const scan = (room) => {
  * @returns {array|null} 搜索到的敌人 没找到则返回 null
  */
 const getEnermy = (room) => {
-    const enemys = room.find(FIND_CREEPS, {
-        filter: creep => creep.owner.username != myInfo.name
-    })
+    const enemys = room.find(FIND_HOSTILE_CREEPS)
 
     return enemys ? enemys : null
 }
