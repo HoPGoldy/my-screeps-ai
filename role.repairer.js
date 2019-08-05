@@ -13,9 +13,10 @@ const run = (creep) => {
 }
 
 /**
- * 修复生命值低于 40% 的结构
+ * 修复结构
+ * @todo 修复城墙
  * 
- * @param {object} creep 
+ * @param {object} creep
  */
 const repair = (creep) => {
     const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {

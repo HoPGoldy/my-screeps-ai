@@ -6,7 +6,7 @@ function run(creep) {
     if (!checkSource(creep)) return false
 
     // harvester 型 creep 的工作就是将能量带回存储点
-    if (updateState(creep, '🚚 转移')) {
+    if (updateState(creep, '🚚 转移', callBack)) {
         if (!carryBack(creep)) {
             roleTransfer.run(creep)
         }
@@ -29,6 +29,10 @@ function harvestEngry(creep) {
     }
 }
 
+function callBack(creep, working) {
+    console.log(`${creep.name} 回调触发！工作状态 ${working}`)
+}
+
 /**
  * 检查资源点状态
  * 
@@ -49,9 +53,6 @@ function checkSource(creep) {
         return true
     }
     else {
-        if (creep.name == 'harvester9241251') {
-            console.log(typeof creep.memory.sourceId)
-        }
         let availableSourceId = null
         // 检查到可用矿源就 break
         for (const sourceId in sourcesMap) {
@@ -98,39 +99,29 @@ function carryBack(creep) {
 
 /**
  * 查找可以存储的结构
- * 优先级 插着旗子的容器 > 拓展 > 出生点
- * 插着旗子的容器，旗子名字为 "房间名 + store + 矿id"
+ * 优先级 拓展 > 出生点 > 容器
  * 
  * @param {object} creep 
  * @returns {object|undefined} 指定结构，找不到就返回 undefined
  */
 function getStoreStructure(creep) {
-    let storeStructure = undefined
-    // 先找旗子
-    const storeFlag = Game.flags[`${creep.room.name} store ${creep.memory.sourceId}`]
-    // 有旗子就根据旗子找结构，没有就找容器或者出生点
-    if (storeFlag) {
-        storeStructure = getStructureByFlag(storeFlag, STRUCTURE_CONTAINER)
-        
-        if (!storeStructure) console.log(`${storeFlag} 附近没有可用的 container`)
-        else creep.memory.storeStructureId = storeStructure.id
-    }
-    else {
+    let storeStructure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: structure => {
+            /**
+             * 条件优先满足：能量没有到达上限
+             * 然后根据排序挑选建筑：拓展 > 重生点
+             */
+            return (structure.energy < structure.energyCapacity) && (
+                structure.structureType == STRUCTURE_EXTENSION ||
+                structure.structureType == STRUCTURE_SPAWN)
+        }
+    })
+    if (!storeStructure) {
         storeStructure = creep.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: structure => {
-                /**
-                 * 条件优先满足：能量没有到达上限
-                 * 然后根据排序挑选建筑：拓展 > 重生点 > 容器
-                 */
-                if (structure.structureType == STRUCTURE_EXTENSION || structure.structureType == STRUCTURE_SPAWN) {
-                    return structure.energy < structure.energyCapacity
-                }
-                else if (structure.structureType == STRUCTURE_CONTAINER) {
-                    return _.sum(structure.store) < structure.storeCapacity
-                }
-                else {
-                    return false
-                }
+                // 查找容器
+                return structure.structureType == STRUCTURE_CONTAINER && 
+                       _.sum(structure.store) < structure.storeCapacity
             }
         })
     }

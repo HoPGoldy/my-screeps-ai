@@ -39,19 +39,22 @@ function getEngry(creep) {
  * 
  * @param {object} creep 
  * @param {object} workingMsg 切换为工作状态时的语音提示
+ * @param {function} callBack 状态切换时触发的回调
  */
-const updateState = (creep, workingMsg) => {
+const updateState = (creep, workingMsg='🧰 工作', callBack=()=>{}) => {
     // creep 身上没有能量 && creep 之前的状态为“工作”
     if(creep.carry.energy <= 0 && creep.memory.working) {
         // 切换状态
         creep.memory.working = false
         creep.say('⚡ 挖矿')
+        callBack(creep, creep.memory.working)
     }
     // creep 身上能量满了 && creep 之前的状态为“不工作”
     if(creep.carry.energy >= creep.carryCapacity && !creep.memory.working) {
         // 切换状态
         creep.memory.working = true
         creep.say(workingMsg)
+        callBack(creep, creep.memory.working)
     }
 
     return creep.memory.working

@@ -9,43 +9,43 @@
 const W48S6 = [
     {
         role: 'harvester',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         role: 'upgrader',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
         role: 'repairer',
-        bodys: [WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
         role: 'builder',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         role: 'transfer',
-        bodys: [CARRY, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
         role: 'defender',
         bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, HEAL],
-        number: 2
+        number: 1
     },
 ]
 const W47S6 = [
     {
         role: 'harvester',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 2
     }, {
         role: 'upgrader',
-        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
         number: 1
     }, {
         role: 'transfer',
-        bodys: [CARRY, CARRY, MOVE, CARRY, CARRY, MOVE],
-        number: 0
+        bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
+        number: 1
     }, {
         role: 'builder',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE],
@@ -57,13 +57,8 @@ const W47S6 = [
     }, {
         role: 'defender',
         bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, HEAL],
-        number: 1
-    }, {
-        role: 'claimer',
-        bodys: [TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, CLAIM],
-        number: 0
-    },
-
+        number: 2
+    }
 ]
 
 // 新 creep 的默认记忆

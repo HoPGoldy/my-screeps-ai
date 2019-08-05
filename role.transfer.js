@@ -4,8 +4,8 @@ const run = (creep) => {
     const working = updateState(creep, '🚚 转移')
     
     if (working) {
-        if (workExtensionTransfer(creep)) { }
-        else workTowerTransfer(creep)
+        if (workTowerTransfer(creep)) { }
+        else workExtensionTransfer(creep)
     }
     else {
         getEngry(creep)
@@ -33,26 +33,19 @@ function workExtensionTransfer(creep) {
 
 /**
  * 向 tower 转移能量
- * 目标是能量最低的 tower
- * @param {object} creep 
+ * 目标是最近的 tower
+ * 
+ * @param {object} creep
+ * @returns {boolean} 执行任务返回true，不执行任务返回false
  */
 function workTowerTransfer(creep) {
-    const targets = creep.room.find(FIND_STRUCTURES, {
-        filter: (structure) => {
-            // 结构为塔
-            return structure.structureType == STRUCTURE_TOWER
-        }
+    const target = creep.pos.findClosestByPath(FIND_STRUCTURES, {
+        filter: structure => structure.structureType == STRUCTURE_TOWER && 
+                             structure.energy < structure.energyCapacity
     })
 
-    if(targets.length > 0) {
-        // 找到能量最少的那个 tower
-        const target = targets.reduce((smallTarget, target) => {
-            // console.log(smallTarget.enrgy, target.enrgy)
-            return smallTarget.enrgy < target.enrgy ? smallTarget : target
-        })
-        
-        transformTo(creep, target)
-    }
+    transformTo(creep, target)
+    return target ? true : false
 }
 
 /**
