@@ -70,6 +70,7 @@ const W47S6 = [
 const creepDefaultMemory = {
     memory: {
         role: 'harvester',
+        room: '',
         working: false
     }
 }

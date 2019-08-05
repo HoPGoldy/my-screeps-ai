@@ -24,22 +24,18 @@ const numberController = (room) => {
  * @returns {boolean} 是否需要/正在生成蠕虫
  */
 const creepController = (creepConfig, room) => {
-    /**
-     * 查找出生点
-     * @todo 使用房间内其他出生点, 现在只用了第一个出生点
-     */
-    const Home = room.find(FIND_STRUCTURES, {
-        filter: s => s.structureType == STRUCTURE_SPAWN
-    })[0]
-
     const creeps = getCreepByRole(creepConfig.role, room.name)
     // 如果数量不够了 && 基地没在生成
     if (creeps.length < creepConfig.number && !Home.spawning) {
         console.log(`蠕虫类型: ${creepConfig.role} 存活数量低于要求 (${creeps.length}/${creepConfig.number}) 正在生成...`)
-        
-        // 生成新的 creep
-        createNewCreep(Home, creepConfig.role, creepConfig.bodys)
-        return true
+        // 获取可用的出生点
+        const spawns = getActiveSpawn(room)
+
+        if (spawns.length > 0) {
+            // 生成新的 creep
+            createNewCreep(spawns[0], creepConfig.role, creepConfig.bodys)
+            return spawns.length > 1 ? true : false
+        }
     }
     return false
 }
@@ -52,9 +48,10 @@ const creepController = (creepConfig, room) => {
  * @param {array} creepBodys 蠕虫的身体组成
  */
 const createNewCreep = (Spawn, creepType, creepBodys) => {
-    const creepName = creepType + Game.time
+    const creepName = Spawn.roome.name + '' + creepType + Game.time
     let creepMemory = _.cloneDeep(creepDefaultMemory)
     creepMemory.memory.role = creepType
+    creepMemory.memory.roome = Spawn.roome.name
 
     let spawnResult = Spawn.spawnCreep(creepBodys, creepName, creepMemory)
     
@@ -73,6 +70,19 @@ const createNewCreep = (Spawn, creepType, creepBodys) => {
  */
 const getCreepByRole = (role, roomName) => {
     return _.filter(Game.creeps, creep => (creep.memory.role == role) && (creep.room.name == roomName))
+}
+
+/**
+ * 获取房间内可用的 spawn
+ * 可用：当前没有生成 creep
+ * 
+ * @param {object} room 进行查找的房间对象
+ * @returns {array|undefined} 满足条件的 spawn，没找到则返回 undefined
+ */
+function getActiveSpawn(room) {
+    return room.find(FIND_MY_SPAWNS, {
+        filter: spawn => spawn.spawning == null
+    })
 }
 
 module.exports = numberController
