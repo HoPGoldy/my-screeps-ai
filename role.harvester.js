@@ -1,4 +1,4 @@
-const { updateState, getClosestStructureByFlag } = require('utils')
+const { updateState, getStructureByFlag } = require('utils')
 const havestPath = require('moveSetting').getPath('havest')
 const roleTransfer = require('role.transfer')
 
@@ -110,7 +110,7 @@ function getStoreStructure(creep) {
     const storeFlag = Game.flags[`${creep.room.name} store ${creep.memory.sourceId}`]
     // 有旗子就根据旗子找结构，没有就找容器或者出生点
     if (storeFlag) {
-        storeStructure = getClosestStructureByFlag(storeFlag, STRUCTURE_CONTAINER)
+        storeStructure = getStructureByFlag(storeFlag, STRUCTURE_CONTAINER)
         
         if (!storeStructure) console.log(`${storeFlag} 附近没有可用的 container`)
         else creep.memory.storeStructureId = storeStructure.id
