@@ -1,5 +1,11 @@
 const { getEngry, updateState } = require('utils')
 
+/**
+ * 运输者入口
+ * @todo 搬运地上的垃圾
+ * 
+ * @param {object} creep 
+ */
 const run = (creep) => {
     const working = updateState(creep, '🚚 转移')
     

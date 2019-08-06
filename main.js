@@ -2,8 +2,8 @@
 const distributeWork = require('role')
 // 引入房间工作
 const roomWork = require('room')
-
-const { getRunTime } = require('utils')
+// 挂载战斗模块
+// require('battle')()
 
 /**
  * 获取房间名

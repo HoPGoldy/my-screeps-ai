@@ -22,15 +22,24 @@ const repair = (creep) => {
     const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: structure => {            
             return structure.hits < (structure.hitsMax) &&
-                   structure.structureType != STRUCTURE_WALL
+                   structure.structureType != STRUCTURE_WALL &&
+                   structure.structureType != STRUCTURE_RAMPART
         }
     })
     
-    if (target) {
-        // 修复结构实现
-        if(creep.repair(target) == ERR_NOT_IN_RANGE) {
-            creep.moveTo(target, havestPath)
-        }
+    if (!target) {
+        target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: structure => {            
+                return structure.hits < (structure.hitsMax / 0.5) &&
+                       structure.structureType == STRUCTURE_WALL &&
+                       structure.structureType == STRUCTURE_RAMPART
+            }
+        })
+    }
+
+    // 修复结构实现
+    if(creep.repair(target) == ERR_NOT_IN_RANGE) {
+        creep.moveTo(target, havestPath)
     }
 }
 

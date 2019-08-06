@@ -30,7 +30,7 @@ function harvestEngry(creep) {
 }
 
 function callBack(creep, working) {
-    console.log(`${creep.name} 回调触发！工作状态 ${working}`)
+    // console.log(`${creep.name} 回调触发！工作状态 ${working}`)
 }
 
 /**

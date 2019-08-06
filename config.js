@@ -53,7 +53,7 @@ const W47S6 = [
     }, {
         role: 'repairer',
         bodys: [WORK, CARRY, MOVE, WORK, CARRY, MOVE],
-        number: 1
+        number: 2
     }, {
         role: 'defender',
         bodys: [TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, ATTACK, MOVE, HEAL],
