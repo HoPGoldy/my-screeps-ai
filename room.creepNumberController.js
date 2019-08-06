@@ -38,10 +38,12 @@ const createNewCreep = (spawn, creepConfig) => {
     const creepName = spawn.room.name + ' ' + creepConfig.role + Game.time
     //初始化 creep 内存
     let creepMemory = _.cloneDeep(creepDefaultMemory)
-    creepMemory.memory.role = creepConfig.role
-    creepMemory.memory.room = spawn.room.name
+    creepMemory.role = creepConfig.role
+    creepMemory.room = spawn.room.name
 
-    let spawnResult = spawn.spawnCreep(creepConfig.bodys, creepName, creepMemory)
+    let spawnResult = spawn.spawnCreep(creepConfig.bodys, creepName, {
+        memory: creepMemory
+    })
     if (spawnResult == OK) {
         console.log(`${spawn.room.name} 正在生成 ${creepConfig.role}`)
     }
@@ -49,7 +51,9 @@ const createNewCreep = (spawn, creepConfig) => {
         console.log(`${spawn.room.name} 能量[${spawn.room.energyAvailable}]不足以生成 ${creepConfig.role} `)
         // 如果能量不足并且挖矿 creep 都死了，则构建简单 creep
         if (getCreepByRole('harvester', spawn.room.name).length <= 0) {
-            Spawn.spawnCreep([WORK, CARRY, MOVE], creepName, creepMemory)
+            spawn.spawnCreep([WORK, CARRY, MOVE], creepName, {
+                memory: creepMemory
+            })
         }
     }
 }

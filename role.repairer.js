@@ -14,12 +14,12 @@ const run = (creep) => {
 
 /**
  * 修复结构
- * @todo 修复城墙
+ * 优先修复房间结构，都修好的话再去修城墙
  * 
  * @param {object} creep
  */
 const repair = (creep) => {
-    const target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
+    let target = creep.pos.findClosestByRange(FIND_STRUCTURES, {
         filter: structure => {            
             return structure.hits < (structure.hitsMax) &&
                    structure.structureType != STRUCTURE_WALL &&
