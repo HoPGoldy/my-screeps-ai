@@ -70,8 +70,8 @@ const updateState = (creep, workingMsg='🧰 工作', callBack=()=>{}) => {
  */
 function getStructureByFlag(flag, STRUCTURE_TYPE) {
     const targets = flag.room.lookForAtArea(LOOK_STRUCTURES, flag.pos.y, flag.pos.x, flag.pos.y, flag.pos.x, true)
-
-    return targets.find(target => target.structure.structureType = STRUCTURE_TYPE)
+    const target = targets.find(target => target.structure.structureType = STRUCTURE_TYPE)
+    return target ? target.structure : undefined
 }
 
 function getRunTime(func, ...args) {

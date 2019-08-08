@@ -38,5 +38,5 @@ function spawnClaimer(roomName, bodys=[]) {
     if (spawnResult == OK) console.log(`${roomName} ${spawn.name} 正在生成 claimer`)
     else if (spawnResult == ERR_NOT_ENOUGH_ENERGY) console.log(`${roomName} 能量不足`)
 }
-
+   
 module.exports = mount

@@ -4,7 +4,8 @@ const pathMap = {
     havest: '#CCFF99',
     upgrade: '#99CCFF',
     build: '#FFCC99',
-    attack: '#DC143C' // 猩红
+    attack: '#DC143C', // 猩红
+    claimer: 'Indigo' //靛青
 }
 
 /**

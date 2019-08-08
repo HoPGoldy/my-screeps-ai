@@ -1,5 +1,5 @@
 const claimerConfig = {
-    body: [MOVE, MOVE, MOVE, HEAL, HEAL, CLAIM]
+    bodys: [MOVE, MOVE, MOVE, HEAL, HEAL, CLAIM]
 }
 
 module.exports = {

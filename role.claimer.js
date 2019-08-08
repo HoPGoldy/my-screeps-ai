@@ -1,13 +1,25 @@
-const attackPath = require('moveSetting').getPath('attack')
+const claimerPath = require('moveSetting').getPath('claimer')
+const { getStructureByFlag } = require('utils')
+
+const CLAIM_FLAG_NAME = 'Claim'
 
 const run = (creep) => {
     // creep.moveTo(new RoomPosition(24, 21, 'W48S6'))
-    claim(creep, Game.getObjectById('5bbcaa719099fc012e6315f2'))
+    claim(creep)
 }
 
-const claim = (creep, target) => {
-    if (creep.claimController(target) == ERR_NOT_IN_RANGE) {
-        creep.moveTo(target.pos, attackPath)
+function claim(creep) {
+    const claimFlag = Game.flags[CLAIM_FLAG_NAME]
+    if (!claimFlag) {
+        console.log(`没有名为 ${CLAIM_FLAG_NAME} 的旗子`)
+        return false
+    }
+
+    creep.moveTo(claimFlag.pos, claimerPath)
+    if (claimFlag.room) {
+        const target = getStructureByFlag(claimFlag, STRUCTURE_CONTROLLER)
+        const claimResult = creep.claimController(target)
+        // console.log(claimResult == 0 ? '正在占领' : `${creep.name} 占领失败，错误码 ${claimResult}`)
     }
 }
 
