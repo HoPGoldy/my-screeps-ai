@@ -1,6 +1,13 @@
 const buildPath = require('moveSetting').getPath('build')
-const upgrader = require('role.upgrader')
+const support_roles = {
+    'harvester': require('role.harvester'),
+    'upgrader': require('role.upgrader')
+}
 const { updateState, getEngry } = require('utils')
+
+// 在没有任务时支援的角色
+// harvester upgrader
+SUPPORT_ROLE = 'upgrader'
 
 const run = (creep) => {
     // if (creep.room.name != 'W48S6') {
@@ -16,9 +23,9 @@ const run = (creep) => {
         if (targets.length > 0) {
             build(creep, targets[0])
         }
-        // 找不到就变身 upgrader
+        // 找不到就变身 SUPPORT_ROLE
         else {
-            upgrader.run(creep)
+            support_roles[SUPPORT_ROLE].run(creep)
         }
     }
     else {
