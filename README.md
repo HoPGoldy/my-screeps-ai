@@ -1,6 +1,6 @@
 # my-screeps-ai
 
-适用于游戏《[screeps](https://screeps.com/a/#!/map/shard3)》的半自动 ai
+适用于游戏《[screeps](https://screeps.com/a/#!/map)》的半自动 ai
 
 ## 准备
 
