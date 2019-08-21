@@ -45,7 +45,7 @@ module.exports = function(grunt) {
         // 代码监听任务
         'watch': {
             files: "src/*.*",
-            tasks: [ "screeps" ]
+            tasks: [ "ts" ]
         }
     })
 }
