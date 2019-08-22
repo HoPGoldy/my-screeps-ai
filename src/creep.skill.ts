@@ -2,6 +2,7 @@ interface ICreepSkill {
     fillSpawnEngry(): boolean
     fillTower(): boolean
     buildStructure(): boolean
+    getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void
     transferTo(target: Structure, RESOURCE: ResourceConstant): void
     getObjectById<T>(id: string|undefined): T|null
 }
@@ -26,6 +27,7 @@ export const creepSkill: ICreepSkill = {
         this.transferTo(target, RESOURCE_ENERGY)
         return true
     },
+
     /**
      * 填充本房间内所有 tower
      */
@@ -40,6 +42,7 @@ export const creepSkill: ICreepSkill = {
         this.transferTo(target, RESOURCE_ENERGY)
         return true
     },
+
     /**
      * 建设房间内存在的建筑工地
      */
@@ -56,18 +59,33 @@ export const creepSkill: ICreepSkill = {
             return false
         }
     },
+
+    /**
+     * 从目标结构获取资源
+     * 
+     * @param target 提供资源的结构
+     * @param getFunc 获取资源使用的方法名，必须是 Creep 原型上的，例如"harvest", "withdraw"
+     * @param args 传递给上面方法的参数列表
+     */
+    getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void {
+        if (this[getFunc](target, ...args) == ERR_NOT_IN_RANGE) {
+            this.moveTo(target)
+        }
+    },
+
     /**
      * 转移资源到结构
      * 
-     * @param {Structure} target 要转移到的目标
-     * @param {ResourceConstant} RESOURCE 要转移的资源类型
+     * @param target 要转移到的目标
+     * @param RESOURCE 要转移的资源类型
      */
-    transferTo(target, RESOURCE) {
+    transferTo(target: Structure, RESOURCE: ResourceConstant): void {
         // 转移能量实现
         if(this.transfer(target, RESOURCE) == ERR_NOT_IN_RANGE) {
             this.moveTo(target)
         }
     },
+
     /**
      * 通过 id 获取对象
      * @param id 游戏中的对象id 

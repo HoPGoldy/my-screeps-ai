@@ -49,3 +49,10 @@ interface ICreepConfig {
 interface ICreepConfigs {
     [creepName: string]: ICreepConfig
 }
+
+/**
+ * 从路径名到颜色的映射表
+ */
+interface IPathMap {
+    [propName: string]: string
+}

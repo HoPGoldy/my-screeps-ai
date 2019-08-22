@@ -1,7 +1,3 @@
-interface IPathMap {
-    [propName: string]: string
-}
-
 // 路径名到颜色的对应列表
 const pathMap: IPathMap = {
     default: '#ffffff',
