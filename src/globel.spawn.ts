@@ -8,7 +8,7 @@ import { creepConfigs } from './config.creep'
  * 
  * @returns 没有 Memory.spawnList 返回 false, 其他返回 true
  */
-export function spawnWork(): boolean {
+export default function (): boolean {
     if (!hasSpawnList()) return false
     const spawnList: string[] = Memory.spawnList
 
@@ -50,7 +50,8 @@ function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
     const spawnResult = spawn.spawnCreep(creepConfig.bodys, configName + Game.time, {
         memory: {
             role: configName,
-            working: false
+            working: false,
+            hasSendRebirth: false
         }
     })
     // 检查是否生成成功

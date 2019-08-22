@@ -12,10 +12,12 @@ interface Memory {
  * creep 内存拓展
  * @property role crep的角色
  * @property working 是否在工作
+ * @property hasSendRebirth 是否已经往 spwan 队列中推送了自己的重生任务
  */
 interface CreepMemory {
     role: string
     working: boolean
+    hasSendRebirth: boolean
 }
 
 /**

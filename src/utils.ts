@@ -64,3 +64,35 @@ export function updateState (creep: Creep, workingMsg: string='🧰 工作', onS
 
     return creep.memory.working
 }
+
+/**
+ * 死亡 creep 记忆清除
+ * 每 1000 tick 执行一次清理
+ */
+export function clearDiedCreep (): boolean {
+    // 每 1000 tick 执行一次
+    if (Game.time % 1000) return false
+
+    for(const name in Memory.creeps) {
+        if(!Game.creeps[name]) {
+            delete Memory.creeps[name]
+            console.log('清除死去蠕虫记忆', name)
+        }
+    }
+    return true
+}
+
+/**
+ * 获取自己控制的房间名
+ * 自己控制: 有自己 spawn 的房间
+ * 使用 lodash uniq 方法去重
+ * 
+ * @returns {list} 自己占领的房间名列表
+ */
+export function getRoomList (): string[] {
+    let rooms: string[] = []
+    for (const spawnName in Game.spawns) {
+        rooms.push(Game.spawns[spawnName].room.name)
+    }
+    return _.uniq(rooms)
+}
