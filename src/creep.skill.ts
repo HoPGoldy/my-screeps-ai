@@ -1,17 +1,8 @@
-interface ICreepSkill {
-    fillSpawnEngry(): boolean
-    fillTower(): boolean
-    buildStructure(): boolean
-    getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void
-    transferTo(target: Structure, RESOURCE: ResourceConstant): void
-    getObjectById<T>(id: string|undefined): T|null
-}
-
 /**
  * Creep 原型拓展 - 技能
  * 为每个 creep 添加的工作方法
  */
-export const creepSkill: ICreepSkill = {
+export default {
     /**
      * 填充本房间内所有 extension
      */
