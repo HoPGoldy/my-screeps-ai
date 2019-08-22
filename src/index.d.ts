@@ -1,6 +1,21 @@
-<<<<<<< HEAD
 declare var module: any
-=======
-declare var module: any
-declare var Creep: any
->>>>>>> feat: creepConfig
+
+interface Memory {
+    spawnList: string[]
+}
+
+interface IWorkOperation {
+    func: string
+    args: any[]
+}
+
+interface ICreepConfig {
+    source: IWorkOperation
+    target: IWorkOperation
+    spawn: string
+    bodys: BodyPartConstant[]
+}
+
+interface ICreepConfigs {
+    [creepName: string]: ICreepConfig
+}

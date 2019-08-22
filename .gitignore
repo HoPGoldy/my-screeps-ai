@@ -4,4 +4,4 @@ dist/
 
 secret.js
 
-.tscache/*
+.tscache/
