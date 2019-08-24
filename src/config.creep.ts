@@ -12,3 +12,9 @@ export const creepConfigs: ICreepConfigs = {
         bodys: [ WORK, CARRY, MOVE]
     }
 }
+
+export const creepDefaultMemory: CreepMemory = {
+    role: '',
+    working: false,
+    hasSendRebirth: false
+}

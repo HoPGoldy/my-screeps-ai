@@ -1,4 +1,5 @@
 declare var module: any
+declare var global: any
 
 /**
  * Memory 内存拓展
@@ -18,6 +19,7 @@ interface CreepMemory {
     role: string
     working: boolean
     hasSendRebirth: boolean
+    squad?: number
 }
 
 /**

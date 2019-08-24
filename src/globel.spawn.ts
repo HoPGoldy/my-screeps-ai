@@ -1,4 +1,4 @@
-import { creepConfigs } from './config.creep'
+import { creepConfigs, creepDefaultMemory } from './config.creep'
 
 /**
  * 进行生产的主入口函数
@@ -46,13 +46,12 @@ function hasSpawnList(): boolean {
  */
 function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
     const creepConfig = creepConfigs[configName]
+    // 设置 creep 内存
+    let creepMemory = _.cloneDeep(creepDefaultMemory)
+    creepMemory.role = configName
 
     const spawnResult = spawn.spawnCreep(creepConfig.bodys, configName + Game.time, {
-        memory: {
-            role: configName,
-            working: false,
-            hasSendRebirth: false
-        }
+        memory: creepMemory
     })
     // 检查是否生成成功
     if (spawnResult == OK) {
