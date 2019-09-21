@@ -9,7 +9,7 @@ export const creepConfigs: ICreepConfigs = {
             args: [ '321' ]
         },
         spawn: 'Spawn1',
-        bodys: [ WORK, CARRY, MOVE]
+        bodys: [ WORK, CARRY, MOVE ]
     }
 }
 

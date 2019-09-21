@@ -1,6 +1,6 @@
-import creepWork from './globel.creep'
-import spawnWork from './globel.spawn'
-import roomWork from './globel.room'
+import creepWork from './global.creep'
+import spawnWork from './global.spawn'
+import roomWork from './global.room'
 import mountWork from './mount'
 import { clearDiedCreep } from './utils'
 

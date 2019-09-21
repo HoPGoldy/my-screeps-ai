@@ -2,7 +2,11 @@
  * Creep 原型拓展 - 技能
  * 为每个 creep 添加的工作方法
  */
-export default {
+export default function () {
+    Object.assign(Creep, creepExtension)
+}
+
+const creepExtension = {
     /**
      * 填充本房间内所有 extension
      */
