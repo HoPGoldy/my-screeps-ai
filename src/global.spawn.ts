@@ -12,15 +12,13 @@ export default function (): boolean {
     if (!hasSpawnList()) return false
     const spawnList: string[] = Memory.spawnList
 
-    // 完成的任务索引，下面这个 for 执行完后会统一弹出完成的任务
+    // 完成的任务索引，下面这个 for 执行完后会统一移除完成的任务
     let complateSpawnIndexList: number[] = []
     
     // 循环队列中的任务并尝试完成
     for (let index = 0; index < spawnList.length; index++) {
         // 任务完成则加入完成列表
         if (singleSpawnWork(spawnList[index])) complateSpawnIndexList.push(index)
-        // 未完成则进行下一个
-        else break
     }
 
     // 移除已完成的任务, 从最后一个移除，不然会影响索引定位
@@ -35,33 +33,6 @@ export default function (): boolean {
  */
 function hasSpawnList(): boolean {
     return Memory.spawnList ? true : false
-}
-
-/**
- * 从 spawn 生产 creep 
- * 
- * @param spawn 出生点
- * @param configName 对应的配置名称
- * @returns 开始生成返回 true, 否则返回 false
- */
-function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
-    const creepConfig = creepConfigs[configName]
-    // 设置 creep 内存
-    let creepMemory = _.cloneDeep(creepDefaultMemory)
-    creepMemory.role = configName
-
-    const spawnResult = spawn.spawnCreep(creepConfig.bodys, configName + Game.time, {
-        memory: creepMemory
-    })
-    // 检查是否生成成功
-    if (spawnResult == OK) {
-        console.log(`spawn ${creepConfig.spawn} 正在生成 ${configName} ...`)
-        return true
-    }
-    else {
-        console.log(`spawn ${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
-        return false
-    }
 }
 
 /**
@@ -92,4 +63,31 @@ function singleSpawnWork(configName: string): boolean {
 
     // 该任务正常完成！
     return true
+}
+
+/**
+ * 从 spawn 生产 creep 
+ * 
+ * @param spawn 出生点
+ * @param configName 对应的配置名称
+ * @returns 开始生成返回 true, 否则返回 false
+ */
+function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
+    const creepConfig = creepConfigs[configName]
+    // 设置 creep 内存
+    let creepMemory = _.cloneDeep(creepDefaultMemory)
+    creepMemory.role = configName
+
+    const spawnResult = spawn.spawnCreep(creepConfig.bodys, configName + Game.time, {
+        memory: creepMemory
+    })
+    // 检查是否生成成功
+    if (spawnResult == OK) {
+        console.log(`spawn ${creepConfig.spawn} 正在生成 ${configName} ...`)
+        return true
+    }
+    else {
+        console.log(`spawn ${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
+        return false
+    }
 }

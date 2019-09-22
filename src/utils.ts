@@ -80,7 +80,7 @@ export function clearDiedCreep (): boolean {
 
 /**
  * 获取自己控制的房间名
- * 自己控制: 有自己 spawn 的房间
+ * "自己控制": 有自己 spawn 的房间
  * 使用 lodash uniq 方法去重
  * 
  * @returns {list} 自己占领的房间名列表

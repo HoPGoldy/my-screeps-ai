@@ -7,7 +7,7 @@ import mountGlobal from './mount.global'
 export default function (): void {
     if (!global.hasExtension) {
         global.hasExtension = true
-        mountCreep()
         mountGlobal()
+        mountCreep()
     }
 }

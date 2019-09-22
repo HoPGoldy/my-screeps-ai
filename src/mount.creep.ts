@@ -8,7 +8,7 @@ export default function () {
 
 const creepExtension = {
     /**
-     * 填充本房间内所有 extension
+     * 填充本房间内所有 spawn 和 extension 
      */
     fillSpawnEngry() {
         let target: StructureExtension|StructureSpawn|undefined = this.pos.findClosestByPath(FIND_STRUCTURES, {
@@ -52,6 +52,36 @@ const creepExtension = {
         }
         else {
             return false
+        }
+    },
+
+    /**
+     * 维修房间内受损的建筑
+     * 
+     * 优先修复房间结构，都修好的话再去修 wall 和 rempart
+     */
+    repairStructure() {
+        let target = this.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: s => {            
+                return s.hits < (s.hitsMax) &&
+                       s.structureType != STRUCTURE_WALL &&
+                       s.structureType != STRUCTURE_RAMPART
+            }
+        })
+        
+        if (!target) {
+            target = this.pos.findClosestByRange(FIND_STRUCTURES, {
+                filter: s => {
+                    return s.hits < (s.hitsMax / 0.5) &&
+                           s.structureType == STRUCTURE_WALL &&
+                           s.structureType == STRUCTURE_RAMPART
+                }
+            })
+        }
+    
+        // 修复结构实现
+        if(this.repair(target) == ERR_NOT_IN_RANGE) {
+            this.moveTo(target)
         }
     },
 
