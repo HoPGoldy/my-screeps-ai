@@ -1,4 +1,5 @@
 import { creepConfigs, creepDefaultMemory } from './config.creep'
+import { globalExtension } from './mount.global'
 
 /**
  * 进行生产的主入口函数
@@ -9,6 +10,8 @@ import { creepConfigs, creepDefaultMemory } from './config.creep'
  * @returns 没有 Memory.spawnList 返回 false, 其他返回 true
  */
 export default function (): boolean {
+    syncCreepConfig()
+
     if (!hasSpawnList()) Memory.spawnList = []
     const spawnList: string[] = Memory.spawnList
 
@@ -90,4 +93,15 @@ function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
         console.log(`spawn ${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
         return false
     }
+}
+
+/**
+ * 定期从配置项同步，确保不会有 creep 异常死亡从而间断生成
+ */
+function syncCreepConfig(): boolean {
+    // 每 1000 tick 执行一次
+    if (Game.time % 1000) return false
+    // 同步配置项
+    console.log('[spawn] 同步配置项')
+    globalExtension.resetConfig()
 }

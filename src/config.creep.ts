@@ -15,7 +15,7 @@ export const creepConfigs: ICreepConfigs = {
     E1harvester1: role.harvester('ef990774d80108c', 'Spawn1'),
     E1upgrader1: role.upgrader('ef990774d80108c', 'Spawn1'),
     E1upgrader2: role.upgrader('ef990774d80108c', 'Spawn1'),
-    E1builder1: role.builder('ef990774d80108c', 'Spawn1'),
+    E1builder1: role.builder('ba3c0774d80c3a8', 'Spawn1'),
     E1builder2: role.builder('ef990774d80108c', 'Spawn1'),
     E1repairer1: role.repairer('ba3c0774d80c3a8', 'Spawn1')
 }

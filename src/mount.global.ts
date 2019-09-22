@@ -21,7 +21,7 @@ const funcAlias = [
 /**
  * 全局拓展对象
  */
-const globalExtension = {
+export const globalExtension = {
     /**
      * 从 config.creep 中重新应用配置
      */
