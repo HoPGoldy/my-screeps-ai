@@ -86,11 +86,11 @@ function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
     })
     // 检查是否生成成功
     if (spawnResult == OK) {
-        console.log(`spawn ${creepConfig.spawn} 正在生成 ${configName} ...`)
+        console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
         return true
     }
     else {
-        console.log(`spawn ${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
+        console.log(`${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
         return false
     }
 }
