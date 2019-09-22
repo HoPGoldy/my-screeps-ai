@@ -3,7 +3,7 @@
  * 为每个 creep 添加的工作方法
  */
 export default function () {
-    Object.assign(Creep, creepExtension)
+    _.assign(Creep.prototype, creepExtension)
 }
 
 const creepExtension = {
@@ -36,6 +36,15 @@ const creepExtension = {
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true
+    },
+
+    /**
+     * 填充本房间的 controller
+     */
+    upgrade() {
+        if(this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) {
+            this.moveTo(this.room.controller)
+        }
     },
 
     /**
@@ -90,7 +99,7 @@ const creepExtension = {
      * 
      * @param target 提供资源的结构
      * @param getFunc 获取资源使用的方法名，必须是 Creep 原型上的，例如"harvest", "withdraw"
-     * @param args 传递给上面方法的参数列表
+     * @param args 传递给上面方法的剩余参数列表
      */
     getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void {
         if (this[getFunc](target, ...args) == ERR_NOT_IN_RANGE) {
@@ -113,7 +122,7 @@ const creepExtension = {
 
     /**
      * 通过 id 获取对象
-     * @param id 游戏中的对象id 
+     * @param id 游戏中的对象id
      */
     getObjectById<T>(id: string|undefined): T|null {
         return Game.getObjectById(id)

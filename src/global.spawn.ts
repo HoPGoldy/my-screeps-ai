@@ -9,7 +9,7 @@ import { creepConfigs, creepDefaultMemory } from './config.creep'
  * @returns 没有 Memory.spawnList 返回 false, 其他返回 true
  */
 export default function (): boolean {
-    if (!hasSpawnList()) return false
+    if (!hasSpawnList()) Memory.spawnList = []
     const spawnList: string[] = Memory.spawnList
 
     // 完成的任务索引，下面这个 for 执行完后会统一移除完成的任务

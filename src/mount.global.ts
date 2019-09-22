@@ -27,8 +27,8 @@ const globalExtension = {
      */
     resetConfig(): string {
         // 收集所有存活中的 creep 角色
-        let aliveCreepRoles = []
-        let missCreep = []
+        let aliveCreepRoles: string[] = []
+        let missCreep: string[] = []
         for (const creepName in Game.creeps) {
             aliveCreepRoles.push(Game.creeps[creepName].memory.role)
         }
@@ -41,6 +41,7 @@ const globalExtension = {
             // 配置项缺失, 加入待生成队列
             else {
                 Memory.spawnList.push(configName)
+                missCreep.push(configName)
             }
         }
         return `发现缺失的 creep 如下: ${missCreep.join(', ')}。 已加入生成队列`

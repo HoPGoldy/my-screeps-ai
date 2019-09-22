@@ -12,10 +12,10 @@ import role from './role'
  * 而对 creep 逻辑的修改会直接生效
  */
 export const creepConfigs: ICreepConfigs = {
-    E1harvester1: role.harvester('123', 'Spawn1'),
-    E1upgrader1: role.upgrader('123', '321', 'Spawn1'),
-    E1builder1: role.builder('123', 'Spawn1'),
-    E1repairer1: role.repairer('123', 'Spawn1')
+    E1harvester1: role.harvester('ef990774d80108c', 'Spawn1'),
+    E1upgrader1: role.upgrader('ef990774d80108c', 'fd2c0774d801520', 'Spawn1'),
+    // E1builder1: role.builder('123', 'Spawn1'),
+    // E1repairer1: role.repairer('123', 'Spawn1')
 }
 
 // creep 的默认内存
