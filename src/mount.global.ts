@@ -35,9 +35,9 @@ const globalExtension = {
         // 遍历 creepConfigs 的 name 进行检查
         for (const configName in creepConfigs) {
             // 配置项 creep 已存活
-            if (configName in aliveCreepRoles) continue
+            if (_.find(aliveCreepRoles, role => role == configName)) continue
             // 配置项 creep 没存活但是在待生成队列里
-            else if (configName in Memory.spawnList) continue
+            else if (_.find(Memory.spawnList, role => role == configName)) continue
             // 配置项缺失, 加入待生成队列
             else {
                 Memory.spawnList.push(configName)

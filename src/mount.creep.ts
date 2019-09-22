@@ -60,6 +60,8 @@ const creepExtension = {
             return true
         }
         else {
+            // 没事干就去升级控制器
+            this.upgrade()
             return false
         }
     },
