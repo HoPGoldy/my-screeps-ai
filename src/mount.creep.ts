@@ -8,7 +8,7 @@ export default function () {
 
 const creepExtension = {
     /**
-     * 
+     * 维护单位工作状态更新
      * @param workingMsg 工作时喊的话
      * @param onStateChange 状态切换时的回调
      */
@@ -29,6 +29,41 @@ const creepExtension = {
         }
     
         return this.memory.working
+    },
+
+    /**
+     * 检查是否有敌人
+     * 注意! 该方法只能检查自己控制的房间
+     * 
+     * @returns {boolean} 是否有敌人
+     */
+    checkEnemy() {
+        // 从雷达扫描结果中获取敌人
+        const enemys = Memory[this.room.name].radarResult.enemys
+        // 如果有敌人就返回最近的那个
+        return enemys ? true : false
+    },
+
+    /**
+     * 待命
+     * 移动到 [房间名 StandBy] 旗帜的位置
+     */
+    standBy() {
+        const standByFlag = Game.flags[`${this.room.name} StandBy`]
+        if (standByFlag) this.moveTo(standByFlag)
+        else this.say(`找不到 [${this.room.name} StandBy] 旗帜`)
+    },
+
+    /**
+     * 向敌方单位发起进攻
+     */
+    defense() {
+        // 从雷达扫描结果中获取敌人
+        const enemys = Memory[this.room.name].radarResult.enemys
+        const enemy = this.pos.findClosestByRange(enemys)
+        this.say(`正在消灭 ${enemy.name}`)
+        this.moveTo(enemy.pos)
+        this.attack(enemy)
     },
 
     /**

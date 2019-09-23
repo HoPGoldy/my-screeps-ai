@@ -20,6 +20,24 @@ var creepExtension = {
         }
         return this.memory.working;
     },
+    checkEnemy: function () {
+        var enemys = Memory[this.room.name].radarResult.enemys;
+        return enemys ? true : false;
+    },
+    standBy: function () {
+        var standByFlag = Game.flags[this.room.name + " StandBy"];
+        if (standByFlag)
+            this.moveTo(standByFlag);
+        else
+            this.say("\u627E\u4E0D\u5230 [" + this.room.name + " StandBy] \u65D7\u5E1C");
+    },
+    defense: function () {
+        var enemys = Memory[this.room.name].radarResult.enemys;
+        var enemy = this.pos.findClosestByRange(enemys);
+        this.say("\u6B63\u5728\u6D88\u706D " + enemy.name);
+        this.moveTo(enemy.pos);
+        this.attack(enemy);
+    },
     fillSpawnEngry: function () {
         var target = this.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: function (s) { return (s.structureType == STRUCTURE_EXTENSION ||
