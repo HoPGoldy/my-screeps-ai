@@ -33,8 +33,16 @@ function singleCreepWork(creep: Creep): boolean {
     const working = updateState(creep)
 
     // 执行对应操作
-    if (working) creep[creepConfig.target.func](...creepConfig.target.args)
-    else creep[creepConfig.source.func](...creepConfig.source.args)
+    if (working) {
+        creepConfig.target.map(action => {
+            creep[action.func](...action.args)
+        })
+    }
+    else {
+        creepConfig.source.map(action => {
+            creep[action.func](...action.args)
+        })
+    }
 
     // 如果 creep 还没有发送重生信息的话，执行健康检查
     // 健康检查不通过则向 spawnList 发送自己的生成任务

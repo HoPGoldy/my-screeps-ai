@@ -67,6 +67,26 @@ const creepExtension = {
     },
 
     /**
+     * 支援指定房间
+     * 先抵达该房间，然后执行 func 方法
+     * 
+     * @param roomName 要支援的房间名称
+     */
+    supportTo(roomName: string): boolean {
+        if (this.room.name !== roomName) {
+            const room = Game.rooms[roomName]
+            if (!room) {
+                console.log(`[supportTo] ${roomName} 不是个有效的房间`)
+                return false
+            }
+            this.moveTo(Game.rooms[roomName])
+            return false
+        }
+
+        return true
+    },
+
+    /**
      * 维修房间内受损的建筑
      * 
      * 优先修复房间结构，都修好的话再去修 wall 和 rempart
