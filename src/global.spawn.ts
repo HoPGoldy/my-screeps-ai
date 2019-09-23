@@ -47,9 +47,11 @@ function hasSpawnList(): boolean {
 function singleSpawnWork(configName: string): boolean {
     // 获取队列中的 creep 配置项
     const creepConfig: ICreepConfig = creepConfigs[configName]
+    // 如果该生成任务对应的配置项不存在的话则直接完成
+    if (!creepConfig) return true
     // 检查 spawn 字段是否有对应的 spawn
     if (!(creepConfig.spawn in Game.spawns)) {
-        console.log(`creepConfig - ${configName} spawn 名称异常`)
+        console.log(`creepConfig - ${configName} 需求的 ${creepConfig.spawn} 不存在`)
         return false
     }
     
@@ -81,7 +83,7 @@ function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
     let creepMemory = _.cloneDeep(creepDefaultMemory)
     creepMemory.role = configName
 
-    const spawnResult = spawn.spawnCreep(creepConfig.bodys, configName + Game.time, {
+    const spawnResult = spawn.spawnCreep(creepConfig.bodys, configName + ' ' + Game.time, {
         memory: creepMemory
     })
     // 检查是否生成成功

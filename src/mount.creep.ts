@@ -8,6 +8,8 @@ export default function () {
 
 // 进攻旗帜的名称
 const ATTACK_FLAG_NAME = 'a'
+// 占领旗帜的名称
+const CLAIM_FLAG_NAME = 'claim'
 
 const creepExtension = {
     /**
@@ -95,7 +97,11 @@ const creepExtension = {
                 s.energy < s.energyCapacity
         })
         // 能量都已经填满
-        if (!target) return false
+        if (!target) {
+            // 没事干就去填 spawn
+            this.fillSpawnEngry()
+            return false
+        }
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true
@@ -130,19 +136,15 @@ const creepExtension = {
     },
 
     /**
-     * 支援指定房间
-     * 先抵达该房间，然后执行 func 方法
+     * 移动到指定房间
      * 
      * @param roomName 要支援的房间名称
      */
     supportTo(roomName: string): boolean {
         if (this.room.name !== roomName) {
-            const room = Game.rooms[roomName]
-            if (!room) {
-                console.log(`[supportTo] ${roomName} 不是个有效的房间`)
-                return false
-            }
-            this.moveTo(Game.rooms[roomName])
+            const targetPos = new RoomPosition(25, 25, roomName)
+            this.moveTo(targetPos)
+
             return false
         }
 
@@ -181,16 +183,16 @@ const creepExtension = {
 
     /**
      * 占领指定房间
-     * 
-     * @param roomName 要占领的房间名
+     * 要占领的房间由名称为 CLAIM_FLAG_NAME 的旗帜指定
      */
-    claim(roomName: string): boolean {
-        const room = Game.rooms[roomName]
-        if (!room) {
-            console.log(`[claim] ${roomName} 不是一个有效的房间`)
-            return false
+    claim(): boolean {
+        const claimFlag = Game.flags[CLAIM_FLAG_NAME]
+        if (!claimFlag) {
+            console.log(`场上不存在名称为 [${CLAIM_FLAG_NAME}] 的旗帜，请新建`)
         }
-        if (this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
+        this.moveTo(claimFlag)
+        const room = claimFlag.room
+        if (room && this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
             this.moveTo(room.controller)
             return false
         }

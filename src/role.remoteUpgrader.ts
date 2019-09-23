@@ -1,7 +1,7 @@
 const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
 
 /**
- * 支援者配置生成器
+ * 支援 - 采矿者配置生成器
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  * 
  * @param targetRoomName 要支援的目标房间名
@@ -25,13 +25,13 @@ export default function (targetRoomName: string, sourceId: string, spawnName: st
             func: 'supportTo',
             args: [ targetRoomName ]
         }, {
-            // 再挖矿
-            func: 'buildStructure',
+            // 再升级
+            func: 'upgrade',
             args: [ ]
         }],
         switch: {
             func: 'updateState',
-            args: [ '🚧 支援' ]
+            args: [ '📈 支援-升级' ]
         },
         spawn: spawnName,
         bodys

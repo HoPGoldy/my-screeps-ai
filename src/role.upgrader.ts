@@ -1,4 +1,4 @@
-const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK ]
+const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
 
 /**
  * 升级者配置生成器
@@ -21,7 +21,7 @@ export default function (sourceId: string, spawnName: string, bodys: BodyPartCon
         }],
         switch: {
             func: 'updateState',
-            args: [ ]
+            args: [ '📈 升级' ]
         },
         spawn: spawnName,
         bodys

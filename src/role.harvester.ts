@@ -1,4 +1,4 @@
-const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
+const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
 
 /**
  * 采矿者配置生成器
@@ -21,7 +21,7 @@ export default function (sourceId: string, spawnName: string, bodys: BodyPartCon
         }],
         switch: {
             func: 'updateState',
-            args: [ ]
+            args: [ '🍚 收获' ]
         },
         spawn: spawnName,
         bodys

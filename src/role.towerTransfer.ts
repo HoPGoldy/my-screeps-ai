@@ -1,9 +1,9 @@
-const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK ]
+const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
 
 /**
- * 建筑者配置生成器
+ * tower 填充者配置生成器
  * source: 从指定矿中挖矿
- * target: 查找建筑工地并建造
+ * target: 将能量填充到 tower 中
  * 
  * @param sourceId 要挖的矿 id
  * @param spawnName 出生点名称
@@ -16,12 +16,12 @@ export default function (sourceId: string, spawnName: string, bodys: BodyPartCon
             args: [ Game.getObjectById(sourceId), 'harvest' ]
         }],
         target: [{
-            func: 'buildStructure',
+            func: 'fillTower',
             args: [ ]
         }],
         switch: {
             func: 'updateState',
-            args: [ '🚧 建造' ]
+            args: [ '🍚 填充 tower' ]
         },
         spawn: spawnName,
         bodys

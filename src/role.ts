@@ -4,6 +4,9 @@ import builder from './role.builder'
 import repairer from './role.repairer'
 import supporter from './role.supporter'
 import claimer from './role.claimer'
+import transfer from './role.transfer'
+import remoteUpgrader from './role.remoteUpgrader'
+import towerTransfer from './role.towerTransfer'
 
 export default {
     harvester,
@@ -11,5 +14,7 @@ export default {
     builder,
     repairer,
     supporter,
-    claimer
+    claimer,
+    towerTransfer,
+    remoteUpgrader
 }
