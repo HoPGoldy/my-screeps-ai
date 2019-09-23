@@ -99,11 +99,10 @@ const creepExtension = {
         // 能量都已经填满
         if (!target) {
             // 没事干就去填 spawn
-            this.fillSpawnEngry()
+            this.buildStructure(target, RESOURCE_ENERGY)
             return false
         }
 
-        this.buildStructure(target, RESOURCE_ENERGY)
         return true
     },
 
