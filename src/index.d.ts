@@ -43,7 +43,7 @@ interface IWorkOperation {
 interface ICreepConfig {
     source: IWorkOperation[]
     target: IWorkOperation[]
-    switch: IWorkOperation
+    switch?: IWorkOperation
     spawn: string
     bodys: BodyPartConstant[]
 }
@@ -60,4 +60,12 @@ interface ICreepConfigs {
  */
 interface IPathMap {
     [propName: string]: string
+}
+
+/**
+ * 对 Flag 的原型拓展
+ * @see file ./src/mount.flag.ts
+ */
+interface Flag {
+    getStructureByFlag(): Structure<StructureConstant>[]
 }

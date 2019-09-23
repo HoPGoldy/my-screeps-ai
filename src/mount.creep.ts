@@ -1,10 +1,13 @@
 /**
- * Creep 原型拓展 - 技能
+ * Creep 原型拓展
  * 为每个 creep 添加的工作方法
  */
 export default function () {
     _.assign(Creep.prototype, creepExtension)
 }
+
+// 进攻旗帜的名称
+const ATTACK_FLAG_NAME = 'a'
 
 const creepExtension = {
     /**
@@ -55,7 +58,8 @@ const creepExtension = {
     },
 
     /**
-     * 向敌方单位发起进攻
+     * 防御
+     * 向雷达扫描到的敌方单位发起进攻
      */
     defense() {
         // 从雷达扫描结果中获取敌人
@@ -225,6 +229,41 @@ const creepExtension = {
      */
     getObjectById<T>(id: string|undefined): T|null {
         return Game.getObjectById(id)
+    },
+
+    /**
+     * 进攻
+     * 向 ATTACK_FLAG_NAME + memory.squad 旗帜发起冲锋
+     * 如果有 ATTACK_FLAG_NAME 旗帜，则优先进行响应
+     *
+     * @todo 进攻敌方 creep
+     */
+    attackFlag() {
+        let attackFlag = Game.flags[ATTACK_FLAG_NAME]
+
+        if (!attackFlag) {
+            console.log(`没有名为 ${ATTACK_FLAG_NAME} 的旗子`)
+            return false
+        }
+
+        this.moveTo(attackFlag.pos)
+        if (attackFlag.room) {
+            const targets = attackFlag.getStructureByFlag()
+            const attackResult = this.attack(targets[0])
+            console.log(`${this.name} 正在攻击 ${targets[0].structureType}, 返回值 ${attackResult}`)
+        }
+    },
+
+    /**
+     * 治疗指定目标
+     * 比较给定目标生命(包括自己)生命损失的百分比, 谁血最低治疗谁
+     * @param creeps 要治疗的目标们
+     */
+    healTo(creeps: Creep[]) {
+        creeps.push(this)
+        // 生命值损失比例从大到小排序
+        let sortedHitCreeps = creeps.sort((a, b) => (a.hits / a.hitsMax) - (b.hits / b.hitsMax))
+        this.heal(sortedHitCreeps[0])
     }
 }
 

@@ -2,8 +2,8 @@ const defaultBodys: BodyPartConstant[] = [ CLAIM, MOVE ]
 
 /**
  * 占领者配置生成器
- * source: 占领指定房间
- * target: 无
+ * source: 无
+ * target: 占领指定房间
  * 
  * @param targetRoomName 要占领的房间名
  * @param spawnName 出生点名称
@@ -11,15 +11,11 @@ const defaultBodys: BodyPartConstant[] = [ CLAIM, MOVE ]
  */
 export default function (targetRoomName: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig {
     const config: ICreepConfig = {
-        source: [{
+        source: [ ],
+        target: [{
             func: 'claim',
             args: [ targetRoomName ]
         }],
-        target: [ ],
-        switch: {
-            func: 'updateState',
-            args: [ ]
-        },
         spawn: spawnName,
         bodys
     }

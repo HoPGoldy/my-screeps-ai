@@ -1,5 +1,6 @@
 import mountCreep from './mount.creep'
 import mountGlobal from './mount.global'
+import mountFlag from './mount.flag'
 
 /**
  * 挂载所有的额外属性和方法
@@ -10,5 +11,6 @@ export default function (): void {
         global.hasExtension = true
         mountGlobal()
         mountCreep()
+        mountFlag()
     }
 }
