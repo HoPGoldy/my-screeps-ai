@@ -12,6 +12,10 @@ function default_1(sourceId, spawnName, bodys) {
                 func: 'upgrade',
                 args: []
             }],
+        switch: {
+            func: 'updateState',
+            args: []
+        },
         spawn: spawnName,
         bodys: bodys
     };

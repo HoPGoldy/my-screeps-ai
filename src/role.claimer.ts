@@ -16,6 +16,10 @@ export default function (targetRoomName: string, spawnName: string, bodys: BodyP
             args: [ targetRoomName ]
         }],
         target: [ ],
+        switch: {
+            func: 'updateState',
+            args: [ ]
+        },
         spawn: spawnName,
         bodys
     }

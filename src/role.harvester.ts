@@ -19,6 +19,10 @@ export default function (sourceId: string, spawnName: string, bodys: BodyPartCon
             func: 'fillSpawnEngry',
             args: [ ]
         }],
+        switch: {
+            func: 'updateState',
+            args: [ ]
+        },
         spawn: spawnName,
         bodys
     }

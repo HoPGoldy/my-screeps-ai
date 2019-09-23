@@ -12,6 +12,10 @@ function default_1(sourceId, spawnName, bodys) {
                 func: 'buildStructure',
                 args: []
             }],
+        switch: {
+            func: 'updateState',
+            args: []
+        },
         spawn: spawnName,
         bodys: bodys
     };

@@ -9,6 +9,10 @@ function default_1(targetRoomName, spawnName, bodys) {
                 args: [targetRoomName]
             }],
         target: [],
+        switch: {
+            func: 'updateState',
+            args: []
+        },
         spawn: spawnName,
         bodys: bodys
     };

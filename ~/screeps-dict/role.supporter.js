@@ -18,6 +18,10 @@ function default_1(targetRoomName, sourceId, spawnName, bodys) {
                 func: 'buildStructure',
                 args: []
             }],
+        switch: {
+            func: 'updateState',
+            args: []
+        },
         spawn: spawnName,
         bodys: bodys
     };

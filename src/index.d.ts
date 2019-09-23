@@ -37,11 +37,13 @@ interface IWorkOperation {
  * creep 的配置项
  * @property source creep非工作(收集能量时)执行的方法
  * @property target creep工作时执行的方法
+ * @property switch 更新状态时触发的方法, 该方法必须位于 Creep 上, 且可以返回 true/false
  * @property spawn 要进行生产的出生点
  */
 interface ICreepConfig {
     source: IWorkOperation[]
     target: IWorkOperation[]
+    switch: IWorkOperation
     spawn: string
     bodys: BodyPartConstant[]
 }

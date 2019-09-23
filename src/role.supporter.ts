@@ -29,6 +29,10 @@ export default function (targetRoomName: string, sourceId: string, spawnName: st
             func: 'buildStructure',
             args: [ ]
         }],
+        switch: {
+            func: 'updateState',
+            args: [ ]
+        },
         spawn: spawnName,
         bodys
     }

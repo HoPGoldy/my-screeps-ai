@@ -8,6 +8,30 @@ export default function () {
 
 const creepExtension = {
     /**
+     * 
+     * @param workingMsg 工作时喊的话
+     * @param onStateChange 状态切换时的回调
+     */
+    updateState(workingMsg: string='🧰 工作', onStateChange: Function=updateStateDefaultCallback): boolean {
+        // creep 身上没有能量 && creep 之前的状态为“工作”
+        if(this.carry.energy <= 0 && this.memory.working) {
+            // 切换状态
+            this.memory.working = false
+            this.say('⚡ 挖矿')
+            onStateChange(this, this.memory.working)
+        }
+        // creep 身上能量满了 && creep 之前的状态为“不工作”
+        if(this.carry.energy >= this.carryCapacity && !this.memory.working) {
+            // 切换状态
+            this.memory.working = true
+            this.say(workingMsg)
+            onStateChange(this, this.memory.working)
+        }
+    
+        return this.memory.working
+    },
+
+    /**
      * 填充本房间内所有 spawn 和 extension 
      */
     fillSpawnEngry() {
@@ -168,3 +192,11 @@ const creepExtension = {
         return Game.getObjectById(id)
     }
 }
+
+/**
+ * updateState 方法的默认 onStateChange 回调
+ * 
+ * @param creep creep
+ * @param working 当前是否在工作
+ */
+function updateStateDefaultCallback(creep: Creep, working: boolean): void { }

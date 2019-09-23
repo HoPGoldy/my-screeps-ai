@@ -1,7 +1,6 @@
 "use strict";
 Object.defineProperty(exports, "__esModule", { value: true });
 var config_creep_1 = require("./config.creep");
-var utils_1 = require("./utils");
 function default_1() {
     for (var creepName in Game.creeps) {
         singleCreepWork(Game.creeps[creepName]);
@@ -14,7 +13,7 @@ function singleCreepWork(creep) {
         return false;
     }
     var creepConfig = config_creep_1.creepConfigs[creep.memory.role];
-    var working = utils_1.updateState(creep);
+    var working = creep[creepConfig.switch.func](creepConfig.switch.args);
     if (working) {
         creepConfig.target.map(function (action) {
             creep[action.func].apply(creep, action.args);

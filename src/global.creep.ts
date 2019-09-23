@@ -30,7 +30,7 @@ function singleCreepWork(creep: Creep): boolean {
     // 获取对应配置项
     const creepConfig: ICreepConfig = creepConfigs[creep.memory.role]
     // 获取是否工作
-    const working = updateState(creep)
+    const working = creep[creepConfig.switch.func](creepConfig.switch.args)
 
     // 执行对应操作
     if (working) {

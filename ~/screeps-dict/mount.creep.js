@@ -5,6 +5,21 @@ function default_1() {
 }
 exports.default = default_1;
 var creepExtension = {
+    updateState: function (workingMsg, onStateChange) {
+        if (workingMsg === void 0) { workingMsg = '🧰 工作'; }
+        if (onStateChange === void 0) { onStateChange = updateStateDefaultCallback; }
+        if (this.carry.energy <= 0 && this.memory.working) {
+            this.memory.working = false;
+            this.say('⚡ 挖矿');
+            onStateChange(this, this.memory.working);
+        }
+        if (this.carry.energy >= this.carryCapacity && !this.memory.working) {
+            this.memory.working = true;
+            this.say(workingMsg);
+            onStateChange(this, this.memory.working);
+        }
+        return this.memory.working;
+    },
     fillSpawnEngry: function () {
         var target = this.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: function (s) { return (s.structureType == STRUCTURE_EXTENSION ||
@@ -107,3 +122,4 @@ var creepExtension = {
         return Game.getObjectById(id);
     }
 };
+function updateStateDefaultCallback(creep, working) { }
