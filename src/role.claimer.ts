@@ -7,7 +7,7 @@ const defaultBodys: BodyPartConstant[] = [ CLAIM, MOVE ]
  * 
  * @param spawnName 出生点名称
  * @param bodys 身体部件 (可选)
- */
+ */ 
 export default function (spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig {
     const config: ICreepConfig = {
         source: [ ],

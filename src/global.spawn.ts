@@ -6,7 +6,7 @@ import { globalExtension } from './mount.global'
  *   1. Memory.spawnList 中读取待生产列表
  *   2. 从 config.creep 中取出对应配置项并进行生产
  *   3. 移除已经完成的任务
- * 
+ *  
  * @returns 没有 Memory.spawnList 返回 false, 其他返回 true
  */
 export default function (): boolean {

@@ -44,12 +44,22 @@ module.exports = function(grunt) {
                 outDir: 'dist/'
             }
         },
+        // 目标文件夹清空任务
+        'clean': {
+            'dist': ['dist']
+        },
+        // 代码文件夹扁平化及复制任务
         'copy': {
             main: {
                 expand: true,
                 cwd: 'dist',
                 src: '**',
-                dest: copyPath
+                dest: copyPath,
+                filter: 'isFile',
+                rename(dest, src) {
+                    // Change the path name utilize underscores for folders
+                    return dest + src.replace(/\//g,'_')
+                }
             }
         },
         // 代码监听任务
