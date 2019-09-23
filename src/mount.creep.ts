@@ -103,7 +103,7 @@ const creepExtension = {
             return false
         }
 
-        this.transferTo(target, RESOURCE_ENERGY)
+        this.buildStructure(target, RESOURCE_ENERGY)
         return true
     },
 
@@ -153,6 +153,7 @@ const creepExtension = {
 
     /**
      * 维修房间内受损的建筑
+     * @todo 功能拆分
      * 
      * 优先修复房间结构，都修好的话再去修 wall 和 rempart
      */
