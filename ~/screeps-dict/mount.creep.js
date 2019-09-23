@@ -77,6 +77,18 @@ var creepExtension = {
             this.moveTo(target);
         }
     },
+    claim: function (roomName) {
+        var room = Game.rooms[roomName];
+        if (!room) {
+            console.log("[claim] " + roomName + " \u4E0D\u662F\u4E00\u4E2A\u6709\u6548\u7684\u623F\u95F4");
+            return false;
+        }
+        if (this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
+            this.moveTo(room.controller);
+            return false;
+        }
+        return true;
+    },
     getEngryFrom: function (target, getFunc) {
         var args = [];
         for (var _i = 2; _i < arguments.length; _i++) {

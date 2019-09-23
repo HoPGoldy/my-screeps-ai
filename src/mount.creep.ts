@@ -117,6 +117,24 @@ const creepExtension = {
     },
 
     /**
+     * 占领指定房间
+     * 
+     * @param roomName 要占领的房间名
+     */
+    claim(roomName: string): boolean {
+        const room = Game.rooms[roomName]
+        if (!room) {
+            console.log(`[claim] ${roomName} 不是一个有效的房间`)
+            return false
+        }
+        if (this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
+            this.moveTo(room.controller)
+            return false
+        }
+        return true
+    },
+
+    /**
      * 从目标结构获取资源
      * 
      * @param target 提供资源的结构
