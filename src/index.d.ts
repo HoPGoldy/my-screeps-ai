@@ -3,10 +3,24 @@ declare var global: any
 
 /**
  * Memory 内存拓展
- * @property spawnList 要生成的 creep 队列
+ * @property {array} spawnList 要生成的 creep 队列
+ * @property {object} expansionList 扩张计划列表
  */
 interface Memory {
-    spawnList: string[]
+    spawnList: string[],
+    expansionList: {
+        [sourceRoomName: string]: ExpansionPlan
+    }
+}
+
+/**
+ * 扩张计划内容
+ * @property targetRoomName 要输送 builder 的目标房间
+ * @property 输送的 builder 的身体部件
+ */
+interface ExpansionPlan {
+    targetRoomName: string,
+    bodys: BodyPartConstant[]
 }
 
 /**
