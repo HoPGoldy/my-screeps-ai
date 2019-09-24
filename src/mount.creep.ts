@@ -1,6 +1,5 @@
 /**
  * Creep 原型拓展
- * 为每个 creep 添加的工作方法
  */
 export default function () {
     Object.assign(Creep.prototype, creepExtension)
@@ -13,7 +12,7 @@ const CLAIM_FLAG_NAME = 'claim'
 
 const creepExtension = {
     /**
-     * 维护单位工作状态更新
+     * creep 工作状态更新
      * @param workingMsg 工作时喊的话
      * @param onStateChange 状态切换时的回调
      */
@@ -117,6 +116,7 @@ const creepExtension = {
 
     /**
      * 建设房间内存在的建筑工地
+     * @todo 布朗建设法
      */
     buildStructure() {
         const targets: StructureConstructor = this.room.find(FIND_CONSTRUCTION_SITES)
@@ -152,33 +152,62 @@ const creepExtension = {
 
     /**
      * 维修房间内受损的建筑
-     * @todo 功能拆分
-     * 
-     * 优先修复房间结构，都修好的话再去修 wall 和 rempart
+     * 不会维修 wall 和 rempart
      */
     repairStructure() {
-        let target = this.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: s => {            
-                return s.hits < (s.hitsMax) &&
-                       s.structureType != STRUCTURE_WALL &&
-                       s.structureType != STRUCTURE_RAMPART
-            }
+        let target = this.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+            filter: s => (s.hits < s.hitsMax) && (s.structureType != STRUCTURE_RAMPART)
         })
         
         if (!target) {
-            target = this.pos.findClosestByRange(FIND_STRUCTURES, {
-                filter: s => {
-                    return s.hits < (s.hitsMax / 0.5) &&
-                           s.structureType == STRUCTURE_WALL &&
-                           s.structureType == STRUCTURE_RAMPART
-                }
-            })
+            this.say('没活干了')
+            return false
         }
     
         // 修复结构实现
         if(this.repair(target) == ERR_NOT_IN_RANGE) {
             this.moveTo(target)
         }
+        return true
+    },
+
+    /**
+     * 填充防御性建筑
+     * 包括 wall 和 rempart
+     * 
+     * @param expectHits 期望生命值 (大于该生命值的建筑将不会被继续填充)
+     */
+    fillDefenseStructure(expectHits: number=5000): boolean {
+        // 检查自己内存里有没有期望生命值
+        if (!this.memory.expectHits) this.memory.expectHits = expectHits
+
+        // 先筛选出来所有的防御建筑
+        const defenseStructures: Structure[] = this.room.find(FIND_STRUCTURES, {
+            filter: s => (s.hits < s.hitsMax) && 
+                s.structureType == STRUCTURE_WALL &&
+                s.structureType == STRUCTURE_RAMPART
+        })
+        if (defenseStructures.length <= 0) {
+            this.say('找不到满足条件的建筑了！')
+            return false
+        }
+
+        // 再检查哪个墙的血量不够
+        let targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
+        while (targets.length <= 0) {
+            // 如果当前期望血量下没有满足添加的墙时，提高期望再次查找
+            this.memory.expectHits += expectHits
+            targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
+
+            // 做一个兜底 防止死循环
+            if (this.memory.expectHits >= WALL_HITS_MAX) break
+        }
+
+        // 填充结构
+        if(this.repair(targets[0]) == ERR_NOT_IN_RANGE) {
+            this.moveTo(targets[0])
+        }
+        return true
     },
 
     /**
@@ -226,14 +255,6 @@ const creepExtension = {
     },
 
     /**
-     * 通过 id 获取对象
-     * @param id 游戏中的对象id
-     */
-    getObjectById<T>(id: string|undefined): T|null {
-        return Game.getObjectById(id)
-    },
-
-    /**
      * 进攻
      * 向 ATTACK_FLAG_NAME + memory.squad 旗帜发起冲锋
      * 如果有 ATTACK_FLAG_NAME 旗帜，则优先进行响应
@@ -254,6 +275,7 @@ const creepExtension = {
             const attackResult = this.attack(targets[0])
             console.log(`${this.name} 正在攻击 ${targets[0].structureType}, 返回值 ${attackResult}`)
         }
+        return true
     },
 
     /**
