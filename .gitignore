@@ -5,3 +5,5 @@ dist/
 secret.js
 
 .tscache/
+
+src/config.creep.ts

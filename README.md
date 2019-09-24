@@ -22,6 +22,10 @@ module.exports = {
 }
 ```
 
+**完成配置项**
+
+将 `src/` 目录中的 `config.creep.template.ts` 重命名为 `src/config.creep.ts`。
+
 ## 使用
 
 启动代码自动提交
