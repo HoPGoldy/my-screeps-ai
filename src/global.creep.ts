@@ -1,5 +1,4 @@
 import { creepConfigs } from './config.creep'
-import { updateState } from './utils'
 
 
 /**
@@ -25,6 +24,7 @@ function singleCreepWork(creep: Creep): boolean {
     // 检查 creep 内存中的角色是否存在
     if (!(creep.memory.role in creepConfigs)) {
         console.log(`creep ${creep.name} 内存属性 role 不属于任何已存在的 creepConfigs 名称`)
+        creep.say('我凉了！')
         return false
     }
     // 获取对应配置项

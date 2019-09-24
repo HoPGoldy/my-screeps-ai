@@ -12,18 +12,12 @@ import role from './role'
  * 而对 creep 逻辑的修改会直接生效
  */
 export const creepConfigs: ICreepConfigs = {
-    E1harvester1: role.harvester('ef990774d80108c', 'Spawn1'),
-    W1N7harvester2: role.harvester('ba3c0774d80c3a8', 'Spawn1'),
-    E1upgrader1: role.upgrader('ef990774d80108c', 'Spawn1'),
-    E1upgrader2: role.upgrader('ef990774d80108c', 'Spawn1'),
-    E1builder1: role.builder('ba3c0774d80c3a8', 'Spawn1'),
-    E1builder2: role.builder('ef990774d80108c', 'Spawn1'),
-    E1repairer1: role.repairer('ba3c0774d80c3a8', 'Spawn1'),
+    // W1N7 配置
+    E1harvester1: role.harvester('ef990774d80108c', 'Spawn1', [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]),
+    E1upgrader1: role.upgrader('ef990774d80108c', 'Spawn1', [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]),
+    E1builder1: role.builder('ba3c0774d80c3a8', 'Spawn1', [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]),
+    E1repairer1: role.repairer('ba3c0774d80c3a8', 'Spawn1', [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]),
     W1N7TowerTransfer1: role.towerTransfer('ba3c0774d80c3a8', 'Spawn1'),
-
-    // W1N7Claimer1: role.claimer('Spawn1'),
-    // WIN7Supporter1: role.supporter('W1N8', 'ab9e0774d1c107c', 'Spawn1'),
-    // WIN7RemoteUpgrader1: role.remoteUpgrader('W1N8', 'ab9e0774d1c107c', 'Spawn1'),
 
     // W1N8 配置
     W1N8Harvester1: role.harvester('ab9e0774d1c107c', 'Spawn2', [ WORK, CARRY, MOVE]),
@@ -45,6 +39,11 @@ export const creepConfigs: ICreepConfigs = {
     W3N8Bbilder1: role.builder('9d330774017e6b9', 'Spawn4', [ WORK, CARRY, MOVE]),
     W3N8Repairer1: role.repairer('9d330774017e6b9', 'Spawn4', [ WORK, CARRY, MOVE]),
     W3N8TowerTransfer1: role.towerTransfer('9d330774017e6b9', 'Spawn4', [ WORK, CARRY, MOVE]),
+
+    // 拓展组
+    // W1N7Claimer1: role.claimer('Spawn1'),
+    // WIN7Supporter1: role.supporter('W1N8', 'ab9e0774d1c107c', 'Spawn1'),
+    // WIN7RemoteUpgrader1: role.remoteUpgrader('W1N8', 'ab9e0774d1c107c', 'Spawn1'),
 }
 
 // creep 的默认内存

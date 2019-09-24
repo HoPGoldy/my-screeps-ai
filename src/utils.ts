@@ -27,41 +27,6 @@ export function getPath (pathName: string): MoveToOpts {
 }
 
 /**
- * updateState 方法的默认 onStateChange 回调
- * 
- * @param creep creep
- * @param working 当前是否在工作
- */
-function updateStateDefaultCallback(creep: Creep, working: boolean): void { }
-
-/**
- * 状态更新
- * 
- * @param creep 
- * @param workingMsg 切换为工作状态时的语音提示
- * @param onStateChange 状态切换时触发的回调
- * @returns {boolean} 工作中返回 true, 没有工作返回 false
- */
-export function updateState (creep: Creep, workingMsg: string='🧰 工作', onStateChange: Function=updateStateDefaultCallback): boolean {
-    // creep 身上没有能量 && creep 之前的状态为“工作”
-    if(creep.carry.energy <= 0 && creep.memory.working) {
-        // 切换状态
-        creep.memory.working = false
-        creep.say('⚡ 挖矿')
-        onStateChange(creep, creep.memory.working)
-    }
-    // creep 身上能量满了 && creep 之前的状态为“不工作”
-    if(creep.carry.energy >= creep.carryCapacity && !creep.memory.working) {
-        // 切换状态
-        creep.memory.working = true
-        creep.say(workingMsg)
-        onStateChange(creep, creep.memory.working)
-    }
-
-    return creep.memory.working
-}
-
-/**
  * 死亡 creep 记忆清除
  * 每 1000 tick 执行一次清理
  */

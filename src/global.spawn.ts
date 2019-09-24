@@ -72,6 +72,7 @@ function singleSpawnWork(configName: string): boolean {
 
 /**
  * 从 spawn 生产 creep 
+ * @todo 同一 tick 内出生锁定
  * 
  * @param spawn 出生点
  * @param configName 对应的配置名称
@@ -102,7 +103,7 @@ function spawnCreep(spawn: StructureSpawn, configName: string): boolean {
  */
 function syncCreepConfig(): boolean {
     // 每 1000 tick 执行一次
-    if (Game.time % 1000) return false
+    if (Game.time % 100) return false
     // 同步配置项
     console.log('[spawn] 同步配置项')
     globalExtension.resetConfig()

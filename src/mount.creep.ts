@@ -2,7 +2,7 @@
  * Creep 原型拓展
  */
 export default function () {
-    Object.assign(Creep.prototype, creepExtension)
+    _.assign(Creep.prototype, creepExtension)
 }
 
 // 进攻旗帜的名称
@@ -97,11 +97,12 @@ const creepExtension = {
         })
         // 能量都已经填满
         if (!target) {
-            // 没事干就去填 spawn
+            // 没事干就去填 造建筑
             this.buildStructure(target, RESOURCE_ENERGY)
             return false
         }
 
+        this.transferTo(target, RESOURCE_ENERGY)
         return true
     },
 
@@ -155,12 +156,13 @@ const creepExtension = {
      * 不会维修 wall 和 rempart
      */
     repairStructure() {
-        let target = this.pos.findClosestByRange(FIND_MY_STRUCTURES, {
-            filter: s => (s.hits < s.hitsMax) && (s.structureType != STRUCTURE_RAMPART)
+        let target = this.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: s => (s.hits < s.hitsMax) && (s.structureType != STRUCTURE_RAMPART) && (s.structureType != STRUCTURE_WALL)
         })
         
         if (!target) {
-            this.say('没活干了')
+            // this.say('没活干了')
+            this.fillDefenseStructure()
             return false
         }
     
@@ -188,7 +190,7 @@ const creepExtension = {
                 s.structureType == STRUCTURE_RAMPART
         })
         if (defenseStructures.length <= 0) {
-            this.say('找不到满足条件的建筑了！')
+            this.say('找不到墙！')
             return false
         }
 
@@ -247,11 +249,13 @@ const creepExtension = {
      * @param target 要转移到的目标
      * @param RESOURCE 要转移的资源类型
      */
-    transferTo(target: Structure, RESOURCE: ResourceConstant): void {
+    transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode {
         // 转移能量实现
-        if(this.transfer(target, RESOURCE) == ERR_NOT_IN_RANGE) {
+        const result: ScreepsReturnCode = this.transfer(target, RESOURCE)
+        if (result == ERR_NOT_IN_RANGE) {
             this.moveTo(target)
         }
+        return result
     },
 
     /**
