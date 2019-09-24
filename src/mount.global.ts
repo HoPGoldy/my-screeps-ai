@@ -44,6 +44,6 @@ export const globalExtension = {
                 missCreep.push(configName)
             }
         }
-        return `发现缺失的 creep 如下: ${missCreep.join(', ')}。 已加入生成队列`
+        return missCreep.length > 0 ? `发现缺失的 creep 如下: ${missCreep.join(', ')}。 已加入生成队列` : '未发现缺失 creep 干得好!'
     }
 }
