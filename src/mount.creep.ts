@@ -1,3 +1,4 @@
+import { getPath } from './utils'
 /**
  * Creep 原型拓展
  */
@@ -54,7 +55,7 @@ const creepExtension = {
      */
     standBy() {
         const standByFlag = Game.flags[`${this.room.name} StandBy`]
-        if (standByFlag) this.moveTo(standByFlag)
+        if (standByFlag) this.moveTo(standByFlag, getPath())
         else this.say(`找不到 [${this.room.name} StandBy] 旗帜`)
     },
 
@@ -67,7 +68,7 @@ const creepExtension = {
         const enemys = Memory[this.room.name].radarResult.enemys
         const enemy = this.pos.findClosestByRange(enemys)
         this.say(`正在消灭 ${enemy.name}`)
-        this.moveTo(enemy.pos)
+        this.moveTo(enemy.pos, getPath('attack'))
         this.attack(enemy)
     },
 
@@ -97,8 +98,8 @@ const creepExtension = {
         })
         // 能量都已经填满
         if (!target) {
-            // 没事干就去填 造建筑
-            this.buildStructure(target, RESOURCE_ENERGY)
+            // 没事干就去修墙
+            this.fillDefenseStructure()
             return false
         }
 
@@ -111,7 +112,7 @@ const creepExtension = {
      */
     upgrade() {
         if(this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) {
-            this.moveTo(this.room.controller)
+            this.moveTo(this.room.controller, getPath('upgrade'))
         }
     },
 
@@ -124,7 +125,7 @@ const creepExtension = {
         // 找到就去建造
         if (targets.length > 0) {
             if(this.build(targets[0]) == ERR_NOT_IN_RANGE) {
-                this.moveTo(targets[0])
+                this.moveTo(targets[0], getPath('build'))
             }
             return true
         }
@@ -143,7 +144,7 @@ const creepExtension = {
     supportTo(roomName: string): boolean {
         if (this.room.name !== roomName) {
             const targetPos = new RoomPosition(25, 25, roomName)
-            this.moveTo(targetPos)
+            this.moveTo(targetPos, getPath())
 
             return false
         }
@@ -168,7 +169,7 @@ const creepExtension = {
     
         // 修复结构实现
         if(this.repair(target) == ERR_NOT_IN_RANGE) {
-            this.moveTo(target)
+            this.moveTo(target, getPath('repair'))
         }
         return true
     },
@@ -186,8 +187,8 @@ const creepExtension = {
         // 先筛选出来所有的防御建筑
         const defenseStructures: Structure[] = this.room.find(FIND_STRUCTURES, {
             filter: s => (s.hits < s.hitsMax) && 
-                s.structureType == STRUCTURE_WALL &&
-                s.structureType == STRUCTURE_RAMPART
+                (s.structureType == STRUCTURE_WALL ||
+                s.structureType == STRUCTURE_RAMPART)
         })
         if (defenseStructures.length <= 0) {
             this.say('找不到墙！')
@@ -207,7 +208,7 @@ const creepExtension = {
 
         // 填充结构
         if(this.repair(targets[0]) == ERR_NOT_IN_RANGE) {
-            this.moveTo(targets[0])
+            this.moveTo(targets[0], getPath('repair'))
         }
         return true
     },
@@ -221,10 +222,10 @@ const creepExtension = {
         if (!claimFlag) {
             console.log(`场上不存在名称为 [${CLAIM_FLAG_NAME}] 的旗帜，请新建`)
         }
-        this.moveTo(claimFlag)
+        this.moveTo(claimFlag, getPath('claimer'))
         const room = claimFlag.room
         if (room && this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
-            this.moveTo(room.controller)
+            this.moveTo(room.controller, getPath('claimer'))
             return false
         }
         return true
@@ -239,7 +240,7 @@ const creepExtension = {
      */
     getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void {
         if (this[getFunc](target, ...args) == ERR_NOT_IN_RANGE) {
-            this.moveTo(target)
+            this.moveTo(target, getPath())
         }
     },
 
@@ -253,7 +254,7 @@ const creepExtension = {
         // 转移能量实现
         const result: ScreepsReturnCode = this.transfer(target, RESOURCE)
         if (result == ERR_NOT_IN_RANGE) {
-            this.moveTo(target)
+            this.moveTo(target, getPath())
         }
         return result
     },
@@ -273,7 +274,7 @@ const creepExtension = {
             return false
         }
 
-        this.moveTo(attackFlag.pos)
+        this.moveTo(attackFlag.pos, getPath('attack'))
         if (attackFlag.room) {
             const targets = attackFlag.getStructureByFlag()
             const attackResult = this.attack(targets[0])
