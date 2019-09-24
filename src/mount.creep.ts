@@ -3,7 +3,7 @@
  * 为每个 creep 添加的工作方法
  */
 export default function () {
-    _.assign(Creep.prototype, creepExtension)
+    Object.assign(Creep.prototype, creepExtension)
 }
 
 // 进攻旗帜的名称
