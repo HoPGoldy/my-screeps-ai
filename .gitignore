@@ -3,3 +3,7 @@ node_modules/
 dist/
 
 secret.js
+
+.tscache/
+
+src/config.creep.ts

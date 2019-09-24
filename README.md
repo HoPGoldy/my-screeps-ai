@@ -12,14 +12,19 @@ npm install
 
 **添加密钥**
 
-在根目录下新建 `secret.js` 文件，并填入以下内容，记得修改邮箱和密码。
+在根目录下新建 `secret.js` 文件，并填入以下内容，记得修改邮箱、密码及要复制到的文件夹路径。
 
 ```js
 module.exports = {
     email: 'YOUR_EMAIL',
-    password: 'YOUR_PASSWORD'
+    password: 'YOUR_PASSWORD',
+    copyPath: 'YOUR_TARGET_PATH'
 }
 ```
+
+**完成配置项**
+
+将 `src/` 目录中的 `config.creep.template.ts` 重命名为 `src/config.creep.ts`。
 
 ## 使用
 
