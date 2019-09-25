@@ -33,13 +33,13 @@ export const globalExtension = {
             // 配置项 creep 已存活
             if (_.find(aliveCreepRoles, role => role == configName)) continue
             // 配置项 creep 没存活但是在待生成队列里
-            else if (_.find(Memory.spawnList, role => role == configName)) continue
+            else if (_.find(Game.spawns[creepConfigs[configName].spawn].memory.spawnList, role => role == configName)) continue
             // 配置项缺失, 加入待生成队列
             else {
-                Memory.spawnList.push(configName)
+                Game.spawns[creepConfigs[configName].spawn].addTask(configName)
                 missCreep.push(configName)
             }
         }
-        return missCreep.length > 0 ? `发现缺失的 creep 如下: ${missCreep.join(', ')}。 已加入生成队列` : '未发现缺失 creep 干得好!'
+        return missCreep.length > 0 ? `发现缺失的 creep 如下: ${missCreep.join(', ')}。 已加入生成队列` : '未发现缺失 creep, 干得好!'
     }
 }

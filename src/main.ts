@@ -1,19 +1,23 @@
 import mountWork from './mount'
-import spawnWork from './global.spawn'
-import roomWork from './global.room'
-import creepWork from './global.creep'
 
-import { clearDiedCreep } from './utils'
+import { clearDiedCreep, syncCreepConfig, doing } from './utils'
 
 module.exports.loop = function (): void {
     // 挂载所有拓展
     mountWork()
-    // 出生点工作
-    spawnWork()
-    // 房间工作
-    roomWork()
-    // creep 工作
-    creepWork()
+
     // 清除死亡 creep 记忆
     clearDiedCreep()
+    
+    // 定期同步 creep 配置
+    syncCreepConfig()
+
+    // 所有 spawn 干活
+    doing(Game.spawns)
+
+    // 所有建筑干活
+    doing(Game.structures)
+
+    // 所有 creep 干活
+    doing(Game.creeps)
 }

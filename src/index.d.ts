@@ -24,6 +24,13 @@ interface Structure {
 }
 
 /**
+ * Spawn 拓展
+ */
+interface StructureSpawn {
+    addTask(taskName: string): number
+}
+
+/**
  * spawn 内存拓展
  * 
  * @property {string[]} spawnList 生产队列，元素为 creepConfig 的键名

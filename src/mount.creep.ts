@@ -1,4 +1,5 @@
 import { getPath } from './utils'
+import { creepConfigs } from './config.creep'
 
 // 挂载拓展到 Creep 原型
 export default function () {
@@ -9,14 +10,55 @@ export default function () {
 class CreepExtension extends Creep {
     // 进攻旗帜的名称
     private ATTACK_FLAG_NAME = 'a'
+
     // 占领旗帜的名称
     private CLAIM_FLAG_NAME = 'claim'
+
+    /**
+     * creep 主要工作
+     */
+    public work(): void {
+        // 检查 creep 内存中的角色是否存在
+        if (!(this.memory.role in creepConfigs)) {
+            console.log(`creep ${this.name} 内存属性 role 不属于任何已存在的 creepConfigs 名称`)
+            this.say('我凉了！')
+            return 
+        }
+        // 获取对应配置项
+        const creepConfig: ICreepConfig = creepConfigs[this.memory.role]
+        // 获取是否工作
+        const working = creepConfig.switch ? this[creepConfig.switch.func](creepConfig.switch.args) : true
+
+        // 执行对应操作
+        if (working) {
+            creepConfig.target.map(action => {
+                this[action.func](...action.args)
+            })
+        }
+        else {
+            creepConfig.source.map(action => {
+                this[action.func](...action.args)
+            })
+        }
+
+        // 如果 creep 还没有发送重生信息的话，执行健康检查
+        // 健康检查不通过则向 spawnList 发送自己的生成任务
+        if (!this.memory.hasSendRebirth) {
+            const health: boolean = this.isHealth()
+            if (!health) {
+                // 向指定 spawn 推送生成任务
+                Game.spawns[creepConfig.spawn].addTask(this.memory.role)
+                this.memory.hasSendRebirth = true
+            } 
+        }
+    }
+
     /**
      * creep 工作状态更新
      * @param workingMsg 工作时喊的话
      * @param onStateChange 状态切换时的回调
      */
-    public updateState(workingMsg: string='🧰 工作', onStateChange: Function=updateStateDefaultCallback): boolean {
+    public updateState(workingMsg: string='🧰 工作', onStateChange: Function=this.updateStateDefaultCallback): boolean {
         // creep 身上没有能量 && creep 之前的状态为“工作”
         if(this.carry.energy <= 0 && this.memory.working) {
             // 切换状态
@@ -296,12 +338,25 @@ class CreepExtension extends Creep {
         let sortedHitCreeps = creeps.sort((a, b) => (a.hits / a.hitsMax) - (b.hits / b.hitsMax))
         this.heal(sortedHitCreeps[0])
     }
+
+    /**
+     * creep 健康检查, 条件如下:
+     *   1. 剩余时间小于10
+     *   2. 生命值低于一半
+     * 
+     * @returns {boolean} 健康就返回 true, 不健康返回 false
+     */
+    public isHealth(): boolean {
+        if (this.ticksToLive <= 10 || this.hits < this.hitsMax / 2) return false
+        else return true
+    }
+
+    /**
+     * updateState 方法的默认 onStateChange 回调
+     * 
+     * @param creep creep
+     * @param working 当前是否在工作
+     */
+    private updateStateDefaultCallback(creep: Creep, working: boolean): void { }
 }
 
-/**
- * updateState 方法的默认 onStateChange 回调
- * 
- * @param creep creep
- * @param working 当前是否在工作
- */
-function updateStateDefaultCallback(creep: Creep, working: boolean): void { }
