@@ -16,6 +16,23 @@ interface Memory {
 }
 
 /**
+ * 建筑拓展
+ * 有可能有自定义的 work 方法
+ */
+interface Structure {
+    work?(): void
+}
+
+/**
+ * spawn 内存拓展
+ * 
+ * @property {string[]} spawnList 生产队列，元素为 creepConfig 的键名
+ */
+interface SpawnMemory {
+    spawnList?: string[]
+}
+
+/**
  * creep 内存拓展
  * @property role crep的角色
  * @property working 是否在工作

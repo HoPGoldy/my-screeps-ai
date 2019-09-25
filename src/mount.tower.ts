@@ -1,4 +1,4 @@
-// 挂载拓展到 Creep 原型
+// 挂载拓展到 tower 原型
 export default function () {
     _.assign(StructureTower.prototype, TowerExtension.prototype)
 }
