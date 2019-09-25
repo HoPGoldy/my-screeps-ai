@@ -34,6 +34,12 @@ module.exports = {
 npm start
 ```
 
+启动开发环境 (只会执行 ts 编译, 不提交代码)
+
+```
+npm run dev
+```
+
 拉取线上代码
 
 ```

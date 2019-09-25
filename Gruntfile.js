@@ -64,8 +64,14 @@ module.exports = function(grunt) {
         },
         // 代码监听任务
         'watch': {
-            files: "src/*.*",
-            tasks: [ "ts", "copy" ]
+            default: {
+                files: "src/*.*",
+                tasks: [ "ts", "copy" ]
+            },
+            dev: {
+                files: "src/*.*",
+                tasks: [ "ts" ]
+            }
         }
     })
 }
