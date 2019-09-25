@@ -58,3 +58,16 @@ export function getRoomList (): string[] {
     }
     return _.uniq(rooms)
 }
+
+/**
+ * 执行 Hash Map 中子元素对象的 work 方法
+ * 
+ * @param map 游戏对象的 hash map。如 Game.creeps、Game.spawns 等
+ */
+export function doing(map: object): void {
+    for (const itemName in map) {
+        const item = map[itemName]
+
+        if (item.work) item.work()
+    }
+}
