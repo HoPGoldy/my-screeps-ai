@@ -37,8 +37,8 @@ class TowerExtension extends StructureTower {
      */
     public commandRepair(): boolean {
         // 找到最近的受损建筑
-        const closestDamagedStructure: AnyOwnedStructure = this.pos.findClosestByRange(FIND_MY_STRUCTURES, {
-            filter: structure => structure.hits < structure.hitsMax
+        const closestDamagedStructure: AnyStructure = this.pos.findClosestByRange(FIND_STRUCTURES, {
+            filter: s => s.hits < s.hitsMax && s.structureType != STRUCTURE_RAMPART && s.structureType != STRUCTURE_WALL
         })
         // 如果有的话则进行修复
         if(closestDamagedStructure) {

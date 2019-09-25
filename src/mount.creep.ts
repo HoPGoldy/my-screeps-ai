@@ -207,7 +207,7 @@ class CreepExtension extends Creep {
         
         if (!target) {
             // this.say('没活干了')
-            this.fillDefenseStructure()
+            this.fillTower()
             return false
         }
     
