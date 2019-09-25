@@ -1,22 +1,23 @@
 import { getPath } from './utils'
-
-// 挂载拓展到 Creep 原型
+/**
+ * Creep 原型拓展
+ */
 export default function () {
-    _.assign(Creep.prototype, CreepExtension.prototype)
+    _.assign(Creep.prototype, creepExtension)
 }
 
-// creep 原型拓展
-class CreepExtension extends Creep {
-    // 进攻旗帜的名称
-    private ATTACK_FLAG_NAME = 'a'
-    // 占领旗帜的名称
-    private CLAIM_FLAG_NAME = 'claim'
+// 进攻旗帜的名称
+const ATTACK_FLAG_NAME = 'a'
+// 占领旗帜的名称
+const CLAIM_FLAG_NAME = 'claim'
+
+const creepExtension = {
     /**
      * creep 工作状态更新
      * @param workingMsg 工作时喊的话
      * @param onStateChange 状态切换时的回调
      */
-    public updateState(workingMsg: string='🧰 工作', onStateChange: Function=updateStateDefaultCallback): boolean {
+    updateState(workingMsg: string='🧰 工作', onStateChange: Function=updateStateDefaultCallback): boolean {
         // creep 身上没有能量 && creep 之前的状态为“工作”
         if(this.carry.energy <= 0 && this.memory.working) {
             // 切换状态
@@ -33,7 +34,7 @@ class CreepExtension extends Creep {
         }
     
         return this.memory.working
-    }
+    },
 
     /**
      * 检查是否有敌人
@@ -41,41 +42,41 @@ class CreepExtension extends Creep {
      * 
      * @returns {boolean} 是否有敌人
      */
-    public checkEnemy(): boolean {
+    checkEnemy() {
         // 从雷达扫描结果中获取敌人
-        const enemys: Creep|undefined = Memory[this.room.name].radarResult.enemys
+        const enemys = Memory[this.room.name].radarResult.enemys
         // 如果有敌人就返回最近的那个
         return enemys ? true : false
-    }
+    },
 
     /**
      * 待命
      * 移动到 [房间名 StandBy] 旗帜的位置
      */
-    public standBy(): void {
-        const standByFlag: Flag = Game.flags[`${this.room.name} StandBy`]
+    standBy() {
+        const standByFlag = Game.flags[`${this.room.name} StandBy`]
         if (standByFlag) this.moveTo(standByFlag, getPath())
         else this.say(`找不到 [${this.room.name} StandBy] 旗帜`)
-    }
+    },
 
     /**
      * 防御
      * 向雷达扫描到的敌方单位发起进攻
      */
-    public defense(): void {
+    defense() {
         // 从雷达扫描结果中获取敌人
-        const enemys: Creep[] = Memory[this.room.name].radarResult.enemys
+        const enemys = Memory[this.room.name].radarResult.enemys
         const enemy = this.pos.findClosestByRange(enemys)
         this.say(`正在消灭 ${enemy.name}`)
         this.moveTo(enemy.pos, getPath('attack'))
         this.attack(enemy)
-    }
+    },
 
     /**
      * 填充本房间内所有 spawn 和 extension 
      */
-    public fillSpawnEngry(): boolean {
-        const target: AnyStructure = this.pos.findClosestByPath(FIND_STRUCTURES, {
+    fillSpawnEngry() {
+        let target: StructureExtension|StructureSpawn|undefined = this.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: s => (s.structureType == STRUCTURE_EXTENSION ||
                 s.structureType == STRUCTURE_SPAWN) && 
                 (s.energy < s.energyCapacity)
@@ -85,13 +86,13 @@ class CreepExtension extends Creep {
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true
-    }
+    },
 
     /**
      * 填充本房间内所有 tower
      */
-    public fillTower(): boolean {
-        const target: AnyStructure = this.pos.findClosestByPath(FIND_STRUCTURES, {
+    fillTower() {
+        const target: StructureTower|undefined = this.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: s => s.structureType == STRUCTURE_TOWER && 
                 s.energy < s.energyCapacity
         })
@@ -104,22 +105,22 @@ class CreepExtension extends Creep {
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true
-    }
+    },
 
     /**
      * 填充本房间的 controller
      */
-    public upgrade(): void {
+    upgrade() {
         if(this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) {
             this.moveTo(this.room.controller, getPath('upgrade'))
         }
-    }
+    },
 
     /**
      * 建设房间内存在的建筑工地
      * @todo 布朗建设法
      */
-    public buildStructure(): boolean {
+    buildStructure() {
         // 遍历游戏中的建筑工地
         for (const constructionId in Game.constructionSites) {
             const construction: ConstructionSite = Game.constructionSites[constructionId]
@@ -136,14 +137,14 @@ class CreepExtension extends Creep {
         // 找不到就去升级控制器
         this.upgrade()
         return false
-    }
+    },
 
     /**
      * 移动到指定房间
      * 
      * @param roomName 要支援的房间名称
      */
-    public supportTo(roomName: string): boolean {
+    supportTo(roomName: string): boolean {
         if (this.room.name !== roomName) {
             const targetPos = new RoomPosition(25, 25, roomName)
             this.moveTo(targetPos, getPath())
@@ -152,13 +153,13 @@ class CreepExtension extends Creep {
         }
 
         return true
-    }
+    },
 
     /**
      * 维修房间内受损的建筑
      * 不会维修 wall 和 rempart
      */
-    public repairStructure(): boolean {
+    repairStructure() {
         let target = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: s => (s.hits < s.hitsMax) && (s.structureType != STRUCTURE_RAMPART) && (s.structureType != STRUCTURE_WALL)
         })
@@ -174,7 +175,7 @@ class CreepExtension extends Creep {
             this.moveTo(target, getPath('repair'))
         }
         return true
-    }
+    },
 
     /**
      * 填充防御性建筑
@@ -182,7 +183,7 @@ class CreepExtension extends Creep {
      * 
      * @param expectHits 期望生命值 (大于该生命值的建筑将不会被继续填充)
      */
-    public fillDefenseStructure(expectHits: number=5000): boolean {
+    fillDefenseStructure(expectHits: number=5000): boolean {
         // 检查自己内存里有没有期望生命值
         if (!this.memory.expectHits) this.memory.expectHits = expectHits
 
@@ -213,16 +214,16 @@ class CreepExtension extends Creep {
             this.moveTo(targets[0], getPath('repair'))
         }
         return true
-    }
+    },
 
     /**
      * 占领指定房间
      * 要占领的房间由名称为 CLAIM_FLAG_NAME 的旗帜指定
      */
-    public claim(): boolean {
-        const claimFlag = Game.flags[this.CLAIM_FLAG_NAME]
+    claim(): boolean {
+        const claimFlag = Game.flags[CLAIM_FLAG_NAME]
         if (!claimFlag) {
-            console.log(`场上不存在名称为 [${this.CLAIM_FLAG_NAME}] 的旗帜，请新建`)
+            console.log(`场上不存在名称为 [${CLAIM_FLAG_NAME}] 的旗帜，请新建`)
         }
         this.moveTo(claimFlag, getPath('claimer'))
         const room = claimFlag.room
@@ -231,7 +232,7 @@ class CreepExtension extends Creep {
             return false
         }
         return true
-    }
+    },
 
     /**
      * 从目标结构获取资源
@@ -240,11 +241,11 @@ class CreepExtension extends Creep {
      * @param getFunc 获取资源使用的方法名，必须是 Creep 原型上的，例如"harvest", "withdraw"
      * @param args 传递给上面方法的剩余参数列表
      */
-    public getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void {
+    getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void {
         if (this[getFunc](target, ...args) == ERR_NOT_IN_RANGE) {
             this.moveTo(target, getPath())
         }
-    }
+    },
 
     /**
      * 转移资源到结构
@@ -252,14 +253,14 @@ class CreepExtension extends Creep {
      * @param target 要转移到的目标
      * @param RESOURCE 要转移的资源类型
      */
-    public transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode {
+    transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode {
         // 转移能量实现
         const result: ScreepsReturnCode = this.transfer(target, RESOURCE)
         if (result == ERR_NOT_IN_RANGE) {
             this.moveTo(target, getPath())
         }
         return result
-    }
+    },
 
     /**
      * 进攻
@@ -268,11 +269,11 @@ class CreepExtension extends Creep {
      *
      * @todo 进攻敌方 creep
      */
-    public attackFlag() {
-        let attackFlag = Game.flags[this.ATTACK_FLAG_NAME]
+    attackFlag() {
+        let attackFlag = Game.flags[ATTACK_FLAG_NAME]
 
         if (!attackFlag) {
-            console.log(`没有名为 ${this.ATTACK_FLAG_NAME} 的旗子`)
+            console.log(`没有名为 ${ATTACK_FLAG_NAME} 的旗子`)
             return false
         }
 
@@ -283,14 +284,14 @@ class CreepExtension extends Creep {
             console.log(`${this.name} 正在攻击 ${targets[0].structureType}, 返回值 ${attackResult}`)
         }
         return true
-    }
+    },
 
     /**
      * 治疗指定目标
      * 比较给定目标生命(包括自己)生命损失的百分比, 谁血最低治疗谁
      * @param creeps 要治疗的目标们
      */
-    public healTo(creeps: Creep[]): void {
+    healTo(creeps: Creep[]) {
         creeps.push(this)
         // 生命值损失比例从大到小排序
         let sortedHitCreeps = creeps.sort((a, b) => (a.hits / a.hitsMax) - (b.hits / b.hitsMax))

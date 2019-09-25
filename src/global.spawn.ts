@@ -106,5 +106,5 @@ function syncCreepConfig(): boolean {
     if (Game.time % 100) return false
     // 同步配置项
     console.log('[spawn] 同步配置项')
-    globalExtension.resetConfig()
+    globalExtension.reloadConfig()
 }

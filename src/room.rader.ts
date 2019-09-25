@@ -22,4 +22,3 @@ function getEnermy (room: Room): Creep[]|null {
 
     return enemys ? enemys : null
 }
-

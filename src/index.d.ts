@@ -1,5 +1,10 @@
-declare var module: any
-declare var global: any
+declare module NodeJS {
+    // 全局对象
+    interface Global {
+        // 是否已经挂载拓展
+        hasExtension: boolean
+    }
+}
 
 /**
  * Memory 内存拓展

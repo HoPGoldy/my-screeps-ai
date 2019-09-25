@@ -1,8 +1,6 @@
 import { creepConfigs } from './config.creep'
 
-/**
- * 挂载全局拓展
- */
+// 挂载全局拓展
 export default function () {
     funcAlias.map(item => {
         Object.defineProperty(global, item.alias, { get: globalExtension[item.funcName] })
@@ -15,17 +13,15 @@ export default function () {
  * @property {string} funcName 执行别名时触发的 globalExtension 中的方法名
  */
 const funcAlias = [
-    { alias: 'reset', funcName: 'resetConfig' }
+    { alias: 'reload', funcName: 'reloadConfig' }
 ]
 
-/**
- * 全局拓展对象
- */
+// 全局拓展对象
 export const globalExtension = {
     /**
      * 从 config.creep 中重新应用配置
      */
-    resetConfig(): string {
+    reloadConfig(): string {
         // 收集所有存活中的 creep 角色
         let aliveCreepRoles: string[] = []
         let missCreep: string[] = []
