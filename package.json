@@ -4,7 +4,7 @@
   "description": "my custom ai for game Screeps",
   "main": "src/main.js",
   "scripts": {
-    "start": "npx grunt watch",
+    "start": "npx grunt watch:default",
     "local": "npx grunt watch:local",
     "dev": "npx grunt watch:dev",
     "pull": "npx grunt screeps-get"

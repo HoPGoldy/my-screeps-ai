@@ -4,6 +4,7 @@ module.exports = function(grunt) {
     grunt.loadNpmTasks('grunt-screeps-get')
     grunt.loadNpmTasks('grunt-screeps')
     grunt.loadNpmTasks('grunt-contrib-watch')
+    grunt.loadNpmTasks('grunt-contrib-clean')
     grunt.loadNpmTasks("grunt-ts")
     grunt.loadNpmTasks('grunt-contrib-copy')
 
@@ -29,7 +30,7 @@ module.exports = function(grunt) {
                 ptr: false
             },
             dist: {
-                src: ['src/*.{js,wasm}'],
+                src: ['dist/*.{js,wasm}'],
             }
         },
         // typescripts 编译任务
@@ -43,10 +44,6 @@ module.exports = function(grunt) {
                 src: ["src/*.ts"],
                 outDir: 'dist/'
             }
-        },
-        // 目标文件夹清空任务
-        'clean': {
-            'dist': ['dist']
         },
         // 代码文件夹扁平化及复制任务
         'copy': {
@@ -70,7 +67,7 @@ module.exports = function(grunt) {
             },
             local: {
                 files: "src/*.*",
-                tasks: [ "ts", "copy" ]
+                tasks: [ "ts", "copy:main" ]
             },
             dev: {
                 files: "src/*.*",
