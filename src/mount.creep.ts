@@ -134,8 +134,7 @@ class CreepExtension extends Creep {
      */
     public fillTower(): boolean {
         const target: AnyStructure = this.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: s => s.structureType == STRUCTURE_TOWER && 
-                s.energy < s.energyCapacity
+            filter: s => s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity
         })
         // 能量都已经填满
         if (!target) {
@@ -162,22 +161,41 @@ class CreepExtension extends Creep {
      * @todo 布朗建设法
      */
     public buildStructure(): boolean {
-        // 遍历游戏中的建筑工地
-        for (const constructionId in Game.constructionSites) {
-            const construction: ConstructionSite = Game.constructionSites[constructionId]
-            // 找到自己房间的工地
-            if (construction.room.name == this.room.name) {
-                // 建设
-                if(this.build(construction) == ERR_NOT_IN_RANGE) {
-                    this.moveTo(construction, getPath('build'))
-                }
-                return true
-            }
+        // 新建目标建筑工地
+        let target: ConstructionSite | null = null
+        // 检查是否有缓存
+        if (this.memory.constructionSiteId) {
+            target = Game.getObjectById(this.memory.constructionSiteId)
+            // 如果缓存中的工地不存在则获取下一个
+            if (!target) target = this._updateConstructionSite()
         }
+        // 没缓存就直接获取
+        else target = this._updateConstructionSite()
 
-        // 找不到就去升级控制器
-        this.upgrade()
-        return false
+        if (target) {
+            // 建设
+            if (this.build(target) == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
+        }
+        else {
+            // 找不到就去升级控制器
+            this.upgrade()
+            return false
+        }
+    }
+
+    /**
+     * 获取下一个建筑工地
+     * 有的话将其 id 写入自己 memory.constructionSiteId
+     * 
+     * @returns 下一个建筑工地，或者 null
+     */
+    private _updateConstructionSite(): ConstructionSite|null {
+        const targets: ConstructionSite[] = this.room.find(FIND_MY_CONSTRUCTION_SITES)
+        if (targets.length > 0) {
+            this.memory.constructionSiteId = targets[0].id
+            return targets[0]
+        }
+        else return null
     }
 
     /**
