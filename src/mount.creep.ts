@@ -115,15 +115,20 @@ class CreepExtension extends Creep {
 
     /**
      * 填充本房间内所有 spawn 和 extension 
+     * 
+     * @param backupStorageId 在能量填满后应该把能量往哪里存
      */
-    public fillSpawnEngry(): boolean {
-        const target: AnyStructure = this.pos.findClosestByPath(FIND_STRUCTURES, {
+    public fillSpawnEngry(backupStorageId: string=''): boolean {
+        let target: AnyStructure = this.pos.findClosestByPath(FIND_STRUCTURES, {
             filter: s => (s.structureType == STRUCTURE_EXTENSION ||
                 s.structureType == STRUCTURE_SPAWN) && 
                 (s.energy < s.energyCapacity)
         })
         // 能量都已经填满
-        if (!target) return false
+        if (!target) {
+            target = Game.getObjectById(backupStorageId)
+            if (!target) return false
+        }
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true

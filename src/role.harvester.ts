@@ -9,7 +9,7 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE 
  * @param spawnName 出生点名称
  * @param bodys 身体部件 (可选)
  */
-export default function (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig {
+export default function (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys, backupStorageId: string=''): ICreepConfig {
     const config: ICreepConfig = {
         source: [{
             func: 'getEngryFrom',
@@ -17,7 +17,7 @@ export default function (sourceId: string, spawnName: string, bodys: BodyPartCon
         }],
         target: [{
             func: 'fillSpawnEngry',
-            args: [ ]
+            args: [ backupStorageId ]
         }],
         switch: {
             func: 'updateState',
