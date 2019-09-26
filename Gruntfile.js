@@ -66,6 +66,10 @@ module.exports = function(grunt) {
         'watch': {
             default: {
                 files: "src/*.*",
+                tasks: [ "ts", "screeps" ]
+            },
+            local: {
+                files: "src/*.*",
                 tasks: [ "ts", "copy" ]
             },
             dev: {
