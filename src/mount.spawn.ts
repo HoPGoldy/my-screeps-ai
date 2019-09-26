@@ -8,6 +8,7 @@ export default function () {
 class SpawnExtension extends StructureSpawn {
     /**
      * spawn 主要工作
+     * @todo 二次生成问题
      */
     public work(): void {
         // 自己已经在生成了 / 内存里没有生成队列 / 生产队列为空 就啥都不干
