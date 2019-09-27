@@ -6,14 +6,13 @@ export default function () {
     _.assign(Creep.prototype, CreepExtension.prototype)
 }
 
+// 占领旗帜的名称
+const CLAIM_FLAG_NAME = 'claim'
+// 进攻旗帜的名称
+const ATTACK_FLAG_NAME = 'a'
+
 // creep 原型拓展
 class CreepExtension extends Creep {
-    // 进攻旗帜的名称
-    private ATTACK_FLAG_NAME = 'a'
-
-    // 占领旗帜的名称
-    private CLAIM_FLAG_NAME = 'claim'
-
     /**
      * creep 主要工作
      */
@@ -282,9 +281,10 @@ class CreepExtension extends Creep {
      * 要占领的房间由名称为 CLAIM_FLAG_NAME 的旗帜指定
      */
     public claim(): boolean {
-        const claimFlag = Game.flags[this.CLAIM_FLAG_NAME]
+        const claimFlag = Game.flags[CLAIM_FLAG_NAME]
         if (!claimFlag) {
-            console.log(`场上不存在名称为 [${this.CLAIM_FLAG_NAME}] 的旗帜，请新建`)
+            console.log(`场上不存在名称为 [${CLAIM_FLAG_NAME}] 的旗帜，请新建`)
+            return false
         }
         this.moveTo(claimFlag, getPath('claimer'))
         const room = claimFlag.room
@@ -330,9 +330,9 @@ class CreepExtension extends Creep {
      * @todo 进攻敌方 creep
      */
     public attackFlag() {
-        let attackFlag = Game.flags[this.ATTACK_FLAG_NAME]
+        let attackFlag = Game.flags[ATTACK_FLAG_NAME]
         if (!attackFlag) {
-            console.log(`没有名为 ${this.ATTACK_FLAG_NAME} 的旗子`)
+            console.log(`没有名为 ${ATTACK_FLAG_NAME} 的旗子`)
             return false
         }
 

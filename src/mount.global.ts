@@ -30,10 +30,17 @@ export const globalExtension = {
         }
         // 遍历 creepConfigs 的 name 进行检查
         for (const configName in creepConfigs) {
+            // 获取 spawn
+            const spawn: StructureSpawn = Game.spawns[creepConfigs[configName].spawn]
+            if (!spawn) {
+                console.log(`[生成失败] ${configName} 配置项未找到指定的 ${creepConfigs[configName].spawn}`)
+                continue
+            }
+
             // 配置项 creep 已存活
             if (_.find(aliveCreepRoles, role => role == configName)) continue
             // 配置项 creep 没存活但是在待生成队列里
-            else if (_.find(Game.spawns[creepConfigs[configName].spawn].memory.spawnList, role => role == configName)) continue
+            else if (_.find(spawn.memory.spawnList, role => role == configName)) continue
             // 配置项缺失, 加入待生成队列
             else {
                 Game.spawns[creepConfigs[configName].spawn].addTask(configName)

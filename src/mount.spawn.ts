@@ -13,6 +13,7 @@ class SpawnExtension extends StructureSpawn {
     public work(): void {
         // 自己已经在生成了 / 内存里没有生成队列 / 生产队列为空 就啥都不干
         if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
+        console.log('spawn 被触发')
         // 进行生成
         const spawnSuccess: boolean = this.mySpawnCreep(this.memory.spawnList[0])
         // 生成成功后移除任务
