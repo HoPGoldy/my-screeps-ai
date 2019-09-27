@@ -42,7 +42,8 @@ interface Creep {
     defense(): void
     fillSpawnEngry(backupStorageId?: string): boolean
     fillTower(): boolean
-    upgrade(): void
+    upgrade(): boolean
+    sign(content: string): void
     buildStructure(): boolean
     moveToRoom(roomName: string): boolean
     repairStructure(): boolean
@@ -89,7 +90,7 @@ interface CreepMemory {
  * @property spawn 要进行生产的出生点
  */
 interface ICreepConfig {
-    target: (creep: Creep) => any
+    target?: (creep: Creep) => any
     source?: (creep: Creep) => any
     switch?: (creep: Creep) => boolean
     spawn: string

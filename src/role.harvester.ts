@@ -2,8 +2,7 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE 
 
 /**
  * 采矿者配置生成器
- * source: 从指定矿中挖矿
- * target: 将其转移到 spawn 和 extension 中
+ * 从指定矿中挖矿 > 将矿转移到 spawn 和 extension 中
  * 
  * @param sourceId 要挖的矿 id
  * @param spawnName 出生点名称

@@ -11,7 +11,12 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
  */
 export default (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
     source: creep => creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest'),
-    target: creep => creep.repairStructure(),
+    target: creep => {
+        // 去维修
+        if (creep.repairStructure()) { }
+        // 没得修就填塔
+        else if (creep.fillTower()) { }
+    },
     switch: creep => creep.updateState('📌 修复'),
     spawn: spawnName,
     bodys

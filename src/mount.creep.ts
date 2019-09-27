@@ -30,8 +30,12 @@ class CreepExtension extends Creep {
         const working = creepConfig.switch ? creepConfig.switch(this) : true
 
         // 执行对应操作
-        if (working) creepConfig.target(this)
-        else creepConfig.source(this)
+        if (working) {
+            if (creepConfig.target) creepConfig.target(this)
+        }
+        else {
+            if (creepConfig.source) creepConfig.source(this)
+        }
 
         // 如果 creep 还没有发送重生信息的话，执行健康检查
         // 健康检查不通过则向 spawnList 发送自己的生成任务
@@ -147,9 +151,21 @@ class CreepExtension extends Creep {
     /**
      * 填充本房间的 controller
      */
-    public upgrade(): void {
+    public upgrade(): boolean {
         if(this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) {
             this.moveTo(this.room.controller, getPath('upgrade'))
+        }
+        return true
+    }
+
+    /**
+     * 给本房间签名
+     * 
+     * @param content 签名内容
+     */
+    public sign(content: string): void {
+        if (this.signController(this.room.controller, content) == ERR_NOT_IN_RANGE) {
+            this.moveTo(this.room.controller)
         }
     }
 
@@ -167,16 +183,11 @@ class CreepExtension extends Creep {
         }
         // 没缓存就直接获取
         else target = this._updateConstructionSite()
-
-        if (target) {
-            // 建设
-            if (this.build(target) == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
-        }
-        else {
-            // 找不到就去升级控制器
-            this.upgrade()
-            return false
-        }
+        if (!target) return false
+        
+        // 建设
+        if (this.build(target) == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
+        return true
     }
 
     /**
@@ -218,12 +229,7 @@ class CreepExtension extends Creep {
         let target = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: s => (s.hits < s.hitsMax) && (s.structureType != STRUCTURE_RAMPART) && (s.structureType != STRUCTURE_WALL)
         })
-        
-        if (!target) {
-            // this.say('没活干了')
-            this.fillTower()
-            return false
-        }
+        if (!target) return false
     
         // 修复结构实现
         if(this.repair(target) == ERR_NOT_IN_RANGE) {
@@ -319,20 +325,20 @@ class CreepExtension extends Creep {
 
     /**
      * 进攻
-     * 向 ATTACK_FLAG_NAME + memory.squad 旗帜发起冲锋
-     * 如果有 ATTACK_FLAG_NAME 旗帜，则优先进行响应
+     * 向 ATTACK_FLAG_NAME 旗帜发起进攻
      *
      * @todo 进攻敌方 creep
      */
     public attackFlag() {
         let attackFlag = Game.flags[this.ATTACK_FLAG_NAME]
-
         if (!attackFlag) {
             console.log(`没有名为 ${this.ATTACK_FLAG_NAME} 的旗子`)
             return false
         }
 
+        // 一直向旗帜移动
         this.moveTo(attackFlag.pos, getPath('attack'))
+        // 如果到旗帜所在房间了
         if (attackFlag.room) {
             const targets = attackFlag.getStructureByFlag()
             const attackResult = this.attack(targets[0])
@@ -373,4 +379,3 @@ class CreepExtension extends Creep {
      */
     private updateStateDefaultCallback(creep: Creep, working: boolean): void { }
 }
-

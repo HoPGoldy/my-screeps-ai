@@ -11,7 +11,10 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK ]
  */
 export default (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
     source: creep => creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest'),
-    target: creep => creep.buildStructure(),
+    target: creep => {
+        if (creep.buildStructure()) { }
+        else if (creep.upgrade()) { }
+    },
     switch: creep => creep.updateState('🚧 建造'),
     spawn: spawnName,
     bodys

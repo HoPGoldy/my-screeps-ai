@@ -14,7 +14,10 @@ export default (targetRoomName: string, sourceId: string, spawnName: string, bod
         if (creep.moveToRoom(targetRoomName)) creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest')
     },
     target: creep => {
-        if (creep.moveToRoom(targetRoomName)) creep.buildStructure()
+        if (creep.moveToRoom(targetRoomName)) {
+            if (creep.buildStructure()) { }
+            else if (creep.upgrade()) { }
+        }
     },
     switch: creep => creep.updateState('🚧 支援'),
     spawn: spawnName,
