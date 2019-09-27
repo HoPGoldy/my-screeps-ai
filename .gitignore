@@ -7,3 +7,4 @@ secret.js
 .tscache/
 
 src/config.creep.ts
+src/config.link.ts

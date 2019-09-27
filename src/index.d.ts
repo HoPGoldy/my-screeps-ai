@@ -104,6 +104,21 @@ interface ICreepConfigs {
 }
 
 /**
+ * link 配置项
+ * @property target link在准备好了的时候执行的方法
+ */
+interface ILinkConfig {
+    target: (link: StructureLink) => any
+}
+
+/**
+ * link 配置项列表
+ */
+interface ILinkConfigs {
+    [linkId: string]: ILinkConfig
+}
+
+/**
  * 从路径名到颜色的映射表
  */
 interface IPathMap {

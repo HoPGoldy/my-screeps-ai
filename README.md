@@ -24,7 +24,11 @@ module.exports = {
 
 **完成配置项**
 
-将 `src/` 目录中的 `config.creep.template.ts` 重命名为 `src/config.creep.ts`。
+打开 `src/` 目录: 
+
+- 将 `config.creep.template.ts` 重命名为 `src/config.creep.ts`。
+- 将 `config.link.template.ts` 重名名为 `config.link.ts`。
+
 
 ## 使用
 
