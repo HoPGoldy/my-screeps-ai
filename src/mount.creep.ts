@@ -9,7 +9,7 @@ export default function () {
 // 占领旗帜的名称
 const CLAIM_FLAG_NAME = 'claim'
 // 进攻旗帜的名称
-const ATTACK_FLAG_NAME = 'a'
+const ATTACK_FLAG_NAME = 'attack'
 
 // creep 原型拓展
 class CreepExtension extends Creep {
@@ -341,6 +341,10 @@ class CreepExtension extends Creep {
         // 如果到旗帜所在房间了
         if (attackFlag.room) {
             const targets = attackFlag.getStructureByFlag()
+            if (targets.length == 0) {
+                this.say('找不到目标！')
+                return false
+            }
             const attackResult = this.attack(targets[0])
             console.log(`${this.name} 正在攻击 ${targets[0].structureType}, 返回值 ${attackResult}`)
         }

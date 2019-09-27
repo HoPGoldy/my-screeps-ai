@@ -3,6 +3,7 @@ import upgrader from './role.upgrader'
 import builder from './role.builder'
 import repairer from './role.repairer'
 import claimer from './role.claimer'
+import soldier from './role.soldier'
 import transfer from './role.transfer'
 import remoteBuilder from './role.remoteBuilder'
 import remoteUpgrader from './role.remoteUpgrader'
@@ -15,6 +16,7 @@ export default {
     builder,
     repairer,
     claimer,
+    soldier,
     towerTransfer,
     spawnTransfer,
     remoteBuilder,
