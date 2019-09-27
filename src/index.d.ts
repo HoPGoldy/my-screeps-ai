@@ -31,6 +31,31 @@ interface StructureSpawn {
 }
 
 /**
+ * Creep 拓展
+ * 来自于 mount.creep.ts
+ */
+interface Creep {
+    work(): void
+    updateState(workingMsg?: string, onStateChange?: Function): boolean
+    checkEnemy(): boolean
+    standBy(): void
+    defense(): void
+    fillSpawnEngry(backupStorageId?: string): boolean
+    fillTower(): boolean
+    upgrade(): void
+    buildStructure(): boolean
+    supportTo(roomName: string): boolean
+    repairStructure(): boolean
+    fillDefenseStructure(expectHits?: number): boolean
+    claim(): boolean
+    getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void
+    transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
+    attackFlag()
+    healTo(creeps: Creep[]): void
+    isHealth(): boolean
+}
+
+/**
  * spawn 内存拓展
  * 
  * @property {string[]} spawnList 生产队列，元素为 creepConfig 的键名
@@ -57,16 +82,6 @@ interface CreepMemory {
 }
 
 /**
- * creep 的作业操作配置项
- * @property func 要执行的方法名，必须在 Creep 原型上
- * @property args 传递给执行方法的参数数组
- */
-interface IWorkOperation {
-    func: string
-    args: any[]
-}
-
-/**
  * creep 的配置项
  * @property source creep非工作(收集能量时)执行的方法
  * @property target creep工作时执行的方法
@@ -74,9 +89,9 @@ interface IWorkOperation {
  * @property spawn 要进行生产的出生点
  */
 interface ICreepConfig {
-    source: IWorkOperation[]
-    target: IWorkOperation[]
-    switch?: IWorkOperation
+    target: (creep: Creep) => any
+    source?: (creep: Creep) => any
+    switch?: (creep: Creep) => boolean
     spawn: string
     bodys: BodyPartConstant[]
 }

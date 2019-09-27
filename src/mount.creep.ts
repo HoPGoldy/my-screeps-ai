@@ -27,18 +27,14 @@ class CreepExtension extends Creep {
         // 获取对应配置项
         const creepConfig: ICreepConfig = creepConfigs[this.memory.role]
         // 获取是否工作
-        const working = creepConfig.switch ? this[creepConfig.switch.func](creepConfig.switch.args) : true
+        const working = creepConfig.switch ? creepConfig.switch(this) : true
 
         // 执行对应操作
         if (working) {
-            creepConfig.target.map(action => {
-                this[action.func](...action.args)
-            })
+            creepConfig.target(this)
         }
         else {
-            creepConfig.source.map(action => {
-                this[action.func](...action.args)
-            })
+            creepConfig.source(this)
         }
 
         // 如果 creep 还没有发送重生信息的话，执行健康检查
@@ -49,7 +45,7 @@ class CreepExtension extends Creep {
                 // 向指定 spawn 推送生成任务
                 Game.spawns[creepConfig.spawn].addTask(this.memory.role)
                 this.memory.hasSendRebirth = true
-            } 
+            }
         }
     }
 
@@ -163,7 +159,6 @@ class CreepExtension extends Creep {
 
     /**
      * 建设房间内存在的建筑工地
-     * @todo 布朗建设法
      */
     public buildStructure(): boolean {
         // 新建目标建筑工地

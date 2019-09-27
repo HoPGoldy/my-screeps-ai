@@ -1,3 +1,5 @@
+import { creepDefaultMemory } from "./config.creep.template"
+
 const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
 
 /**
@@ -11,18 +13,9 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE 
  */
 export default function (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig {
     const config: ICreepConfig = {
-        source: [{
-            func: 'getEngryFrom',
-            args: [ Game.getObjectById(sourceId), 'harvest' ]
-        }],
-        target: [{
-            func: 'upgrade',
-            args: [ ]
-        }],
-        switch: {
-            func: 'updateState',
-            args: [ '📈 升级' ]
-        },
+        source: creep => creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest'),
+        target: creep => creep.upgrade(),
+        switch: creep => creep.updateState('📈 升级'),
         spawn: spawnName,
         bodys
     }

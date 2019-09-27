@@ -9,16 +9,8 @@ const defaultBodys: BodyPartConstant[] = [ HEAL, MOVE, MOVE ]
  * @param creepsName 要治疗的 creep 名称数组
  * @param bodys 身体部件 (可选)
  */
-export default function (spawnName: string, creepsName: string[], bodys: BodyPartConstant[] = defaultBodys): ICreepConfig {
-    const config: ICreepConfig = {
-        source: [],
-        target: [{
-            func: 'healTo',
-            args: creepsName.map(name => Game.creeps[name])
-        }],
-        spawn: spawnName,
-        bodys
-    }
-
-    return config
-}
+export default (spawnName: string, creepsName: string[], bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
+    target: creep => creep.healTo(creepsName.map(name => Game.creeps[name])),
+    spawn: spawnName,
+    bodys
+})

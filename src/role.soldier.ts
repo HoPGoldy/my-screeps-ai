@@ -8,16 +8,8 @@ const defaultBodys: BodyPartConstant[] = [ ATTACK, MOVE, MOVE ]
  * @param spawnName 出生点名称
  * @param bodys 身体部件 (可选)
  */
-export default function (spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig {
-    const config: ICreepConfig = {
-        source: [ ],
-        target: [{
-            func: 'attackFlag',
-            args: [ ]
-        }],
-        spawn: spawnName,
-        bodys
-    }
-
-    return config
-}
+export default (spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
+    target: creep => creep.attackFlag(),
+    spawn: spawnName,
+    bodys
+})
