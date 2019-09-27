@@ -44,7 +44,7 @@ interface Creep {
     fillTower(): boolean
     upgrade(): void
     buildStructure(): boolean
-    supportTo(roomName: string): boolean
+    moveToRoom(roomName: string): boolean
     repairStructure(): boolean
     fillDefenseStructure(expectHits?: number): boolean
     claim(): boolean

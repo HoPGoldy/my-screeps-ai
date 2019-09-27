@@ -199,7 +199,7 @@ class CreepExtension extends Creep {
      * 
      * @param roomName 要支援的房间名称
      */
-    public supportTo(roomName: string): boolean {
+    public moveToRoom(roomName: string): boolean {
         if (this.room.name !== roomName) {
             const targetPos = new RoomPosition(25, 25, roomName)
             this.moveTo(targetPos, getPath())
