@@ -6,5 +6,5 @@ secret.js
 
 .tscache/
 
+src/config.ts
 src/config.creep.ts
-src/config.link.ts
