@@ -1,5 +1,3 @@
-import { creepDefaultMemory } from "./config.creep.template"
-
 const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
 
 /**

@@ -1,4 +1,4 @@
-import { creepConfigs } from './config.creep'
+import { creepConfigs } from './config'
 
 // 挂载全局拓展
 export default function () {

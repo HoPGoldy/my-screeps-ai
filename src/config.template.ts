@@ -1,5 +1,9 @@
 import role from './role'
 
+
+// --------------------------------------------- 以下为 creep 配置项 ---------------------------------------------
+
+
 /**
  * creep 配置项 (重要)
  * 
@@ -8,7 +12,7 @@ import role from './role'
  * [键名]: 该 creep 的角色(role)
  * [值]: 该 creep 的全部信息
  * 
- * 在新增完后应手动执行全局的 reset 方法来将新增的 creep 添加到待生成队列
+ * 在新增完后可以手动执行全局的 reload 方法来将新增的 creep 添加到待生成队列
  * 而对 creep 逻辑的修改会直接生效
  */
 export const creepConfigs: ICreepConfigs = {
@@ -38,4 +42,25 @@ export const creepDefaultMemory: CreepMemory = {
  */
 export const roomDefaultCreep = {
     E1: 'E1harvester1'
+}
+
+
+// ---------------------------------------------  以下为 link 配置项 ---------------------------------------------
+
+
+/**
+ * link 配置项列表 (主要)
+ * 当一个 link 冷却好了并且能量也满了
+ * 就会到这个列表中找到配置项执行
+ */
+export const linkConfigs: ILinkConfigs = {
+    // 'link的id': { target: link => link.transferEnergy( Game.getObjectById('目标link的id')) }
+}
+
+
+// --------------------------------------------- 以下为 marker 配置项 ---------------------------------------------
+
+
+export const orderFilter: OrderFilter = {
+    
 }

@@ -1,4 +1,4 @@
-import { creepConfigs, creepDefaultMemory, roomDefaultCreep } from './config.creep'
+import { creepConfigs, creepDefaultMemory, roomDefaultCreep } from './config'
 
 // 挂载拓展到 spawn 原型
 export default function () {

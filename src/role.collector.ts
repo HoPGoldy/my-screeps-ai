@@ -13,7 +13,7 @@ export default (sourceId: string, storageId: string, spawnName: string, bodys: B
     source: creep => creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest'),
     target: creep => {
         // 修路
-        if (creep.repairStructure()) { }
+        if (creep.repairStructure()) creep.say('先修个路')
         // 都修好了就送能量回家
         else if (creep.transferTo(Game.getObjectById(storageId), RESOURCE_ENERGY)) { }
     },

@@ -1,4 +1,4 @@
-import { linkConfigs } from './config.link'
+import { linkConfigs } from './config'
 
 // 挂载拓展到 Link 原型
 export default function () {

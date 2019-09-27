@@ -1,5 +1,5 @@
 import { getPath } from './utils'
-import { creepConfigs } from './config.creep'
+import { creepConfigs } from './config'
 
 // 挂载拓展到 Creep 原型
 export default function () {
