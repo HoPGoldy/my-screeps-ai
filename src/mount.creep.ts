@@ -30,12 +30,8 @@ class CreepExtension extends Creep {
         const working = creepConfig.switch ? creepConfig.switch(this) : true
 
         // 执行对应操作
-        if (working) {
-            creepConfig.target(this)
-        }
-        else {
-            creepConfig.source(this)
-        }
+        if (working) creepConfig.target(this)
+        else creepConfig.source(this)
 
         // 如果 creep 还没有发送重生信息的话，执行健康检查
         // 健康检查不通过则向 spawnList 发送自己的生成任务

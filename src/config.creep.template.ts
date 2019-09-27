@@ -21,7 +21,7 @@ export const creepConfigs: ICreepConfigs = {
 
     // 拓展组
     // W1N7Claimer1: role.claimer('Spawn1'), // 占领者, 占领后及时注释, 不然会一直生成
-    // WIN7Supporter1: role.supporter('W1N8', 'ab9e0774d1c107c', 'Spawn1'), // 建筑工
+    // WIN7Supporter1: role.remoteBuilder('W1N8', 'ab9e0774d1c107c', 'Spawn1'), // 建筑工
     // WIN7RemoteUpgrader1: role.remoteUpgrader('W1N8', 'ab9e0774d1c107c', 'Spawn1'), // 升级者
 }
 
