@@ -7,6 +7,7 @@ import transfer from './role.transfer'
 import remoteBuilder from './role.remoteBuilder'
 import remoteUpgrader from './role.remoteUpgrader'
 import towerTransfer from './role.towerTransfer'
+import spawnTransfer from './role.spawnTransfer'
 
 export default {
     harvester,
@@ -15,6 +16,7 @@ export default {
     repairer,
     claimer,
     towerTransfer,
+    spawnTransfer,
     remoteBuilder,
     remoteUpgrader
 }
