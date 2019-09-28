@@ -342,7 +342,7 @@ class CreepExtension extends Creep {
         if (attackFlag.room) {
             const targets = attackFlag.getStructureByFlag()
             if (targets.length == 0) {
-                this.say('找不到目标！')
+                console.log(`${this.name} 找不到目标！`)
                 return false
             }
             const attackResult = this.attack(targets[0])

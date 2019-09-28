@@ -43,7 +43,7 @@ export const globalExtension = {
             else if (_.find(spawn.memory.spawnList, role => role == configName)) continue
             // 配置项缺失, 加入待生成队列
             else {
-                Game.spawns[creepConfigs[configName].spawn].addTask(configName)
+                spawn.addTask(configName)
                 missCreep.push(configName)
             }
         }
