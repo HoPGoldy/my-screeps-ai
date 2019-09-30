@@ -182,10 +182,7 @@ class CreepExtension extends Creep {
         }
         // 没缓存就直接获取
         else target = this._updateConstructionSite()
-        if (!target) {
-            this.say('活干完了！')
-            return false
-        }
+        if (!target) return false
         
         // 建设
         if (this.build(target) == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
@@ -270,9 +267,6 @@ class CreepExtension extends Creep {
             target = newDefenseStructures[0]
             this.memory.fillWallId = target.id
             this.memory.expectHits = expectHits
-        }
-        else {
-            this.say('没有1的墙')
         }
 
         if (!target || target.hits > this.memory.expectHits) {
