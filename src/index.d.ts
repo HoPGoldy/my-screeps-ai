@@ -49,7 +49,7 @@ interface Creep {
     repairStructure(): boolean
     fillDefenseStructure(expectHits?: number): boolean
     claim(): boolean
-    getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void
+    getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
     attackFlag()
     healTo(creeps: Creep[]): void
@@ -70,6 +70,7 @@ interface SpawnMemory {
  * @property role crep的角色
  * @property working 是否在工作
  * @property hasSendRebirth 是否已经往 spwan 队列中推送了自己的重生任务
+ * @property fillWallId 要填充的墙 id 
  * @property constructionSiteId 建筑工特有 当前缓存的建筑工地
  * @property expectHits 城墙填充特有，标志当前期望的城墙生命值
  */
@@ -77,6 +78,7 @@ interface CreepMemory {
     role: string
     working: boolean
     hasSendRebirth: boolean
+    fillWallId?: string
     constructionSiteId?: string
     expectHits?: number
     squad?: number

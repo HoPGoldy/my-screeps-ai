@@ -10,7 +10,7 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
  * @param bodys 身体部件 (可选)
  */
 export default (sourceId: string, storageId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
-    source: creep => creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest'),
+    source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
     target: creep => {
         // 修路
         if (creep.repairStructure()) creep.say('先修个路')

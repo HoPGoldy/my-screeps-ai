@@ -12,7 +12,7 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
  * @param bodys 身体部件 (可选)
  */
 export default (sourceId: string, targetId: string, resourceType: ResourceConstant, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
-    source: creep => creep.getEngryFrom(Game.getObjectById(sourceId), 'harvest'),
+    source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
     target: creep => creep.transferTo(Game.getObjectById(targetId), resourceType),
     switch: creep => creep.updateState('🚒 运输'),
     spawn: spawnName,

@@ -182,7 +182,10 @@ class CreepExtension extends Creep {
         }
         // 没缓存就直接获取
         else target = this._updateConstructionSite()
-        if (!target) return false
+        if (!target) {
+            this.say('活干完了！')
+            return false
+        }
         
         // 建设
         if (this.build(target) == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
@@ -258,20 +261,43 @@ class CreepExtension extends Creep {
             return false
         }
 
-        // 再检查哪个墙的血量不够
-        let targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
-        while (targets.length <= 0) {
-            // 如果当前期望血量下没有满足添加的墙时，提高期望再次查找
-            this.memory.expectHits += expectHits
-            targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
-
-            // 做一个兜底 防止死循环
-            if (this.memory.expectHits >= WALL_HITS_MAX) break
+        //获取缓存中的墙
+        let target: Structure = Game.getObjectById(this.memory.fillWallId)
+        // 如果有血量只有1的墙的话优先处理 并将期望重设为初始值
+        const newDefenseStructures: Structure[] = _.filter(defenseStructures, s => s.hits == 1)
+        if (newDefenseStructures.length > 0) {
+            this.say('发现新墙，来了')
+            target = newDefenseStructures[0]
+            this.memory.fillWallId = target.id
+            this.memory.expectHits = expectHits
+        }
+        else {
+            this.say('没有1的墙')
         }
 
+        if (!target || target.hits > this.memory.expectHits) {
+            // 再检查哪个墙的血量不够
+            let targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
+            while (targets.length <= 0) {
+                // 如果当前期望血量下没有满足添加的墙时，提高期望再次查找 
+                this.memory.expectHits += expectHits
+                targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
+
+                // 做一个兜底 防止死循环
+                if (this.memory.expectHits >= WALL_HITS_MAX) break
+            }
+            
+            // 还是没找到墙的话就返回吧
+            if (targets.length <= 0) return false
+            else {
+                target = targets[0]
+                this.memory.fillWallId = target.id
+            }
+        }
+        
         // 填充结构
-        if(this.repair(targets[0]) == ERR_NOT_IN_RANGE) {
-            this.moveTo(targets[0], getPath('repair'))
+        if(this.repair(target) == ERR_NOT_IN_RANGE) {
+            this.moveTo(target, getPath('repair'))
         }
         return true
     }
@@ -296,16 +322,22 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 从目标结构获取资源
+     * 从目标结构获取能量
      * 
-     * @param target 提供资源的结构
-     * @param getFunc 获取资源使用的方法名，必须是 Creep 原型上的，例如"harvest", "withdraw"
-     * @param args 传递给上面方法的剩余参数列表
+     * @param target 提供能量的结构
+     * @returns 执行 harvest 或 withdraw 后的返回值
      */
-    public getEngryFrom(target: Structure, getFunc: string, ...args: any[]): void {
-        if (this[getFunc](target, ...args) == ERR_NOT_IN_RANGE) {
+    public getEngryFrom(target: Structure|Source): ScreepsReturnCode {
+        let result: ScreepsReturnCode
+        // 是建筑就用 withdraw
+        if ('structureType' in target) result = this.withdraw(target as Structure, RESOURCE_ENERGY)
+        // 不是的话就用 harvest
+        else result = this.harvest(target as Source)
+
+        if (result == ERR_NOT_IN_RANGE) {
             this.moveTo(target, getPath())
         }
+        return result
     }
 
     /**
