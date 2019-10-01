@@ -25,6 +25,20 @@ class CreepExtension extends Creep {
         }
         // 获取对应配置项
         const creepConfig: ICreepConfig = creepConfigs[this.memory.role]
+
+        // 没准备的时候就执行准备阶段
+        if (!this.memory.ready) {
+            // 有准备阶段配置则执行
+            if (creepConfig.prepare && creepConfig.isReady) {
+                creepConfig.prepare(this)
+                this.memory.ready = creepConfig.isReady(this)
+            }
+            // 没有就直接准备完成
+            else this.memory.ready = true
+        }
+
+        if (!this.memory.ready) return 
+
         // 获取是否工作
         const working = creepConfig.switch ? creepConfig.switch(this) : true
 
@@ -127,6 +141,42 @@ class CreepExtension extends Creep {
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true
+    }
+
+    /**
+     * 查找到目标的路径并写入内存
+     * 写入的位置是 memory.path
+     * 
+     * @param target 目标的位置
+     * @returns 是否找到完整的路径
+     */
+    public findPathTo(target: RoomPosition): boolean {
+        const path = PathFinder.search(this.pos, target, {
+            plainCost: 2,
+            swampCost: 10,
+            roomCallback: function(roomName) {
+                let room = Game.rooms[roomName]
+                if (!room) return
+                let costs = new PathFinder.CostMatrix
+        
+                room.find(FIND_STRUCTURES).forEach(struct => {
+                    if (struct.structureType === STRUCTURE_ROAD) {
+                        costs.set(struct.pos.x, struct.pos.y, 1)
+                    }
+                    else if (struct.structureType !== STRUCTURE_CONTAINER && (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
+                        costs.set(struct.pos.x, struct.pos.y, 255)
+                    }
+                })
+        
+                return costs
+            }
+        })
+
+        if (path.incomplete) {
+            this.memory.path = path.path
+            return true
+        }
+        else return false
     }
 
     /**

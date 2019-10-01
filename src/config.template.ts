@@ -32,8 +32,10 @@ export const creepConfigs: ICreepConfigs = {
 // creep 的默认内存
 export const creepDefaultMemory: CreepMemory = {
     role: '',
+    ready: false,
     working: false,
-    hasSendRebirth: false
+    hasSendRebirth: false,
+    path: []
 }
 
 /**
