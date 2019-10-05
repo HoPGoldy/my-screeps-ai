@@ -17,40 +17,4 @@ module.exports.loop = function (): void {
 
     // 所有 creep 干活
     doing(Game.creeps)
-
-
-    const source: RoomPosition = new RoomPosition(27, 12, 'W3N6')
-
-    const creep = Game.creeps['test']
-    // creep.moveTo(30, 18)
-
-    if (creep) {
-        let path: RoomPosition[]
-        if (creep.memory.path) {
-            path = creep.memory.path
-        }
-        else {
-            path = PathFinder.search(creep.pos, source, {
-                roomCallback: function(roomName) {
-                    let room = Game.rooms[roomName]
-                    if (!room) return
-                    let costs = new PathFinder.CostMatrix;
-            
-                    room.find(FIND_STRUCTURES).forEach(struct => {
-                        if (struct.structureType === STRUCTURE_ROAD) {
-                            costs.set(struct.pos.x, struct.pos.y, 1)
-                        } 
-                        else if (struct.structureType !== STRUCTURE_CONTAINER && (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
-                            costs.set(struct.pos.x, struct.pos.y, 255);
-                        }
-                    })
-            
-                    return costs
-                }
-            }).path
-
-            creep.memory.path = path
-        }
-        console.log(creep.moveByPath(path))
-    }
 }
