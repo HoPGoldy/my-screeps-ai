@@ -41,7 +41,8 @@ interface Creep {
     standBy(): void
     defense(): void
     fillSpawnEngry(backupStorageId?: string): boolean
-    findPathTo(target: RoomPosition): boolean
+    findPathInRoom(target: RoomPosition): PathStep[]
+    farMoveTo(target: RoomPosition): 0|-1|-4|-11|-12|-5|-10
     fillTower(): boolean
     upgrade(): boolean
     sign(content: string): void
@@ -55,6 +56,16 @@ interface Creep {
     attackFlag()
     healTo(creeps: Creep[]): void
     isHealth(): boolean
+}
+
+/**
+ * 某个结构的位置信息
+ */
+interface IPositionInfo {
+    id: string
+    roomName: string
+    x: number
+    y: number
 }
 
 /**
@@ -82,7 +93,7 @@ interface CreepMemory {
     role: string
     working: boolean
     hasSendRebirth: boolean
-    path?: RoomPosition[]
+    path?: PathStep[]
     fillWallId?: string
     constructionSiteId?: string
     expectHits?: number

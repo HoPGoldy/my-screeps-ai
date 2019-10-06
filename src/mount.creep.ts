@@ -144,39 +144,42 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 查找到目标的路径并写入内存
-     * 写入的位置是 memory.path
+     * 查找到目标的路径并返回
      * 
      * @param target 目标的位置
-     * @returns 是否找到完整的路径
+     * @returns 路径
      */
-    public findPathTo(target: RoomPosition): boolean {
-        const path = PathFinder.search(this.pos, target, {
-            plainCost: 2,
-            swampCost: 10,
-            roomCallback: function(roomName) {
-                let room = Game.rooms[roomName]
-                if (!room) return
-                let costs = new PathFinder.CostMatrix
-        
-                room.find(FIND_STRUCTURES).forEach(struct => {
-                    if (struct.structureType === STRUCTURE_ROAD) {
-                        costs.set(struct.pos.x, struct.pos.y, 1)
-                    }
-                    else if (struct.structureType !== STRUCTURE_CONTAINER && (struct.structureType !== STRUCTURE_RAMPART || !struct.my)) {
-                        costs.set(struct.pos.x, struct.pos.y, 255)
-                    }
-                })
-        
-                return costs
-            }
+    public findPathInRoom(target: RoomPosition): PathStep[] {
+        return this.pos.findPathTo(target, {
+            ignoreCreeps: true,
+            serialize: true
         })
+    }
 
-        if (path.incomplete) {
-            this.memory.path = path.path
-            return true
+    /**
+     * 远距离跨房间移动
+     * 该方法会在进入下个房间后使用 room.findPath 规划路径并写入缓存
+     * 
+     * @param target 终点的坐标
+     * @returns creep.moveByPath 的返回值
+     */
+    farMoveTo(target: RoomPosition): 0|-1|-4|-11|-12|-5|-10 {
+        if (!this.memory.path) {
+            this.memory.path = this.findPathInRoom(target)
+            // this.say('已重新规划路径')
+            return 0
         }
-        else return false
+        else {
+            // 移动 如果移动出现问题就再次规划后重试
+            // 这里导致 ERR_NOT_FOUND 的原因大多是刚移动到下一个房间
+            let moveResult = this.moveByPath(this.memory.path)
+            if (moveResult == ERR_NOT_FOUND) {
+                this.memory.path = this.findPathInRoom(target)
+                moveResult = this.moveByPath(this.memory.path)
+            }
+            
+            return moveResult
+        }
     }
 
     /**

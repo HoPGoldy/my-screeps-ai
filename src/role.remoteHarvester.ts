@@ -1,47 +1,28 @@
 const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ] // WORK, CARRY, 
 
-interface ISourceInfo {
-    id: string
-    roomName: string
-    x: number
-    y: number
-}
-
 /**
- * 采矿者配置生成器
+ * 外矿采矿者配置生成器
  * 从指定矿中挖矿 > 将矿转移到建筑中
  * 
- * @param sourceId 要挖的矿 id
+ * @param sourceInfo 外矿的信息
+ * @param targetId 要移动到的建筑 id
  * @param spawnName 出生点名称
  * @param bodys 身体部件 (可选)
  */
-export default (sourceInfo: ISourceInfo, targetId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
-    // 准备阶段：将到指定矿的路径写入缓存
-    prepare: creep => {
-        if (!creep.spawning) {
-            creep.say('准备了！')
-            creep.findPathTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName))
-        }
-    },
-    // 缓存中路径不为空就说明准备好了
-    isReady: creep => creep.memory.path.length > 0,
+export default (sourceInfo: IPositionInfo, targetId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
     source: creep => {
-        console.log(creep.moveByPath(creep.memory.path))
-        // if (creep.harvest(Game.getObjectById(sourceInfo.id)) !== 0) {
-            
-        // }
+        // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
+        if (creep.harvest(Game.getObjectById(sourceInfo.id)) !== OK) {
+            creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName))
+        }
     },
     target: creep => {
-        if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== 0) {
-            creep.moveByPath(creep.memory.path)
+        if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
+            creep.farMoveTo(Game.getObjectById(targetId))
         }
     },
-    switch: creep => creep.updateState('🍚 收获', (c: Creep, state: boolean) => {
-        // 看是要回还是要去
-        const endPos: RoomPosition = state ? new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName) : Game.getObjectById<Structure>(targetId).pos
-        // 计算路径
-        if (!c.findPathTo(endPos)) console.log(`找不到到 ${endPos.roomName} ${endPos.x} ${endPos.y} 的路径！`)
-    }),
+    // 状态刷新时移除内存中的路径缓存
+    switch: creep => creep.updateState('🍚 收获', c => delete c.memory.path),
     spawn: spawnName,
     bodys
 })
