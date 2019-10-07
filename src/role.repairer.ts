@@ -13,9 +13,9 @@ export default (sourceId: string, spawnName: string, bodys: BodyPartConstant[] =
     source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
     target: creep => {
         // 去维修
-        if (creep.repairStructure()) { }
-        // 没得修就填塔
-        else if (creep.fillTower()) { }
+        if (creep.repairStructure()) {}
+        // 没得修就修墙
+        else if (creep.fillDefenseStructure()) {}
     },
     switch: creep => creep.updateState('📌 修复'),
     spawn: spawnName,

@@ -4,20 +4,22 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
  * 支援者配置生成器
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  * 
+ * @test 远程移动是否可用
  * @param targetRoomName 要支援的目标房间名
  * @param sourceId 要采集的矿物 id
  * @param spawnName 出生点
  * @param bodys 身体部件(可选)
  */
 export default (targetRoomName: string, sourceId: string, spawnName: string, bodys: BodyPartConstant[] = defaultBodys): ICreepConfig => ({
-    source: creep => {
-        if (creep.moveToRoom(targetRoomName)) creep.getEngryFrom(Game.getObjectById(sourceId))
-    },
+    // 向指定房间移动
+    prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
+    // 自己所在的房间为指定房间则准备完成
+    isReady: creep => creep.room.name === targetRoomName,
+    // 下面是正常的建造者逻辑
+    source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
     target: creep => {
-        if (creep.moveToRoom(targetRoomName)) {
-            if (creep.buildStructure()) { }
-            else if (creep.upgrade()) { }
-        }
+        if (creep.buildStructure()) { }
+        else if (creep.upgrade()) { }
     },
     switch: creep => creep.updateState('🚧 支援'),
     spawn: spawnName,

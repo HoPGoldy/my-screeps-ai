@@ -190,11 +190,7 @@ class CreepExtension extends Creep {
             filter: s => s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity
         })
         // 能量都已经填满
-        if (!target) {
-            // 没事干就去修墙
-            this.fillDefenseStructure()
-            return false
-        }
+        if (!target) return false
 
         this.transferTo(target, RESOURCE_ENERGY)
         return true
