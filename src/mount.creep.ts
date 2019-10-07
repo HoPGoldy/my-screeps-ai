@@ -39,7 +39,7 @@ class CreepExtension extends Creep {
 
         if (!this.memory.ready) return 
 
-        // 获取是否工作
+        // 获取是否工作，没有 switch 的话直接执行 target
         const working = creepConfig.switch ? creepConfig.switch(this) : true
 
         // 执行对应操作

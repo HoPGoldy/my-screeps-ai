@@ -4,7 +4,6 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
  * 支援 - 采矿者配置生成器
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  * 
- * @test 远程移动是否可用
  * @param targetRoomName 要支援的目标房间名
  * @param sourceId 要采集的矿物 id
  * @param spawnName 出生点
@@ -18,7 +17,7 @@ export default (targetRoomName: string, sourceId: string, spawnName: string, bod
     // 下面是正常的升级者逻辑
     source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
     target: creep => creep.upgrade(),
-    switch: creep => creep.updateState('📈 支援-升级'),
+    switch: creep => creep.updateState('📈 支援升级'),
     spawn: spawnName,
     bodys
 })

@@ -17,12 +17,20 @@ export default (sourceInfo: IPositionInfo, targetId: string, spawnName: string, 
         }
     },
     target: creep => {
+        // 检查脚下的路有没有问题，有的话就进行维修
+        const structures = creep.pos.lookFor(LOOK_STRUCTURES)
+        if (structures.length > 0) {
+            const road = structures[0]
+            if (road.hits < road.hitsMax) creep.repair(road)
+        }
+        else creep.say('没有路！')
+        // 在把剩余能量运回去
         if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
             creep.farMoveTo(Game.getObjectById(targetId))
         }
     },
     // 状态刷新时移除内存中的路径缓存
-    switch: creep => creep.updateState('🍚 收获', c => delete c.memory.path),
+    switch: creep => creep.updateState('🍚 收获', (c: Creep) => delete c.memory.path),
     spawn: spawnName,
     bodys
 })

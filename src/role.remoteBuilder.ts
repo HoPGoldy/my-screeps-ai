@@ -4,7 +4,6 @@ const defaultBodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]
  * 支援者配置生成器
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  * 
- * @test 远程移动是否可用
  * @param targetRoomName 要支援的目标房间名
  * @param sourceId 要采集的矿物 id
  * @param spawnName 出生点
@@ -21,7 +20,7 @@ export default (targetRoomName: string, sourceId: string, spawnName: string, bod
         if (creep.buildStructure()) { }
         else if (creep.upgrade()) { }
     },
-    switch: creep => creep.updateState('🚧 支援'),
+    switch: creep => creep.updateState('🚧 支援建造'),
     spawn: spawnName,
     bodys
 })
