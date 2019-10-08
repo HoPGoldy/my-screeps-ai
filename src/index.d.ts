@@ -44,7 +44,7 @@ interface Creep {
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
     attackFlag()
     healTo(creeps: Creep[]): void
-    isHealth(): boolean
+    isHealthy(): boolean
 }
 
 /**

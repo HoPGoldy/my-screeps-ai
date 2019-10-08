@@ -53,7 +53,7 @@ class CreepExtension extends Creep {
         // 如果 creep 还没有发送重生信息的话，执行健康检查
         // 健康检查不通过则向 spawnList 发送自己的生成任务
         if (!this.memory.hasSendRebirth) {
-            const health: boolean = this.isHealth()
+            const health: boolean = this.isHealthy()
             if (!health) {
                 // 向指定 spawn 推送生成任务
                 Game.spawns[creepConfig.spawn].addTask(this.memory.role)
@@ -422,7 +422,7 @@ class CreepExtension extends Creep {
      * 
      * @returns {boolean} 健康就返回 true, 不健康返回 false
      */
-    public isHealth(): boolean {
+    public isHealthy(): boolean {
         if (this.ticksToLive <= 10 || this.hits < this.hitsMax / 2) return false
         else return true
     }
