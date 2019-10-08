@@ -138,11 +138,3 @@ interface ILinkConfigs {
 interface IPathMap {
     [propName: string]: string
 }
-
-/**
- * 对 Flag 的原型拓展
- * @see file ./src/mount.flag.ts
- */
-interface Flag {
-    getStructureByFlag(): Structure<StructureConstant>[]
-}

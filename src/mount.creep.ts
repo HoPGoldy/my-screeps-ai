@@ -415,7 +415,7 @@ class CreepExtension extends Creep {
         this.moveTo(attackFlag.pos, getPath('attack'))
         // 如果到旗帜所在房间了
         if (attackFlag.room) {
-            const targets = attackFlag.getStructureByFlag()
+            const targets = attackFlag.pos.lookFor(LOOK_STRUCTURES)
             if (targets.length == 0) {
                 console.log(`${this.name} 找不到目标！`)
                 return false

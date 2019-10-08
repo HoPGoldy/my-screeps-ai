@@ -1,6 +1,5 @@
 import mountCreep from './mount.creep'
 import mountGlobal from './mount.global'
-import mountFlag from './mount.flag'
 import mountTower from './mount.tower'
 import mountSpawn from './mount.spawn'
 import { syncCreepConfig } from './utils'
@@ -17,7 +16,6 @@ export default function (): void {
         // 挂载全部拓展
         mountGlobal()
         mountCreep()
-        mountFlag()
         mountTower()
         mountSpawn()
     }
