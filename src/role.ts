@@ -9,18 +9,23 @@ import remoteHarvester from './role.remoteHarvester'
 import remoteBuilder from './role.remoteBuilder'
 import remoteUpgrader from './role.remoteUpgrader'
 import towerTransfer from './role.towerTransfer'
-import spawnTransfer from './role.spawnTransfer'
+
+import baseRoles from './roles.base'
+import remoteRoles from './roles.remote'
 
 export default {
-    harvester,
-    upgrader,
-    builder,
-    repairer,
-    claimer,
+    ...baseRoles,
+    // harvester,
+    // upgrader,
+    // builder,
+    // repairer,
+    // towerTransfer,
+
     soldier,
-    towerTransfer,
-    spawnTransfer,
-    remoteBuilder,
-    remoteUpgrader,
-    remoteHarvester
+
+    ...remoteRoles,
+    // claimer,
+    // remoteBuilder,
+    // remoteUpgrader,
+    // remoteHarvester
 }

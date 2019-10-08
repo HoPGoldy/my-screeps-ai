@@ -11,8 +11,8 @@ class LinkExtension extends StructureLink {
      * link 主要工作
      */
     public work(): void {
-        // 冷却好了 能量满了
-        if (this.energy == this.energyCapacity && this.cooldown == 0) {
+        // 冷却好了 能量不为空
+        if (this.energy > 0 && this.cooldown == 0) {
             // 读配置项
             const linkConfig: ILinkConfig = linkConfigs[this.id]
             if (!linkConfig) return console.log(`link ${this.id} 找不到对应的配置项`)
