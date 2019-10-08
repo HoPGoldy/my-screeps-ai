@@ -160,6 +160,10 @@ class CreepExtension extends Creep {
      * 远距离跨房间移动
      * 该方法会在进入下个房间后使用 room.findPath 规划路径并写入缓存
      * 
+     * @danger 此方法可能会导致 creep 移动变呆
+     * 由于该方法之后在移动出现 ERR_NOT_FOUND 和 work 状态刷新时才会更新缓存
+     * 所以可能会出现修改了目标但是 creep 依旧朝上一个目标移动的问题发生 (依旧在执行旧缓存的路径)
+     * 
      * @param target 终点的坐标
      * @returns creep.moveByPath 的返回值
      */
@@ -207,17 +211,6 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 给本房间签名
-     * 
-     * @param content 签名内容
-     */
-    public sign(content: string): void {
-        if (this.signController(this.room.controller, content) == ERR_NOT_IN_RANGE) {
-            this.moveTo(this.room.controller)
-        }
-    }
-
-    /**
      * 建设房间内存在的建筑工地
      */
     public buildStructure(): boolean {
@@ -251,22 +244,6 @@ class CreepExtension extends Creep {
             return targets[0]
         }
         else return null
-    }
-
-    /**
-     * 移动到指定房间
-     * 
-     * @param roomName 要支援的房间名称
-     */
-    public moveToRoom(roomName: string): boolean {
-        if (this.room.name !== roomName) {
-            const targetPos = new RoomPosition(25, 25, roomName)
-            this.moveTo(targetPos, getPath())
-
-            return false
-        }
-
-        return true
     }
 
     /**
@@ -456,5 +433,7 @@ class CreepExtension extends Creep {
      * @param creep creep
      * @param working 当前是否在工作
      */
-    private updateStateDefaultCallback(creep: Creep, working: boolean): void { }
+    private updateStateDefaultCallback(creep: Creep, working: boolean): void { 
+        delete creep.memory.path
+    }
 }

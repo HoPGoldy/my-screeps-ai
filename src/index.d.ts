@@ -36,9 +36,7 @@ interface Creep {
     farMoveTo(target: RoomPosition): 0|-1|-4|-11|-12|-5|-10
     fillTower(): boolean
     upgrade(): boolean
-    sign(content: string): void
     buildStructure(): boolean
-    moveToRoom(roomName: string): boolean
     repairStructure(): boolean
     fillDefenseStructure(expectHits?: number): boolean
     claim(): boolean
