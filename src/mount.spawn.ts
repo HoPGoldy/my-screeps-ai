@@ -44,11 +44,17 @@ class SpawnExtension extends StructureSpawn {
      */
     private mySpawnCreep(configName, minBody: boolean=false): boolean {
         const creepConfig = creepConfigs[configName]
+        // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
+        if (!creepConfig) return true
+
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
         const bodys: BodyPartConstant[] = minBody ? [ WORK, CARRY, MOVE] : creepConfig.bodys
-
+        if (!bodys) {
+            console.log(`${configName} 的 bodys 属性不可读`)
+            return false
+        } 
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName + ' ' + Game.time, {
             memory: creepMemory
         })

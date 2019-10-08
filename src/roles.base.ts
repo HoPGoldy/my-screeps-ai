@@ -30,7 +30,7 @@ export default {
      */
     upgrader: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
-        target: creep => creep.upgradeController(creep.room.controller),
+        target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
         spawn: spawnName,
         bodys
