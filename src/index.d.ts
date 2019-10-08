@@ -7,15 +7,6 @@ declare module NodeJS {
 }
 
 /**
- * Memory 内存拓展
- * @property {array} spawnList 要生成的 creep 队列
- * @property {object} expansionList 扩张计划列表
- */
-interface Memory {
-    spawnList: string[]
-}
-
-/**
  * 建筑拓展
  * 有可能有自定义的 work 方法
  */
@@ -62,7 +53,7 @@ interface Creep {
  * 某个结构的位置信息
  */
 interface IPositionInfo {
-    id: string
+    id?: string
     roomName: string
     x: number
     y: number

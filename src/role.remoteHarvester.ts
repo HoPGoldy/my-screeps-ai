@@ -23,7 +23,17 @@ export default (sourceInfo: IPositionInfo, targetId: string, spawnName: string, 
             const road = structures[0]
             if (road.hits < road.hitsMax) creep.repair(road)
         }
-        else creep.say('没有路！')
+        // 没有的话就放工地并建造
+        else {
+            const constructionSites = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES)
+            if (constructionSites.length > 0) {
+                const site = constructionSites[0]
+                creep.build(site)
+            }
+            else {
+                creep.pos.createConstructionSite(STRUCTURE_ROAD)
+            }
+        }
         // 在把剩余能量运回去
         if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
             creep.farMoveTo(Game.getObjectById(targetId))

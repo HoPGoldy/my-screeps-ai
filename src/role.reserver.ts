@@ -13,9 +13,14 @@ export default (sourceInfo: IPositionInfo, spawnName: string, bodys: BodyPartCon
     // 朝控制器移动
     prepare: creep => creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName)),
     // 只要可以摸到控制器就说明准备阶段完成
-    isReady: creep => creep.reserveController(Game.getObjectById(sourceInfo.id)) === OK,
+    isReady: creep => creep.reserveController(creep.room.controller) === OK,
     // 一直进行预定
-    target: creep => creep.reserveController(Game.getObjectById(sourceInfo.id)),
+    target: creep => {
+        // 房间被预定且预定时间没有超过上限
+        if (creep.room.controller.reservation && creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
+            creep.reserveController(creep.room.controller)
+        }
+    },
     spawn: spawnName,
     bodys
 })
