@@ -5,7 +5,7 @@
 export default {
     /**
      * 采矿者配置生成器
-     * 从指定矿中挖矿 > 将矿转移到 spawn 和 extension 中
+     * 从指定结构中获取能量 > 将矿转移到 spawn 和 extension 中
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
@@ -21,8 +21,7 @@ export default {
 
     /**
      * 升级者配置生成器
-     * source: 从指定矿中挖矿
-     * target: 将其转移到指定的 roomController 中
+     * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
@@ -38,8 +37,7 @@ export default {
 
     /**
      * 建筑者配置生成器
-     * source: 从指定矿中挖矿
-     * target: 查找建筑工地并建造
+     * 从指定结构中获取能量 > 查找建筑工地并建造
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
@@ -58,8 +56,7 @@ export default {
 
     /**
      * 维修者配置生成器
-     * source: 从指定矿中挖矿
-     * target: 维修房间内的建筑
+     * 从指定结构中获取能量 > 维修房间内的建筑
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
@@ -80,8 +77,7 @@ export default {
 
     /**
      * tower 填充者配置生成器
-     * source: 从指定矿中挖矿
-     * target: 将能量填充到 tower 中
+     * 从指定结构中获取能量 > 将能量填充到 tower 中
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称

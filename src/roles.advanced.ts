@@ -1,5 +1,3 @@
-import { creepConfigs } from "./config.template"
-
 /**
  * 高级房间运营角色组
  * 本角色组包括了有 Storage 和 Link 的房间内运维所需的角色
