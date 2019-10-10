@@ -5,7 +5,7 @@
 export default {
     /**
      * 采矿者配置生成器
-     * 从指定结构中获取能量 > 将矿转移到 spawn 和 extension 中
+     * 从指定 source 中获取能量 > 将矿转移到 spawn 和 extension 中
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
@@ -14,6 +14,29 @@ export default {
     harvester: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ], backupStorageId: string=''): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.fillSpawnEngry(backupStorageId),
+        switch: creep => creep.updateState('🍚 收获'),
+        spawn: spawnName,
+        bodys
+    }),
+
+    /**
+     * 收集者
+     * 从指定 source 中获取能量 > 将能量转移到指定建筑中
+     * 
+     * @param sourceId 要挖的矿 id
+     * @param targetId 指定建筑 id
+     * @param spawnName 出生点名称
+     * @param bodys 身体部件 (可选)
+     */
+    collector: (sourceId: string, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+        source: creep => {
+            const source: Source|Mineral = Game.getObjectById(sourceId)
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source)
+        },
+        target: creep => {
+            const target: Structure = Game.getObjectById(targetId)
+            if (creep.transfer(target, Object.keys(creep.carry)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
+        },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodys
