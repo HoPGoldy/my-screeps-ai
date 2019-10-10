@@ -1,6 +1,7 @@
 import mountCreep from './mount.creep'
 import mountGlobal from './mount.global'
 import mountTower from './mount.tower'
+import mountLink from './mount.link'
 import mountSpawn from './mount.spawn'
 import { syncCreepConfig } from './utils'
 
@@ -18,5 +19,6 @@ export default function (): void {
         mountCreep()
         mountTower()
         mountSpawn()
+        mountLink()
     }
 }

@@ -15,8 +15,9 @@ class LinkExtension extends StructureLink {
         if (this.energy > 0 && this.cooldown == 0) {
             // 读配置项
             const linkConfig: ILinkConfig = linkConfigs[this.id]
-            if (!linkConfig) return console.log(`link ${this.id} 找不到对应的配置项`)
+            if (!linkConfig) return 
             // 执行配置项中的 target 方法
+            // console.log(`link ${this.id} 找到了！`)
             linkConfig.target(this)
         }
     }
