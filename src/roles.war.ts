@@ -4,7 +4,7 @@
  */
 export default {
     /**
-     * 士兵配置生成器
+     * 士兵
      * 会一直向旗帜发起进攻
      * 
      * @param spawnName 出生点名称
@@ -17,7 +17,7 @@ export default {
     }),
 
     /**
-     * 医生配置生成器
+     * 医生
      * 一直治疗给定的 creep
      * 
      * @param spawnName 出生点名称
@@ -31,7 +31,7 @@ export default {
     }),
 
     /**
-     * 防御者配置生成器
+     * 房间防御者
      * 到 "房间名 StandBy" 旗帜下待命 > 攻击出现的敌人
      * 
      * @param spawnName 出生点名称

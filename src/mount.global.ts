@@ -9,6 +9,8 @@ export default function () {
 
 /**
  * 全局拓展的别名
+ * 使用别名来方便在控制台执行方法
+ * 
  * @property {string} alias 别名
  * @property {string} funcName 执行别名时触发的 globalExtension 中的方法名
  */

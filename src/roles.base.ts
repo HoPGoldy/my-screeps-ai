@@ -4,7 +4,7 @@
  */
 export default {
     /**
-     * 采矿者配置生成器
+     * 采集者
      * 从指定 source 中获取能量 > 将矿转移到 spawn 和 extension 中
      * 
      * @param sourceId 要挖的矿 id
@@ -21,7 +21,7 @@ export default {
 
     /**
      * 收集者
-     * 从指定 source 中获取能量 > 将能量转移到指定建筑中
+     * 从指定 source 或 mineral 中获取资源 > 将资源转移到指定建筑中
      * 
      * @param sourceId 要挖的矿 id
      * @param targetId 指定建筑 id
@@ -43,7 +43,7 @@ export default {
     }),
 
     /**
-     * 升级者配置生成器
+     * 升级者
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      * 
      * @param sourceId 要挖的矿 id
@@ -59,7 +59,7 @@ export default {
     }),
 
     /**
-     * 建筑者配置生成器
+     * 建筑者
      * 从指定结构中获取能量 > 查找建筑工地并建造
      * 
      * @param sourceId 要挖的矿 id
@@ -78,7 +78,7 @@ export default {
     }),
 
     /**
-     * 维修者配置生成器
+     * 维修者
      * 从指定结构中获取能量 > 维修房间内的建筑
      * 
      * @param sourceId 要挖的矿 id
@@ -99,7 +99,7 @@ export default {
     }),
 
     /**
-     * tower 填充者配置生成器
+     * tower 填充者
      * 从指定结构中获取能量 > 将能量填充到 tower 中
      * 
      * @param sourceId 要挖的矿 id

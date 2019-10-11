@@ -1,5 +1,4 @@
 import mountWork from './mount'
-
 import { clearDiedCreep, syncCreepConfig, doing } from './utils'
 
 module.exports.loop = function (): void {

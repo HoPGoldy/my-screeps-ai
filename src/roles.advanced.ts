@@ -4,7 +4,7 @@
  */
 export default {
     /**
-     * 运输者配置生成器
+     * 运输者
      * 从 Storage 中获取能量，并填充 Spawn Extension 和 Tower
      * 
      * @param spawnName 出生点名称
@@ -27,7 +27,7 @@ export default {
     }),
 
     /**
-     * 中心搬运者配置生成器
+     * 中心搬运者
      * 从 centerLink 中获取能量，并填充 Storage
      * 
      * @param x 要移动到的 x 坐标
