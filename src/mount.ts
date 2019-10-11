@@ -1,8 +1,9 @@
 import mountCreep from './mount.creep'
 import mountGlobal from './mount.global'
-import mountTower from './mount.tower'
-import mountLink from './mount.link'
-import mountSpawn from './mount.spawn'
+// import mountTower from './mount.tower'
+// import mountLink from './mount.link'
+// import mountSpawn from './mount.spawn'
+import mountStructure from './mount.structure'
 import { syncCreepConfig } from './utils'
 
 /**
@@ -17,8 +18,9 @@ export default function (): void {
         // 挂载全部拓展
         mountGlobal()
         mountCreep()
-        mountTower()
-        mountSpawn()
-        mountLink()
+        mountStructure()
+        // mountTower()
+        // mountSpawn()
+        // mountLink()
     }
 }
