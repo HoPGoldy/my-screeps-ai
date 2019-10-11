@@ -5,21 +5,12 @@ module.exports.loop = function (): void {
     // 挂载所有拓展
     mountWork()
 
-    // creep 数量控制
+    // creep 数量检查
     creepNumberController()
-
-    // 清除死亡 creep 记忆
-    // clearDiedCreep()
-    
-    // 定期同步 creep 配置
-    // syncCreepConfig()
 
     // 所有建筑干活
     doing(Game.structures)
 
     // 所有 creep 干活
     doing(Game.creeps)
-
-    // for (const name in Game.spawns) Game.spawns[name].clearTask()
-    // for (const name in Game.creeps) Game.creeps[name].suicide()
 }
