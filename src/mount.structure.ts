@@ -45,7 +45,15 @@ class SpawnExtension extends StructureSpawn {
      * @returns true/false 有/没有
      */
     public hasTask(taskName: string): boolean {
-        return _.findIndex(this.memory.spawnList, taskName) !== -1
+        return this.memory.spawnList.indexOf(taskName) > -1
+    }
+
+    /**
+     * 清空任务队列
+     * 非测试情况下不要调用！
+     */
+    public clearTask(): void {
+        this.memory.spawnList = []
     }
 
     /**

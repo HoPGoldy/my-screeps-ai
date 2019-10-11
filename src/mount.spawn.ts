@@ -36,6 +36,14 @@ class SpawnExtension extends StructureSpawn {
     }
 
     /**
+     * 清空任务队列
+     * 非测试情况下不要调用！
+     */
+    public clearTask(): void {
+        this.memory.spawnList = []
+    }
+
+    /**
      * 从 spawn 生产 creep
      * 
      * @param configName 对应的配置名称

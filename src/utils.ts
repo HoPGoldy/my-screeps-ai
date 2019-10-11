@@ -57,6 +57,7 @@ export function clearDiedCreep (): boolean {
 export function creepNumberController (): void {
     // 每 50 tick 执行一次
     if (Game.time % 50) return
+    console.log('--------------------执行了！')
 
     for (const name in Memory.creeps) {
         // 如果 creep 已经凉了
@@ -65,14 +66,21 @@ export function creepNumberController (): void {
             // 获取配置项
             const creepConfig: ICreepConfig = creepConfigs[role]
             if (!creepConfig) {
-                console.log(`死亡 ${name} 未找到指定的 creepConfig`)
+                console.log(`死亡 ${name} 未找到指定的 creepConfig 已删除`)
+                delete Memory.creeps[name]
                 return
             }
 
             // 检查指定的 spawn 中有没有它的生成任务
             const spawn = Game.spawns[creepConfig.spawn]
+            if (!spawn) {
+                console.log(`死亡 ${name} 未找到 ${creepConfig.spawn}`)
+                return
+            }
             // 没有的话加入生成
-            if (!spawn.hasTask(role)) console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列，当前排队位置: ${spawn.addTask(role) + 1}`)
+            if (!spawn.hasTask(role)) {
+                console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列，当前排队位置: ${spawn.addTask(role)}`)
+            }
             // 有的话删除过期内存
             else {
                 delete Memory.creeps[name]

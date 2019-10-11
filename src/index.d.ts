@@ -20,6 +20,7 @@ interface Structure {
 interface StructureSpawn {
     addTask(taskName: string): number
     hasTask(taskName: string): boolean
+    clearTask(): void
 }
 
 /**

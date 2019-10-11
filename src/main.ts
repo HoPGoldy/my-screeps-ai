@@ -19,4 +19,7 @@ module.exports.loop = function (): void {
 
     // 所有 creep 干活
     doing(Game.creeps)
+
+    // for (const name in Game.spawns) Game.spawns[name].clearTask()
+    // for (const name in Game.creeps) Game.creeps[name].suicide()
 }
