@@ -88,7 +88,7 @@ class CreepExtension extends Creep {
 
     /**
      * 检查是否有敌人
-     * 注意! 该方法只能检查自己控制的房间
+     * 注意! 该方法只能检查有视野的房间
      * 
      * @returns {boolean} 是否有敌人
      */
@@ -423,7 +423,7 @@ class CreepExtension extends Creep {
      * @returns {boolean} 健康就返回 true, 不健康返回 false
      */
     public isHealthy(): boolean {
-        if (this.ticksToLive <= 10 || this.hits < this.hitsMax / 2) return false
+        if (this.ticksToLive <= 15) return false
         else return true
     }
 

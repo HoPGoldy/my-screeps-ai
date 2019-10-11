@@ -24,9 +24,10 @@ export const globalExtension = {
      * 从 config.creep 中重新应用配置
      */
     reloadConfig(): string {
+        // 缺失的 creep 角色
+        let missCreep: string[] = []
         // 收集所有存活中的 creep 角色
         let aliveCreepRoles: string[] = []
-        let missCreep: string[] = []
         for (const creepName in Game.creeps) {
             aliveCreepRoles.push(Game.creeps[creepName].memory.role)
         }
@@ -35,14 +36,14 @@ export const globalExtension = {
             // 获取 spawn
             const spawn: StructureSpawn = Game.spawns[creepConfigs[configName].spawn]
             if (!spawn) {
-                console.log(`[生成失败] ${configName} 配置项未找到指定的 ${creepConfigs[configName].spawn}`)
+                console.log(`[reload 异常] ${configName} 配置项未找到指定的 ${creepConfigs[configName].spawn}`)
                 continue
             }
 
-            // 配置项 creep 已存活
-            if (_.find(aliveCreepRoles, role => role == configName)) continue
-            // 配置项 creep 没存活但是在待生成队列里
-            else if (_.find(spawn.memory.spawnList, role => role == configName)) continue
+            // creep 存活
+            if (_.find(aliveCreepRoles, role => role === configName)) continue
+            // creep 没存活但是在待生成队列里
+            else if (_.find(spawn.memory.spawnList, role => role === configName)) continue
             // 配置项缺失, 加入待生成队列
             else {
                 spawn.addTask(configName)

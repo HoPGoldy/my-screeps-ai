@@ -1,4 +1,5 @@
 import { globalExtension } from './mount.global'
+import { creepConfigs } from './config'
 
 // 路径名到颜色的对应列表
 const pathMap: IPathMap = {
@@ -47,18 +48,38 @@ export function clearDiedCreep (): boolean {
 }
 
 /**
- * 获取自己控制的房间名
- * "自己控制": 有自己 spawn 的房间
- * 使用 lodash uniq 方法去重
+ * creep 数量控制器
+ * 每 50 tick 执行一次清理
  * 
- * @returns {list} 自己占领的房间名列表
+ * 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
+ * 此函数可以同时清除死去 creep 的内存
  */
-export function getRoomList (): string[] {
-    let rooms: string[] = []
-    for (const spawnName in Game.spawns) {
-        rooms.push(Game.spawns[spawnName].room.name)
+export function creepNumberController (): void {
+    // 每 50 tick 执行一次
+    if (Game.time % 50) return
+
+    for (const name in Memory.creeps) {
+        // 如果 creep 已经凉了
+        if (!Game.creeps[name]) {
+            const role: string = Memory.creeps[name].role
+            // 获取配置项
+            const creepConfig: ICreepConfig = creepConfigs[role]
+            if (!creepConfig) {
+                console.log(`死亡 ${name} 未找到指定的 creepConfig`)
+                return
+            }
+
+            // 检查指定的 spawn 中有没有它的生成任务
+            const spawn = Game.spawns[creepConfig.spawn]
+            // 没有的话加入生成
+            if (!spawn.hasTask(role)) console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列，当前排队位置: ${spawn.addTask(role) + 1}`)
+            // 有的话删除过期内存
+            else {
+                delete Memory.creeps[name]
+                console.log('清除死去 creep 记忆', name)
+            }
+        }
     }
-    return _.uniq(rooms)
 }
 
 /**

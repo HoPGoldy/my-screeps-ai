@@ -12,7 +12,6 @@ export default function () {
 class SpawnExtension extends StructureSpawn {
     /**
      * spawn 主要工作
-     * @todo 二次生成问题
      */
     public work(): void {
         // 自己已经在生成了 / 内存里没有生成队列 / 生产队列为空 就啥都不干
@@ -37,6 +36,16 @@ class SpawnExtension extends StructureSpawn {
         this.memory.spawnList.push(taskName)
 
         return this.memory.spawnList.length
+    }
+
+    /**
+     * 检查生产队列中是否包含指定任务
+     * 
+     * @param taskName 要检查的任务名
+     * @returns true/false 有/没有
+     */
+    public hasTask(taskName: string): boolean {
+        return _.findIndex(this.memory.spawnList, taskName) !== -1
     }
 
     /**

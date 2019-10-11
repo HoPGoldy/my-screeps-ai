@@ -1,15 +1,18 @@
 import mountWork from './mount'
-import { clearDiedCreep, syncCreepConfig, doing } from './utils'
+import { creepNumberController, clearDiedCreep, syncCreepConfig, doing } from './utils'
 
 module.exports.loop = function (): void {
     // 挂载所有拓展
     mountWork()
 
+    // creep 数量控制
+    creepNumberController()
+
     // 清除死亡 creep 记忆
-    clearDiedCreep()
+    // clearDiedCreep()
     
     // 定期同步 creep 配置
-    syncCreepConfig()
+    // syncCreepConfig()
 
     // 所有建筑干活
     doing(Game.structures)
