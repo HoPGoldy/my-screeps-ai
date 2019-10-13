@@ -32,12 +32,8 @@ export function getPath (pathName: string='default'): MoveToOpts {
 
 /**
  * 死亡 creep 记忆清除
- * 每 1000 tick 执行一次清理
  */
 export function clearDiedCreep (): boolean {
-    // 每 1000 tick 执行一次
-    if (Game.time % 1000) return false
-
     for(const name in Memory.creeps) {
         if(!Game.creeps[name]) {
             delete Memory.creeps[name]
@@ -57,7 +53,6 @@ export function clearDiedCreep (): boolean {
 export function creepNumberController (): void {
     // 每 50 tick 执行一次
     if (Game.time % 50) return
-    console.log('--------------------执行了！')
 
     for (const name in Memory.creeps) {
         // 如果 creep 已经凉了

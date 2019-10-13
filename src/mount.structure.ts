@@ -76,7 +76,7 @@ class SpawnExtension extends StructureSpawn {
             console.log(`${configName} 的 bodys 属性不可读`)
             return false
         } 
-        const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName + ' ' + Game.time, {
+        const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
         })
         // 检查是否生成成功
