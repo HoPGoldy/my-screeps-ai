@@ -1,1 +1,0 @@
-src\config.template.ts src\config.ts src\index.d.ts src\main.ts src\mount.creep.ts src\mount.global.ts src\mount.spawn.ts src\mount.structure.ts src\mount.terminal.ts src\mount.tower.ts src\mount.ts src\role.ts src\roles.advanced.ts src\roles.base.ts src\roles.remote.ts src\roles.war.ts src\utils.ts --removeComments --rootDir src/ --target ES5 --outDir dist/

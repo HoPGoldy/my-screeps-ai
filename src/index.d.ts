@@ -117,6 +117,12 @@ interface ICreepConfigs {
     [creepName: string]: ICreepConfig
 }
 
+// Link 拓展
+interface StructureLink {
+    work(): void
+    to(targetId: string): void
+}
+
 /**
  * link 配置项
  * @property target link在准备好了的时候执行的方法

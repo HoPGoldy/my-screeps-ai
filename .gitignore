@@ -6,5 +6,7 @@ secret.js
 
 .tscache/
 
+*.tmp.txt
+
 src/config.ts
 src/config.creep.ts

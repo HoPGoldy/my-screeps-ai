@@ -84,6 +84,10 @@ class SpawnExtension extends StructureSpawn {
             console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
             return true
         }
+        else if (spawnResult == ERR_NAME_EXISTS) {
+            console.log(`${configName} 已经存在 ${creepConfig.spawn} 将不再生成 ...`)
+            return true
+        }
         else {
             console.log(`${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return false
@@ -169,6 +173,13 @@ class LinkExtension extends StructureLink {
             // console.log(`link ${this.id} 找到了！`)
             linkConfig.target(this)
         }
+    }
+
+    /**
+     * 传递能量的快捷方法
+     */
+    public to(targetId: string): void {
+        this.transferEnergy(Game.getObjectById(targetId))
     }
 }
 
