@@ -32,10 +32,14 @@ class SpawnExtension extends StructureSpawn {
      */
     public addTask(taskName: string): number {
         if (!this.memory.spawnList) this.memory.spawnList = []
-        // 任务加入队列
-        this.memory.spawnList.push(taskName)
-
-        return this.memory.spawnList.length
+        // 先检查下任务是不是已经在队列里了
+        if (!this.hasTask(taskName)) {
+            // 任务加入队列
+            this.memory.spawnList.push(taskName)
+            return this.memory.spawnList.length
+        }
+        // 如果已经有的话返回 -1
+        else return -1
     }
 
     /**
@@ -100,13 +104,20 @@ class SpawnExtension extends StructureSpawn {
      * 如果真没了的话则生成最小身体部件的房间默认 creep
      */
     private noCreepSave(): void {
-        // 检查下房间内的 creep 是不是死完了
-        if (this.room.find(FIND_MY_CREEPS).length == 0) {
-            // 死完了就生成 roomDefaultCreep 中定义的默认 creep
-            if (this.room.name in roomDefaultCreep) {
+        // 获取默认 creep 组
+        const defaultCreeps = roomDefaultCreep[this.room.name]
+        if (!defaultCreeps) {
+            console.log(`警告！房间 ${this.room.name} 没有设置默认 creep！`)
+            return
+        }
+
+        // 遍历检查默认 creep 是不是已经不在了
+        for (const defaultCreep of defaultCreeps) {
+            // 如果不在了就用最小身体尝试重生
+            if (!Game.creeps[defaultCreep]) {
                 this.mySpawnCreep(roomDefaultCreep[this.room.name], true)
+                return
             }
-            else console.log(`房间 ${this.room.name} 没有设置默认 creep`)
         }
     }
 }
