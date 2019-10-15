@@ -160,17 +160,19 @@ class CreepExtension extends Creep {
      * 远距离跨房间移动
      * 该方法会在进入下个房间后使用 room.findPath 规划路径并写入缓存
      * 
-     * @danger 此方法可能会导致 creep 移动变呆
-     * 由于该方法之后在移动出现 ERR_NOT_FOUND 和 work 状态刷新时才会更新缓存
-     * 所以可能会出现修改了目标但是 creep 依旧朝上一个目标移动的问题发生 (依旧在执行旧缓存的路径)
-     * 
      * @param target 终点的坐标
      * @returns creep.moveByPath 的返回值
      */
     farMoveTo(target: RoomPosition): 0|-1|-4|-11|-12|-5|-10 {
+        // 确认目标有没有变化, 变化了则重新规划路线
+        const targetPosTag = `${target.x}/${target.y}${target.roomName}`
+        if (targetPosTag !== this.memory.targetPosTag) {
+            this.memory.targetPosTag = targetPosTag
+            this.memory.path = this.findPathInRoom(target)
+        }
+        // 确认缓存有没有被清除
         if (!this.memory.path) {
             this.memory.path = this.findPathInRoom(target)
-            // this.say('已重新规划路径')
             return 0
         }
         else {
@@ -433,7 +435,5 @@ class CreepExtension extends Creep {
      * @param creep creep
      * @param working 当前是否在工作
      */
-    private updateStateDefaultCallback(creep: Creep, working: boolean): void { 
-        delete creep.memory.path
-    }
+    private updateStateDefaultCallback(creep: Creep, working: boolean): void { }
 }

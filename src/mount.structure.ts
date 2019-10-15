@@ -181,7 +181,6 @@ class LinkExtension extends StructureLink {
             const linkConfig: ILinkConfig = linkConfigs[this.id]
             if (!linkConfig) return 
             // 执行配置项中的 target 方法
-            // console.log(`link ${this.id} 找到了！`)
             linkConfig.target(this)
         }
     }

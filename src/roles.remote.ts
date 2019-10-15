@@ -149,8 +149,7 @@ export default {
                 creep.farMoveTo(Game.getObjectById(targetId))
             }
         },
-        // 状态刷新时移除内存中的路径缓存
-        switch: creep => creep.updateState('🍚 收获', (c: Creep) => delete c.memory.path),
+        switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodys
     })
