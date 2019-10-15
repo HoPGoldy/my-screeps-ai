@@ -51,7 +51,6 @@ export function clearDiedCreep (): boolean {
  * 此函数可以同时清除死去 creep 的内存
  */
 export function creepNumberController (): void {
-    // 每 50 tick 执行一次
     if (Game.time % 50) return
 
     for (const name in Memory.creeps) {
@@ -96,15 +95,4 @@ export function doing(map: object): void {
 
         if (item.work) item.work()
     }
-}
-
-/**
- * 定期从配置项同步，确保不会有 creep 异常死亡从而间断生成
- */
-export function syncCreepConfig(): boolean {
-    // 每 1000 tick 执行一次
-    if (Game.time % 100) return false
-    // 同步配置项
-    console.log('[spawn] 同步配置项')
-    globalExtension.reloadConfig()
 }

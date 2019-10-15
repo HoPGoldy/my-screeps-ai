@@ -121,6 +121,13 @@ export default {
      */
     remoteHarvester: (sourceInfo: IPositionInfo, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
         source: creep => {
+            // 检查自己身边有没有敌人
+            const enemys = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
+            // 有的话就往家跑
+            if (enemys.length > 0) {
+                creep.farMoveTo(Game.spawns[spawnName].pos)
+            }
+            // 下面是正常开采逻辑
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
             if (creep.harvest(Game.getObjectById(sourceInfo.id)) !== OK) {
                 creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName))
@@ -144,7 +151,7 @@ export default {
                     creep.pos.createConstructionSite(STRUCTURE_ROAD)
                 }
             }
-            // 在把剩余能量运回去
+            // 再把剩余能量运回去
             if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
                 creep.farMoveTo(Game.getObjectById(targetId))
             }
