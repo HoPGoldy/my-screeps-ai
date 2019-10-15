@@ -5,7 +5,8 @@
 export default {
     /**
      * 士兵
-     * 会一直向旗帜发起进攻
+     * 会一直向旗帜发起进攻,
+     * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
      * 
      * @param spawnName 出生点名称
      * @param bodys 身体部件 (可选)

@@ -33,6 +33,13 @@ export default {
         isReady: creep => creep.reserveController(creep.room.controller) === OK,
         // 一直进行预定
         target: creep => {
+            // 检查自己身边有没有敌人
+            const enemys = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
+            // 有的话就往家跑
+            if (enemys.length > 0) {
+                creep.farMoveTo(Game.spawns[spawnName].pos)
+            }
+            
             // 房间被预定且预定时间没有超过上限
             if (creep.room.controller.reservation && creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
                 creep.reserveController(creep.room.controller)

@@ -383,7 +383,7 @@ class CreepExtension extends Creep {
      *
      * @todo 进攻敌方 creep
      */
-    public attackFlag() {
+    public attackFlag(): boolean {
         let attackFlag = Game.flags[ATTACK_FLAG_NAME]
         if (!attackFlag) {
             console.log(`没有名为 ${ATTACK_FLAG_NAME} 的旗子`)
@@ -394,6 +394,13 @@ class CreepExtension extends Creep {
         this.moveTo(attackFlag.pos, getPath('attack'))
         // 如果到旗帜所在房间了
         if (attackFlag.room) {
+            // 优先攻击 creep
+            const enemys = attackFlag.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
+            if (enemys.length > 0) {
+                if (this.attack(enemys[0]) === ERR_NOT_IN_RANGE) this.moveTo(enemys[0])
+                return true
+            }
+            // 没有的话再攻击 structure
             const targets = attackFlag.pos.lookFor(LOOK_STRUCTURES)
             if (targets.length == 0) {
                 console.log(`${this.name} 找不到目标！`)
