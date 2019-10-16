@@ -45,17 +45,17 @@ export function clearDiedCreep (): boolean {
 
 /**
  * creep 数量控制器
- * 每 50 tick 执行一次清理
  * 
  * 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
  * 此函数可以同时清除死去 creep 的内存
  */
 export function creepNumberController (): void {
-    if (Game.time % 50) return
+    // if (Game.time % 20) return
 
     for (const name in Memory.creeps) {
         // 如果 creep 已经凉了
         if (!Game.creeps[name]) {
+            console.log(name, '已经死了')
             const role: string = Memory.creeps[name].role
             // 获取配置项
             const creepConfig: ICreepConfig = creepConfigs[role]

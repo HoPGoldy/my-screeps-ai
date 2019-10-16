@@ -1,4 +1,4 @@
-import { linkConfigs, orderFilter, creepConfigs, creepDefaultMemory, roomDefaultCreep } from './config'
+import { linkConfigs, orderFilter, creepConfigs, creepDefaultMemory } from './config'
 
 // 挂载拓展到建筑原型
 export default function () {
@@ -99,7 +99,7 @@ class SpawnExtension extends StructureSpawn {
             return true
         }
         else {
-            console.log(`${creepConfig.spawn} 生成失败, 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
+            console.log(`[生成失败] ${creepConfig.spawn} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return false
         }
     }
@@ -120,6 +120,7 @@ class SpawnExtension extends StructureSpawn {
             // 将任务名和重要角色名比较
             for (const importantRole of importantRoles) {
                 if (spawnTask.indexOf(importantRole) !== -1) {
+                    console.log(`[断供警告] ${this.room.name} 即将生成最小化 ${spawnTask}`)
                     // 是重要角色的话则以最小身体生成
                     if (this.mySpawnCreep(spawnTask, true)) this.memory.spawnList.splice(Number(index), 1)
                 }

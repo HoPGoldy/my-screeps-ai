@@ -38,15 +38,6 @@ export const creepDefaultMemory: CreepMemory = {
     path: []
 }
 
-/**
- * 每个房间都应该定义一个默认 creep 
- * 这个 creep 角色会在房间里 creep 死完时以最小身体部件生成
- */
-export const roomDefaultCreep = {
-    E1: 'E1harvester1'
-}
-
-
 // ---------------------------------------------  以下为 link 配置项 ---------------------------------------------
 
 

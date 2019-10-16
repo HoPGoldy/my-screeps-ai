@@ -43,6 +43,29 @@ export default {
     }),
 
     /**
+     * 资源转移者
+     * 从指定建筑中获取资源 > 将资源转移到指定建筑中
+     * 
+     * @param sourceId 获取资源的建筑 id
+     * @param targetId 指定建筑 id
+     * @param spawnName 出生点名称
+     * @param bodys 身体部件 (可选)
+     */
+    resourceTransfer: (sourceId: string, ResourceType: ResourceConstant, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ CARRY, CARRY, MOVE ]): ICreepConfig => ({
+        source: creep => {
+            const source: Structure = Game.getObjectById(sourceId)
+            if (creep.withdraw(source, ResourceType) == ERR_NOT_IN_RANGE) creep.moveTo(source)
+        },
+        target: creep => {
+            const target: Structure = Game.getObjectById(targetId)
+            if (creep.transfer(target, Object.keys(creep.carry)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
+        },
+        switch: creep => creep.updateState('🍚 收获'),
+        spawn: spawnName,
+        bodys
+    }),
+
+    /**
      * 升级者
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      * 

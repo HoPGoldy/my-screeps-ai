@@ -10,8 +10,8 @@ export default {
      * @param spawnName 出生点名称
      * @param bodys 身体部件 (可选)
      */
-    transfer: (spawnName: string, bodys: BodyPartConstant[] = [ CARRY, CARRY, MOVE ]): ICreepConfig => ({
-        source: creep => creep.getEngryFrom(creep.room.storage),
+    transfer: (spawnName: string, bodys: BodyPartConstant[] = [ CARRY, CARRY, MOVE ], sourceId: string = null): ICreepConfig => ({
+        source: creep => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
             // 获取有需求的建筑
             const target = creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
