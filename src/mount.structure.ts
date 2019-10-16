@@ -8,6 +8,12 @@ export default function () {
     // _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
 }
 
+/**
+ * 重要角色
+ * creep 名包含下面的字符串即代表该角色是用于“维持房间spawn能量”
+ */
+const importantRoles: string[] = [ 'Harvester', 'Transfer' ]
+
 // Spawn 原型拓展
 class SpawnExtension extends StructureSpawn {
     /**
@@ -99,24 +105,24 @@ class SpawnExtension extends StructureSpawn {
     }
 
     /**
-     * 房间兜底检查
-     * 检查房间内是否没有 creep 
-     * 如果真没了的话则生成最小身体部件的房间默认 creep
+     * 房间断供检查
+     * 此方法用于检查房间是否已经无法持续提供能量用于 spawn
+     * 
+     * 通过检查 spawnList 中是否有 importentRoles 来判断
+     * 一旦有 importentRoles 因为能量不足无法重生，则表明房间将在不久之后断供
+     * 
+     * @todo transfer 角色的最小身体部件依旧包含 WORK
      */
     private noCreepSave(): void {
-        // 获取默认 creep 组
-        const defaultCreeps = roomDefaultCreep[this.room.name]
-        if (!defaultCreeps) {
-            console.log(`警告！房间 ${this.room.name} 没有设置默认 creep！`)
-            return
-        }
-
-        // 遍历检查默认 creep 是不是已经不在了
-        for (const defaultCreep of defaultCreeps) {
-            // 如果不在了就用最小身体尝试重生
-            if (!Game.creeps[defaultCreep]) {
-                this.mySpawnCreep(roomDefaultCreep[this.room.name], true)
-                return
+        // 遍历生产队列中的所有任务名(creep名)
+        for (const index in this.memory.spawnList) {
+            const spawnTask = this.memory.spawnList[index]
+            // 将任务名和重要角色名比较
+            for (const importantRole of importantRoles) {
+                if (spawnTask.indexOf(importantRole) !== -1) {
+                    // 是重要角色的话则以最小身体生成
+                    if (this.mySpawnCreep(spawnTask, true)) this.memory.spawnList.splice(Number(index), 1)
+                }
             }
         }
     }
