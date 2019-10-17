@@ -18,9 +18,9 @@ import role from './role'
 export const creepConfigs: ICreepConfigs = {
     // 房间基本配置
     // E1harvester1: role.harvester('ef990774d80108c', 'Spawn1', [ WORK, CARRY, MOVE ]), // 矿工
-    // E1upgrader1: role.upgrader('ef990774d80108c', 'Spawn1', [ [ WORK, CARRY, MOVE ] ]), // 升级者
-    // E1builder1: role.builder('ba3c0774d80c3a8', 'Spawn1', [ [ WORK, CARRY, MOVE ] ]), // 建筑工
-    // E1repairer1: role.repairer('ba3c0774d80c3a8', 'Spawn1', [ [ WORK, CARRY, MOVE ] ]), // 维修者
+    // E1upgrader1: role.upgrader('ef990774d80108c', 'Spawn1', [ WORK, CARRY, MOVE ]), // 升级者
+    // E1builder1: role.builder('ba3c0774d80c3a8', 'Spawn1', [ WORK, CARRY, MOVE ]), // 建筑工
+    // E1repairer1: role.repairer('ba3c0774d80c3a8', 'Spawn1', [ WORK, CARRY, MOVE ]), // 维修者
     // E1TowerTransfer1: role.towerTransfer('ba3c0774d80c3a8', 'Spawn1'), // 防御塔填充
 
     // 拓展组
