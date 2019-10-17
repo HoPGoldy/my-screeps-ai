@@ -1,3 +1,18 @@
+/**
+ * 针对 Screeps 4.0.0 新增的 api 补充声明
+ * 
+ */
+interface Store {
+    getCapacity(resource: ResourceConstant): number|null
+    getCapacity(): number
+    getFreeCapacity(resource: ResourceConstant): number|null
+    getFreeCapacity(): number
+    getUsedCapacity(resource: ResourceConstant): number|null
+    getUsedCapacity(): number
+    [keyName: string]: any
+}
+// ----
+
 declare module NodeJS {
     // 全局对象
     interface Global {
@@ -28,6 +43,9 @@ interface StructureSpawn {
  * 来自于 mount.creep.ts
  */
 interface Creep {
+    // 临时添加
+    store: Store
+    // ---
     work(): void
     updateState(workingMsg?: string, onStateChange?: Function): boolean
     checkEnemy(): boolean

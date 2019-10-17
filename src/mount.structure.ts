@@ -91,7 +91,7 @@ class SpawnExtension extends StructureSpawn {
         })
         // 检查是否生成成功
         if (spawnResult == OK) {
-            console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
+            // console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
             return true
         }
         else if (spawnResult == ERR_NAME_EXISTS) {

@@ -21,7 +21,7 @@ export default {
             // 有的话就填充能量
             if (creep.transfer(target, RESOURCE_ENERGY) === ERR_NOT_IN_RANGE) creep.moveTo(target)
         },
-        switch: creep => creep.carry.energy > 0,
+        switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
         bodys
     }),
@@ -47,7 +47,7 @@ export default {
         },
         // 身上有能量就放到 Storage 里
         target: creep => creep.transfer(creep.room.storage, RESOURCE_ENERGY),
-        switch: creep => creep.carry.energy > 0,
+        switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
         bodys
     }),
@@ -92,7 +92,7 @@ export default {
         source: creep => creep.withdraw(Game.getObjectById(sourceId), RESOURCE_ENERGY),
         // 拿完了就升级控制器
         target: creep => creep.upgradeController(creep.room.controller),
-        switch: creep => creep.carry.energy > 0,
+        switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
         bodys
     }),
