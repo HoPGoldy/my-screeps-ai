@@ -33,6 +33,9 @@ module.exports = function(grunt) {
                 src: ['dist/*.{js,wasm}'],
             }
         },
+        'clean': {
+            build: [ 'dist/*' ]
+        },
         // typescripts 编译任务
         'ts': {
             default : {
@@ -63,15 +66,15 @@ module.exports = function(grunt) {
         'watch': {
             default: {
                 files: "src/*.*",
-                tasks: [ "ts", "screeps" ]
+                tasks: [ 'clean', "ts", "screeps" ]
             },
             local: {
                 files: "src/*.*",
-                tasks: [ "ts", "copy:main" ]
+                tasks: [ 'clean', "ts", "copy:main" ]
             },
             dev: {
                 files: "src/*.*",
-                tasks: [ "ts" ]
+                tasks: [ 'clean', "ts" ]
             }
         }
     })
