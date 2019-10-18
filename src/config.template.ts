@@ -43,7 +43,7 @@ export const creepDefaultMemory: CreepMemory = {
 
 /**
  * link 配置项列表 (主要)
- * 当一个 link 冷却好了并且能量也满了
+ * 当一个 link 冷却好了
  * 就会到这个列表中找到配置项执行
  */
 export const linkConfigs: ILinkConfigs = {
@@ -51,9 +51,29 @@ export const linkConfigs: ILinkConfigs = {
 }
 
 
-// --------------------------------------------- 以下为 marker 配置项 ---------------------------------------------
+// --------------------------------------------- 以下为 terminal 配置项 ---------------------------------------------
 
 
-export const orderFilter: OrderFilter = {
-    
+/**
+ * terminal 配置列表
+ * 当一个 terminal 冷却好了时, 就会到该列表中寻找自己房间名对应的任务
+ * 注意，在执行任务时会优先响应 [market] 字段里的市场任务
+ *      然后再去执行 [transferTasks] 里的资源转移任务
+ */
+export const terminalConfigs: ITerminalConfigs = {
+    // '终端所在的房间名': {
+    //     market: {
+    //         type: 'sell',
+    //         resourceType: RESOURCE_ENERGY
+    //     },
+    //     // 要进行持续资源转移的任务列表
+    //     transferTasks: [
+    //         {
+    //             targetRoom: '接受资源的房间名',
+    //             type: RESOURCE_ENERGY,
+    //             amount: 1000,
+    //             holdAmount: 10000
+    //         }
+    //     ]
+    // }
 }

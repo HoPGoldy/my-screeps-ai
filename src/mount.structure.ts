@@ -1,4 +1,4 @@
-import { linkConfigs, orderFilter, creepConfigs, creepDefaultMemory } from './config'
+import { linkConfigs, creepConfigs, creepDefaultMemory, terminalConfigs } from './config'
 
 // 挂载拓展到建筑原型
 export default function () {
@@ -203,8 +203,48 @@ class LinkExtension extends StructureLink {
 // Terminal 拓展
 class TerminalExtension extends StructureTerminal {
     public work(): void {
-        const orders = Game.market.getAllOrders(orderFilter)
+        // 没有冷却好就直接跳过
+        if (this.cooldown !== 0) return
+        // 获取不到配置项也跳过
+        const config = this.getConfig(this.room.name)
+        if (!config) return
 
-        console.log(JSON.stringify(orders, null, 4))
+        // 先进行市场交易
+        if (this.commandMarket(config.market)) { }
+        // 之后再转移资源
+        else if (this.commandTransfer(config.transferTasks)) { }
+    }
+
+    /**
+     * 指令: 市场交易
+     * 
+     * @param config 市场交易任务
+     * @returns 终端是否进入冷却
+     */
+    public commandMarket(config: IMarketTask): boolean {
+        return false
+    }
+
+    /**
+     * 指令: 资源转移
+     * 
+     * @param configs 传输任务列表
+     * @returns 终端是否进入冷却
+     */
+    public commandTransfer(configs: ITransferTask[]): boolean {
+        return false
+    }
+
+    /**
+     * 从配置项列表中获取配置项
+     * 
+     * @param room 要获取配置的房间名
+     * @returns 对应的配置项, 没找到返回 null
+     */
+    private getConfig(room: string): ITerminalConfig|null {
+        if (terminalConfigs.hasOwnProperty(room)) {
+            return terminalConfigs[room]
+        }
+        else return null
     }
 }

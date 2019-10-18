@@ -39,6 +39,14 @@ interface StructureSpawn {
 }
 
 /**
+ * Terminal 拓展
+ */
+interface StructureTerminal {
+    commandMarket(config: IMarketTask): boolean
+    commandTransfer(configs: ITransferTask[]): boolean
+}
+
+/**
  * Creep 拓展
  * 来自于 mount.creep.ts
  */
@@ -156,6 +164,55 @@ interface ILinkConfig {
  */
 interface ILinkConfigs {
     [linkId: string]: ILinkConfig
+}
+
+/**
+ * 终端的发送任务
+ * 发送任务是指 将指定资源转移到其他房间的“持续性”任务
+ * 
+ * @property {} targetRoom 要将资源转移到的房间名
+ * @property {} type 要转移的资源类型
+ * @property {} amount 一次转移的数量
+ * @property {} holdAmount 保存在本地终端的该资源数量, 资源只有在 (总量 - amount >= holdAmount) 时才会转移
+ */
+interface ITransferTask {
+    targetRoom: string
+    type: ResourceConstant
+    amount: number
+    holdAmount: number
+}
+
+/**
+ * 终端的交易任务
+ * 
+ * @property {} type 值为 sell/bug 表示任务是卖出还是买入
+ * @property {} resourceType 要交易的资源类型
+ * @property {} amount 一次转移的数量
+ * @property {} holdAmount 保存在本地终端的该资源数量, 资源只有在 (总量 - amount >= holdAmount) 时才会进行交易
+ */
+interface IMarketTask {
+    type: string
+    resourceType: MarketResourceConstant
+    amount: number
+    holdAmount: number
+}
+
+/**
+ * 终端的配置项
+ * 
+ * @property {} market 该终端在市场中进行搜索的"持续性"任务
+ * @property {} transferTasks 要和其他房间进行资源转移的任务列表
+ */
+interface ITerminalConfig {
+    market?: IMarketTask
+    transferTasks?: ITransferTask[]
+}
+
+/**
+ * terminal 配置项列表
+ */
+interface ITerminalConfigs {
+    [roomName: string]: ITerminalConfig
 }
 
 /**
