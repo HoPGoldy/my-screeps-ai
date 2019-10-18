@@ -69,14 +69,14 @@ class CreepExtension extends Creep {
      */
     public updateState(workingMsg: string='🧰 工作', onStateChange: Function=this.updateStateDefaultCallback): boolean {
         // creep 身上没有能量 && creep 之前的状态为“工作”
-        if(this.store[RESOURCE_ENERGY] <= 0 && this.memory.working) {
+        if(this.carry.energy <= 0 && this.memory.working) {
             // 切换状态
             this.memory.working = false
             this.say('⚡ 挖矿')
             onStateChange(this, this.memory.working)
         }
         // creep 身上能量满了 && creep 之前的状态为“不工作”
-        if(this.store[RESOURCE_ENERGY] >= this.store.getCapacity() && !this.memory.working) {
+        if(this.carry.energy >= this.store.getCapacity() && !this.memory.working) {
             // 切换状态
             this.memory.working = true
             this.say(workingMsg)

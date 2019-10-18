@@ -55,7 +55,6 @@ export function creepNumberController (): void {
     for (const name in Memory.creeps) {
         // 如果 creep 已经凉了
         if (!Game.creeps[name]) {
-            console.log(name, '已经死了')
             const role: string = Memory.creeps[name].role
             // 获取配置项
             const creepConfig: ICreepConfig = creepConfigs[role]
@@ -73,12 +72,12 @@ export function creepNumberController (): void {
             }
             // 没有的话加入生成
             if (!spawn.hasTask(role)) {
-                console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列，当前排队位置: ${spawn.addTask(role)}`)
+                // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列，当前排队位置: ${spawn.addTask(role)}`)
             }
             // 有的话删除过期内存
             else {
                 delete Memory.creeps[name]
-                console.log('清除死去 creep 记忆', name)
+                // console.log('清除死去 creep 记忆', name)
             }
         }
     }
