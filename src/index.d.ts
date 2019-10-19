@@ -3,11 +3,11 @@
  * 
  */
 interface Store {
-    getCapacity(resource: ResourceConstant): number|null
+    getCapacity(resource: string): number|null
     getCapacity(): number
-    getFreeCapacity(resource: ResourceConstant): number|null
+    getFreeCapacity(resource: string): number|null
     getFreeCapacity(): number
-    getUsedCapacity(resource: ResourceConstant): number|null
+    getUsedCapacity(resource: string): number|null
     getUsedCapacity(): number
     [keyName: string]: any
 }

@@ -72,7 +72,8 @@ export function creepNumberController (): void {
             }
             // 没有的话加入生成
             if (!spawn.hasTask(role)) {
-                // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列，当前排队位置: ${spawn.addTask(role)}`)
+                spawn.addTask(role)
+                // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列`)
             }
             // 有的话删除过期内存
             else {
