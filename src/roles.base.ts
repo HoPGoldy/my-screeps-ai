@@ -27,8 +27,6 @@ export default {
      * @param targetId 指定建筑 id
      * @param spawnName 出生点名称
      * @param bodys 身体部件 (可选)
-     * 
-     * @todo 测试 Object.keys(creep.store)[0] 是否符合要求
      */
     collector: (sourceId: string, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
         source: creep => {
