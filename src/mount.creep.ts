@@ -159,7 +159,6 @@ class CreepExtension extends Creep {
      */
     public findPathInRoom(target: RoomPosition): PathStep[] {
         return this.pos.findPathTo(target, {
-            ignoreCreeps: true,
             serialize: true
         })
     }
