@@ -14,7 +14,7 @@ export default {
     soldier: (spawnName: string, bodys: BodyPartConstant[] = [ ATTACK, MOVE, MOVE ]): ICreepConfig => ({
         target: creep => creep.attackFlag(),
         spawn: spawnName,
-        bodys
+        bodyType: 'attacker'
     }),
 
     /**
@@ -28,7 +28,7 @@ export default {
     doctor: (spawnName: string, creepsName: string[], bodys: BodyPartConstant[] = [ HEAL, MOVE, MOVE ]): ICreepConfig => ({
         target: creep => creep.healTo(creepsName.map(name => Game.creeps[name])),
         spawn: spawnName,
-        bodys
+        bodyType: 'healer'
     }),
 
     /**
@@ -43,6 +43,6 @@ export default {
         target: creep => creep.defense(),
         switch: creep => creep.checkEnemy(),
         spawn: spawnName,
-        bodys
+        bodyType: 'attacker'
     })
 }

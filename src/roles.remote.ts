@@ -14,7 +14,7 @@ export default {
     claimer: (spawnName: string, bodys: BodyPartConstant[] = [ CLAIM, MOVE ]): ICreepConfig => ({
         target: creep => creep.claim(),
         spawn: spawnName,
-        bodys
+        bodyType: 'claimer'
     }),
 
     /**
@@ -46,7 +46,7 @@ export default {
             }
         },
         spawn: spawnName,
-        bodys
+        bodyType: 'claimer'
     }),
 
     /**
@@ -67,7 +67,7 @@ export default {
         },
         switch: creep => creep.room.name === targetRoomName,
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -92,7 +92,7 @@ export default {
         },
         switch: creep => creep.updateState('🚧 支援建造'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -114,7 +114,7 @@ export default {
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 支援升级'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -165,6 +165,6 @@ export default {
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     })
 }

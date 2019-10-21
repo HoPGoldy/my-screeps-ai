@@ -1,4 +1,5 @@
 import { linkConfigs, creepConfigs, creepDefaultMemory, terminalConfigs } from './config'
+import { bodyConfigs } from './setting'
 
 // 挂载拓展到建筑原型
 export default function () {
@@ -81,9 +82,11 @@ class SpawnExtension extends StructureSpawn {
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
-        const bodys: BodyPartConstant[] = minBody ? [ WORK, CARRY, MOVE] : creepConfig.bodys
+        const bodys: BodyPartConstant[] = minBody ? 
+            bodyConfigs[creepConfig.bodyType][1] : // 最小的身体部件
+            bodyConfigs[creepConfig.bodyType][this.room.controller.level] // 符合于房间等级的身体部件
         if (!bodys) {
-            console.log(`${configName} 的 bodys 属性不可读`)
+            console.log(`[spawn] ${configName} 的 body 组装失败`)
             return false
         } 
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {

@@ -16,7 +16,7 @@ export default {
         target: creep => creep.fillSpawnEngry(backupStorageId),
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -41,7 +41,7 @@ export default {
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -64,7 +64,7 @@ export default {
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodys
+        bodyType: 'transfer'
     }),
 
     /**
@@ -80,7 +80,7 @@ export default {
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -99,7 +99,7 @@ export default {
         },
         switch: creep => creep.updateState('🚧 建造'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -120,7 +120,7 @@ export default {
         },
         switch: creep => creep.updateState('📌 修复'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -140,6 +140,6 @@ export default {
         },
         switch: creep => creep.updateState('🍚 填塔'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     })
 }

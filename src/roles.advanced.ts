@@ -23,7 +23,7 @@ export default {
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
-        bodys
+        bodyType: 'transfer'
     }),
 
     /**
@@ -49,7 +49,7 @@ export default {
         target: creep => creep.transfer(creep.room.storage, RESOURCE_ENERGY),
         switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
-        bodys
+        bodyType: 'transfer'
     }),
 
     /**
@@ -72,7 +72,7 @@ export default {
         target: creep => creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY),
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 
     /**
@@ -94,6 +94,6 @@ export default {
         target: creep => creep.upgradeController(creep.room.controller),
         switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
-        bodys
+        bodyType: 'worker'
     }),
 }

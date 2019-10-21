@@ -121,12 +121,13 @@ interface CreepMemory {
 
 /**
  * creep 的配置项
- * @property prepare 准备阶段执行的方法
- * @property isReady 是否准备完成
- * @property source creep非工作(收集能量时)执行的方法
- * @property target creep工作时执行的方法
- * @property switch 更新状态时触发的方法, 该方法必须位于 Creep 上, 且可以返回 true/false
- * @property spawn 要进行生产的出生点
+ * @property {} prepare 准备阶段执行的方法
+ * @property {} isReady 是否准备完成
+ * @property {} source creep非工作(收集能量时)执行的方法
+ * @property {} target creep工作时执行的方法
+ * @property {} switch 更新状态时触发的方法, 该方法必须位于 Creep 上, 且可以返回 true/false
+ * @property {} spawn 要进行生产的出生点
+ * @property {} bodyType 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键
  */
 interface ICreepConfig {
     prepare?: (creep: Creep) => any
@@ -135,7 +136,7 @@ interface ICreepConfig {
     source?: (creep: Creep) => any
     switch?: (creep: Creep) => boolean
     spawn: string
-    bodys: BodyPartConstant[]
+    bodyType: string
 }
 
 /**
@@ -220,4 +221,27 @@ interface ITerminalConfigs {
  */
 interface IPathMap {
     [propName: string]: string
+}
+
+/**
+ * 单个角色类型的身体部件配置
+ * 从 1 ~ 8 的键表示房间从 1 级到 8 级的不同身体配置项
+ */
+interface BodyConfig {
+    1: BodyPartConstant[]
+    2: BodyPartConstant[]
+    3: BodyPartConstant[]
+    4: BodyPartConstant[]
+    5: BodyPartConstant[]
+    6: BodyPartConstant[]
+    7: BodyPartConstant[]
+    8: BodyPartConstant[]
+}
+
+/**
+ * 身体配置项类别
+ * 包含了所有角色类型的身体配置
+ */
+interface IBodyConfigs {
+    [roleType: string]: BodyConfig
 }
