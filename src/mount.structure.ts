@@ -13,10 +13,7 @@ export default function () {
  * 重要角色
  * creep 名包含下面的字符串即代表该角色是用于“维持房间spawn能量”
  */
-const importantRoles = {
-    'Harvester': [ WORK, CARRY, MOVE ],
-    'Transfer': [ CARRY, CARRY, MOVE ]
-}
+const importantRoles = [ 'Harvester', 'Transfer' ]
 
 // Spawn 原型拓展
 class SpawnExtension extends StructureSpawn {
@@ -77,7 +74,7 @@ class SpawnExtension extends StructureSpawn {
      * @param minBody 用最小身体部分生成
      * @returns 开始生成返回 true, 否则返回 false
      */
-    private mySpawnCreep(configName, minBody: BodyPartConstant[]=[]): boolean {
+    private mySpawnCreep(configName, minBody: boolean = false): boolean {
         const creepConfig = creepConfigs[configName]
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         if (!creepConfig) return true
@@ -122,11 +119,11 @@ class SpawnExtension extends StructureSpawn {
         for (const index in this.memory.spawnList) {
             const spawnTask = this.memory.spawnList[index]
             // 将任务名和重要角色名比较
-            for (const importantRole of Object.keys(importantRoles)) {
+            for (const importantRole of importantRoles) {
                 if (spawnTask.indexOf(importantRole) !== -1) {
                     console.log(`[断供警告] ${this.room.name} 即将生成最小化 ${spawnTask}`)
                     // 是重要角色的话则以最小身体生成
-                    if (this.mySpawnCreep(spawnTask, importantRoles[importantRole])) this.memory.spawnList.splice(Number(index), 1)
+                    if (this.mySpawnCreep(spawnTask, true)) this.memory.spawnList.splice(Number(index), 1)
                 }
             }
         }

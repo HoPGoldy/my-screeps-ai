@@ -9,9 +9,9 @@ export default {
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
+     * @param backupStorageId 填满后将能量转移到的建筑 (可选)
      */
-    harvester: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ], backupStorageId: string=''): ICreepConfig => ({
+    harvester: (sourceId: string, spawnName: string, backupStorageId: string=''): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.fillSpawnEngry(backupStorageId),
         switch: creep => creep.updateState('🍚 收获'),
@@ -26,9 +26,10 @@ export default {
      * @param sourceId 要挖的矿 id
      * @param targetId 指定建筑 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    collector: (sourceId: string, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    collector: (sourceId: string, targetId: string, spawnName: string): ICreepConfig => ({
+        prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
+        isReady: creep => creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos),
         source: creep => {
             const source: Source|Mineral = Game.getObjectById(sourceId)
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source)
@@ -49,9 +50,8 @@ export default {
      * @param sourceId 获取资源的建筑 id
      * @param targetId 指定建筑 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    resourceTransfer: (sourceId: string, ResourceType: ResourceConstant, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ CARRY, CARRY, MOVE ]): ICreepConfig => ({
+    resourceTransfer: (sourceId: string, ResourceType: ResourceConstant, targetId: string, spawnName: string): ICreepConfig => ({
         source: creep => {
             const source: Structure = Game.getObjectById(sourceId)
             if (creep.withdraw(source, ResourceType) == ERR_NOT_IN_RANGE) creep.moveTo(source)
@@ -71,9 +71,8 @@ export default {
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    upgrader: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    upgrader: (sourceId: string, spawnName: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
@@ -87,9 +86,8 @@ export default {
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    builder: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    builder: (sourceId: string, spawnName: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             if (creep.buildStructure()) { }
@@ -106,9 +104,8 @@ export default {
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    repairer: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    repairer: (sourceId: string, spawnName: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             // 去维修
@@ -127,9 +124,8 @@ export default {
      * 
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    towerTransfer: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    towerTransfer: (sourceId: string, spawnName: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             if (creep.fillTower()) {}

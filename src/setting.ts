@@ -24,6 +24,21 @@ export const bodyConfigs: IBodyConfigs = {
         8: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
     },
     /**
+     * 纯粹的工作单位
+     * 只包含 WORK 和少量的 MOVE
+     */
+    pureWork: {
+        1: [ WORK, WORK, MOVE ],
+        2: [ WORK, WORK, MOVE, WORK, WORK, MOVE ],
+        3: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ],
+        4: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ],
+        5: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ],
+        6: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE],
+        7: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ],
+        8: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ]
+
+    },
+    /**
      * 转移单位
      * 负责转移基地资源的 creep
      */
@@ -42,14 +57,14 @@ export const bodyConfigs: IBodyConfigs = {
      * 包含 CLAIM 的 creep
      */
     claimer: {
-        1: [ CARRY, CARRY, CLAIM ],
-        2: [ CARRY, CARRY, CLAIM ],
-        3: [ CARRY, CARRY, CLAIM ],
-        4: [ CARRY, CARRY, CLAIM, CARRY, CARRY, CLAIM ],
-        5: [ CARRY, CARRY, CLAIM, CARRY, CARRY, CLAIM ],
-        6: [ CARRY, CARRY, CLAIM, CARRY, CARRY, CLAIM ],
-        7: [ CARRY, CARRY, CLAIM, CARRY, CARRY, CLAIM ],
-        8: [ CARRY, CARRY, CLAIM, CARRY, CARRY, CLAIM ],
+        1: [ MOVE, CLAIM ],
+        2: [ MOVE, CLAIM ],
+        3: [ MOVE, CLAIM ],
+        4: [ MOVE, CLAIM ],
+        5: [ MOVE, CLAIM, MOVE, CLAIM ],
+        6: [ MOVE, CLAIM, MOVE, CLAIM ],
+        7: [ MOVE, CLAIM, MOVE, CLAIM ],
+        8: [ MOVE, CLAIM, MOVE, CLAIM ],
     },
     /**
      * 基础攻击单位

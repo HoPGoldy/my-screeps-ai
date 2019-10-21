@@ -191,6 +191,9 @@ class CreepExtension extends Creep {
                 this.memory.path = this.findPathInRoom(target)
                 moveResult = this.moveByPath(this.memory.path)
             }
+            else if (moveResult !== OK) {
+                console.log(`${this.name} 出现问题无法移动, 错误码 ${moveResult}`)
+            }
             
             return moveResult
         }
@@ -345,7 +348,7 @@ class CreepExtension extends Creep {
         this.farMoveTo(claimFlag.pos)
         const room = claimFlag.room
         // 如果房间已经被占领或者被预定了则攻击控制器
-        if (room.controller.owner !== undefined || room.controller.reservation !== undefined) {
+        if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
             if(this.attackController(room.controller) == ERR_NOT_IN_RANGE) this.moveTo(room.controller, getPath('claimer'))
             return false
         }

@@ -8,9 +8,9 @@ export default {
      * 从 Storage 中获取能量，并填充 Spawn Extension 和 Tower
      * 
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
+     * @param sourceId 从该建筑中获取能量 (可选, 默认 Storage)
      */
-    transfer: (spawnName: string, bodys: BodyPartConstant[] = [ CARRY, CARRY, MOVE ], sourceId: string = null): ICreepConfig => ({
+    transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
         source: creep => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
             // 获取有需求的建筑
@@ -34,9 +34,8 @@ export default {
      * @param y 要移动到的 y 坐标
      * @param centerLinkId 中央 link 的 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    centerTransfer: (x: number, y: number, centerLinkId: string, spawnName: string, bodys: BodyPartConstant[] = [ CARRY, CARRY, MOVE ]): ICreepConfig => ({
+    centerTransfer: (x: number, y: number, centerLinkId: string, spawnName: string): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => creep.moveTo(x, y),
         isReady: creep => creep.pos.x === x && creep.pos.y === y,
@@ -60,9 +59,8 @@ export default {
      * @param sourceId 能量矿id
      * @param targetId 目标建筑id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    staticHarvester: (sourceId: string, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    staticHarvester: (sourceId: string, targetId: string, spawnName: string): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
         isReady: creep => creep.harvest(Game.getObjectById(sourceId)) === OK,
@@ -82,9 +80,8 @@ export default {
      * 
      * @param sourceId 用来获取能量的建筑id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    staticUpgrader: (sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    staticUpgrader: (sourceId: string, spawnName: string): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
         isReady: creep => creep.harvest(Game.getObjectById(sourceId)) === OK,

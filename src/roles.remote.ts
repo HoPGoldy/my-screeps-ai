@@ -9,9 +9,8 @@ export default {
      * target: 占领指定房间
      * 
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */ 
-    claimer: (spawnName: string, bodys: BodyPartConstant[] = [ CLAIM, MOVE ]): ICreepConfig => ({
+    claimer: (spawnName: string): ICreepConfig => ({
         target: creep => creep.claim(),
         spawn: spawnName,
         bodyType: 'claimer'
@@ -24,9 +23,8 @@ export default {
      * 
      * @param sourceInfo 要预定的控制器的信息
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    reserver: (sourceInfo: IPositionInfo, spawnName: string, bodys: BodyPartConstant[] = [ CLAIM, CLAIM, MOVE ]): ICreepConfig => ({
+    reserver: (sourceInfo: IPositionInfo, spawnName: string): ICreepConfig => ({
         // 朝控制器移动
         prepare: creep => creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName)),
         // 只要可以摸到控制器就说明准备阶段完成
@@ -56,9 +54,8 @@ export default {
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
      * @param spawnName 出生点
-     * @param bodys 身体部件(可选)
      */
-    signer: (targetRoomName: string, signText: string, spawnName: string, bodys: BodyPartConstant[] = [ MOVE ]): ICreepConfig => ({
+    signer: (targetRoomName: string, signText: string, spawnName: string): ICreepConfig => ({
         source: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
         target: creep => {
             if (creep.signController(creep.room.controller, signText) === ERR_NOT_IN_RANGE) {
@@ -77,9 +74,8 @@ export default {
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
      * @param spawnName 出生点
-     * @param bodys 身体部件(可选)
      */
-    remoteBuilder: (targetRoomName: string, sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    remoteBuilder: (targetRoomName: string, sourceId: string, spawnName: string): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
         // 自己所在的房间为指定房间则准备完成
@@ -102,9 +98,8 @@ export default {
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
      * @param spawnName 出生点
-     * @param bodys 身体部件(可选)
      */
-    remoteUpgrader: (targetRoomName: string, sourceId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    remoteUpgrader: (targetRoomName: string, sourceId: string, spawnName: string): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
         // 自己所在的房间为指定房间则准备完成
@@ -124,9 +119,8 @@ export default {
      * @param sourceInfo 外矿的信息
      * @param targetId 要移动到的建筑 id
      * @param spawnName 出生点名称
-     * @param bodys 身体部件 (可选)
      */
-    remoteHarvester: (sourceInfo: IPositionInfo, targetId: string, spawnName: string, bodys: BodyPartConstant[] = [ WORK, CARRY, MOVE ]): ICreepConfig => ({
+    remoteHarvester: (sourceInfo: IPositionInfo, targetId: string, spawnName: string): ICreepConfig => ({
         source: creep => {
             // 检查自己身边有没有敌人
             const enemys = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
