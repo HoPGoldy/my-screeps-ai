@@ -342,8 +342,14 @@ class CreepExtension extends Creep {
             console.log(`场上不存在名称为 [${CLAIM_FLAG_NAME}] 的旗帜，请新建`)
             return false
         }
-        this.moveTo(claimFlag, getPath('claimer'))
+        this.farMoveTo(claimFlag.pos)
         const room = claimFlag.room
+        // 如果房间已经被占领或者被预定了则攻击控制器
+        if (room.controller.owner !== undefined || room.controller.reservation !== undefined) {
+            if(this.attackController(room.controller) == ERR_NOT_IN_RANGE) this.moveTo(room.controller, getPath('claimer'))
+            return false
+        }
+        // 如果房间无主则占领
         if (room && this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
             this.moveTo(room.controller, getPath('claimer'))
             return false
@@ -397,7 +403,7 @@ class CreepExtension extends Creep {
         }
 
         // 一直向旗帜移动
-        this.moveTo(attackFlag.pos, getPath('attack'))
+        this.farMoveTo(attackFlag.pos)
         // 如果到旗帜所在房间了
         if (attackFlag.room) {
             // 优先攻击 creep
@@ -428,6 +434,7 @@ class CreepExtension extends Creep {
         // 生命值损失比例从大到小排序
         let sortedHitCreeps = creeps.sort((a, b) => (a.hits / a.hitsMax) - (b.hits / b.hitsMax))
         this.heal(sortedHitCreeps[0])
+        this.moveTo(sortedHitCreeps[0])
     }
 
     /**
