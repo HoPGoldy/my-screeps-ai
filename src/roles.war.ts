@@ -50,7 +50,7 @@ export default {
      * @param spawnName 出生点名称
      */
     dismantler: (spawnName: string): ICreepConfig => ({
-        target: creep => creep.attackFlag(),
+        target: creep => creep.dismantleFlag(),
         spawn: spawnName,
         bodyType: 'pureWork'
     })

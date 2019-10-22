@@ -71,7 +71,9 @@ interface Creep {
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
     attackFlag()
+    dismantleFlag()
     healTo(creeps: Creep[]): void
+    getFlag(flagName: string): Flag|null
     isHealthy(): boolean
 }
 

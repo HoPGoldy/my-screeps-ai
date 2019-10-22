@@ -112,9 +112,11 @@ class CreepExtension extends Creep {
      * 移动到 [房间名 StandBy] 旗帜的位置
      */
     public standBy(): void {
-        const standByFlag: Flag = Game.flags[`${this.room.name} StandBy`]
-        if (standByFlag) this.moveTo(standByFlag, getPath())
-        else this.say(`找不到 [${this.room.name} StandBy] 旗帜`)
+        // 获取旗帜
+        let standByFlag = this.getFlag(`${this.room.name} StandBy`)
+        if (!standByFlag) return 
+        // 如果没到 就向旗帜移动
+        if (!this.pos.isNearTo(standByFlag.pos)) this.moveTo(standByFlag, getPath())
     }
 
     /**
@@ -339,12 +341,17 @@ class CreepExtension extends Creep {
      * 要占领的房间由名称为 CLAIM_FLAG_NAME 的旗帜指定
      */
     public claim(): boolean {
-        const claimFlag = Game.flags[CLAIM_FLAG_NAME]
-        if (!claimFlag) {
-            console.log(`场上不存在名称为 [${CLAIM_FLAG_NAME}] 的旗帜，请新建`)
-            return false
+        // 获取旗帜
+        const claimFlag = this.getFlag(CLAIM_FLAG_NAME)
+        if (!claimFlag) return false
+
+        // 如果 creep 不在房间里 则一直向旗帜移动
+        if (!claimFlag.room || (claimFlag.room && this.room.name !== claimFlag.room.name)) {
+            this.farMoveTo(claimFlag.pos)
+            return true
         }
-        this.farMoveTo(claimFlag.pos)
+
+        // 已经抵达了该房间
         const room = claimFlag.room
         // 如果房间已经被占领或者被预定了则攻击控制器
         if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
@@ -398,32 +405,63 @@ class CreepExtension extends Creep {
      * 向 ATTACK_FLAG_NAME 旗帜发起进攻
      */
     public attackFlag(): boolean {
-        let attackFlag = Game.flags[ATTACK_FLAG_NAME]
-        if (!attackFlag) {
-            console.log(`没有名为 ${ATTACK_FLAG_NAME} 的旗子`)
-            return false
-        }
+        // 获取旗帜
+        const attackFlag = this.getFlag(ATTACK_FLAG_NAME)
+        if (!attackFlag) return false
 
-        // 一直向旗帜移动
-        this.farMoveTo(attackFlag.pos)
+        // 如果 creep 不在房间里 则一直向旗帜移动
+        if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
+            this.farMoveTo(attackFlag.pos)
+            return true
+        }
+        
         // 如果到旗帜所在房间了
-        if (attackFlag.room) {
-            // 优先攻击 creep
-            const enemys = attackFlag.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
-            if (enemys.length > 0) {
-                if (this.attack(enemys[0]) === ERR_NOT_IN_RANGE) this.moveTo(enemys[0])
-                return true
-            }
+        // 优先攻击 creep
+        let target: Creep | PowerCreep | Structure
+        const enemys = attackFlag.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
+        if (enemys.length > 0) target = enemys[0]
+        else {
             // 没有的话再攻击 structure
-            const targets = attackFlag.pos.lookFor(LOOK_STRUCTURES)
-            if (targets.length == 0) {
+            const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
+            if (structures.length == 0) {
                 console.log(`${this.name} 找不到目标！`)
                 return false
             }
-            const attackResult = this.attack(targets[0])
-            console.log(`${this.name} 正在攻击 ${targets[0].structureType}, 返回值 ${attackResult}`)
+            target = structures[0]
         }
+        
+        this.moveTo(target)
+        const attackResult = this.attack(target)
+        console.log(`${this.name} 正在攻击 ${target}, 返回值 ${attackResult}`)
+
         return true
+    }
+
+    /**
+     * 拆除旗帜下的建筑
+     * 向 ATTACK_FLAG_NAME 发起进攻并拆除旗帜下的建筑
+     */
+    public dismantleFlag(): boolean {
+        // 获取旗帜
+        let attackFlag = this.getFlag(ATTACK_FLAG_NAME)
+        if (!attackFlag) return false
+
+        // 如果 creep 不在房间里 则一直向旗帜移动
+        if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
+            this.farMoveTo(attackFlag.pos)
+            return true
+        }
+
+        // 如果到旗帜所在房间了
+        const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
+        if (structures.length == 0) {
+            console.log(`${this.name} 找不到目标！`)
+            return false
+        }
+
+        this.moveTo(structures[0])
+        const result = this.dismantle(structures[0])
+        console.log(`${this.name} 正在拆除 ${structures[0]}, 返回值 ${result}`)
     }
 
     /**
@@ -449,6 +487,22 @@ class CreepExtension extends Creep {
     public isHealthy(): boolean {
         if (this.ticksToLive <= 15) return false
         else return true
+    }
+
+    /**
+     * 检查旗帜是否存在
+     * 不存在的话会在控制台给出提示
+     * 
+     * @param flagName 要检查的 flag 名称
+     * @returns 有旗帜就返回旗帜, 否则返回 null
+     */
+    public getFlag(flagName: string): Flag|null {
+        const flag = Game.flags[flagName]
+        if (!flag) {
+            console.log(`场上不存在名称为 [${flagName}] 的旗帜，请新建`)
+            return null
+        }
+        else return flag
     }
 
     /**
