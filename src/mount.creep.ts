@@ -23,6 +23,19 @@ class CreepExtension extends Creep {
             this.say('我凉了！')
             return 
         }
+
+        // 还没出生就啥都不干
+        if (this.spawning) {
+            if (!this.memory.id) this.memory.id = this.id
+            return
+        }
+
+        if (!this.id) {
+            console.log('id 没了!', this.id, this.name, this.memory.id)
+            // this.id = this.memory.id
+            // console.log('id 已填加', this.id)
+        }
+
         // 获取对应配置项
         const creepConfig: ICreepConfig = creepConfigs[this.memory.role]
 
@@ -90,7 +103,7 @@ class CreepExtension extends Creep {
             return this.memory.working
         }
         catch (e) {
-            console.log(`[store 错误] ${this.name} ${this.memory.working}`)
+            console.log(`[store 错误] ${this.id} ${this.name} ${this.memory.working}`)
         }
     }
 

@@ -115,7 +115,7 @@ export default {
         },
         switch: creep => creep.updateState('📌 修复'),
         spawn: spawnName,
-        bodyType: 'worker'
+        bodyType: 'repairer'
     }),
 
     /**
@@ -133,6 +133,28 @@ export default {
             else if (creep.fillDefenseStructure()) {}
         },
         switch: creep => creep.updateState('🍚 填塔'),
+        spawn: spawnName,
+        bodyType: 'worker'
+    }),
+
+    /**
+     * 测试用 creep
+     * 啥都不干
+     * 
+     * @param spawnName 出生点名称
+     */
+    tester: (sourceId: string, targetId: string, spawnName: string): ICreepConfig => ({
+        prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
+        isReady: creep => creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos),
+        source: creep => {
+            const source: Source|Mineral = Game.getObjectById(sourceId)
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source)
+        },
+        target: creep => {
+            const target: Structure = Game.getObjectById(targetId)
+            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
+        },
+        switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodyType: 'worker'
     })

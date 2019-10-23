@@ -98,17 +98,19 @@ interface SpawnMemory {
 
 /**
  * creep 内存拓展
- * @property ready creep是否已经准备好可以工作了
- * @property role creep的角色
- * @property working 是否在工作
- * @property hasSendRebirth 是否已经往 spwan 队列中推送了自己的重生任务
- * @property path 行进路线
- * @property targetPosTag 缓存路径的目标，该目标发生变化时刷新路径, 总是和上面的 path 成对出现
- * @property fillWallId 要填充的墙 id 
- * @property constructionSiteId 建筑工特有 当前缓存的建筑工地
- * @property expectHits 城墙填充特有，标志当前期望的城墙生命值
+ * @property {} id creep 的 id，用于解决 id 异常消失问题
+ * @property {} ready creep是否已经准备好可以工作了
+ * @property {} role creep的角色
+ * @property {} working 是否在工作
+ * @property {} hasSendRebirth 是否已经往 spwan 队列中推送了自己的重生任务
+ * @property {} path 行进路线
+ * @property {} targetPosTag 缓存路径的目标，该目标发生变化时刷新路径, 总是和上面的 path 成对出现
+ * @property {} fillWallId 要填充的墙 id 
+ * @property {} constructionSiteId 建筑工特有 当前缓存的建筑工地
+ * @property {} expectHits 城墙填充特有，标志当前期望的城墙生命值
  */
 interface CreepMemory {
+    id?: string
     ready: boolean
     role: string
     working: boolean
