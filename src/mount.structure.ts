@@ -150,11 +150,15 @@ class TowerExtension extends StructureTower {
      * @returns 有敌人返回 true，没敌人返回 false
      */
     public commandAttack(): boolean {
-        const enemy = this.pos.findClosestByRange(FIND_HOSTILE_CREEPS)
-
-        if (!enemy) return false
-        this.attack(enemy)
-        return true
+        // 使用缓存
+        if (!this.room._enemys) this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
+        // 从缓存中读取
+        if (this.room._enemys.length > 0) {
+            const target = this.pos.findClosestByRange(this.room._enemys)
+            this.attack(target)
+            return true
+        }
+        else return false
     }
 
     /**
