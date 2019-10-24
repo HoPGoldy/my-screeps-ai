@@ -30,12 +30,12 @@ export default {
      * 中心搬运者
      * 从 centerLink 中获取能量，并填充 Storage
      * 
+     * @param spawnName 出生点名称
      * @param x 要移动到的 x 坐标
      * @param y 要移动到的 y 坐标
      * @param centerLinkId 中央 link 的 id
-     * @param spawnName 出生点名称
      */
-    centerTransfer: (x: number, y: number, spawnName: string): ICreepConfig => ({
+    centerTransfer: (spawnName: string, x: number, y: number): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => creep.moveTo(x, y),
         isReady: creep => creep.pos.isEqualTo(x, y),
@@ -65,48 +65,5 @@ export default {
         switch: creep => creep.store.getUsedCapacity() > 0,
         spawn: spawnName,
         bodyType: 'transfer'
-    }),
-
-    /**
-     * 静态采集者
-     * 从 source 中获取能量，并转移到指定建筑
-     * 注意！该角色一旦就位将不会再次移动，请保证指定建筑就在 Source 附件
-     * 
-     * @param sourceId 能量矿id
-     * @param targetId 目标建筑id
-     * @param spawnName 出生点名称
-     */
-    staticHarvester: (sourceId: string, targetId: string, spawnName: string): ICreepConfig => ({
-        // 移动到指定位置
-        prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
-        isReady: creep => creep.harvest(Game.getObjectById(sourceId)) === OK,
-        // 一直采矿
-        source: creep => creep.harvest(Game.getObjectById(sourceId)),
-        // 采完了就放起来
-        target: creep => creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY),
-        switch: creep => creep.updateState('🍚 收获'),
-        spawn: spawnName,
-        bodyType: 'worker'
-    }),
-
-    /**
-     * 静态升级者
-     * 从指定结构中获取能量，并升级控制器
-     * 注意！该角色一旦就位将不会再次移动，请保证指定建筑就在 controller 附件
-     * 
-     * @param sourceId 用来获取能量的建筑id
-     * @param spawnName 出生点名称
-     */
-    staticUpgrader: (sourceId: string, spawnName: string): ICreepConfig => ({
-        // 移动到指定位置
-        prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
-        isReady: creep => creep.harvest(Game.getObjectById(sourceId)) === OK,
-        // 拿出来能量
-        source: creep => creep.withdraw(Game.getObjectById(sourceId), RESOURCE_ENERGY),
-        // 拿完了就升级控制器
-        target: creep => creep.upgradeController(creep.room.controller),
-        switch: creep => creep.store[RESOURCE_ENERGY] > 0,
-        spawn: spawnName,
-        bodyType: 'worker'
-    }),
+    })
 }

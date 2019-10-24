@@ -21,10 +21,10 @@ export default {
      * 准备阶段：向指定房间控制器移动
      * 阶段A：预定控制器
      * 
-     * @param sourceInfo 要预定的控制器的信息
      * @param spawnName 出生点名称
+     * @param sourceInfo 要预定的控制器的信息
      */
-    reserver: (sourceInfo: IPositionInfo, spawnName: string): ICreepConfig => ({
+    reserver: (spawnName: string, sourceInfo: IPositionInfo): ICreepConfig => ({
         // 朝控制器移动
         prepare: creep => creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName)),
         // 只要可以摸到控制器就说明准备阶段完成
@@ -51,11 +51,11 @@ export default {
      * 签名者
      * 会先抵达指定房间, 然后执行签名
      * 
+     * @param spawnName 出生点名称
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
-     * @param spawnName 出生点
      */
-    signer: (targetRoomName: string, signText: string, spawnName: string): ICreepConfig => ({
+    signer: (spawnName: string, targetRoomName: string, signText: string): ICreepConfig => ({
         source: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
         target: creep => {
             if (creep.signController(creep.room.controller, signText) === ERR_NOT_IN_RANGE) {
@@ -70,12 +70,12 @@ export default {
     /**
      * 支援者
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
-     * 
+     *
+     * @param spawnName 出生点名称
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
-     * @param spawnName 出生点
      */
-    remoteBuilder: (targetRoomName: string, sourceId: string, spawnName: string): ICreepConfig => ({
+    remoteBuilder: (spawnName: string, targetRoomName: string, sourceId: string): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
         // 自己所在的房间为指定房间则准备完成
@@ -95,11 +95,11 @@ export default {
      * 支援 - 采矿者
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      * 
+     * @param spawnName 出生点名称
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
-     * @param spawnName 出生点
      */
-    remoteUpgrader: (targetRoomName: string, sourceId: string, spawnName: string): ICreepConfig => ({
+    remoteUpgrader: (spawnName: string, targetRoomName: string, sourceId: string): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
         // 自己所在的房间为指定房间则准备完成
@@ -116,22 +116,50 @@ export default {
      * 外矿采集者
      * 从指定矿中挖矿 > 将矿转移到建筑中
      * 
-     * @param sourceInfo 外矿的信息
-     * @param targetId 要移动到的建筑 id
      * @param spawnName 出生点名称
+     * @param sourceFlagName 外矿旗帜的名称 (要确保 source 就在该旗帜附件)
+     * @param targetId 要移动到的建筑 id
      */
-    remoteHarvester: (sourceInfo: IPositionInfo, targetId: string, spawnName: string): ICreepConfig => ({
+    remoteHarvester: (spawnName: string, sourceFlagName: string, targetId: string): ICreepConfig => ({
+        // 获取旗帜附近的 source
+        prepare: creep => {
+            const sourceFlag = Game.flags[sourceFlagName]
+            if (!sourceFlag) {
+                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
+                return creep.say('找不到外矿!')
+            }
+
+            if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
+            else {
+                const source = sourceFlag.pos.findClosestByRange(FIND_SOURCES)
+                if (!source) return console.log(`${sourceFlagName} 附近没有找到 source`)
+                // 找到 source 后就写入内存
+                creep.memory.sourceId = source.id
+            }
+        },
+        // 内存中是否拥有sourceId
+        isReady: creep => creep.memory.sourceId ? true : false,
+        // 向旗帜出发
         source: creep => {
+            const sourceFlag = Game.flags[sourceFlagName]
+            if (!sourceFlag) {
+                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
+                return creep.say('找不到外矿!')
+            }
+
             // 检查自己身边有没有敌人
-            const enemys = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
+            if (!creep.room._enemys) {
+                creep.room._enemys = creep.room.find(FIND_HOSTILE_CREEPS)
+            }
             // 有的话就往家跑
-            if (enemys.length > 0) {
+            if (creep.room._enemys.length > 0) {
                 creep.farMoveTo(Game.spawns[spawnName].pos)
             }
+
             // 下面是正常开采逻辑
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
-            if (creep.harvest(Game.getObjectById(sourceInfo.id)) !== OK) {
-                creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName))
+            if (creep.harvest(Game.getObjectById(creep.memory.sourceId)) !== OK) {
+                creep.farMoveTo(sourceFlag.pos)
             }
         },
         target: creep => {

@@ -17,16 +17,16 @@ import role from './role'
  */
 export const creepConfigs: ICreepConfigs = {
     // 房间基本配置
-    // E1harvester1: role.harvester('ef990774d80108c', 'Spawn1'), // 矿工
-    // E1upgrader1: role.upgrader('ef990774d80108c', 'Spawn1'), // 升级者
-    // E1builder1: role.builder('ba3c0774d80c3a8', 'Spawn1'), // 建筑工
-    // E1repairer1: role.repairer('ba3c0774d80c3a8', 'Spawn1'), // 维修者
-    // E1TowerTransfer1: role.towerTransfer('ba3c0774d80c3a8', 'Spawn1'), // 防御塔填充
+    // E1harvester1: role.harvester('Spawn1', 'ef990774d80108c'), // 矿工
+    // E1upgrader1: role.upgrader('Spawn1', 'ef990774d80108c'), // 升级者
+    // E1builder1: role.builder('Spawn1', 'ba3c0774d80c3a8'), // 建筑工
+    // E1repairer: role.repairer('Spawn1', 'ba3c0774d80c3a8'), // 维修者
+    // E1TowerTransfer: role.towerTransfer('Spawn1', 'ba3c0774d80c3a8'), // 防御塔填充
 
     // 拓展组
-    // W1N7Claimer1: role.claimer('Spawn1'), // 占领者, 占领后及时注释, 不然会一直生成
-    // WIN7Supporter1: role.remoteBuilder('W1N8', 'ab9e0774d1c107c', 'Spawn1'), // 建筑工
-    // WIN7RemoteUpgrader1: role.remoteUpgrader('W1N8', 'ab9e0774d1c107c', 'Spawn1'), // 升级者
+    // W1N7Claimer: role.claimer('Spawn1'), // 占领者, 占领后及时注释, 不然会一直生成
+    // WIN7RemoteBuilder: role.remoteBuilder('Spawn1', 'W1N8', 'ab9e0774d1c107c'), // 建筑工
+    // WIN7RemoteUpgrader: role.remoteUpgrader('Spawn1', 'W1N8', 'ab9e0774d1c107c'), // 升级者
 }
 
 // creep 的默认内存
@@ -34,7 +34,6 @@ export const creepDefaultMemory: CreepMemory = {
     role: '',
     ready: false,
     working: false,
-    hasSendRebirth: false,
     path: []
 }
 

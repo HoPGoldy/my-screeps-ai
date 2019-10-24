@@ -7,11 +7,11 @@ export default {
      * 采集者
      * 从指定 source 中获取能量 > 将矿转移到 spawn 和 extension 中
      * 
-     * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
+     * @param sourceId 要挖的矿 id
      * @param backupStorageId 填满后将能量转移到的建筑 (可选)
      */
-    harvester: (sourceId: string, spawnName: string, backupStorageId: string=''): ICreepConfig => ({
+    harvester: (spawnName: string, sourceId: string, backupStorageId: string=''): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.fillSpawnEngry(backupStorageId),
         switch: creep => creep.updateState('🍚 收获'),
@@ -51,11 +51,11 @@ export default {
      * 资源转移者
      * 从指定建筑中获取资源 > 将资源转移到指定建筑中
      * 
+     * @param spawnName 出生点名称
      * @param sourceId 获取资源的建筑 id
      * @param targetId 指定建筑 id
-     * @param spawnName 出生点名称
      */
-    resourceTransfer: (sourceId: string, ResourceType: ResourceConstant, targetId: string, spawnName: string): ICreepConfig => ({
+    resourceTransfer: (spawnName: string, sourceId: string, ResourceType: ResourceConstant, targetId: string): ICreepConfig => ({
         source: creep => {
             const source: Structure = Game.getObjectById(sourceId)
             if (creep.withdraw(source, ResourceType) == ERR_NOT_IN_RANGE) creep.moveTo(source)
@@ -76,7 +76,7 @@ export default {
      * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
      */
-    upgrader: (sourceId: string, spawnName: string): ICreepConfig => ({
+    upgrader: (spawnName: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
@@ -88,10 +88,10 @@ export default {
      * 建筑者
      * 从指定结构中获取能量 > 查找建筑工地并建造
      * 
-     * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
+     * @param sourceId 要挖的矿 id
      */
-    builder: (sourceId: string, spawnName: string): ICreepConfig => ({
+    builder: (spawnName: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             if (creep.buildStructure()) { }
@@ -106,10 +106,10 @@ export default {
      * 维修者
      * 从指定结构中获取能量 > 维修房间内的建筑
      * 
-     * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
+     * @param sourceId 要挖的矿 id
      */
-    repairer: (sourceId: string, spawnName: string): ICreepConfig => ({
+    repairer: (spawnName: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             // 去维修
@@ -126,10 +126,10 @@ export default {
      * tower 填充者
      * 从指定结构中获取能量 > 将能量填充到 tower 中
      * 
-     * @param sourceId 要挖的矿 id
      * @param spawnName 出生点名称
+     * @param sourceId 要挖的矿 id
      */
-    towerTransfer: (sourceId: string, spawnName: string): ICreepConfig => ({
+    towerTransfer: (spawnName: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             if (creep.fillTower()) {}

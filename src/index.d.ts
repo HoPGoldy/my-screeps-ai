@@ -102,7 +102,7 @@ interface SpawnMemory {
  * @property {} ready creep是否已经准备好可以工作了
  * @property {} role creep的角色
  * @property {} working 是否在工作
- * @property {} hasSendRebirth 是否已经往 spwan 队列中推送了自己的重生任务
+ * @property {} sourceId 外矿采集者特有 要采集的 Source Id
  * @property {} path 行进路线
  * @property {} targetPosTag 缓存路径的目标，该目标发生变化时刷新路径, 总是和上面的 path 成对出现
  * @property {} fillWallId 要填充的墙 id 
@@ -114,7 +114,7 @@ interface CreepMemory {
     ready: boolean
     role: string
     working: boolean
-    hasSendRebirth: boolean
+    sourceId?: string
     path?: PathStep[]
     targetPosTag?: string
     fillWallId?: string
@@ -127,6 +127,7 @@ interface CreepMemory {
  * 房间拓展
  */
 interface Room {
+    _enemys: Creep[]
     addTask(task: ITransferTask): number
     hasTask(submitId: string): boolean
     hangTask(): number
