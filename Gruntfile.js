@@ -44,7 +44,7 @@ module.exports = function(grunt) {
                     target: 'es5',
                     rootDir: "src/"
                 },
-                src: [ "src/*.ts", "!src/*.template.ts"],
+                src: [ "src/*.ts", "screeps.d.ts", "!src/*.template.ts"],
                 outDir: 'dist/'
             }
         },

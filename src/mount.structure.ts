@@ -1,4 +1,4 @@
-import { linkConfigs, creepConfigs, creepDefaultMemory, terminalConfigs } from './config'
+import { linkConfigs, creepConfigs, creepDefaultMemory, factoryConfigs , terminalConfigs } from './config'
 import { bodyConfigs } from './setting'
 
 // 挂载拓展到建筑原型
@@ -6,6 +6,7 @@ export default function () {
     _.assign(StructureSpawn.prototype, SpawnExtension.prototype)
     _.assign(StructureTower.prototype, TowerExtension.prototype)
     _.assign(StructureLink.prototype, LinkExtension.prototype)
+    _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     // _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
 }
 
@@ -219,6 +220,27 @@ class LinkExtension extends StructureLink {
             resourceType: RESOURCE_ENERGY,
             amount: this.energy
         })
+    }
+}
+
+// Factory 拓展
+class FactoryExtension extends StructureFactory {
+    public work(): void {
+        // 没有冷却好就直接跳过
+        if (this.cooldown !== 0) return
+        // 获取不到配置项也跳过
+        const config: IFactoryConfig = factoryConfigs[this.id]
+        if (!config) return 
+
+        config.target(this)
+    }
+
+    /**
+     * 制作商品的快捷方式
+     * @param resourceType 要制作的商品
+     */
+    public make(resourceType: ResourceConstant): void {
+        console.log(`我要制作 ${resourceType}`)
     }
 }
 

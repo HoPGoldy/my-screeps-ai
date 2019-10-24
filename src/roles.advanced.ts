@@ -42,7 +42,7 @@ export default {
         // link 里有能量就拿出来
         source: creep => {
             const task = creep.room.getTask()
-            if (!task) return creep.say('没活了')
+            if (!task) return 
 
             const structure: AnyStructure = Game.getObjectById(task.sourceId)
             const result = creep.withdraw(structure, task.resourceType)

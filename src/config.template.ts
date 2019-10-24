@@ -50,6 +50,17 @@ export const linkConfigs: ILinkConfigs = {
 }
 
 
+// --------------------------------------------- 以下为 factory 配置项 ---------------------------------------------
+
+/**
+ * factory 配置列表
+ * factory 会直接执行下面列表中对应自己 id 的 target 方法
+ */
+export const factoryConfigs: IFactoryConfigs = {
+    // 'factory的id': { target: factory => factory.make(RESOURCE_UTRIUM_BAR)}
+}
+
+
 // --------------------------------------------- 以下为 terminal 配置项 ---------------------------------------------
 
 

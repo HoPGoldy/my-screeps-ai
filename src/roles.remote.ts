@@ -154,6 +154,7 @@ export default {
             // 有的话就往家跑
             if (creep.room._enemys.length > 0) {
                 creep.farMoveTo(Game.spawns[spawnName].pos)
+                return 
             }
 
             // 下面是正常开采逻辑
