@@ -1,4 +1,5 @@
 import mountCreep from './mount.creep'
+import mountRoom from './mount.room'
 import mountGlobal from './mount.global'
 import mountStructure from './mount.structure'
 
@@ -12,6 +13,7 @@ export default function (): void {
 
         // 挂载全部拓展
         mountGlobal()
+        mountRoom()
         mountCreep()
         mountStructure()
     }

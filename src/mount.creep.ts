@@ -81,30 +81,25 @@ class CreepExtension extends Creep {
      * @param onStateChange 状态切换时的回调
      */
     public updateState(workingMsg: string='🧰 工作', onStateChange: Function=this.updateStateDefaultCallback): boolean {
-        try {
-            const resourceType: string = (Object.keys(this.store).length > 0) ? Object.keys(this.store)[0] : RESOURCE_ENERGY
-            const resourceAmount = this.store.getUsedCapacity(resourceType)
+        const resourceType: string = (Object.keys(this.store).length > 0) ? Object.keys(this.store)[0] : RESOURCE_ENERGY
+        const resourceAmount = this.store.getUsedCapacity(resourceType)
 
-            // creep 身上没有能量 && creep 之前的状态为“工作”
-            if(resourceAmount <= 0 && this.memory.working) {
-                // 切换状态
-                this.memory.working = false
-                this.say('⚡ 挖矿')
-                onStateChange(this, this.memory.working)
-            }
-            // creep 身上能量满了 && creep 之前的状态为“不工作”
-            if(resourceAmount >= this.store.getCapacity() && !this.memory.working) {
-                // 切换状态
-                this.memory.working = true
-                this.say(workingMsg)
-                onStateChange(this, this.memory.working)
-            }
-    
-            return this.memory.working
+        // creep 身上没有能量 && creep 之前的状态为“工作”
+        if(resourceAmount <= 0 && this.memory.working) {
+            // 切换状态
+            this.memory.working = false
+            this.say('⚡ 挖矿')
+            onStateChange(this, this.memory.working)
         }
-        catch (e) {
-            console.log(`[store 错误] ${this.id} ${this.name} ${this.memory.working}`)
+        // creep 身上能量满了 && creep 之前的状态为“不工作”
+        if(resourceAmount >= this.store.getCapacity() && !this.memory.working) {
+            // 切换状态
+            this.memory.working = true
+            this.say(workingMsg)
+            onStateChange(this, this.memory.working)
         }
+
+        return this.memory.working
     }
 
     /**

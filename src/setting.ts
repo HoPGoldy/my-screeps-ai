@@ -40,11 +40,9 @@ export const bodyConfigs: IBodyConfigs = {
     },
     
     /**
-     * 维修者
-     * 
-     * 一个小型的 Worker
+     * 小型 worker
      */
-    repairer: {
+    smallWorker: {
         1: [ WORK, CARRY, MOVE ],
         2: [ WORK, CARRY, MOVE ],
         3: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ],

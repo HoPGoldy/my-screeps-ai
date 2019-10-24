@@ -43,7 +43,7 @@ class SpawnExtension extends StructureSpawn {
         if (!this.hasTask(taskName)) {
             // 任务加入队列
             this.memory.spawnList.push(taskName)
-            return this.memory.spawnList.length
+            return this.memory.spawnList.length - 1
         }
         // 如果已经有的话返回 -1
         else return -1
@@ -199,6 +199,23 @@ class LinkExtension extends StructureLink {
     public to(targetId: string): void {
         this.transferEnergy(Game.getObjectById(targetId))
     }
+
+    /**
+     * 扮演中央 link
+     * 
+     * 向房间中的资源转移队列推送任务
+     */
+    public asCenter(): void {
+        if (this.room.hasTask(this.id)) return 
+
+        this.room.addTask({
+            submitId: this.id,
+            sourceId: this.id,
+            targetId: this.room.storage.id,
+            resourceType: RESOURCE_ENERGY,
+            amount: this.energy
+        })
+    }
 }
 
 // Terminal 拓展
@@ -232,7 +249,7 @@ class TerminalExtension extends StructureTerminal {
      * @param configs 传输任务列表
      * @returns 终端是否进入冷却
      */
-    public commandTransfer(configs: ITransferTask[]): boolean {
+    public commandTransfer(configs: IRoomTransferTask[]): boolean {
         return false
     }
 

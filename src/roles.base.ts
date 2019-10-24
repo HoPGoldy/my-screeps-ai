@@ -23,19 +23,23 @@ export default {
      * 收集者
      * 从指定 source 或 mineral 中获取资源 > 将资源转移到指定建筑中
      * 
-     * @param sourceId 要挖的矿 id
-     * @param targetId 指定建筑 id
      * @param spawnName 出生点名称
+     * @param sourceId 要挖的矿 id
+     * @param targetId 指定建筑 id (默认为 room.storage)
      */
-    collector: (sourceId: string, targetId: string, spawnName: string): ICreepConfig => ({
+    collector: (spawnName: string, sourceId: string, targetId: string=''): ICreepConfig => ({
         prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
         isReady: creep => creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos),
         source: creep => {
             const source: Source|Mineral = Game.getObjectById(sourceId)
+            if (!source) return creep.say('目标找不到!')
+
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source)
         },
         target: creep => {
-            const target: Structure = Game.getObjectById(targetId)
+            const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.storage
+            if (!target) return creep.say('目标找不到!')
+
             if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
         },
         switch: creep => creep.updateState('🍚 收获'),
@@ -115,7 +119,7 @@ export default {
         },
         switch: creep => creep.updateState('📌 修复'),
         spawn: spawnName,
-        bodyType: 'repairer'
+        bodyType: 'smallWorker'
     }),
 
     /**
@@ -134,7 +138,7 @@ export default {
         },
         switch: creep => creep.updateState('🍚 填塔'),
         spawn: spawnName,
-        bodyType: 'worker'
+        bodyType: 'smallWorker'
     }),
 
     /**
@@ -156,6 +160,6 @@ export default {
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodyType: 'worker'
+        bodyType: 'smallWorker'
     })
 }

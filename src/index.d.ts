@@ -43,7 +43,7 @@ interface StructureSpawn {
  */
 interface StructureTerminal {
     commandMarket(config: IMarketTask): boolean
-    commandTransfer(configs: ITransferTask[]): boolean
+    commandTransfer(configs: IRoomTransferTask[]): boolean
 }
 
 /**
@@ -124,6 +124,43 @@ interface CreepMemory {
 }
 
 /**
+ * 房间拓展
+ */
+interface Room {
+    addTask(task: ITransferTask): number
+    hasTask(submitId: string): boolean
+    hangTask(): number
+    handleTask(transferAmount: number): void
+    getTask(): ITransferTask | null
+}
+
+/**
+ * 房间内存
+ * 
+ * @property {} centerTransferTasks 中央集群的资源转移任务队列
+ */
+interface RoomMemory {
+    centerTransferTasks: ITransferTask[]
+}
+
+/**
+ * 资源转移任务
+ * 
+ * @property {} submitId 任务提交者 id
+ * @property {} sourceId 资源的提供建筑 id
+ * @property {} targetId 资源的接受建筑 id
+ * @property {} resourceType 资源类型
+ * @property {} amount 资源数量
+ */
+interface ITransferTask {
+    submitId: string
+    sourceId: string
+    targetId: string
+    resourceType:  ResourceConstant
+    amount: number
+}
+
+/**
  * creep 的配置项
  * @property {} prepare 准备阶段执行的方法
  * @property {} isReady 是否准备完成
@@ -154,6 +191,7 @@ interface ICreepConfigs {
 interface StructureLink {
     work(): void
     to(targetId: string): void
+    asCenter(): void
 }
 
 /**
@@ -180,7 +218,7 @@ interface ILinkConfigs {
  * @property {} amount 一次转移的数量
  * @property {} holdAmount 保存在本地终端的该资源数量, 资源只有在 (总量 - amount >= holdAmount) 时才会转移
  */
-interface ITransferTask {
+interface IRoomTransferTask {
     targetRoom: string
     type: ResourceConstant
     amount: number
@@ -210,7 +248,7 @@ interface IMarketTask {
  */
 interface ITerminalConfig {
     market?: IMarketTask
-    transferTasks?: ITransferTask[]
+    transferTasks?: IRoomTransferTask[]
 }
 
 /**

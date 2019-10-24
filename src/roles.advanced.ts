@@ -35,18 +35,34 @@ export default {
      * @param centerLinkId 中央 link 的 id
      * @param spawnName 出生点名称
      */
-    centerTransfer: (x: number, y: number, centerLinkId: string, spawnName: string): ICreepConfig => ({
+    centerTransfer: (x: number, y: number, spawnName: string): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => creep.moveTo(x, y),
-        isReady: creep => creep.pos.x === x && creep.pos.y === y,
+        isReady: creep => creep.pos.isEqualTo(x, y),
         // link 里有能量就拿出来
         source: creep => {
-            const link: StructureLink = Game.getObjectById(centerLinkId)
-            if (link.energy > 0) creep.withdraw(link, RESOURCE_ENERGY)
+            const task = creep.room.getTask()
+            if (!task) return creep.say('没活了')
+
+            const structure: AnyStructure = Game.getObjectById(task.sourceId)
+            const result = creep.withdraw(structure, task.resourceType)
+            if (result !== OK) creep.say(`ERROR ${result}`)
         },
         // 身上有能量就放到 Storage 里
-        target: creep => creep.transfer(creep.room.storage, RESOURCE_ENERGY),
-        switch: creep => creep.store[RESOURCE_ENERGY] > 0,
+        target: creep => {
+            const task = creep.room.getTask()
+            if (!task) return
+
+            // 提前获取携带量
+            const amount: number = creep.store.getUsedCapacity(task.resourceType)
+
+            const structure: AnyStructure = Game.getObjectById(task.targetId)
+            const result = creep.transfer(structure, task.resourceType)
+            // 如果转移完成则增加任务进度
+            if (result === OK) creep.room.handleTask(amount)
+            else creep.say(`ERROR ${result}`)
+        },
+        switch: creep => creep.store.getUsedCapacity() > 0,
         spawn: spawnName,
         bodyType: 'transfer'
     }),
