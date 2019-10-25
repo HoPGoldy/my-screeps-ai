@@ -71,4 +71,30 @@ class RoomExtension extends Room {
             this.memory.centerTransferTasks.shift()
         }
     }
+
+    /**
+     * 设置房间内的工厂目标
+     * 
+     * @param resourceType 工厂期望生成的商品
+     */
+    public setFactoryTarget(resourceType: ResourceConstant): string {
+        this.memory.factoryTarget = resourceType
+        return `${this.name} 工厂目标已被设置为 ${resourceType}`
+    }
+
+    /**
+     * 读取房间内的工厂目标
+     * 一般由本房间的工厂调用
+     */
+    public getFactoryTarget(): ResourceConstant | null {
+        return this.memory.factoryTarget || null
+    }
+
+    /**
+     * 清空本房间工厂目标
+     */
+    public clearFactoryTarget(): string {
+        delete this.memory.factoryTarget
+        return `${this.name} 工厂目标已清除`
+    }
 }

@@ -1,37 +1,3 @@
-/**
- * 针对 Screeps 4.0.0 新增的 api 补充声明
- */
-interface Store {
-    getCapacity(resource: string): number|null
-    getCapacity(): number
-    getFreeCapacity(resource: string): number|null
-    getFreeCapacity(): number
-    getUsedCapacity(resource: string): number|null
-    getUsedCapacity(): number
-    [keyName: string]: any
-}
-
-type FactoryReturnCode = OK | ERR_NOT_OWNER | ERR_BUSY | ERR_NOT_ENOUGH_RESOURCES | ERR_INVALID_TARGET | ERR_FULL | ERR_INVALID_ARGS | ERR_TIRED | ERR_RCL_NOT_ENOUGH
-
-interface StructureFactory {
-    id: string
-    room: Room
-    cooldown: number
-    level: number
-    store: Store
-    produce(resourceType: ResourceConstant): FactoryReturnCode
-}
-
-interface StructureFactoryConstructor extends _Constructor<StructureFactory>, _ConstructorById<StructureFactory> {}
-
-declare const StructureFactory: StructureFactoryConstructor;
-
-declare const RESOURCE_UTRIUM_BAR = 'utrium_bar'
-declare const RESOURCE_LEMERGIUM_BAR = 'lemergium_bar'
-declare const RESOURCE_ZYNTHIUM_BAR = 'zynthium_bar'
-declare const RESOURCE_KEANIUM_BAR = 'keanium_bar'
-// ----
-
 declare module NodeJS {
     // 全局对象
     interface Global {
@@ -157,6 +123,10 @@ interface Room {
     hangTask(): number
     handleTask(transferAmount: number): void
     getTask(): ITransferTask | null
+
+    setFactoryTarget(resourceType: ResourceConstant): string
+    getFactoryTarget(): ResourceConstant | null
+    clearFactoryTarget(): string
 }
 
 /**
@@ -166,6 +136,7 @@ interface Room {
  */
 interface RoomMemory {
     centerTransferTasks: ITransferTask[]
+    factoryTarget: ResourceConstant
 }
 
 /**

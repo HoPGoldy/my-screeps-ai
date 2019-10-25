@@ -57,6 +57,7 @@ class SpawnExtension extends StructureSpawn {
      * @returns true/false 有/没有
      */
     public hasTask(taskName: string): boolean {
+        if (!this.memory.spawnList) this.memory.spawnList = []
         return this.memory.spawnList.indexOf(taskName) > -1
     }
 
@@ -223,16 +224,90 @@ class LinkExtension extends StructureLink {
     }
 }
 
+/**
+ * 当工厂中的目标商品数量超过该值时
+ * 所有的目标商品都将转移至 termial 
+ */
+const FACTORY_TARGET_LIMIT = 500
+
 // Factory 拓展
 class FactoryExtension extends StructureFactory {
     public work(): void {
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) return
-        // 获取不到配置项也跳过
-        const config: IFactoryConfig = factoryConfigs[this.id]
-        if (!config) return 
+        // 获取不到目标资源就跳过
+        const targetResource: ResourceConstant = this.room.getFactoryTarget()
+        if (!targetResource) return
+        
+        // 优先把做好的资源转移出去, 默认为 500
+        if (this.store.getUsedCapacity(targetResource) >= FACTORY_TARGET_LIMIT) {
+            this.addPutTask(targetResource)
+            return
+        }
+        
+        // 收集需要的资源
+        if (!this.getNeedResource(targetResource)) return
 
-        config.target(this)
+        // 资源凑齐了就直接开始生成
+        this.produce(<CommodityConstant|MineralConstant|RESOURCE_GHODIUM>targetResource)
+    }
+
+    /**
+     * 装填合成需要的资源
+     * 
+     * @param target 想要合成的资源
+     * @returns 是否装填完成
+     */
+    getNeedResource(target: ResourceConstant): boolean {
+        const componentResources = COMMODITIES[target].components
+        for (const component in componentResources) {
+            // 如果自己存储里该资源的数量不足，则发布任务
+            if (this.store[component] < componentResources[component]) {
+                this.addGetTask(component as ResourceConstant, componentResources[component])
+                return false
+            }
+        }
+
+        return true
+    }
+
+    /**
+     * 向房间中央转移队列发布获取资源任务
+     * 从 storage 中获取指定的资源
+     * 
+     * @param resourceType 想要获取的资源类型
+     * @param amount 想要获取的资源数量
+     */
+    public addGetTask(resourceType: ResourceConstant, amount: number): void {
+        // 发布前先检查下有没有任务
+        if (this.room.hasTask(this.id)) return 
+
+        this.room.addTask({
+            submitId: this.id,
+            sourceId: this.room.storage.id,
+            targetId: this.id,
+            resourceType: resourceType,
+            amount: amount
+        })
+    }
+    
+    /**
+     * 向房间中央转移队列发布移出资源任务
+     * 将自己 store 中合成好的资源全部转移到 termial 中
+     * 
+     * @param resourceType 想要转移出去的资源类型
+     */
+    public addPutTask(resourceType: ResourceConstant): void {
+        // 发布前先检查下有没有任务
+        if (this.room.hasTask(this.id)) return 
+
+        this.room.addTask({
+            submitId: this.id,
+            sourceId: this.id,
+            targetId: this.room.terminal.id,
+            resourceType: resourceType,
+            amount: this.store.getUsedCapacity(resourceType)
+        })
     }
 
     /**
