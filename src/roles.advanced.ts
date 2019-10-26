@@ -46,7 +46,10 @@ export default {
 
             const structure: AnyStructure = Game.getObjectById(task.sourceId)
             const result = creep.withdraw(structure, task.resourceType)
-            if (result !== OK) creep.say(`ERROR ${result}`)
+            if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                creep.room.hangTask()
+            }
+            else if (result !== OK) creep.say(`withdraw ${result}`)
         },
         // 身上有能量就放到 Storage 里
         target: creep => {
@@ -60,7 +63,7 @@ export default {
             const result = creep.transfer(structure, task.resourceType)
             // 如果转移完成则增加任务进度
             if (result === OK) creep.room.handleTask(amount)
-            else creep.say(`ERROR ${result}`)
+            else creep.say(`transfer ${result}`)
         },
         switch: creep => creep.store.getUsedCapacity() > 0,
         spawn: spawnName,

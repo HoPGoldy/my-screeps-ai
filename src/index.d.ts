@@ -133,10 +133,13 @@ interface Room {
  * 房间内 | 
  * 
  * @property {} centerTransferTasks 中央集群的资源转移任务队列
+ * @property {} factoryTarget 房间内工厂生产的目标
+ * @property {} targetOrderId 房间内终端缓存的订单id
  */
 interface RoomMemory {
     centerTransferTasks: ITransferTask[]
     factoryTarget: ResourceConstant
+    targetOrderId: string
 }
 
 /**
@@ -236,7 +239,7 @@ interface IRoomTransferTask {
  * 
  * @property {} type 值为 sell/bug 表示任务是卖出还是买入
  * @property {} resourceType 要交易的资源类型
- * @property {} amount 一次转移的数量
+ * @property {} amount 一次交易的数量
  * @property {} holdAmount 保存在本地终端的该资源数量, 资源只有在 (总量 - amount >= holdAmount) 时才会进行交易
  */
 interface IMarketTask {

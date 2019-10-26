@@ -7,7 +7,7 @@ export default function () {
     _.assign(StructureTower.prototype, TowerExtension.prototype)
     _.assign(StructureLink.prototype, LinkExtension.prototype)
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
-    // _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
+    _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
 }
 
 /**
@@ -16,7 +16,10 @@ export default function () {
  */
 const importantRoles = [ 'Harvester', 'Transfer' ]
 
-// Spawn 原型拓展
+/**
+ * Spawn 原型拓展
+ * @todo 矿工生成前先检查是否有矿
+ */
 class SpawnExtension extends StructureSpawn {
     /**
      * spawn 主要工作
@@ -230,7 +233,10 @@ class LinkExtension extends StructureLink {
  */
 const FACTORY_TARGET_LIMIT = 500
 
-// Factory 拓展
+/**
+ * Factory 拓展
+ * @todo 检查是否有资源 没有就待机
+ */
 class FactoryExtension extends StructureFactory {
     public work(): void {
         // 没有冷却好就直接跳过
@@ -327,6 +333,8 @@ class TerminalExtension extends StructureTerminal {
         // 获取不到配置项也跳过
         const config = this.getConfig(this.room.name)
         if (!config) return
+        // 自己有资源转移订单也要跳过
+        if (this.room.hasTask(this.id)) return 
 
         // 先进行市场交易
         if (this.commandMarket(config.market)) { }
@@ -341,7 +349,52 @@ class TerminalExtension extends StructureTerminal {
      * @returns 终端是否进入冷却
      */
     public commandMarket(config: IMarketTask): boolean {
-        return false
+        if (!config) return false
+
+        // 检查资源是否足够
+        if (this.store.getUsedCapacity(config.resourceType) < config.holdAmount + config.amount) return false
+
+        let targetOrder: Order
+        // 如果房间内存中没有缓存订单
+        if (!this.room.memory.targetOrderId) {
+            // 查找订单
+            targetOrder = this.getOrder(config)
+            
+            // 找不到合适的订单就终止交易
+            if (!targetOrder) return false
+            // 找到了就写入房间内存
+            else this.room.memory.targetOrderId = targetOrder.id
+        }
+
+        // 如果有缓存订单的话, 就从 id 恢复订单
+        if (!targetOrder) targetOrder = Game.market.getOrderById(this.room.memory.targetOrderId)
+        // 如果没找到的话说明订单失效, 移除缓存
+        if (!targetOrder) {
+            delete this.room.memory.targetOrderId
+            return false
+        }
+
+        // 计算花销
+        const cost = Game.market.calcTransactionCost(config.amount, this.room.name, targetOrder.roomName)
+        // 如果没有路费的话就问 sotrage 要
+        if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
+            this.getEngry(cost)
+            console.log('要路费')
+            return false
+        }
+
+        const dealResult = Game.market.deal(targetOrder.id, config.amount, this.room.name)
+        // console.log(JSON.stringify(targetOrder, null, 4))
+        // console.log(`订单号 ${targetOrder.id} 交易量 ${config.amount} 房间名 ${this.room.name} 返回值 ${dealResult}`)
+
+        if (dealResult === ERR_INVALID_ARGS) {
+            delete this.room.memory.targetOrderId
+        }
+        else if (dealResult !== OK) {
+            console.log(`[终端警告] ${this.room.name} 处理订单异常 ${dealResult}`)
+        }
+
+        return true
     }
 
     /**
@@ -351,7 +404,51 @@ class TerminalExtension extends StructureTerminal {
      * @returns 终端是否进入冷却
      */
     public commandTransfer(configs: IRoomTransferTask[]): boolean {
-        return false
+        if (!configs) return false
+        return true
+    }
+
+    /**
+     * 寻找合适的订单
+     * 该方法**不会**将订单写入房间内存
+     * 
+     * @param config 市场交易任务
+     * @returns 找到则返回订单, 否找返回 null
+     */
+    private getOrder(config: IMarketTask): Order | null {
+        const orders = Game.market.getAllOrders(order => {
+            /**
+             * 注意, 这里对订单的类型做了取反
+             * 这么做是因为 config 中的类型时针对房间而言的
+             * 房间想要“卖出”，那么就要在市场上搜索“买入”的订单
+             */
+            const type = config.type === ORDER_BUY ? ORDER_SELL : ORDER_BUY
+            return order.type === type && order.resourceType === config.resourceType && (order.remainingAmount >= config.amount)
+        })
+        // 没找到订单就返回空
+        if (orders.length <= 0) return null
+
+        // price 升序找到最适合的订单
+        // 买入找price最低的 卖出找price最高的
+        const sortedOrders = _.sortBy(orders, order => order.price)
+        return sortedOrders[config.type === ORDER_SELL ? (sortedOrders.length - 1) : 0]
+    }
+
+    /**
+     * 
+     * @param amount 需要能量的数量
+     */
+    private getEngry(amount: number): void {
+        // 发布前先检查下有没有任务
+        if (this.room.hasTask(this.id)) return 
+
+        this.room.addTask({
+            submitId: this.id,
+            sourceId: this.room.storage.id,
+            targetId: this.id,
+            resourceType: RESOURCE_ENERGY,
+            amount
+        })
     }
 
     /**
