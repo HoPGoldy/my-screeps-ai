@@ -1,4 +1,4 @@
-import { linkConfigs, creepConfigs, creepDefaultMemory, factoryConfigs , terminalConfigs } from './config'
+import { linkConfigs, creepConfigs, creepDefaultMemory, terminalConfigs } from './config'
 import { bodyConfigs } from './setting'
 
 // 挂载拓展到建筑原型
@@ -73,6 +73,15 @@ class SpawnExtension extends StructureSpawn {
     }
 
     /**
+     * 将当前任务挂起
+     * 任务会被移动至队列末尾
+     */
+    private hangTask(): void {
+        const task = this.memory.spawnList.shift()
+        this.memory.spawnList.push(task)
+    }
+
+    /**
      * 从 spawn 生产 creep
      * 
      * @param configName 对应的配置名称
@@ -83,6 +92,11 @@ class SpawnExtension extends StructureSpawn {
         const creepConfig = creepConfigs[configName]
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         if (!creepConfig) return true
+        // 如果 isNeed 表明不需要生成, 则将其移至队列末尾
+        if (creepConfig.isNeed && !creepConfig.isNeed(this.room)) {
+            this.hangTask()
+            return false
+        }
 
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)

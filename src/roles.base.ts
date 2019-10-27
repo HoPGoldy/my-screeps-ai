@@ -48,6 +48,44 @@ export default {
     }),
 
     /**
+     * 矿工
+     * 从房间的 mineral 中获取资源 > 将资源转移到指定建筑中(默认为 storage)
+     * 
+     * @param spawnName 出生点名称
+     * @param targetId 指定建筑 id (默认为 room.storage)
+     */
+    miner: (spawnName: string, targetId=''): ICreepConfig => ({
+        // 检查矿床里是不是还有矿
+        isNeed: room => {
+            let mineral: Mineral
+            if (!room.memory.mineralId) {
+                // 没有就缓存矿床id
+                const targets = room.find(FIND_MINERALS)
+                mineral = targets[0]
+                room.memory.mineralId = mineral.id
+            }
+            else mineral = Game.getObjectById(room.memory.mineralId)
+            // 房间中的矿床是否还有剩余产量
+            return (mineral.mineralAmount > 0) ? true : false
+        },
+        source: creep => {
+            const mineral: Mineral = Game.getObjectById(creep.room.memory.mineralId)
+            if (!mineral) return creep.say('目标找不到!')
+            // 采集/移动
+            if (creep.harvest(mineral) == ERR_NOT_IN_RANGE) creep.farMoveTo(mineral.pos)
+        },
+        target: creep => {
+            const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.storage
+            if (!target) return creep.say('目标找不到!')
+            // 转移/移动
+            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos)
+        },
+        switch: creep => creep.updateState('🍚 收获'),
+        spawn: spawnName,
+        bodyType: 'worker'
+    }),
+
+    /**
      * 资源转移者
      * 从指定建筑中获取资源 > 将资源转移到指定建筑中
      * 

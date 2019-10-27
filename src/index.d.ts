@@ -135,11 +135,13 @@ interface Room {
  * @property {} centerTransferTasks 中央集群的资源转移任务队列
  * @property {} factoryTarget 房间内工厂生产的目标
  * @property {} targetOrderId 房间内终端缓存的订单id
+ * @property {} mineralId 房间内的元素矿id
  */
 interface RoomMemory {
     centerTransferTasks: ITransferTask[]
     factoryTarget: ResourceConstant
     targetOrderId: string
+    mineralId: string
 }
 
 /**
@@ -161,6 +163,7 @@ interface ITransferTask {
 
 /**
  * creep 的配置项
+ * @property {} isNeed 在孵化前进行的判断，只有返回 true 时才会进行生成
  * @property {} prepare 准备阶段执行的方法
  * @property {} isReady 是否准备完成
  * @property {} source creep非工作(收集能量时)执行的方法
@@ -170,6 +173,7 @@ interface ITransferTask {
  * @property {} bodyType 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键
  */
 interface ICreepConfig {
+    isNeed?: (room: Room) => boolean
     prepare?: (creep: Creep) => any
     isReady?: (creep: Creep) => boolean
     target?: (creep: Creep) => any
