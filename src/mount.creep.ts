@@ -26,14 +26,8 @@ class CreepExtension extends Creep {
 
         // 还没出生就啥都不干
         if (this.spawning) {
-            if (!this.memory.id) this.memory.id = this.id
+            this._id = this.id // 解决 this creep not exist 问题
             return
-        }
-
-        if (!this.id) {
-            console.log('id 没了!', this.id, this.name, this.memory.id)
-            // this.id = this.memory.id
-            // console.log('id 已填加', this.id)
         }
 
         // 获取对应配置项

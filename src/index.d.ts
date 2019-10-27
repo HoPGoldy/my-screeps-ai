@@ -41,6 +41,7 @@ interface StructureFactory {
  * 来自于 mount.creep.ts
  */
 interface Creep {
+    _id: string
     // 临时添加
     store: Store
     // ---
@@ -88,7 +89,6 @@ interface SpawnMemory {
 
 /**
  * creep 内存拓展
- * @property {} id creep 的 id，用于解决 id 异常消失问题
  * @property {} ready creep是否已经准备好可以工作了
  * @property {} role creep的角色
  * @property {} working 是否在工作
@@ -100,7 +100,6 @@ interface SpawnMemory {
  * @property {} expectHits 城墙填充特有，标志当前期望的城墙生命值
  */
 interface CreepMemory {
-    id?: string
     ready: boolean
     role: string
     working: boolean
@@ -130,7 +129,7 @@ interface Room {
 }
 
 /**
- * 房间内 | 
+ * 房间内存
  * 
  * @property {} centerTransferTasks 中央集群的资源转移任务队列
  * @property {} factoryTarget 房间内工厂生产的目标
