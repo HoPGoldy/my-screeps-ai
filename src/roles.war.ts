@@ -52,6 +52,6 @@ export default {
     dismantler: (spawnName: string): ICreepConfig => ({
         target: creep => creep.dismantleFlag(),
         spawn: spawnName,
-        bodyType: 'pureWork'
+        bodyType: 'dismantler'
     })
 }

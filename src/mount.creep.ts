@@ -108,9 +108,12 @@ class CreepExtension extends Creep {
     public standBy(): void {
         // 获取旗帜
         let standByFlag = this.getFlag(`${this.room.name} StandBy`)
-        if (!standByFlag) return 
+        if (!standByFlag) {
+            this.say('去哪待命?')
+            return
+        }
         // 如果没到 就向旗帜移动
-        if (!this.pos.isNearTo(standByFlag.pos)) this.moveTo(standByFlag, getPath())
+        if (!this.pos.isNearTo(standByFlag.pos)) this.farMoveTo(standByFlag.pos)
     }
 
     /**
