@@ -198,8 +198,8 @@ export default {
     remoteDefender: (spawnName: string, roomName: string): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, roomName)),
-        // 自己所在的房间为指定房间则准备完成
-        isReady: creep => creep.room.name === roomName,
+        // 自己所在的房间为指定房间 并且自己不占路 则准备完成
+        isReady: creep => creep.pos.inRangeTo(new RoomPosition(25, 25, roomName), 7),
         target: creep => creep.defense(),
         switch: creep => creep.checkEnemy(),
         spawn: spawnName,

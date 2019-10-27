@@ -6,6 +6,7 @@ export default function () {
 class RoomExtension extends Room {
     /**
      * 添加任务
+     * 示例: Game.rooms['W1N1'].addTask({ submitId: '', targetId: '', sourceId: '', resourceType: RESOURCE_ENERGY, amount: 1000})
      * 
      * @param submitId 提交者的 id 
      * @param task 要提交的任务

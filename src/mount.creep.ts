@@ -26,7 +26,7 @@ class CreepExtension extends Creep {
 
         // 还没出生就啥都不干
         if (this.spawning) {
-            this._id = this.id // 解决 this creep not exist 问题
+            if (this.ticksToLive === CREEP_LIFE_TIME) this._id = this.id // 解决 this creep not exist 问题
             return
         }
 

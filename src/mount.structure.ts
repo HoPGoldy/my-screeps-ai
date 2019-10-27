@@ -393,7 +393,6 @@ class TerminalExtension extends StructureTerminal {
         // 如果没有路费的话就问 sotrage 要
         if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
             this.getEngry(cost)
-            console.log('要路费')
             return false
         }
 
