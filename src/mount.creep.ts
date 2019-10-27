@@ -98,10 +98,13 @@ class CreepExtension extends Creep {
      * @returns {boolean} 是否有敌人
      */
     public checkEnemy(): boolean {
-        // 从雷达扫描结果中获取敌人
-        const enemys: Creep|undefined = Memory[this.room.name].radarResult.enemys
+        // 没有缓存则新建缓存
+        if (!this.room._enemys) {
+            this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
+        }
+
         // 如果有敌人就返回最近的那个
-        return enemys ? true : false
+        return this.room._enemys.length > 0 ? true : false
     }
 
     /**
@@ -118,12 +121,15 @@ class CreepExtension extends Creep {
 
     /**
      * 防御
-     * 向雷达扫描到的敌方单位发起进攻
+     * 向本房间内的敌方单位发起进攻
      */
     public defense(): void {
-        // 从雷达扫描结果中获取敌人
-        const enemys: Creep[] = Memory[this.room.name].radarResult.enemys
-        const enemy = this.pos.findClosestByRange(enemys)
+        // 没有缓存则新建缓存
+        if (!this.room._enemys) {
+            this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
+        }
+        // 从缓存中获取敌人
+        const enemy = this.pos.findClosestByRange(this.room._enemys)
         this.say(`正在消灭 ${enemy.name}`)
         this.moveTo(enemy.pos, getPath('attack'))
         this.attack(enemy)

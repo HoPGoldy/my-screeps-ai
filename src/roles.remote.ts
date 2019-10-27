@@ -22,25 +22,32 @@ export default {
      * 阶段A：预定控制器
      * 
      * @param spawnName 出生点名称
-     * @param sourceInfo 要预定的控制器的信息
+     * @param roomName 要预定的房间名
      */
-    reserver: (spawnName: string, sourceInfo: IPositionInfo): ICreepConfig => ({
-        // 朝控制器移动
-        prepare: creep => creep.farMoveTo(new RoomPosition(sourceInfo.x, sourceInfo.y, sourceInfo.roomName)),
-        // 只要可以摸到控制器就说明准备阶段完成
-        isReady: creep => creep.reserveController(creep.room.controller) === OK,
+    reserver: (spawnName: string, roomName: string): ICreepConfig => ({
+        isNeed: () => {
+            // 如果房间没有视野则默认进行孵化
+            if (!Game.rooms[roomName]) return true
+            // 房间还剩 1000 ticks 预定就到期了则进行孵化
+            const controller: StructureController = Game.rooms[roomName].controller
+            if (controller.reservation.ticksToEnd <= 1000) return true
+            // 不然不孵化
+            return false
+        },
+        // 朝房间移动
+        prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, roomName)),
+        // 只要进入房间则准备结束
+        isReady: creep => creep.room.name == roomName,
         // 一直进行预定
         target: creep => {
-            // 检查自己身边有没有敌人
-            const enemys = creep.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
-            // 有的话就往家跑
-            if (enemys.length > 0) {
-                creep.farMoveTo(Game.spawns[spawnName].pos)
-            }
-            
-            // 房间被预定且预定时间没有超过上限
-            if (creep.room.controller.reservation && creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-                creep.reserveController(creep.room.controller)
+            // 如果房间的预订者不是自己, 就攻击控制器
+            if (creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
+                if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
+
+            }         
+            // 房间没有预定满, 就继续预定
+            if (creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
+                if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
             }
         },
         spawn: spawnName,
@@ -128,7 +135,7 @@ export default {
                 console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
                 return creep.say('找不到外矿!')
             }
-
+            // 旗帜所在房间没视野, 就进行移动
             if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
             else {
                 const source = sourceFlag.pos.findClosestByRange(FIND_SOURCES)
@@ -146,18 +153,7 @@ export default {
                 console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
                 return creep.say('找不到外矿!')
             }
-
-            // 检查自己身边有没有敌人
-            if (!creep.room._enemys) {
-                creep.room._enemys = creep.room.find(FIND_HOSTILE_CREEPS)
-            }
-            // 有的话就往家跑
-            if (creep.room._enemys.length > 0) {
-                creep.farMoveTo(Game.spawns[spawnName].pos)
-                return 
-            }
-
-            // 下面是正常开采逻辑
+            
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
             if (creep.harvest(Game.getObjectById(creep.memory.sourceId)) !== OK) {
                 creep.farMoveTo(sourceFlag.pos)
@@ -189,5 +185,24 @@ export default {
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodyType: 'worker'
-    })
+    }),
+
+    /**
+     * 外矿防御者
+     * 抵达指定房间 > 待命 > 攻击敌人
+     * RCL < 3 时生成的防御者可能不足以消灭入侵者
+     * 
+     * @param spawnName 出生点名称
+     * @param roomName 要守卫的房间名称
+     */
+    remoteDefender: (spawnName: string, roomName: string): ICreepConfig => ({
+        // 向指定房间移动
+        prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, roomName)),
+        // 自己所在的房间为指定房间则准备完成
+        isReady: creep => creep.room.name === roomName,
+        target: creep => creep.defense(),
+        switch: creep => creep.checkEnemy(),
+        spawn: spawnName,
+        bodyType: 'remoteDefender'
+    }),
 }
