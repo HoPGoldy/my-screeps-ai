@@ -125,11 +125,19 @@ class CreepExtension extends Creep {
         if (!this.room._enemys) {
             this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
         }
+        // 没有敌人就啥也不干
+        if (this.room._enemys.length <= 0) return
+
         // 从缓存中获取敌人
         const enemy = this.pos.findClosestByRange(this.room._enemys)
         this.say(`正在消灭 ${enemy.name}`)
         this.moveTo(enemy.pos, getPath('attack'))
-        this.attack(enemy)
+        this.rangedAttack(enemy)
+
+        // 如果有可用 HEAL 身体并且掉血了则自我治疗
+        if (this.getActiveBodyparts(HEAL) > 0 && this.hits < this.hitsMax) {
+            this.heal(this)
+        }
     }
 
     /**
