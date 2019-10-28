@@ -23,12 +23,14 @@ const importantRoles = [ 'Harvester', 'Transfer' ]
 class SpawnExtension extends StructureSpawn {
     /**
      * spawn 主要工作
+     * @todo isNeed 不需要进行检查
      */
     public work(): void {
         // 自己已经在生成了 / 内存里没有生成队列 / 生产队列为空 就啥都不干
         if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
         // 进行生成
         const spawnSuccess: boolean = this.mySpawnCreep(this.memory.spawnList[0])
+        // if (this.room.name == 'W48S5') console.log("TCL: SpawnExtension -> spawnSuccess", this.room.name, spawnSuccess)
         // 生成成功后移除任务
         if (spawnSuccess) this.memory.spawnList.shift()
         // 失败了就检查下房间是不是危险了

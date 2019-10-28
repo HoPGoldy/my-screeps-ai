@@ -142,6 +142,11 @@ export default {
                 if (!source) return console.log(`${sourceFlagName} 附近没有找到 source`)
                 // 找到 source 后就写入内存
                 creep.memory.sourceId = source.id
+
+                // 再检查下有没有工地, 没有则以后再也不检查
+                const constructionSites = sourceFlag.room.find(FIND_CONSTRUCTION_SITES)
+                if (constructionSites.length <= 0)
+                creep.memory.dontBuild = true
             }
         },
         // 内存中是否拥有sourceId
@@ -149,10 +154,6 @@ export default {
         // 向旗帜出发
         source: creep => {
             const sourceFlag = Game.flags[sourceFlagName]
-            if (!sourceFlag) {
-                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
-                return creep.say('找不到外矿!')
-            }
             
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
             if (creep.harvest(Game.getObjectById(creep.memory.sourceId)) !== OK) {
@@ -160,23 +161,23 @@ export default {
             }
         },
         target: creep => {
+            // dontBuild 为 false 时表明还在建造阶段
+            if (!creep.memory.dontBuild) {
+                // 没有可建造的工地后就再也不建造
+                if (!creep.buildStructure()) {
+                    creep.memory.dontBuild = true
+                    delete creep.memory.constructionSiteId
+                }
+                return
+            }
+
             // 检查脚下的路有没有问题，有的话就进行维修
             const structures = creep.pos.lookFor(LOOK_STRUCTURES)
             if (structures.length > 0) {
                 const road = structures[0]
                 if (road.hits < road.hitsMax) creep.repair(road)
             }
-            // 没有的话就放工地并建造
-            else {
-                const constructionSites = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES)
-                if (constructionSites.length > 0) {
-                    const site = constructionSites[0]
-                    creep.build(site)
-                }
-                else {
-                    creep.pos.createConstructionSite(STRUCTURE_ROAD)
-                }
-            }
+            
             // 再把剩余能量运回去
             if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
                 creep.farMoveTo(Game.getObjectById(targetId))

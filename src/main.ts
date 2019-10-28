@@ -13,4 +13,6 @@ module.exports.loop = function (): void {
 
     // 所有 creep 工作
     doing(Game.creeps)
+
+    // console.log('--------------------------')
 }
