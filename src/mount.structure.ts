@@ -29,15 +29,15 @@ class SpawnExtension extends StructureSpawn {
         // 自己已经在生成了 / 内存里没有生成队列 / 生产队列为空 就啥都不干
         if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
         // 进行生成
-        const spawnSuccess: number = this.mySpawnCreep(this.memory.spawnList[0])
+        const spawnSuccess: MySpawnReturnCode = this.mySpawnCreep(this.memory.spawnList[0])
         // if (this.room.name == 'W48S5') console.log("TCL: SpawnExtension -> spawnSuccess", this.room.name, spawnSuccess)
 
         switch (spawnSuccess) {
-            case 0:
+            case ERR_NOT_ENOUGH_ENERGY:
                 // 失败了就检查下房间是不是危险了
                 this.noCreepSave()
             break
-            case 1:
+            case OK:
                 // 生成成功后移除任务
                 this.memory.spawnList.shift()
             break
@@ -97,14 +97,14 @@ class SpawnExtension extends StructureSpawn {
      * @param minBody 用最小身体部分生成
      * @returns 开始生成返回 true, 否则返回 false
      */
-    private mySpawnCreep(configName, minBody: boolean = false): 0 | 1 | 2 {
+    private mySpawnCreep(configName, minBody: boolean = false): MySpawnReturnCode {
         const creepConfig = creepConfigs[configName]
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
-        if (!creepConfig) return 0
+        if (!creepConfig) return <OK>0
         // 如果 isNeed 表明不需要生成, 则将其移至队列末尾
         if (creepConfig.isNeed && !creepConfig.isNeed(this.room)) {
             this.hangTask()
-            return 2
+            return <CREEP_DONT_NEED_SPAWN>-101
         }
 
         // 设置 creep 内存
@@ -115,7 +115,8 @@ class SpawnExtension extends StructureSpawn {
             bodyConfigs[creepConfig.bodyType][this.room.controller.level] // 符合于房间等级的身体部件
         if (!bodys) {
             console.log(`[spawn] ${configName} 的 body 组装失败`)
-            return 0
+            // 直接移除该任务
+            return <OK>0
         } 
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
@@ -123,15 +124,15 @@ class SpawnExtension extends StructureSpawn {
         // 检查是否生成成功
         if (spawnResult == OK) {
             // console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
-            return 1
+            return <OK>0
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
             console.log(`${configName} 已经存在 ${creepConfig.spawn} 将不再生成 ...`)
-            return 1
+            return <OK>0
         }
         else {
             console.log(`[生成失败] ${creepConfig.spawn} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
-            return 0
+            return spawnResult
         }
     }
 
@@ -151,7 +152,7 @@ class SpawnExtension extends StructureSpawn {
                 if (spawnTask.indexOf(importantRole) !== -1) {
                     console.log(`[断供警告] ${this.room.name} 即将生成最小化 ${spawnTask}`)
                     // 是重要角色的话则以最小身体生成
-                    if (this.mySpawnCreep(spawnTask, true) === 1) this.memory.spawnList.splice(Number(index), 1)
+                    if (this.mySpawnCreep(spawnTask, true) === OK) this.memory.spawnList.splice(Number(index), 1)
                     // 只生成一个
                     return
                 }
