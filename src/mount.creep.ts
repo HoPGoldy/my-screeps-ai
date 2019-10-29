@@ -92,13 +92,20 @@ class CreepExtension extends Creep {
      * @returns {boolean} 是否有敌人
      */
     public checkEnemy(): boolean {
+        // 10 ticks 检查一次
+        if (Game.time % 10) return false
         // 没有缓存则新建缓存
         if (!this.room._enemys) {
             this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
         }
 
         // 如果有敌人就返回最近的那个
-        return this.room._enemys.length > 0 ? true : false
+        if (this.room._enemys.length > 0) {
+            // 取消待命状态
+            this.memory.isStanBy = false
+            return true
+        }
+        else return false
     }
 
     /**
@@ -106,6 +113,8 @@ class CreepExtension extends Creep {
      * 移动到 [房间名 StandBy] 旗帜的位置
      */
     public standBy(): void {
+        // 如果已经在待命位置则原地不动
+        if (this.memory.isStanBy) return
         // 获取旗帜
         let standByFlag = this.getFlag(`${this.room.name} StandBy`)
         if (!standByFlag) {
@@ -113,7 +122,8 @@ class CreepExtension extends Creep {
             return
         }
         // 如果没到 就向旗帜移动
-        if (!this.pos.isNearTo(standByFlag.pos)) this.farMoveTo(standByFlag.pos)
+        if (!this.pos.isEqualTo(standByFlag.pos)) this.farMoveTo(standByFlag.pos)
+        else this.memory.isStanBy = true
     }
 
     /**

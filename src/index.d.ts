@@ -104,6 +104,7 @@ interface SpawnMemory {
  * @property {} constructionSiteId 建筑工特有 当前缓存的建筑工地
  * @property {} dontBuild 外矿采集者特有, 该字段为 true 时, 每 tick 都会尝试检查工地并建造
  * @property {} expectHits 城墙填充特有，标志当前期望的城墙生命值
+ * @property {} isStanBy 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用pos.isEqualTo()
  */
 interface CreepMemory {
     ready: boolean
@@ -117,6 +118,7 @@ interface CreepMemory {
     dontBuild?: boolean
     expectHits?: number
     squad?: number
+    isStanBy?: boolean
 }
 
 /**
