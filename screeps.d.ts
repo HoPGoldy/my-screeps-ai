@@ -4653,6 +4653,10 @@ interface StructureLink extends OwnedStructure<STRUCTURE_LINK> {
      */
     cooldown: number;
     /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store;
+    /**
      * The amount of energy containing in the link.
      */
     energy: number;
