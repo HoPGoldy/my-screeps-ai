@@ -93,7 +93,7 @@ class CreepExtension extends Creep {
      */
     public checkEnemy(): boolean {
         // 10 ticks 检查一次
-        if (Game.time % 10) return false
+        // if (Game.time % 10) return false
         // 没有缓存则新建缓存
         if (!this.room._enemys) {
             this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
