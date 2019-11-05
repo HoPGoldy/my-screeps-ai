@@ -72,13 +72,13 @@ export default {
             const mineral: Mineral = Game.getObjectById(creep.room.memory.mineralId)
             if (!mineral) return creep.say('目标找不到!')
             // 采集/移动
-            if (creep.harvest(mineral) == ERR_NOT_IN_RANGE) creep.farMoveTo(mineral.pos)
+            if (creep.harvest(mineral) == ERR_NOT_IN_RANGE) creep.moveTo(mineral, { reusePath: 20 })
         },
         target: creep => {
             const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.storage
             if (!target) return creep.say('目标找不到!')
             // 转移/移动
-            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos)
+            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,

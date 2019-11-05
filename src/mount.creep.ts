@@ -211,7 +211,7 @@ class CreepExtension extends Creep {
                 moveResult = this.moveByPath(this.memory.path)
             }
             else if (moveResult !== OK) {
-                console.log(`${this.name} 出现问题无法移动, 错误码 ${moveResult}`)
+                // console.log(`${this.name} 出现问题无法移动, 错误码 ${moveResult}`)
             }
             
             return moveResult

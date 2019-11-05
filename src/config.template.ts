@@ -37,18 +37,6 @@ export const creepDefaultMemory: CreepMemory = {
     path: []
 }
 
-// ---------------------------------------------  以下为 link 配置项 ---------------------------------------------
-
-
-/**
- * link 配置项列表 (主要)
- * 当一个 link 冷却好了
- * 就会到这个列表中找到配置项执行
- */
-export const linkConfigs: ILinkConfigs = {
-    // 'link的id': { target: link => link.to('目标link的id') }
-}
-
 
 // --------------------------------------------- 以下为 terminal 配置项 ---------------------------------------------
 

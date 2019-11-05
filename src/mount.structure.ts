@@ -1,4 +1,4 @@
-import { linkConfigs, creepConfigs, creepDefaultMemory, terminalConfigs } from './config'
+import { creepConfigs, creepDefaultMemory, terminalConfigs } from './config'
 import { bodyConfigs } from './setting'
 
 // 挂载拓展到建筑原型
@@ -221,6 +221,7 @@ class LinkExtension extends StructureLink {
     public work(): void {
         // 冷却好了 能量不为空
         if (this.energy > 0 && this.cooldown == 0) {
+            if (!this.room.memory.links) this.room.memory.links = {}
             // 读配置项
             const linkWorkFunctionName: string = this.room.memory.links[this.id]
             if (!linkWorkFunctionName) return console.log(`[空闲 link] 请为 ${this.id} 分配角色`)
@@ -233,6 +234,7 @@ class LinkExtension extends StructureLink {
      * 用户操作: 注册为源 link
      */
     public asSource(): string {
+        this.clearRegister()
         if (!this.room.memory.links) this.room.memory.links = {}
 
         this.room.memory.links[this.id] = 'sourceWork'
@@ -243,6 +245,7 @@ class LinkExtension extends StructureLink {
      * 用户操作: 注册为中央 link
      */
     public asCenter(): string {
+        this.clearRegister()
         if (!this.room.memory.links) this.room.memory.links = {}
 
         this.room.memory.links[this.id] = 'centerWork'
@@ -257,6 +260,8 @@ class LinkExtension extends StructureLink {
      * 只是在房间内存里注册来方便其他 link 找到自己
      */
     public asUpgrade(): string {
+        this.clearRegister()
+
         if (!this.room.memory.links) this.room.memory.links = {}
         // upgradeWork 方法不存在 所以它什么也不做
         this.room.memory.links[this.id] = 'upgradeWork'
@@ -273,6 +278,16 @@ class LinkExtension extends StructureLink {
         get('linkId').asCenter() - 注册为中央 link
         get('linkId').asUpgrade() - 注册为升级 link
         `
+    }
+
+    /**
+     * 每次使用三个 as 时都要调用
+     * 防止同时拥有多个角色
+     */
+    private clearRegister() {
+        if (this.room.memory.centerLinkId == this.id) delete this.room.memory.centerLinkId
+        if (this.room.memory.upgradeLinkId == this.id) delete this.room.memory.upgradeLinkId
+        if (this.room.memory.links.hasOwnProperty(this.id)) delete this.room.memory.links[this.id]
     }
 
     /**
@@ -304,12 +319,14 @@ class LinkExtension extends StructureLink {
         // 优先响应 upgrade
         if (this.room.memory.upgradeLinkId) {
             const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')
-            if (!upgradeLink) return
             // 如果 upgrade link 没能量了就转发给它
-            this.transferEnergy(upgradeLink)
+            if (upgradeLink && upgradeLink.energy == 0) {
+                this.transferEnergy(upgradeLink) 
+                return
+            }
         }
         // 发送给 center link
-        else if (this.room.memory.centerLinkId) {
+        if (this.room.memory.centerLinkId) {
             const centerLink = this.getLinkByMemoryKey('centerLinkId')
             if (!centerLink) return
 
@@ -576,10 +593,12 @@ class TerminalExtension extends StructureTerminal {
         const history = Game.market.getHistory(<ResourceConstant>targetOrder.resourceType)
         // 没有历史记录的话直接运行购买
         if (history.length <= 0) return true
-
+        // 以昨日均价为准
+        console.log(JSON.stringify(history, null, 4))
         const avgPrice = history[0].avgPrice
         // 目标订单的价格要在历史价格上下 0.2 左右的区间内浮动才算可靠
-        if (targetOrder.price <= avgPrice * 1.2 || targetOrder.price >= avgPrice * 0.8) return true
+        console.log('区间上限', avgPrice * 1.1, '订单单价', targetOrder.price, '区间下限', avgPrice * 0.9)
+        if (targetOrder.price <= avgPrice * 1.1 || targetOrder.price >= avgPrice * 0.9) return true
         else return false
     }
 
