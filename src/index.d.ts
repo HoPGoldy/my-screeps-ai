@@ -152,10 +152,11 @@ interface RoomMemory {
     // 房间内的元素矿id
     mineralId: string
     
-    /**
-     * 下面是 Link 的专用内存
-     */
-
+    // Link 的专用内存
+    links?: {
+        // 使用 link id 来标注其角色
+        [linkId: string]: string
+    }
     // 中央 link 的 id，source Link 会通过这个字段进行查找
     centerLinkId?: string
     // 升级 link 的 id，source / center Link 会通过这个字段进行查找
@@ -221,9 +222,9 @@ interface IFactoryConfigs {
 interface StructureLink {
     work(): void
     to(targetId: string): void
-    asCenter(): void
-    asSource(): void
-    asUpgrade(): void
+    asCenter(): string
+    asSource(): string
+    asUpgrade(): string
 }
 
 /**

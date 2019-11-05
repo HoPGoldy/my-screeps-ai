@@ -216,89 +216,105 @@ class TowerExtension extends StructureTower {
 class LinkExtension extends StructureLink {
     /**
      * link 主要工作
+     * @test 命令式 link
      */
     public work(): void {
         // 冷却好了 能量不为空
         if (this.energy > 0 && this.cooldown == 0) {
             // 读配置项
-            const linkConfig: ILinkConfig = linkConfigs[this.id]
-            if (!linkConfig) return 
-            // 执行配置项中的 target 方法
-            linkConfig.target(this)
+            const linkWorkFunctionName: string = this.room.memory.links[this.id]
+            if (!linkWorkFunctionName) return console.log(`[空闲 link] 请为 ${this.id} 分配角色`)
+            
+            if (this[linkWorkFunctionName]) this[linkWorkFunctionName]()
         }
     }
 
     /**
-     * 传递能量的快捷方法
+     * 用户操作: 注册为源 link
      */
-    public to(targetId: string): void {
-        this.transferEnergy(Game.getObjectById(targetId))
+    public asSource(): string {
+        if (!this.room.memory.links) this.room.memory.links = {}
+
+        this.room.memory.links[this.id] = 'sourceWork'
+        return `${this} 已注册为源 link`
+    }
+
+    /**
+     * 用户操作: 注册为中央 link
+     */
+    public asCenter(): string {
+        if (!this.room.memory.links) this.room.memory.links = {}
+
+        this.room.memory.links[this.id] = 'centerWork'
+        this.room.memory.centerLinkId = this.id
+        return `${this} 已注册为中央 link`
+    }
+
+    /**
+     * 用户操作: 注册为升级 link
+     * 
+     * 自己被动的给 upgrader 角色提供能量，所以啥也不做
+     * 只是在房间内存里注册来方便其他 link 找到自己
+     */
+    public asUpgrade(): string {
+        if (!this.room.memory.links) this.room.memory.links = {}
+        // upgradeWork 方法不存在 所以它什么也不做
+        this.room.memory.links[this.id] = 'upgradeWork'
+        this.room.memory.upgradeLinkId = this.id
+        return `${this} 已注册为升级 link`
+    }
+
+    /**
+     * 用户操作: 帮助
+     */
+    public help(): string {
+        return `
+        get('linkId').asSource() - 注册为源 link
+        get('linkId').asCenter() - 注册为中央 link
+        get('linkId').asUpgrade() - 注册为升级 link
+        `
     }
 
     /**
      * 扮演中央 link
      * 
-     * 如果房间内有 upgrede link 并且其没有能量时则把自己的能量转移给它
      * 否则向房间中的资源转移队列推送任务
      */
-    public asCenter(): void {
-        // 在房间内存中注册自己
-        if (!this.room.memory.centerLinkId) this.room.memory.centerLinkId = this.id
+    private centerWork(): void {
+        // 之前发的转移任务没有处理好的话就先挂机
+        if (this.room.hasTask(this.id)) return 
 
-        // 优先响应 upgrade
-        if (this.room.memory.upgradeLinkId) {
-            const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')
-            if (!upgradeLink) return
-            // 如果 upgrade link 没能量了就转发给它
-            if (upgradeLink.store[RESOURCE_ENERGY] === 0) this.transferEnergy(upgradeLink)
-        }
-        // 没有 upgrade 再把能量存起来
-        else {
-            // 之前发的转移任务没有处理好的话就先挂机
-            if (this.room.hasTask(this.id)) return 
-
-            this.room.addTask({
-                submitId: this.id,
-                sourceId: this.id,
-                targetId: this.room.storage.id,
-                resourceType: RESOURCE_ENERGY,
-                amount: this.energy
-            })
-        }
+        this.room.addTask({
+            submitId: this.id,
+            sourceId: this.id,
+            targetId: this.room.storage.id,
+            resourceType: RESOURCE_ENERGY,
+            amount: this.energy
+        })
     }
 
     /**
      * 扮演能量提供 link
      * 
-     * 向中央 link 发送能量
-     * 当中央 link 不存在时向 upgrade link 发送能量
+     * 如果房间内有 upgrede link 并且其没有能量时则把自己的能量转移给它
+     * 否则向中央 link 发送能量
      * 都不存在时待机
      */
-    public asSource(): void {
+    private sourceWork(): void {
+        // 优先响应 upgrade
+        if (this.room.memory.upgradeLinkId) {
+            const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')
+            if (!upgradeLink) return
+            // 如果 upgrade link 没能量了就转发给它
+            this.transferEnergy(upgradeLink)
+        }
         // 发送给 center link
-        if (this.room.memory.centerLinkId) {
+        else if (this.room.memory.centerLinkId) {
             const centerLink = this.getLinkByMemoryKey('centerLinkId')
             if (!centerLink) return
 
             this.transferEnergy(centerLink)
         }
-        // 发送给 upgrade link
-        else if (this.room.memory.upgradeLinkId) {
-            const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')
-            if (!upgradeLink) return
-
-            this.transferEnergy(upgradeLink)
-        }
-    }
-
-    /**
-     * 扮演升级 link
-     * 
-     * 自己被动的给 upgrader 角色提供能量，所以啥也不做
-     * 只是在房间内存里注册来方便其他 link 找到自己
-     */
-    public asUpgrade(): void {
-        if (!this.room.memory.upgradeLinkId) this.room.memory.upgradeLinkId = this.id
     }
 
     /**
@@ -309,10 +325,13 @@ class LinkExtension extends StructureLink {
      * @param memoryKey link 的 id 保存在哪个 room.memory 字段中
      */
     private getLinkByMemoryKey(memoryKey: string): StructureLink | null {
-        const link: StructureLink = Game.getObjectById(this.room.memory[memoryKey])
-        // 不存在就清理并退出
+        const linkId = this.room.memory[memoryKey]
+        if (!linkId) return null
+        const link: StructureLink = Game.getObjectById(linkId)
+        // 不存在说明 link 已经被摧毁了 清理并退出
         if (!link) {
             delete this.room.memory[memoryKey]
+            delete this.room.memory.links[linkId]
             return null
         }
         else return link
