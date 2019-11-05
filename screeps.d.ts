@@ -2841,6 +2841,12 @@ interface Market {
      * @returns An object with the order info. See `getAllOrders` for properties explanation.
      */
     getOrderById(id: string): Order | null;
+    /**
+     * 获取最近 14 天以来市场中指定资源的每日价格记录
+     * 
+     * @param resourceType 要检查历史的资源类型
+     */
+    getHistory(resourceType?: ResourceConstant): any[];
 }
 
 // No static is available

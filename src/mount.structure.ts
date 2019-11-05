@@ -501,8 +501,9 @@ class TerminalExtension extends StructureTerminal {
 
     /**
      * 寻找合适的订单
-     * 该方法**不会**将订单写入房间内存
+     * 该方法**不会**将订单缓存到房间内存
      * 
+     * @test 均价检查
      * @param config 市场交易任务
      * @returns 找到则返回订单, 否找返回 null
      */
@@ -522,7 +523,11 @@ class TerminalExtension extends StructureTerminal {
         // price 升序找到最适合的订单
         // 买入找price最低的 卖出找price最高的
         const sortedOrders = _.sortBy(orders, order => order.price)
-        return sortedOrders[config.type === ORDER_SELL ? (sortedOrders.length - 1) : 0]
+        const targetOrder = sortedOrders[config.type === ORDER_SELL ? (sortedOrders.length - 1) : 0]
+
+        // 最后进行均价检查
+        if (!this.checkPrice(targetOrder)) return null
+        else return targetOrder
     }
 
     /**
@@ -540,6 +545,23 @@ class TerminalExtension extends StructureTerminal {
             resourceType: RESOURCE_ENERGY,
             amount
         })
+    }
+
+    /**
+     * 检查订单单价是否合适
+     * 防止投机玩家的过低或过高订单
+     * 
+     * @param targetOrder 目标订单的单价
+     */
+    private checkPrice(targetOrder: Order): boolean {
+        const history = Game.market.getHistory(<ResourceConstant>targetOrder.resourceType)
+        // 没有历史记录的话直接运行购买
+        if (history.length <= 0) return true
+
+        const avgPrice = history[0].avgPrice
+        // 目标订单的价格要在历史价格上下 0.2 左右的区间内浮动才算可靠
+        if (targetOrder.price <= avgPrice * 1.2 || targetOrder.price >= avgPrice * 0.8) return true
+        else return false
     }
 
     /**
