@@ -25,7 +25,16 @@ export default {
      * @param roomName 要预定的房间名
      */
     reserver: (spawnName: string, roomName: string): ICreepConfig => ({
-        isNeed: () => {
+        isNeed: (room) => {
+            if (!room.memory.remote) room.memory.remote = {}
+            // 不存在该字段说明外矿状态良好
+            if (!room.memory.remote[roomName]) return true
+            // 有该字段并且当前时间没有到其标注的时间
+            // 说明外矿还有活着的入侵者
+            if (Game.time < room.memory.remote[roomName]) return false
+            // 否则就说明入侵者已经死了
+            delete room.memory.remote[roomName]
+
             // 如果房间没有视野则默认进行孵化
             if (!Game.rooms[roomName]) return true
             // 房间还剩 1000 ticks 预定就到期了则进行孵化
@@ -43,7 +52,6 @@ export default {
             // 如果房间的预订者不是自己, 就攻击控制器
             if (creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
                 if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
-
             }         
             // 房间没有预定满, 就继续预定
             if (creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
@@ -128,16 +136,36 @@ export default {
      * @param targetId 要移动到的建筑 id
      */
     remoteHarvester: (spawnName: string, sourceFlagName: string, targetId: string): ICreepConfig => ({
+        // 如果外矿目前有入侵者就不生成
+        isNeed: room => {
+            // 旗帜效验, 没有旗帜则不生成
+            if (!Game.flags[sourceFlagName]) {
+                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
+                return false
+            }
+            // 从旗帜内存中获取房间名
+            // 内存中没有房间名就说明外矿刚刚建立，默认进行生成
+            const remoteRoomName = Game.flags[sourceFlagName].memory.roomName
+            if (!remoteRoomName) return true
+
+            if (!room.memory.remote) room.memory.remote = {}
+            // 不存在该字段说明外矿状态良好
+            if (!room.memory.remote[remoteRoomName]) return true
+            // 有该字段并且当前时间没有到其标注的时间
+            // 说明外矿还有活着的入侵者
+            if (Game.time < room.memory.remote[remoteRoomName]) return false
+            // 否则就说明入侵者已经死了
+            delete room.memory.remote[remoteRoomName]
+            return true
+        },
         // 获取旗帜附近的 source
         prepare: creep => {
             const sourceFlag = Game.flags[sourceFlagName]
-            if (!sourceFlag) {
-                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
-                return creep.say('找不到外矿!')
-            }
             // 旗帜所在房间没视野, 就进行移动
             if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
             else {
+                // 缓存外矿房间名
+                sourceFlag.memory.roomName = sourceFlag.room.name
                 const source = sourceFlag.pos.findClosestByRange(FIND_SOURCES)
                 if (!source) return console.log(`${sourceFlagName} 附近没有找到 source`)
                 // 找到 source 后就写入内存
@@ -154,6 +182,23 @@ export default {
         // 向旗帜出发
         source: creep => {
             const sourceFlag = Game.flags[sourceFlagName]
+
+            // 检查房间内有没有敌人，10 tick 检查一次
+            if (!(Game.time % 10)) {
+                if (sourceFlag.room && !sourceFlag.room._hasEnemy) {
+                    sourceFlag.room._hasEnemy = sourceFlag.room.find(FIND_HOSTILE_CREEPS).length > 0
+                }
+                // 有的话向基地报告
+                if (sourceFlag.room && sourceFlag.room._hasEnemy) {
+                    console.log(`${creep.name} 在 ${creep.room.name} 里发现了敌人!!!`)
+                    const spawn = Game.spawns[spawnName]
+                    if (!spawn) return console.log(`${creep.name} 在 source 阶段中找不到 ${spawnName}`)
+                    if (!spawn.room.memory.remote) spawn.room.memory.remote = {}
+                    // 将重生时间设置为 1500 tick 之后
+                    spawn.room.memory.remote[sourceFlag.room.name] = Game.time + 1500
+                }
+                else console.log(`${creep.name} 在 ${creep.room.name} 里没有发现敌人`)
+            }
             
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
             if (creep.harvest(Game.getObjectById(creep.memory.sourceId)) !== OK) {

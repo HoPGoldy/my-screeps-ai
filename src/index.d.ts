@@ -127,7 +127,11 @@ interface CreepMemory {
  * 来自于 mount.structure.ts
  */
 interface Room {
+    // 已拥有的房间特有，tower 负责维护
     _enemys: Creep[]
+    // 外矿房间特有，外矿单位维护
+    // 一旦该字段为 true 就告诉出生点暂时禁止自己重生直到 1500 tick 之后
+    _hasEnemy: boolean
     addTask(task: ITransferTask): number
     hasTask(submitId: string): boolean
     hangTask(): number
@@ -152,7 +156,7 @@ interface RoomMemory {
     // 房间内的元素矿id
     mineralId: string
     
-    // Link 的专用内存
+    // Link 的专用内存字段
     links?: {
         // 使用 link id 来标注其角色
         [linkId: string]: string
@@ -161,6 +165,20 @@ interface RoomMemory {
     centerLinkId?: string
     // 升级 link 的 id，source / center Link 会通过这个字段进行查找
     upgradeLinkId?: string
+
+    // 外矿专用内存字段
+    remote: {
+        // 对应名称的 creep 在指定的 tick 之后才能生成
+        // 该属性一般由外矿 creep 在发现有入侵者之后设置
+        // spawn 在发现到达指定 tick 后会移除对应的属性
+        [creepName: string]: number
+    }
+}
+
+interface FlagMemory {
+    // 因为外矿房间有可能没视野
+    // 所以把房间名缓存进内存
+    roomName: string
 }
 
 /**
