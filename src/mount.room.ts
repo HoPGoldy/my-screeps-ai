@@ -98,4 +98,18 @@ class RoomExtension extends Room {
         delete this.memory.factoryTarget
         return `${this.name} 工厂目标已清除`
     }
+
+    /**
+     * 房间操作帮助
+     */
+    public help(): string {
+        return `
+        - 设置房间内工厂目标
+        .setFactoryTarget(RESOURCE_OXIDANT)
+        - 获取房间内工厂目标
+        .getFactoryTarget()
+        - 清空房间内工厂目标
+        .clearFactoryTarget()
+        `
+    }
 }

@@ -8,6 +8,19 @@ export default function () {
     })
     // 挂载没有别名的操作
     _.assign(global, globalExtension)
+    // 把所有的房间挂载到全局
+    mountRoomToGlobal()
+}
+
+/**
+ * 把房间挂载到全局
+ * 来方便控制台操作
+ * 注意：本方法仅会挂载 Memory.rooms 里有的房间
+ */
+function mountRoomToGlobal() {
+    for (const roomName in Memory.rooms) {
+        global[roomName] = Game.rooms[roomName]
+    }
 }
 
 /**
