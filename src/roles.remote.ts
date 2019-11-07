@@ -36,10 +36,20 @@ export default {
             delete room.memory.remote[roomName]
 
             // 如果房间没有视野则默认进行孵化
-            if (!Game.rooms[roomName]) return true
-            // 房间还剩 1000 ticks 预定就到期了则进行孵化
+            if (!Game.rooms[roomName]) {
+                console.log('[reserver] 房间没有视野 默认孵化')
+                return true
+            }
+            
             const controller: StructureController = Game.rooms[roomName].controller
-            if (controller.reservation.ticksToEnd <= 1000) return true
+            
+            // 房间没有预定也孵化
+            if (!controller.reservation) {
+                console.log('[reserver] 房间没有预定 默认孵化')
+            }
+            // 房间还剩 2500 ticks 预定就到期了则进行孵化
+            console.log(`[reserver] 房间的预定时长为 ${controller.reservation.ticksToEnd}`)
+            if (controller.reservation.ticksToEnd <= 2500) return true
             // 不然不孵化
             return false
         },
@@ -50,11 +60,11 @@ export default {
         // 一直进行预定
         target: creep => {
             // 如果房间的预订者不是自己, 就攻击控制器
-            if (creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
+            if (creep.room.controller.reservation && creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
                 if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
-            }         
+            }
             // 房间没有预定满, 就继续预定
-            if (creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
+            if (!creep.room.controller.reservation || creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
                 if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
             }
         },
@@ -194,8 +204,11 @@ export default {
                     const spawn = Game.spawns[spawnName]
                     if (!spawn) return console.log(`${creep.name} 在 source 阶段中找不到 ${spawnName}`)
                     if (!spawn.room.memory.remote) spawn.room.memory.remote = {}
-                    // 将重生时间设置为 1500 tick 之后
-                    spawn.room.memory.remote[sourceFlag.room.name] = Game.time + 1500
+                    // 如果还没有设置重生时间的话
+                    if (!spawn.room.memory.remote[sourceFlag.room.name]) {
+                        // 将重生时间设置为 1500 tick 之后
+                        spawn.room.memory.remote[sourceFlag.room.name] = Game.time + 1500
+                    }
                 }
                 else console.log(`${creep.name} 在 ${creep.room.name} 里没有发现敌人`)
             }
