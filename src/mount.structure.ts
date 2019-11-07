@@ -594,10 +594,10 @@ class TerminalExtension extends StructureTerminal {
         // 没有历史记录的话直接运行购买
         if (history.length <= 0) return true
         // 以昨日均价为准
-        console.log(JSON.stringify(history, null, 4))
+        // console.log(JSON.stringify(history, null, 4))
         const avgPrice = history[0].avgPrice
         // 目标订单的价格要在历史价格上下 0.2 左右的区间内浮动才算可靠
-        console.log('区间上限', avgPrice * 1.1, '订单单价', targetOrder.price, '区间下限', avgPrice * 0.9)
+        // console.log('区间上限', avgPrice * 1.1, '订单单价', targetOrder.price, '区间下限', avgPrice * 0.9)
         if (targetOrder.price <= avgPrice * 1.1 || targetOrder.price >= avgPrice * 0.9) return true
         else return false
     }
