@@ -243,7 +243,7 @@ export default {
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
-        bodyType: 'worker'
+        bodyType: 'remoteHarvester'
     }),
 
     /**
