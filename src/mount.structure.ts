@@ -167,17 +167,18 @@ class TowerExtension extends StructureTower {
      * 主要任务
      */
     public work(): void {
-        // 先攻击敌人
-        if (this.commandAttack()) { }
-        // 找不到敌人再维修建筑
-        else if (this.commandRepair()) { }
+        if (this.store[RESOURCE_ENERGY] > 10) {
+            // 先攻击敌人
+            if (this.commandAttack()) { }
+            // 找不到敌人再维修建筑
+            else if (this.commandRepair()) { }
+        }
     }
 
     /**
      * 攻击指令
      * 检查本房间是否有敌人，有的话则攻击
      * 
-     * @todo 缓存
      * @returns 有敌人返回 true，没敌人返回 false
      */
     public commandAttack(): boolean {
@@ -199,6 +200,7 @@ class TowerExtension extends StructureTower {
      * @returns 进行维修返回true，没有维修返回false
      */
     public commandRepair(): boolean {
+        if (!this.room._towerShoulderRepair) this.room._towerShoulderRepair = true
         // 找到最近的受损建筑
         const closestDamagedStructure: AnyStructure = this.pos.findClosestByRange(FIND_STRUCTURES, {
             filter: s => s.hits < s.hitsMax && s.structureType != STRUCTURE_RAMPART && s.structureType != STRUCTURE_WALL
@@ -480,7 +482,7 @@ class TerminalExtension extends StructureTerminal {
         if (!config) return false
 
         // 检查资源是否足够
-        if (this.store.getUsedCapacity(config.resourceType) < config.holdAmount + config.amount) return false
+        if (this.store.getUsedCapacity(config.resourceType as ResourceConstant) < config.holdAmount + config.amount) return false
 
         let targetOrder: Order
         // 如果房间内存中没有缓存订单

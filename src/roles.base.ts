@@ -151,7 +151,7 @@ export default {
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             // 去维修
-            if (creep.repairStructure()) {}
+            if (!creep.room._towerShoulderRepair && creep.repairStructure()) {}
             // 没得修就修墙
             else if (creep.fillDefenseStructure()) {}
         },

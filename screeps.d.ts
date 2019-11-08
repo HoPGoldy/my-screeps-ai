@@ -1,4 +1,4 @@
-// Type definitions for Screeps 2.5
+// Type definitions for Screeps 3.0
 // Project: https://github.com/screeps/screeps
 // Definitions by: Marko Sulamägi <https://github.com/MarkoSulamagi>
 //                 Nhan Ho <https://github.com/NhanHo>
@@ -41,8 +41,6 @@ declare const FIND_MY_CREEPS: 102;
 declare const FIND_HOSTILE_CREEPS: 103;
 declare const FIND_SOURCES_ACTIVE: 104;
 declare const FIND_SOURCES: 105;
-/** `FIND_DROPPED_ENERGY` is deprecated the return value is the same as `FIND_DROPPED_RESOURCES` */
-declare const FIND_DROPPED_ENERGY: -106;
 declare const FIND_DROPPED_RESOURCES: 106;
 declare const FIND_STRUCTURES: 107;
 declare const FIND_MY_STRUCTURES: 108;
@@ -763,6 +761,9 @@ declare const LOOK_RUINS: "ruin";
 declare const ORDER_SELL: "sell";
 declare const ORDER_BUY: "buy";
 
+declare const MARKET_MAX_ORDERS: 300;
+declare const MARKET_ORDER_LIFE_TIME: 2592000000; // 1000*60*60*24*30
+
 declare const INVADERS_ENERGY_GOAL: number;
 
 declare const SYSTEM_USERNAME: string;
@@ -1069,10 +1070,12 @@ interface Creep extends RoomObject {
     body: BodyPartDefinition[];
     /**
      * An object with the creep's cargo contents.
+     * @deprecated Is an alias for Creep.store
      */
     carry: StoreDefinition;
     /**
      * The total amount of resources the creep can carry.
+     * @deprecated alias for Creep.store.getCapacity
      */
     carryCapacity: number;
     /**
@@ -1119,6 +1122,10 @@ interface Creep extends RoomObject {
      * The text message that the creep was saying at the last tick.
      */
     saying: string;
+    /**
+     * A Store object that contains cargo of this creep.
+     */
+    store: StoreDefinition;
     /**
      * The remaining amount of game ticks after which the creep will die.
      *
@@ -1706,21 +1713,16 @@ interface CPUShardLimits {
     [shard: string]: number;
 }
 
-type StoreDefinition = Partial<Record<_ResourceConstantSansEnergy, number>> & { energy: number };
+/** A general purpose Store, which has a limited capacity */
+type StoreDefinition = Store<ResourceConstant, false>;
+
+/** A general purpose Store, which has an unlimited capacity */
+type StoreDefinitionUnlimited = Store<ResourceConstant, true>;
+
 // type SD<K extends ResourceConstant> = {
 //   [P in K]: number;
 //   energy: number;
 // }
-
-interface Store {
-    getCapacity(resource: string): number|null
-    getCapacity(): number
-    getFreeCapacity(resource: string): number|null
-    getFreeCapacity(): number
-    getUsedCapacity(resource: string): number|null
-    getUsedCapacity(): number
-    [keyName: string]: any
-}
 
 type ExitsInformation = Partial<Record<ExitKey, string>>;
 
@@ -2085,7 +2087,6 @@ type FIND_MY_CREEPS = 102;
 type FIND_HOSTILE_CREEPS = 103;
 type FIND_SOURCES_ACTIVE = 104;
 type FIND_SOURCES = 105;
-type FIND_DROPPED_ENERGY = -106;
 type FIND_DROPPED_RESOURCES = 106;
 type FIND_STRUCTURES = 107;
 type FIND_MY_STRUCTURES = 108;
@@ -2160,6 +2161,9 @@ type LOOK_TERRAIN = "terrain";
 type LOOK_TOMBSTONES = "tombstone";
 type LOOK_POWER_CREEPS = "powerCreep";
 type LOOK_RUINS = "ruin";
+
+type ORDER_SELL = "sell";
+type ORDER_BUY = "buy";
 
 // Direction Constants
 
@@ -2668,6 +2672,11 @@ type PWR_DISRUPT_TERMINAL = 15;
 type PWR_OPERATE_POWER = 16;
 type PWR_FORTIFY = 17;
 type PWR_OPERATE_CONTROLLER = 18;
+
+type EffectConstant = EFFECT_INVULNERABILITY | EFFECT_COLLAPSE_TIMER;
+
+type EFFECT_INVULNERABILITY = 1001;
+type EFFECT_COLLAPSE_TIMER = 1002;
 /**
  * The options that can be accepted by `findRoute()` and friends.
  */
@@ -2803,16 +2812,18 @@ interface Market {
     /**
      * Create a market order in your terminal. You will be charged `price*amount*0.05` credits when the order is placed.
      *
-     * The maximum orders count is 50 per player. You can create an order at any time with any amount,
+     * The maximum orders count is 300 per player. You can create an order at any time with any amount,
      * it will be automatically activated and deactivated depending on the resource/credits availability.
+     *
+     * An order expires in 30 days after its creation, and the remaining market fee is returned.
      */
-    createOrder(
-        type: string,
-        resourceType: MarketResourceConstant,
-        price: number,
-        totalAmount: number,
-        roomName?: string,
-    ): ScreepsReturnCode;
+    createOrder(params: {
+        type: ORDER_BUY | ORDER_SELL;
+        resourceType: MarketResourceConstant;
+        price: number;
+        totalAmount: number;
+        roomName?: string;
+    }): ScreepsReturnCode;
     /**
      * Execute a trade deal from your Terminal to another player's Terminal using the specified buy/sell order.
      *
@@ -2824,6 +2835,7 @@ interface Market {
     deal(orderId: string, amount: number, targetRoomName?: string): ScreepsReturnCode;
     /**
      * Add more capacity to an existing order. It will affect `remainingAmount` and `totalAmount` properties. You will be charged `price*addAmount*0.05` credits.
+     * Extending the order doesn't update its expiration time.
      * @param orderId The order ID as provided in Game.market.orders
      * @param addAmount How much capacity to add. Cannot be a negative value.
      * @returns One of the following codes: `OK`, `ERR_NOT_ENOUGH_RESOURCES`, `ERR_INVALID_ARGS`
@@ -2836,17 +2848,17 @@ interface Market {
      */
     getAllOrders(filter?: OrderFilter | ((o: Order) => boolean)): Order[];
     /**
+     * Get daily price history of the specified resource on the market for the last 14 days.
+     * @param resource One of the RESOURCE_* constants. If undefined, returns history data for all resources. Optional
+     * @returns An array of objects with resource info.
+     */
+    getHistory(resource?: ResourceConstant): PriceHistory[];
+    /**
      * Retrieve info for specific market order.
      * @param orderId The order ID.
      * @returns An object with the order info. See `getAllOrders` for properties explanation.
      */
     getOrderById(id: string): Order | null;
-    /**
-     * 获取最近 14 天以来市场中指定资源的每日价格记录
-     * 
-     * @param resourceType 要检查历史的资源类型
-     */
-    getHistory(resourceType?: ResourceConstant): any[];
 }
 
 // No static is available
@@ -2892,6 +2904,15 @@ interface OrderFilter {
     amount?: number;
     remainingAmount?: number;
     price?: number;
+}
+
+interface PriceHistory {
+    resourceType: MarketResourceConstant;
+    date: string;
+    transactions: number;
+    volume: number;
+    avgPrice: number;
+    stddevPrice: number;
 }
 interface Memory {
     creeps: {[name: string]: CreepMemory};
@@ -3123,10 +3144,12 @@ declare const PathFinder: PathFinder;
 interface PowerCreep extends RoomObject {
     /**
      * An object with the creep's cargo contents.
+     * @deprecated An alias for Creep.store.
      */
     carry: StoreDefinition;
     /**
      * The total amount of resources the creep can carry.
+     * @deprecated An alias for Creep.store.getCapacity().
      */
     carryCapacity: number;
     /**
@@ -3169,6 +3192,10 @@ interface PowerCreep extends RoomObject {
      * An object with the creep's owner information.
      */
     owner: Owner;
+    /**
+     * A Store object that contains cargo of this creep.
+     */
+    store: StoreDefinition;
     /**
      * An object with the creep's available powers.
      */
@@ -3477,13 +3504,39 @@ interface RoomObjectConstructor extends _Constructor<RoomObject> {
 
 declare const RoomObject: RoomObjectConstructor;
 
-interface RoomObjectEffect {
+/**
+ * Discriminated union of possible effects on `effect`
+ */
+type RoomObjectEffect = NaturalEffect | PowerEffect;
+
+/**
+ * Natural effect applied to room object
+ */
+interface NaturalEffect {
+    /**
+     * Effect ID of the applied effect. `EFFECT_*` constant.
+     */
+    effect: EffectConstant;
+    /**
+     * How many ticks will the effect last.
+     */
+    ticksRemaining: number;
+}
+
+/**
+ * Effect applied to room object as result of a `PowerCreep.usePower`.
+ */
+interface PowerEffect {
     /**
      * Power level of the applied effect.
      */
     level: number;
     /**
-     * Power ID of the applied effect. `PWR_*` constant.
+     * Effect ID of the applied effect. `PWR_*` constant.
+     */
+    effect: PowerConstant;
+    /**
+     * @deprecated Power ID of the applied effect. `PWR_*` constant. No longer documented, will be removed.
      */
     power: PowerConstant;
     /**
@@ -4052,7 +4105,6 @@ interface Room {
      *  * FIND_SOURCES
      *  * FIND_SOURCES_ACTIVE
      *  * FIND_DROPPED_RESOURCES
-     *  * FIND_DROPPED_ENERGY
      *  * FIND_STRUCTURES
      *  * FIND_MY_STRUCTURES
      *  * FIND_HOSTILE_STRUCTURES
@@ -4235,7 +4287,7 @@ interface Ruin extends RoomObject {
     /**
      * An object with the ruin contents.
      */
-    store: StoreDefinition;
+    store: StoreDefinitionUnlimited;
     /**
      * The amount of game ticks before this ruin decays.
      */
@@ -4293,10 +4345,12 @@ interface StructureSpawn extends OwnedStructure<STRUCTURE_SPAWN> {
     readonly prototype: StructureSpawn;
     /**
      * The amount of energy containing in the spawn.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy the spawn can contain
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
     /**
@@ -4316,7 +4370,10 @@ interface StructureSpawn extends OwnedStructure<STRUCTURE_SPAWN> {
      * If the spawn is in process of spawning a new creep, this object will contain the new creep’s information, or null otherwise.
      */
     spawning: Spawning | null;
-
+    /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store<RESOURCE_ENERGY, false>;
     /**
      * Check if a creep can be created.
      *
@@ -4485,7 +4542,35 @@ interface SpawnOptions {
     directions?: DirectionConstant[];
 }
 
-interface SpawningConstructor extends _Constructor<Spawning>, _ConstructorById<Spawning> { }
+interface SpawningConstructor extends _Constructor<Spawning>, _ConstructorById<Spawning> {}
+// TypeScript Version: 2.8
+
+type Store<POSSIBLE_RESSOURCES extends ResourceConstant, UNLIMITED_STORE extends boolean> = {
+    /** Returns capacity of this store for the specified resource, or total capacity if resource is undefined. */
+    getCapacity<R extends ResourceConstant | undefined>(
+        resource?: R,
+    ): UNLIMITED_STORE extends true
+        ? null
+        : (undefined extends R
+              ? (ResourceConstant extends POSSIBLE_RESSOURCES ? number : null)
+              : (R extends POSSIBLE_RESSOURCES ? number : null));
+    /** Returns the capacity used by the specified resource, or total used capacity for general purpose stores if resource is undefined. */
+    getUsedCapacity<R extends ResourceConstant | undefined>(
+        resource?: R,
+    ): undefined extends R ? (ResourceConstant extends POSSIBLE_RESSOURCES ? number : null) : (R extends POSSIBLE_RESSOURCES ? number : 0);
+    /** A shorthand for getCapacity(resource) - getUsedCapacity(resource). */
+    getFreeCapacity(resource?: ResourceConstant): number;
+} & { [P in POSSIBLE_RESSOURCES]: number } &
+    { [P in Exclude<ResourceConstant, POSSIBLE_RESSOURCES>]: 0 };
+
+type GenericStore = {
+    /** Returns capacity of this store for the specified resource, or total capacity if resource is undefined. */
+    getCapacity(resource?: ResourceConstant): number | null;
+    /** Returns the capacity used by the specified resource, or total used capacity for general purpose stores if resource is undefined. */
+    getUsedCapacity(resource?: ResourceConstant): number | null;
+    /** A shorthand for getCapacity(resource) - getUsedCapacity(resource). */
+    getFreeCapacity(resource?: ResourceConstant): number;
+} & { [P in ResourceConstant]: number };
 /**
  * Parent object for structure classes
  */
@@ -4636,12 +4721,19 @@ interface StructureExtension extends OwnedStructure<STRUCTURE_EXTENSION> {
 
     /**
      * The amount of energy containing in the extension.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy the extension can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
+
+    /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store<RESOURCE_ENERGY, false>;
 }
 
 interface StructureExtensionConstructor extends _Constructor<StructureExtension>, _ConstructorById<StructureExtension> {}
@@ -4659,17 +4751,19 @@ interface StructureLink extends OwnedStructure<STRUCTURE_LINK> {
      */
     cooldown: number;
     /**
-     * A Store object that contains cargo of this structure.
-     */
-    store: Store;
-    /**
      * The amount of energy containing in the link.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy the link can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
+    /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store<RESOURCE_ENERGY, false>;
     /**
      * Transfer energy from the link to another link or a creep.
      *
@@ -4750,20 +4844,28 @@ interface StructurePowerSpawn extends OwnedStructure<STRUCTURE_POWER_SPAWN> {
     readonly prototype: StructurePowerSpawn;
     /**
      * The amount of energy containing in this structure.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy this structure can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
     /**
      * The amount of power containing in this structure.
+     * @deprecated An alias for .store[RESOURCE_POWER].
      */
     power: number;
     /**
      * The total amount of power this structure can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_POWER).
      */
     powerCapacity: number;
+    /**
+     *
+     */
+    store: Store<RESOURCE_ENERGY | RESOURCE_POWER, false>;
 
     /**
      * Register power resource units into your account. Registered power allows to develop power creeps skills. Consumes 1 power resource unit and 50 energy resource units.
@@ -4833,6 +4935,7 @@ interface StructureStorage extends OwnedStructure<STRUCTURE_STORAGE> {
     store: StoreDefinition;
     /**
      * The total amount of resources the storage can contain.
+     * @deprecated An alias for .store.getCapacity().
      */
     storeCapacity: number;
 }
@@ -4851,12 +4954,18 @@ interface StructureTower extends OwnedStructure<STRUCTURE_TOWER> {
 
     /**
      * The amount of energy containing in this structure.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy this structure can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
+    /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store<RESOURCE_ENERGY, false>;
 
     /**
      * Remotely attack any creep in the room. Consumes 10 energy units per tick. Attack power depends on the distance to the target: from 600 hits at range 10 to 300 hits at range 40.
@@ -4920,14 +5029,17 @@ interface StructureLab extends OwnedStructure<STRUCTURE_LAB> {
     cooldown: number;
     /**
      * The amount of energy containing in the lab. Energy is used for boosting creeps.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy the lab can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
     /**
      * The amount of mineral resources containing in the lab.
+     * @deprecated An alias for lab.store[lab.mineralType].
      */
     mineralAmount: number;
     /**
@@ -4937,8 +5049,13 @@ interface StructureLab extends OwnedStructure<STRUCTURE_LAB> {
     mineralType: MineralConstant | MineralCompoundConstant | null;
     /**
      * The total amount of minerals the lab can contain.
+     * @deprecated An alias for lab.store.getCapacity(lab.mineralType || yourMineral).
      */
     mineralCapacity: number;
+    /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store<RESOURCE_ENERGY | MineralConstant | MineralCompoundConstant, false>;
     /**
      * Boosts creep body part using the containing mineral compound. The creep has to be at adjacent square to the lab. Boosting one body part consumes 30 mineral units and 20 energy units.
      * @param creep The target creep.
@@ -4978,17 +5095,18 @@ interface StructureTerminal extends OwnedStructure<STRUCTURE_TERMINAL> {
      */
     cooldown: number;
     /**
-     * An object with the storage contents. Each object key is one of the RESOURCE_* constants, values are resources amounts.
+     * A Store object that contains cargo of this structure.
      */
-    store: Store;
+    store: StoreDefinition;
     /**
      * The total amount of resources the storage can contain.
+     * @deprecated An alias for .store.getCapacity().
      */
     storeCapacity: number;
     /**
      * Sends resource to a Terminal in another room with the specified name.
      * @param resourceType One of the RESOURCE_* constants.
-     * @param amount The amount of resources to be sent. The minimum amount is 100.
+     * @param amount The amount of resources to be sent.
      * @param destination The name of the target room. You don't have to gain visibility in this room.
      * @param description The description of the transaction. It is visible to the recipient. The maximum length is 100 characters.
      */
@@ -5011,6 +5129,7 @@ interface StructureContainer extends Structure<STRUCTURE_CONTAINER> {
     store: StoreDefinition;
     /**
      * The total amount of resources the structure can contain.
+     * @deprecated An alias for .store.getCapacity().
      */
     storeCapacity: number;
     /**
@@ -5034,24 +5153,32 @@ interface StructureNuker extends OwnedStructure<STRUCTURE_NUKER> {
     readonly prototype: StructureNuker;
     /**
      * The amount of energy contained in this structure.
+     * @deprecated An alias for .store[RESOURCE_ENERGY].
      */
     energy: number;
     /**
      * The total amount of energy this structure can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_ENERGY).
      */
     energyCapacity: number;
     /**
      * The amount of energy contained in this structure.
+     * @deprecated An alias for .store[RESOURCE_GHODIUM].
      */
     ghodium: number;
     /**
      * The total amount of energy this structure can contain.
+     * @deprecated An alias for .store.getCapacity(RESOURCE_GHODIUM).
      */
     ghodiumCapacity: number;
     /**
      * The amount of game ticks the link has to wait until the next transfer is possible.
      */
     cooldown: number;
+    /**
+     * A Store object that contains cargo of this structure.
+     */
+    store: Store<RESOURCE_ENERGY | RESOURCE_GHODIUM, false>;
     /**
      * Launch a nuke to the specified position.
      * @param pos The target room position.
@@ -5104,7 +5231,7 @@ interface StructureFactory extends OwnedStructure<STRUCTURE_FACTORY> {
     /**
      * An object with the structure contents.
      */
-    store: Store;
+    store: StoreDefinition;
     /**
      * Produces the specified commodity.
      * All ingredients should be available in the factory store.
@@ -5157,6 +5284,19 @@ type AnyOwnedStructure =
     | StructureTerminal
     | StructureTower;
 
+type AnyStoreStructure =
+    | StructureExtension
+    | StructureFactory
+    | StructureLab
+    | StructureLink
+    | StructureNuker
+    | StructurePowerSpawn
+    | StructureSpawn
+    | StructureStorage
+    | StructureTerminal
+    | StructureTower
+    | StructureContainer;
+
 /**
  * A discriminated union on Structure.type of all structure types
  */
@@ -5184,7 +5324,7 @@ interface Tombstone extends RoomObject {
      * other resources are undefined when empty.
      * You can use lodash.sum to get the total amount of contents.
      */
-    store: StoreDefinition;
+    store: StoreDefinitionUnlimited;
     /**
      * The amount of game ticks before this tombstone decays.
      */
