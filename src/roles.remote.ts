@@ -194,13 +194,12 @@ export default {
             const sourceFlag = Game.flags[sourceFlagName]
 
             // 检查房间内有没有敌人，10 tick 检查一次
-            if (!(Game.time % 10)) {
-                if (sourceFlag.room && !sourceFlag.room._hasEnemy) {
+            if (!(Game.time % 10) && sourceFlag.room) {
+                if (!sourceFlag.room._hasEnemy) {
                     sourceFlag.room._hasEnemy = sourceFlag.room.find(FIND_HOSTILE_CREEPS).length > 0
                 }
                 // 有的话向基地报告
-                if (sourceFlag.room && sourceFlag.room._hasEnemy) {
-                    console.log(`${creep.name} 在 ${creep.room.name} 里发现了敌人!!!`)
+                if (sourceFlag.room._hasEnemy) {
                     const spawn = Game.spawns[spawnName]
                     if (!spawn) return console.log(`${creep.name} 在 source 阶段中找不到 ${spawnName}`)
                     if (!spawn.room.memory.remote) spawn.room.memory.remote = {}
@@ -210,7 +209,6 @@ export default {
                         spawn.room.memory.remote[sourceFlag.room.name] = Game.time + 1500
                     }
                 }
-                else console.log(`${creep.name} 在 ${creep.room.name} 里没有发现敌人`)
             }
             
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同

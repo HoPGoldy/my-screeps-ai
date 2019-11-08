@@ -107,6 +107,8 @@ interface CreepMemory {
     targetPosTag?: string
     // 要填充的墙 id 
     fillWallId?: string
+    // transfer 特有 要填充能量的建筑 id
+    fillStructureId?: string
     // 建筑工特有 当前缓存的建筑工地
     constructionSiteId?: string
     // 外矿采集者特有, 该字段为 true 时, 每 tick 都会尝试检查工地并建造
