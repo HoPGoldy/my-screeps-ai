@@ -64,7 +64,7 @@ class CreepExtension extends Creep {
      * @param onStateChange 状态切换时的回调
      */
     public updateState(workingMsg: string='🧰 工作', onStateChange: Function=this.updateStateDefaultCallback): boolean {
-        const resourceType: string = (Object.keys(this.store).length > 0) ? Object.keys(this.store)[0] : RESOURCE_ENERGY
+        const resourceType: ResourceConstant = (Object.keys(this.store).length > 0) ? <ResourceConstant>Object.keys(this.store)[0] : RESOURCE_ENERGY
         const resourceAmount = this.store.getUsedCapacity(resourceType)
 
         // creep 身上没有能量 && creep 之前的状态为“工作”
