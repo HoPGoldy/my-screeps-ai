@@ -27,13 +27,14 @@ export default {
     reserver: (spawnName: string, roomName: string): ICreepConfig => ({
         isNeed: (room) => {
             if (!room.memory.remote) room.memory.remote = {}
-            // 不存在该字段说明外矿状态良好
-            if (!room.memory.remote[roomName]) return true
-            // 有该字段并且当前时间没有到其标注的时间
-            // 说明外矿还有活着的入侵者
-            if (Game.time < room.memory.remote[roomName]) return false
-            // 否则就说明入侵者已经死了
-            delete room.memory.remote[roomName]
+            // 存在该字段说明外矿有入侵者
+            if (room.memory.remote[roomName]) {
+                // 有该字段并且当前时间没有到其标注的时间
+                // 说明外矿还有活着的入侵者
+                if (Game.time < room.memory.remote[roomName]) return false
+                // 否则就说明入侵者已经死了
+                delete room.memory.remote[roomName]
+            }
 
             // 如果房间没有视野则默认进行孵化
             if (!Game.rooms[roomName]) {
@@ -46,6 +47,7 @@ export default {
             // 房间没有预定也孵化
             if (!controller.reservation) {
                 console.log('[reserver] 房间没有预定 默认孵化')
+                return true
             }
             // 房间还剩 2500 ticks 预定就到期了则进行孵化
             console.log(`[reserver] 房间的预定时长为 ${controller.reservation.ticksToEnd}`)

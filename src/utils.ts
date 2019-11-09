@@ -94,3 +94,13 @@ export function doing(hashMap: object): void {
         if (item.work) item.work()
     })
 }
+
+/**
+ * 显示指定函数的 cpu 消耗
+ * @param func 要检查消耗 cpu 的函数
+ */
+export function checkCPU(func: Function): void {
+    const cost1 = Game.cpu.getUsed()
+    func()
+    const cost2 = Game.cpu.getUsed()
+}

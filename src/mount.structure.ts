@@ -8,6 +8,7 @@ export default function () {
     _.assign(StructureLink.prototype, LinkExtension.prototype)
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
+    _.assign(StructureExtension.prototype, ExtensionExtension.prototype)
 }
 
 /**
@@ -124,6 +125,7 @@ class SpawnExtension extends StructureSpawn {
         // 检查是否生成成功
         if (spawnResult == OK) {
             // console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
+            delete this.room.memory.allStructureFillEnergy
             return <OK>0
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
@@ -167,12 +169,30 @@ class TowerExtension extends StructureTower {
      * 主要任务
      */
     public work(): void {
+        // this.needEnergy()
+
         if (this.store[RESOURCE_ENERGY] > 10) {
             // 先攻击敌人
             if (this.commandAttack()) { }
             // 找不到敌人再维修建筑
             else if (this.commandRepair()) { }
         }
+    }
+
+    /**
+     * 检查自己的能量是否足够
+     * 不够的话会通知 transfer 转移能量
+     */
+    private needEnergy(): boolean {
+        // 检查自己是否需要填充能量
+        const amount = this.store.getFreeCapacity(RESOURCE_ENERGY)
+        if (amount != 0) {
+            // console.log(`${this} 需要填充能量!`)
+            if (!this.room._needFillEnergyStructures) this.room._needFillEnergyStructures = []
+            this.room._needFillEnergyStructures.push(this)
+            return true
+        }
+        return false
     }
 
     /**
@@ -615,5 +635,31 @@ class TerminalExtension extends StructureTerminal {
             return terminalConfigs[room]
         }
         else return null
+    }
+}
+
+/**
+ * extension 拓展
+ */
+class ExtensionExtension extends StructureExtension {
+    public work(): void {
+        // this.needEnergy()
+    }
+
+    /**
+     * 检查自己的能量是否足够
+     * 不够的话会通知 transfer 转移能量
+     */
+    private needEnergy(): boolean {
+        // 如果上了锁或者房间内已经有了需要填充能量的建筑，就跳过检查
+        if (this.room.memory.allStructureFillEnergy) return
+
+        // 检查自己是否需要填充能量
+        const amount = this.store.getFreeCapacity(RESOURCE_ENERGY)
+        if (amount != 0) {
+            // console.log(`${this} 需要填充能量!`)
+            if (!this.room._needFillEnergyStructures) this.room._needFillEnergyStructures = []
+            this.room._needFillEnergyStructures.push(this)
+        }
     }
 }

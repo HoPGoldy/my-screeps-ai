@@ -134,6 +134,8 @@ interface Room {
     // 当该字段为 true 时, repairer 角色将专心刷墙
     // 由房间中的 tower 负责更新
     _towerShoulderRepair: boolean
+    // 该房间需要填充能量的建筑数组
+    _needFillEnergyStructures: AnyOwnedStructure[]
     addTask(task: ITransferTask): number
     hasTask(submitId: string): boolean
     hangTask(): number
@@ -175,6 +177,9 @@ interface RoomMemory {
         // spawn 在发现到达指定 tick 后会移除对应的属性
         [creepName: string]: number
     }
+
+    // 该房间是否暂时不再需要进行能量填充
+    allStructureFillEnergy: boolean
 }
 
 interface FlagMemory {

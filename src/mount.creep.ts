@@ -17,6 +17,7 @@ class CreepExtension extends Creep {
      * creep 主要工作
      */
     public work(): void {
+        // let cost1 = Game.cpu.getUsed()
         // 检查 creep 内存中的角色是否存在
         if (!(this.memory.role in creepConfigs)) {
             console.log(`creep ${this.name} 内存属性 role 不属于任何已存在的 creepConfigs 名称`)
@@ -56,6 +57,8 @@ class CreepExtension extends Creep {
         else {
             if (creepConfig.source) creepConfig.source(this)
         }
+        // let cost2 = Game.cpu.getUsed()
+        // console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
     }
 
     /**

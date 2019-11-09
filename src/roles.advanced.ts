@@ -13,6 +13,20 @@ export default {
     transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
         source: creep => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
+            // // 没有要填能量的建筑时就待机
+            // if (!creep.room._needFillEnergyStructure) {
+            //     creep.room.memory.allStructureFillEnergy = true
+            //     return
+            // }
+
+            // const target: StructureSpawn | StructureExtension | StructureTower = Game.getObjectById(creep.room._needFillEnergyStructure.id)
+            // if (!target) return console.log(creep.name, '未找到该建筑')
+            // // else console.log(`明白了! ${creep.name} 填充 ${target}`)
+            // // const amount = creep.room._needFillEnergyStructure.amount 
+            // const transferResult = creep.transfer(target, RESOURCE_ENERGY)
+            // if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target)
+            // else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
+
             let target: StructureSpawn | StructureExtension | StructureTower
             // 有缓存就从缓存获取
             if (creep.memory.fillStructureId) {
@@ -32,11 +46,13 @@ export default {
             }
 
             // 获取填充的数量
-            let amount = target.store.getFreeCapacity(RESOURCE_ENERGY)
-            if (amount > creep.store[RESOURCE_ENERGY]) amount = undefined
+            // let amount = target.store.getFreeCapacity(RESOURCE_ENERGY)
+            // if (amount > creep.store[RESOURCE_ENERGY]) amount = undefined
             
             // 有的话就填充能量
-            if (creep.transfer(target, RESOURCE_ENERGY, amount) === ERR_NOT_IN_RANGE) creep.moveTo(target)
+            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target)
+            else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0,
         spawn: spawnName,
@@ -66,7 +82,7 @@ export default {
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 creep.room.hangTask()
             }
-            else if (result !== OK) creep.say(`withdraw ${result}`)
+            else if (result !== OK) creep.say(`取出 ${result}`)
         },
         // 身上有能量就放到 Storage 里
         target: creep => {
@@ -80,7 +96,7 @@ export default {
             const result = creep.transfer(structure, task.resourceType)
             // 如果转移完成则增加任务进度
             if (result === OK) creep.room.handleTask(amount)
-            else creep.say(`transfer ${result}`)
+            else creep.say(`存入 ${result}`)
         },
         switch: creep => creep.store.getUsedCapacity() > 0,
         spawn: spawnName,

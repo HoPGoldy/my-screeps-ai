@@ -55,11 +55,7 @@ module.exports = function(grunt) {
                 cwd: 'dist',
                 src: '**',
                 dest: copyPath,
-                filter: 'isFile',
-                rename(dest, src) {
-                    // Change the path name utilize underscores for folders
-                    return dest + src.replace(/\//g,'_')
-                }
+                filter: 'isFile'
             }
         },
         // 代码监听任务
