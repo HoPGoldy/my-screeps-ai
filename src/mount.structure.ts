@@ -487,7 +487,163 @@ class FactoryExtension extends StructureFactory {
 // Terminal 拓展
 class NewTerminalExtension extends StructureTerminal {
     public work(): void {
+        // 没有冷却好或者不到 10 tick 就跳过
+        if (this.cooldown !== 0 || Game.time % 5) return
+        const resource = this.getResourceByIndex()
+        // 没有配置监听任务的话就跳过
+        if (!resource) return 
 
+        // 只有 dealOrder 下命令了才能继续执行 ResourceListener
+        if (this.dealOrder(resource)) this.ResourceListener(resource)
+    }
+
+    /**
+     * 继续处理之前缓存的订单
+     * 
+     * @returns 是否需要继续执行 ResourceListener
+     */
+    public dealOrder(resource: { type: ResourceConstant, amount: number }): boolean {
+        // 没有订单需要处理
+        if (!this.room.memory.targetOrderId) return true
+    }
+
+    /**
+     * 资源监听
+     * 检查资源是否符合用户给定的期望
+     */
+    public ResourceListener(resource: { type: ResourceConstant, amount: number }): void {
+        if (this.store[resource.type] == resource.amount) {
+            // console.log(`${resource.type} 数量刚刚好`)
+            this.setNextIndex()
+            return
+        }
+
+        // 获取订单
+        const targetOrder = this.getOrder({
+            // 根据存储的数量是否超过上限来决定是买单还是卖单
+            type: (this.store[resource.type] > resource.amount) ? ORDER_BUY : ORDER_SELL,
+            resourceType: resource.type
+        })
+        if (!targetOrder) {
+            console.log(`${this.room.name} 没有为 ${resource.type} 找到合适的订单`)
+            this.setNextIndex()
+            return
+        }
+
+        console.log(`${this.room.name} 为 ${resource.type} 找到了一个合适的订单 \n ${JSON.stringify(targetOrder, null, 4)}`)
+        // 订单合适，写入缓存并要路费
+        this.room.memory.targetOrderId = targetOrder.id
+        // 计算要传输的数量
+        let amount = this.store[resource.type] - resource.amount
+        if (amount < 0) amount *= -1
+        // 计算路费
+        const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
+        // 如果路费不够的话就问 sotrage 要
+        if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
+            this.getEnergy(cost)
+        }
+    }
+
+    /**
+     * 将索引指向下一个要监听的资源
+     */
+    private setNextIndex(): void {
+        let index = this.room.memory.terminalIndex | 0
+        const tasksLength = Object.keys(this.room.memory.terminalTasks).length
+        // 循环设置索引
+        this.room.memory.terminalIndex = (index + 1 >= tasksLength) ? 0 : index + 1
+    }
+
+    /**
+     * 从内存中索引获取正在监听的资源
+     * 
+     * @returns 该资源的信息，格式如下：
+     *   @property {} type 资源类型
+     *   @property {} amount 期望数量
+     */
+    private getResourceByIndex(): { type: ResourceConstant, amount: number } | null {
+        if (!this.room.memory.terminalTasks) return null
+        const resources = Object.keys(this.room.memory.terminalTasks)
+        if (!resources || resources.length == 0) return null
+        const index = this.room.memory.terminalIndex | 0
+
+        const resourceType = resources[index]
+
+        return {
+            type: <ResourceConstant>resourceType,
+            amount: this.room.memory.terminalTasks[resourceType]
+        }
+    }
+
+    /**
+     * 寻找合适的订单
+     * 该方法**不会**将订单缓存到房间内存
+     * 
+     * @param config 市场交易任务
+     * @returns 找到则返回订单, 否找返回 null
+     */
+    private getOrder(filter: OrderFilter): Order | null {
+        const orders = Game.market.getAllOrders(order => {
+            return order.type === filter.type && 
+                order.resourceType === filter.resourceType && 
+                order.amount > 100
+        })
+        // 没找到订单就返回空
+        if (orders.length <= 0) return null
+
+        // price 升序找到最适合的订单
+        // 买入找price最低的 卖出找price最高的
+        const sortedOrders = _.sortBy(orders, order => order.price)
+        const targetOrder = sortedOrders[filter.type === ORDER_SELL ? 0 : (sortedOrders.length - 1)]
+
+        // 最后进行均价检查
+        if (!this.checkPrice(targetOrder)) return null
+        else return targetOrder
+    }
+
+    /**
+     * 检查订单单价是否合适
+     * 防止投机玩家的过低或过高订单
+     * 
+     * @param targetOrder 目标订单的单价
+     */
+    private checkPrice(targetOrder: Order): boolean {
+        const history = Game.market.getHistory(<ResourceConstant>targetOrder.resourceType)
+        // 没有历史记录的话直接运行购买
+        if (history.length <= 0) return true
+        // 以昨日均价为准
+        // console.log(JSON.stringify(history[0], null, 4))
+        const avgPrice = history[0].avgPrice
+        
+        // console.log('区间上限', avgPrice * 1.1, '订单单价', targetOrder.price, '区间下限', avgPrice * 0.9)
+
+        // 目标订单的价格要在历史价格上下 0.3 左右的区间内浮动才算可靠
+        // 卖单的价格不能太高
+        if (targetOrder.type == ORDER_SELL) {
+            if (targetOrder.price <= avgPrice * 1.3) return true
+        }
+        // 买单的价格不能太低
+        else {
+            if (targetOrder.price >= avgPrice * 0.7) return true
+        }
+        return false
+    }
+
+    /**
+     * 从 storage 获取能量
+     * @param amount 需要能量的数量
+     */
+    private getEnergy(amount: number): void {
+        // 发布前先检查下有没有任务
+        if (this.room.hasTask(this.id)) return 
+
+        this.room.addTask({
+            submitId: this.id,
+            sourceId: this.room.storage.id,
+            targetId: this.id,
+            resourceType: RESOURCE_ENERGY,
+            amount
+        })
     }
 }
 

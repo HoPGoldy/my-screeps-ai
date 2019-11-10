@@ -178,6 +178,8 @@ interface RoomMemory {
     }
     // 房间内终端缓存的订单id
     targetOrderId: string
+    // 当前终端要监听的资源索引
+    terminalIndex: number
     // 房间内的元素矿id
     mineralId: string
     
