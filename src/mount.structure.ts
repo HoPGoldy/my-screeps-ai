@@ -295,11 +295,20 @@ class LinkExtension extends StructureLink {
      * 用户操作: 帮助
      */
     public help(): string {
-        return `
-        get('linkId').asSource() - 注册为源 link
-        get('linkId').asCenter() - 注册为中央 link
-        get('linkId').asUpgrade() - 注册为升级 link
-        `
+        return global.createHelp([
+            {
+                title: '注册为源 link',
+                functionName: 'asSource'
+            },
+            {
+                title: '注册为中央 link',
+                functionName: 'asCenter'
+            },
+            {
+                title: '注册为升级 link',
+                functionName: 'asUpgrade'
+            }
+        ])
     }
 
     /**
@@ -472,6 +481,13 @@ class FactoryExtension extends StructureFactory {
      */
     public make(resourceType: ResourceConstant): void {
         console.log(`我要制作 ${resourceType}`)
+    }
+}
+
+// Terminal 拓展
+class NewTerminalExtension extends StructureTerminal {
+    public work(): void {
+
     }
 }
 

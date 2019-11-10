@@ -100,16 +100,82 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 添加终端矿物监控
+     * 
+     * @param resourceType 要监控的资源类型
+     * @param amount 期望的资源数量
+     */
+    public addTerminalTask(resourceType: ResourceConstant, amount: number): string {
+        if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
+
+        this.memory.terminalTasks[resourceType] = amount
+        return `已添加，当前监听任务如下: \n ${this.showTerminalTask()}`
+    }
+
+    /**
+     * 移除终端矿物监控
+     * 
+     * @param resourceType 要停止监控的资源类型
+     */
+    public removeTerminalTask(resourceType: ResourceConstant): string {
+        if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
+
+        delete this.memory.terminalTasks[resourceType]
+        return `已移除，当前监听任务如下: \n ${this.showTerminalTask()}`
+    }
+
+    /**
+     * 显示所有终端监听任务
+     */
+    public showTerminalTask(): string {
+        if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
+        if (!this.terminal) return '该房间还没有 Terminal'
+
+        const resources = Object.keys(this.memory.terminalTasks)
+        if (resources.length == 0) return '该房间暂无终端监听任务'
+        
+        return resources.map(res => `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${this.memory.terminalTasks[res]}`).join('\n')
+    }
+
+    /**
      * 房间操作帮助
      */
     public help(): string {
-        return `
-        - 设置房间内工厂目标
-        .setFactoryTarget(RESOURCE_OXIDANT)
-        - 获取房间内工厂目标
-        .getFactoryTarget()
-        - 清空房间内工厂目标
-        .clearFactoryTarget()
-        `
+        return global.createHelp([
+            {
+                title: '设置房间内工厂目标',
+                params: [
+                    { name: 'resourceType', desc: '工厂要生产的资源类型' }
+                ],
+                functionName: 'setFactoryTarget'
+            },
+            {
+                title: '获取房间内工厂目标',
+                functionName: 'getFactoryTarget'
+            },
+            {
+                title: '清空房间内工厂目标',
+                functionName: 'clearFactoryTarget'
+            },
+            {
+                title: '添加终端矿物监控',
+                params: [
+                    { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
+                    { name: 'amount', desc: '指定类型的期望数量' }
+                ],
+                functionName: 'addTerminalTask'
+            },
+            {
+                title: '移除终端矿物监控',
+                params: [
+                    { name: 'resourceType', desc: '要移除监控的资源类型' }
+                ],
+                functionName: 'removeTerminalTask'
+            },
+            {
+                title: '显示所有终端监听任务',
+                functionName: 'showTerminalTask'
+            },
+        ])
     }
 }

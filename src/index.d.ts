@@ -3,11 +3,27 @@ type CREEP_DONT_NEED_SPAWN = -101
 // spawn.mySpawnCreep 方法的返回值集合
 type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 
+// 函数介绍构造函数的参数对象
+interface IFunctionDescribe {
+    // 该函数的用法
+    title: string
+    // 该函数的参数列表
+    params?: {
+        // 参数名
+        name: string
+        // 参数介绍
+        desc: string
+    }[]
+    // 函数名
+    functionName: string
+}
+
 declare module NodeJS {
     // 全局对象
     interface Global {
         // 是否已经挂载拓展
         hasExtension: boolean
+        createHelp(functionInfo: IFunctionDescribe[]): string
     }
 }
 
@@ -155,6 +171,11 @@ interface RoomMemory {
     centerTransferTasks: ITransferTask[]
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
+    // 终端监听矿物列表
+    // 键为资源名称，值为资源期望数量
+    terminalTasks: {
+        [resourceType: string]: number
+    }
     // 房间内终端缓存的订单id
     targetOrderId: string
     // 房间内的元素矿id
