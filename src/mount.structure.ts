@@ -309,7 +309,7 @@ class LinkExtension extends StructureLink {
     private clearRegister() {
         if (this.room.memory.centerLinkId == this.id) delete this.room.memory.centerLinkId
         if (this.room.memory.upgradeLinkId == this.id) delete this.room.memory.upgradeLinkId
-        if (this.room.memory.links.hasOwnProperty(this.id)) delete this.room.memory.links[this.id]
+        if (this.room.memory.links && this.room.memory.links.hasOwnProperty(this.id)) delete this.room.memory.links[this.id]
     }
 
     /**

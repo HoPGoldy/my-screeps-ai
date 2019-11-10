@@ -28,19 +28,19 @@ export default {
      * @param targetId 指定建筑 id (默认为 room.storage)
      */
     collector: (spawnName: string, sourceId: string, targetId: string=''): ICreepConfig => ({
-        prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
+        prepare: creep => creep.moveTo(<Source | Mineral>Game.getObjectById(sourceId), { reusePath: 20 }),
         isReady: creep => creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos),
         source: creep => {
             const source: Source|Mineral = Game.getObjectById(sourceId)
             if (!source) return creep.say('目标找不到!')
 
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source)
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source, { reusePath: 20 })
         },
         target: creep => {
             const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.storage
             if (!target) return creep.say('目标找不到!')
 
-            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
+            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
         },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
@@ -49,10 +49,10 @@ export default {
 
     /**
      * 矿工
-     * 从房间的 mineral 中获取资源 > 将资源转移到指定建筑中(默认为 storage)
+     * 从房间的 mineral 中获取资源 > 将资源转移到指定建筑中(默认为 terminal)
      * 
      * @param spawnName 出生点名称
-     * @param targetId 指定建筑 id (默认为 room.storage)
+     * @param targetId 指定建筑 id (默认为 room.terminal)
      */
     miner: (spawnName: string, targetId=''): ICreepConfig => ({
         // 检查矿床里是不是还有矿
@@ -75,7 +75,7 @@ export default {
             if (creep.harvest(mineral) == ERR_NOT_IN_RANGE) creep.moveTo(mineral, { reusePath: 20 })
         },
         target: creep => {
-            const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.storage
+            const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.terminal
             if (!target) return creep.say('目标找不到!')
             // 转移/移动
             if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
@@ -83,28 +83,6 @@ export default {
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodyType: 'worker'
-    }),
-
-    /**
-     * 资源转移者
-     * 从指定建筑中获取资源 > 将资源转移到指定建筑中
-     * 
-     * @param spawnName 出生点名称
-     * @param sourceId 获取资源的建筑 id
-     * @param targetId 指定建筑 id
-     */
-    resourceTransfer: (spawnName: string, sourceId: string, ResourceType: ResourceConstant, targetId: string): ICreepConfig => ({
-        source: creep => {
-            const source: Structure = Game.getObjectById(sourceId)
-            if (creep.withdraw(source, ResourceType) == ERR_NOT_IN_RANGE) creep.moveTo(source)
-        },
-        target: creep => {
-            const target: Structure = Game.getObjectById(targetId)
-            if (creep.transfer(target, Object.keys(creep.carry)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
-        },
-        switch: creep => creep.updateState('🍚 收获'),
-        spawn: spawnName,
-        bodyType: 'transfer'
     }),
 
     /**
@@ -175,28 +153,6 @@ export default {
             else if (creep.fillDefenseStructure()) {}
         },
         switch: creep => creep.updateState('🍚 填塔'),
-        spawn: spawnName,
-        bodyType: 'smallWorker'
-    }),
-
-    /**
-     * 测试用 creep
-     * 啥都不干
-     * 
-     * @param spawnName 出生点名称
-     */
-    tester: (sourceId: string, targetId: string, spawnName: string): ICreepConfig => ({
-        prepare: creep => creep.moveTo(Game.getObjectById(sourceId)),
-        isReady: creep => creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos),
-        source: creep => {
-            const source: Source|Mineral = Game.getObjectById(sourceId)
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source)
-        },
-        target: creep => {
-            const target: Structure = Game.getObjectById(targetId)
-            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target)
-        },
-        switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodyType: 'smallWorker'
     })

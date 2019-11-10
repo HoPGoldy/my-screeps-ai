@@ -37,7 +37,7 @@ export default {
             if (!creep.memory.fillStructureId) {
                 // 获取有需求的建筑
                 target = <StructureSpawn | StructureExtension | StructureTower>creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
-                    filter: s => (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_SPAWN ||  s.structureType === STRUCTURE_TOWER) && s.energy < s.energyCapacity
+                    filter: s => (s.structureType === STRUCTURE_EXTENSION || s.structureType === STRUCTURE_TOWER) && s.energy < s.energyCapacity
                 })
                 if (!target) return 
 
@@ -51,7 +51,7 @@ export default {
             
             // 有的话就填充能量
             const transferResult = creep.transfer(target, RESOURCE_ENERGY)
-            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
             else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0,
@@ -70,7 +70,7 @@ export default {
      */
     centerTransfer: (spawnName: string, x: number, y: number): ICreepConfig => ({
         // 移动到指定位置
-        prepare: creep => creep.moveTo(x, y),
+        prepare: creep => creep.moveTo(x, y, { reusePath: 20 }),
         isReady: creep => creep.pos.isEqualTo(x, y),
         // link 里有能量就拿出来
         source: creep => {
