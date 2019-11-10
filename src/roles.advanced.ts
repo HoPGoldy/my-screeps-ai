@@ -72,8 +72,11 @@ export default {
         // 移动到指定位置
         prepare: creep => creep.moveTo(x, y, { reusePath: 20 }),
         isReady: creep => creep.pos.isEqualTo(x, y),
-        // link 里有能量就拿出来
+        // 从中央任务队列中取出任务并执行
         source: creep => {
+            // 快死了就拒绝执行任务
+            if (creep.ticksToLive <= 5) return
+            // 获取订单
             const task = creep.room.getTask()
             if (!task) return 
 
@@ -82,7 +85,10 @@ export default {
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 creep.room.hangTask()
             }
-            else if (result !== OK) creep.say(`取出 ${result}`)
+            else if (result !== OK) {
+                creep.say(`取出 ${result}`)
+                creep.room.hangTask()
+            }
         },
         // 身上有能量就放到 Storage 里
         target: creep => {
@@ -96,7 +102,10 @@ export default {
             const result = creep.transfer(structure, task.resourceType)
             // 如果转移完成则增加任务进度
             if (result === OK) creep.room.handleTask(amount)
-            else creep.say(`存入 ${result}`)
+            else {
+                creep.say(`存入 ${result}`)
+                creep.room.hangTask()
+            }
         },
         switch: creep => creep.store.getUsedCapacity() > 0,
         spawn: spawnName,

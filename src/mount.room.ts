@@ -6,7 +6,6 @@ export default function () {
 class RoomExtension extends Room {
     /**
      * 添加任务
-     * 示例: Game.rooms['W1N1'].addTask({ submitId: '', targetId: '', sourceId: '', resourceType: RESOURCE_ENERGY, amount: 1000})
      * 
      * @param submitId 提交者的 id 
      * @param task 要提交的任务
@@ -17,6 +16,25 @@ class RoomExtension extends Room {
 
         this.memory.centerTransferTasks.push(task)
         return this.memory.centerTransferTasks.length - 1
+    }
+
+    /**
+     * 用户操作：添加中央运输任务
+     * 
+     * @param targetId 资源存放建筑 id
+     * @param sourceId 资源来源建筑 id
+     * @param resourceType 要转移的资源类型
+     * @param amount 资源数量
+     */
+    public addct(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number) {
+        if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
+        this.addTask({
+            submitId: this.memory.centerTransferTasks.length.toString(),
+            targetId,
+            sourceId,
+            resourceType,
+            amount
+        })
     }
 
     /**
@@ -142,6 +160,16 @@ class RoomExtension extends Room {
      */
     public help(): string {
         return global.createHelp([
+            {
+                title: '添加中央运输任务',
+                params: [
+                    { name: 'targetId', desc: '资源存放建筑 id' },
+                    { name: 'sourceId', desc: '资源来源建筑 id' },
+                    { name: 'resourceType', desc: '工厂要生产的资源类型' },
+                    { name: 'amount', desc: '工厂要生产的资源类型' },
+                ],
+                functionName: 'addct'
+            },
             {
                 title: '设置房间内工厂目标',
                 params: [

@@ -449,7 +449,8 @@ class FactoryExtension extends StructureFactory {
 
         this.room.addTask({
             submitId: this.id,
-            sourceId: this.room.storage.id,
+            // 如果是能量就从 storage 里拿，是其他资源就从 terminal 里拿
+            sourceId: resourceType == RESOURCE_ENERGY ? this.room.storage.id : this.room.terminal.id,
             targetId: this.id,
             resourceType: resourceType,
             amount: amount
@@ -485,10 +486,10 @@ class FactoryExtension extends StructureFactory {
 }
 
 // Terminal 拓展
-class NewTerminalExtension extends StructureTerminal {
+class TerminalExtension extends StructureTerminal {
     public work(): void {
         // 没有冷却好或者不到 10 tick 就跳过
-        if (this.cooldown !== 0 || Game.time % 5) return
+        if (this.cooldown !== 0 || Game.time % 10) return
         const resource = this.getResourceByIndex()
         // 没有配置监听任务的话就跳过
         if (!resource) return 
@@ -505,6 +506,41 @@ class NewTerminalExtension extends StructureTerminal {
     public dealOrder(resource: { type: ResourceConstant, amount: number }): boolean {
         // 没有订单需要处理
         if (!this.room.memory.targetOrderId) return true
+        // 获取订单
+        const targetOrder = Game.market.getOrderById(this.room.memory.targetOrderId)
+        // 订单无效则移除缓存并继续检查
+        if (!targetOrder) {
+            delete this.room.memory.targetOrderId
+            return true
+        }
+
+        // 计算要传输的数量
+        let amount = this.store[resource.type] - resource.amount
+        if (amount < 0) amount *= -1
+        // 如果订单剩下的不多了 就用订单的数量
+        if (targetOrder.amount < amount) amount = targetOrder.amount
+        // 计算路费
+        const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
+        // 如果路费不够的话就继续等
+        if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) return false
+
+        // 交易
+        const dealResult = Game.market.deal(targetOrder.id, amount, this.room.name)
+
+        // 检查返回值
+        if (dealResult === OK) {
+            console.log(`${this.room.name} 交易成功! 资源: ${targetOrder.resourceType} 类型: ${targetOrder.type} 数量: ${amount} 单价: ${targetOrder.price}`)
+            delete this.room.memory.targetOrderId
+            this.setNextIndex()
+            return false // 把这个改成 true 可以加快交易速度
+        }
+        else if (dealResult === ERR_INVALID_ARGS) {
+            delete this.room.memory.targetOrderId
+            
+        }
+        else {
+            console.log(`[终端警告] ${this.room.name} 处理订单异常 ${dealResult}`)
+        }
     }
 
     /**
@@ -529,8 +565,8 @@ class NewTerminalExtension extends StructureTerminal {
             this.setNextIndex()
             return
         }
-
-        console.log(`${this.room.name} 为 ${resource.type} 找到了一个合适的订单 \n ${JSON.stringify(targetOrder, null, 4)}`)
+        
+        console.log(`${this.room.name} 为 ${targetOrder.resourceType} 找到了一个合适的订单 类型: ${targetOrder.type} 单价: ${targetOrder.price}`)
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
         // 计算要传输的数量
@@ -594,7 +630,9 @@ class NewTerminalExtension extends StructureTerminal {
         // price 升序找到最适合的订单
         // 买入找price最低的 卖出找price最高的
         const sortedOrders = _.sortBy(orders, order => order.price)
+        // console.log('订单单价', sortedOrders.map(order => order.price))
         const targetOrder = sortedOrders[filter.type === ORDER_SELL ? 0 : (sortedOrders.length - 1)]
+        // console.log('选中订单价格', targetOrder.resourceType, targetOrder.type, targetOrder.price)
 
         // 最后进行均价检查
         if (!this.checkPrice(targetOrder)) return null
@@ -614,17 +652,17 @@ class NewTerminalExtension extends StructureTerminal {
         // 以昨日均价为准
         // console.log(JSON.stringify(history[0], null, 4))
         const avgPrice = history[0].avgPrice
-        
-        // console.log('区间上限', avgPrice * 1.1, '订单单价', targetOrder.price, '区间下限', avgPrice * 0.9)
 
-        // 目标订单的价格要在历史价格上下 0.3 左右的区间内浮动才算可靠
+        // 目标订单的价格要在历史价格上下 0.5 左右的区间内浮动才算可靠
         // 卖单的价格不能太高
         if (targetOrder.type == ORDER_SELL) {
-            if (targetOrder.price <= avgPrice * 1.3) return true
+            // console.log(`${targetOrder.price} <= ${avgPrice * 1.5}`)
+            if (targetOrder.price <= avgPrice * 1.5) return true
         }
         // 买单的价格不能太低
         else {
-            if (targetOrder.price >= avgPrice * 0.7) return true
+            // console.log(`${targetOrder.price} >= ${avgPrice * 0.5}`)
+            if (targetOrder.price >= avgPrice * 0.5) return true
         }
         return false
     }
@@ -648,7 +686,7 @@ class NewTerminalExtension extends StructureTerminal {
 }
 
 // Terminal 拓展
-class TerminalExtension extends StructureTerminal {
+class OldTerminalExtension extends StructureTerminal {
     public work(): void {
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) return
@@ -792,7 +830,7 @@ class TerminalExtension extends StructureTerminal {
         const avgPrice = history[0].avgPrice
         // 目标订单的价格要在历史价格上下 0.2 左右的区间内浮动才算可靠
         // console.log('区间上限', avgPrice * 1.1, '订单单价', targetOrder.price, '区间下限', avgPrice * 0.9)
-        if (targetOrder.price <= avgPrice * 1.1 || targetOrder.price >= avgPrice * 0.9) return true
+        if (targetOrder.price <= avgPrice * 1.3 && targetOrder.price >= avgPrice * 0.7) return true
         else return false
     }
 
