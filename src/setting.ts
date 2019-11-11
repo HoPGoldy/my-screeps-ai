@@ -1,7 +1,7 @@
 /**
  * 设置项
  * 本文件和 config.ts 的区别在于，本文件中的内容一般情况下不需要进行修改。
- * 本文件内容为项目中的内置常量
+ * 本文件存放了项目中的内置常量
  */
 
 /**
@@ -154,4 +154,13 @@ export const bodyConfigs: IBodyConfigs = {
         7: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ],
         8: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ]
     }
+}
+
+
+// creep 的默认内存
+export const creepDefaultMemory: CreepMemory = {
+    role: '',
+    ready: false,
+    working: false,
+    path: []
 }

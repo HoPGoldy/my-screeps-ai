@@ -28,11 +28,3 @@ export const creepConfigs: ICreepConfigs = {
     // WIN7RemoteBuilder: role.remoteBuilder('Spawn1', 'W1N8', 'ab9e0774d1c107c'), // 建筑工
     // WIN7RemoteUpgrader: role.remoteUpgrader('Spawn1', 'W1N8', 'ab9e0774d1c107c'), // 升级者
 }
-
-// creep 的默认内存
-export const creepDefaultMemory: CreepMemory = {
-    role: '',
-    ready: false,
-    working: false,
-    path: []
-}

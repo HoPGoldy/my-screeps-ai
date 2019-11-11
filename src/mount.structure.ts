@@ -1,5 +1,5 @@
-import { creepConfigs, creepDefaultMemory } from './config'
-import { bodyConfigs } from './setting'
+import { creepConfigs } from './config'
+import { bodyConfigs, creepDefaultMemory } from './setting'
 
 // 挂载拓展到建筑原型
 export default function () {
