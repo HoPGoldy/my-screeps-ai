@@ -80,10 +80,17 @@ export default {
             const task = creep.room.getTask()
             if (!task) return 
 
+            // 找到建筑
             const structure: AnyStructure = Game.getObjectById(task.sourceId)
+            if (!structure) {
+                creep.room.deleteCurrentCenterTask()
+                return
+            }
+
+            // 尝试取出资源
             const result = creep.withdraw(structure, task.resourceType)
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.room.hangTask()
+                creep.room.deleteCurrentCenterTask()
             }
             else if (result !== OK) {
                 creep.say(`取出 ${result}`)
@@ -99,6 +106,11 @@ export default {
             const amount: number = creep.store.getUsedCapacity(task.resourceType)
 
             const structure: AnyStructure = Game.getObjectById(task.targetId)
+            if (!structure) {
+                creep.room.deleteCurrentCenterTask()
+                return
+            }
+            
             const result = creep.transfer(structure, task.resourceType)
             // 如果转移完成则增加任务进度
             if (result === OK) creep.room.handleTask(amount)

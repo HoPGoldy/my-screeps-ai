@@ -89,8 +89,15 @@ class RoomExtension extends Room {
     public handleTask(transferAmount: number): void {
         this.memory.centerTransferTasks[0].amount -= transferAmount
         if (this.memory.centerTransferTasks[0].amount <= 0) {
-            this.memory.centerTransferTasks.shift()
+            this.deleteCurrentCenterTask()
         }
+    }
+
+    /**
+     * 移除当前中央运输任务
+     */
+    public deleteCurrentCenterTask(): void {
+        this.memory.centerTransferTasks.shift()
     }
 
     /**

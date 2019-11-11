@@ -152,6 +152,7 @@ interface Room {
     setFactoryTarget(resourceType: ResourceConstant): string
     getFactoryTarget(): ResourceConstant | null
     clearFactoryTarget(): string
+    deleteCurrentCenterTask(): void
 }
 
 /**
