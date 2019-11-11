@@ -13,7 +13,7 @@ npm install
 **添加密钥**
 
 在根目录下新建 `secret.js` 文件，并填入以下内容，记得修改邮箱、密码及要复制到的文件夹路径。
-*`copyPath`是用于向私服的文件夹复制代码，没有需要则可以填空字符串。*
+*`copyPath`是用于向本地文件夹复制代码，没有需要可以填空字符串。*
 
 ```js
 module.exports = {
@@ -35,14 +35,24 @@ module.exports = {
 npm start
 ```
 
+向 copyPath 复制代码
+
+```
+npm run local
+```
+
 启动开发环境 (只会执行 ts 编译, 不提交代码)
 
 ```
 npm run dev
 ```
 
-拉取线上代码
+拉取线上代码 (只能拉取 `.js` 文件)
 
 ```
 npm run pull
 ```
+
+## 设计
+
+访问 [/doc](https://github.com/HoPGoldy/my-screeps-ai/tree/master/doc) 来查看设计细节。
