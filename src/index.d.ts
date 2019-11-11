@@ -23,7 +23,6 @@ declare module NodeJS {
     interface Global {
         // 是否已经挂载拓展
         hasExtension: boolean
-        createHelp(functionInfo: IFunctionDescribe[]): string
     }
 }
 

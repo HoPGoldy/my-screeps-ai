@@ -1,4 +1,5 @@
 import { creepConfigs } from './config'
+import { resourcesHelp } from './setting'
 
 // 挂载全局拓展
 export default function () {
@@ -66,6 +67,12 @@ const funcAlias = [
             }
             return missCreep.length > 0 ? `发现缺失的 creep 如下: ${missCreep.join(', ')}。 已加入生成队列` : '未发现缺失 creep, 干得好!'
         } 
+    },
+    {
+        alias: 'resource',
+        exec: function(): string {
+            return resourcesHelp
+        }
     }
 ]
 
@@ -78,30 +85,5 @@ export const globalExtension = {
      */
     get: function(id: string): any {
         return Game.getObjectById(id)
-    },
-    
-    /**
-     * 给函数的显示添加一点小细节
-     * 只会用在各种 help 方法中
-     * 
-     * @param functionInfo 函数的信息
-     */
-    createHelp: function(functionInfo: IFunctionDescribe[]): string {
-        const functionList = functionInfo.map(func => {
-            // 标题
-            const title = `<text style="color: #6b9955">${func.title}</text>`
-            // 参数介绍
-            const param = func.params ? 
-                func.params.map(param => `  - <text style="color: #8dc5e3">${param.name}</text>: <text style="color: #6b9955">${param.desc}</text>`).join('\n') : ''
-            // 函数示例中的参数
-            const paramInFunc = func.params ? 
-                func.params.map(param => `<text style="color: #8dc5e3">${param.name}</text>`).join(', ') : ''
-            // 函数示例
-            const functionName = `<text style="color: #c5c599">${func.functionName}</text>(${paramInFunc})`
-
-            return func.params ? `${title}\n${param}\n${functionName}\n` : `${title}\n${functionName}\n`
-        })
-        
-        return functionList.join('\n')
     }
 }

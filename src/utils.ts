@@ -104,3 +104,38 @@ export function checkCPU(func: Function): void {
     func()
     const cost2 = Game.cpu.getUsed()
 }
+
+/**
+ * 给指定文本添加颜色
+ * 
+ * @param content 要添加颜色的文本
+ * @param color 要添加的颜色
+ */
+export function colorful(content: string, color: string): string {
+    return `<text style="color: ${color}">${content}</text>`
+}
+
+/**
+ * 给函数的显示添加一点小细节
+ * 只会用在各种 help 方法中
+ * 
+ * @param functionInfo 函数的信息
+ */
+export function createHelp(functionInfo: IFunctionDescribe[]): string {
+    const functionList = functionInfo.map(func => {
+        // 标题
+        const title = colorful(func.title, '#6b9955')
+        // 参数介绍
+        const param = func.params ? 
+            func.params.map(param => `  - ${colorful(param.name, '#8dc5e3')}: ${colorful(param.desc, '#6b9955')}`).join('\n') : ''
+        // 函数示例中的参数
+        const paramInFunc = func.params ? 
+            func.params.map(param => colorful(param.name, '#8dc5e3')).join(', ') : ''
+        // 函数示例
+        const functionName = `${colorful(func.functionName, '#c5c599')}(${paramInFunc})`
+
+        return func.params ? `${title}\n${param}\n${functionName}\n` : `${title}\n${functionName}\n`
+    })
+    
+    return functionList.join('\n')
+}

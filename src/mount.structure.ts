@@ -1,5 +1,6 @@
 import { creepConfigs } from './config'
 import { bodyConfigs, creepDefaultMemory } from './setting'
+import { createHelp } from './utils'
 
 // 挂载拓展到建筑原型
 export default function () {
@@ -295,7 +296,7 @@ class LinkExtension extends StructureLink {
      * 用户操作: 帮助
      */
     public help(): string {
-        return global.createHelp([
+        return createHelp([
             {
                 title: '注册为源 link',
                 functionName: 'asSource'

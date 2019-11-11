@@ -1,3 +1,5 @@
+import { createHelp } from './utils'
+
 // 挂载拓展到 Room 原型
 export default function () {
     _.assign(Room.prototype, RoomExtension.prototype)
@@ -19,14 +21,14 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 用户操作：添加中央运输任务
+     * 用户操作：addTask - 添加中央运输任务
      * 
      * @param targetId 资源存放建筑 id
      * @param sourceId 资源来源建筑 id
      * @param resourceType 要转移的资源类型
      * @param amount 资源数量
      */
-    public addct(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number) {
+    public ctadd(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number) {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
         this.addTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
@@ -102,11 +104,26 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作：setFactoryTarget
+     */
+    public fset(resourceType: ResourceConstant): string { return this.setFactoryTarget(resourceType) }
+
+    /**
      * 读取房间内的工厂目标
      * 一般由本房间的工厂调用
      */
     public getFactoryTarget(): ResourceConstant | null {
         return this.memory.factoryTarget || null
+    }
+
+    /**
+     * 用户操作：getFactoryTarget
+     */
+    public fshow(): string {
+        const resource = this.getFactoryTarget()
+        return resource ? 
+        `${this.name} 工厂目标为 ${resource}` :
+        `${this.name} 工厂目标正处于空闲状态`
     }
 
     /**
@@ -116,6 +133,11 @@ class RoomExtension extends Room {
         delete this.memory.factoryTarget
         return `${this.name} 工厂目标已清除`
     }
+
+    /**
+     * 用户操作：clearFactoryTarget
+     */
+    public fclear(): string { return this.clearFactoryTarget() }
 
     /**
      * 添加终端矿物监控
@@ -131,6 +153,11 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作：addTerminalTask
+     */
+    public tadd(resourceType: ResourceConstant, amount: number): string { return this.addTerminalTask(resourceType, amount) }
+
+    /**
      * 移除终端矿物监控
      * 
      * @param resourceType 要停止监控的资源类型
@@ -141,6 +168,11 @@ class RoomExtension extends Room {
         delete this.memory.terminalTasks[resourceType]
         return `已移除，当前监听任务如下: \n ${this.showTerminalTask()}`
     }
+
+    /**
+     * 用户操作：removeTerminalTask
+     */
+    public tremove(resourceType: ResourceConstant): string { return this.removeTerminalTask(resourceType) }
 
     /**
      * 显示所有终端监听任务
@@ -156,10 +188,15 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作：showTerminalTask
+     */
+    public tshow(): string { return this.showTerminalTask() }
+
+    /**
      * 房间操作帮助
      */
     public help(): string {
-        return global.createHelp([
+        return createHelp([
             {
                 title: '添加中央运输任务',
                 params: [
@@ -168,22 +205,22 @@ class RoomExtension extends Room {
                     { name: 'resourceType', desc: '工厂要生产的资源类型' },
                     { name: 'amount', desc: '工厂要生产的资源类型' },
                 ],
-                functionName: 'addct'
+                functionName: 'ctadd'
             },
             {
                 title: '设置房间内工厂目标',
                 params: [
                     { name: 'resourceType', desc: '工厂要生产的资源类型' }
                 ],
-                functionName: 'setFactoryTarget'
+                functionName: 'fset'
             },
             {
                 title: '获取房间内工厂目标',
-                functionName: 'getFactoryTarget'
+                functionName: 'fshow'
             },
             {
                 title: '清空房间内工厂目标',
-                functionName: 'clearFactoryTarget'
+                functionName: 'fclear'
             },
             {
                 title: '添加终端矿物监控',
@@ -191,18 +228,18 @@ class RoomExtension extends Room {
                     { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
                     { name: 'amount', desc: '指定类型的期望数量' }
                 ],
-                functionName: 'addTerminalTask'
+                functionName: 'tadd'
             },
             {
                 title: '移除终端矿物监控',
                 params: [
                     { name: 'resourceType', desc: '要移除监控的资源类型' }
                 ],
-                functionName: 'removeTerminalTask'
+                functionName: 'tremove'
             },
             {
                 title: '显示所有终端监听任务',
-                functionName: 'showTerminalTask'
+                functionName: 'tshow'
             },
         ])
     }

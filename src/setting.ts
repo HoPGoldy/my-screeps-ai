@@ -1,3 +1,5 @@
+import { colorful } from './utils'
+
 /**
  * 设置项
  * 本文件和 config.ts 的区别在于，本文件中的内容一般情况下不需要进行修改。
@@ -164,3 +166,17 @@ export const creepDefaultMemory: CreepMemory = {
     working: false,
     path: []
 }
+
+function createConst(name: string, constant: string): string {
+    return `${colorful(name, '#6b9955')} ${colorful(constant, '#8dc5e3')}`
+}
+
+export const resourcesHelp: string = `
+${createConst('O', 'RESOURCE_OXYGEN')} ${createConst('H', 'RESOURCE_HYDROGEN')} ${createConst('U', 'RESOURCE_UTRIUM')} ${createConst('X', 'RESOURCE_CATALYST')}
+${createConst('压缩O', 'RESOURCE_OXIDANT')} ${createConst('压缩H', 'RESOURCE_REDUCTANT')} ${createConst('压缩U', 'RESOURCE_UTRIUM_BAR')} ${createConst('压缩X', 'RESOURCE_PURIFIER')}
+${createConst('L', 'RESOURCE_LEMERGIUM')} ${createConst('K', 'RESOURCE_KEANIUM')} ${createConst('Z', 'RESOURCE_ZYNTHIUM')} ${createConst('G', 'RESOURCE_GHODIUM')} 
+${createConst('压缩L', 'RESOURCE_LEMERGIUM_BAR')} ${createConst('压缩K', 'RESOURCE_KEANIUM_BAR')} ${createConst('压缩Z', 'RESOURCE_ZYNTHIUM_BAR')} ${createConst('压缩G', 'RESOURCE_GHODIUM_MELT')}
+
+${createConst('TOUGH强化', 'RESOURCE_CATALYZED_GHODIUM_ALKALIDE')} ${createConst('RANGE_ATTACK强化', 'RESOURCE_CATALYZED_KEANIUM_ALKALIDE')}
+${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')} ${createConst('HEAL强化', 'RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE')}
+`
