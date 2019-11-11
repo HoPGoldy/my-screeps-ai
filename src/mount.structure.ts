@@ -588,11 +588,13 @@ class TerminalExtension extends StructureTerminal {
         // 计算路费
         const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就继续等
-        if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) return false
+        if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
+            this.getEnergy(cost)
+            return false
+        }
 
         // 交易
         const dealResult = Game.market.deal(targetOrder.id, amount, this.room.name)
-
         // 检查返回值
         if (dealResult === OK) {
             console.log(`${this.room.name} 交易成功! 资源: ${targetOrder.resourceType} 类型: ${targetOrder.type} 数量: ${amount} 单价: ${targetOrder.price}`)
@@ -723,7 +725,7 @@ class TerminalExtension extends StructureTerminal {
         // 卖单的价格不能太高
         if (targetOrder.type == ORDER_SELL) {
             // console.log(`${targetOrder.price} <= ${avgPrice * 1.5}`)
-            if (targetOrder.price <= avgPrice * 1.5) return true
+            if (targetOrder.price <= avgPrice * 1.8) return true
         }
         // 买单的价格不能太低
         else {
