@@ -44,14 +44,6 @@ interface StructureSpawn {
     clearTask(): void
 }
 
-/**
- * Terminal 拓展
- */
-interface StructureTerminal {
-    commandMarket(config: IMarketTask): boolean
-    commandTransfer(configs: IRoomTransferTask[]): boolean
-}
-
 // Factory 拓展
 interface StructureFactory {
     make(resourceType: ResourceConstant): void
@@ -288,52 +280,6 @@ interface ILinkConfig {
  */
 interface ILinkConfigs {
     [linkId: string]: ILinkConfig
-}
-
-/**
- * 终端的发送任务
- * 发送任务是指 将指定资源转移到其他房间的“持续性”任务
- */
-interface IRoomTransferTask {
-    // 要将资源转移到的房间名
-    targetRoom: string
-    // 要转移的资源类型
-    type: ResourceConstant
-    // 一次转移的数量
-    amount: number
-    // 保存在本地终端的该资源数量, 资源只有在 (总量 - amount >= holdAmount) 时才会转移
-    holdAmount: number
-}
-
-/**
- * 终端的交易任务
- */
-interface IMarketTask {
-    // 值为 sell/bug 表示任务是卖出还是买入
-    type: string
-    // 要交易的资源类型
-    resourceType: MarketResourceConstant
-    // 一次交易的数量
-    amount: number
-    // 保存在本地终端的该资源数量, 资源只有在 (总量 - amount >= holdAmount) 时才会进行交易
-    holdAmount: number
-}
-
-/**
- * 终端的配置项
- */
-interface ITerminalConfig {
-    // 该终端在市场中进行搜索的"持续性"任务
-    market?: IMarketTask
-    // 要和其他房间进行资源转移的任务列表
-    transferTasks?: IRoomTransferTask[]
-}
-
-/**
- * terminal 配置项列表
- */
-interface ITerminalConfigs {
-    [roomName: string]: ITerminalConfig
 }
 
 /**
