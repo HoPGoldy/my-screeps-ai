@@ -180,3 +180,13 @@ ${createConst('压缩L', 'RESOURCE_LEMERGIUM_BAR')} ${createConst('压缩K', 'RE
 ${createConst('TOUGH强化', 'RESOURCE_CATALYZED_GHODIUM_ALKALIDE')} ${createConst('RANGE_ATTACK强化', 'RESOURCE_CATALYZED_KEANIUM_ALKALIDE')}
 ${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')} ${createConst('HEAL强化', 'RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE')}
 `
+
+// 房间建筑维修需要的设置
+export const repairSetting = {
+    // 普通建筑维修的检查间隔
+    checkInterval: 10,
+    // 墙壁维修的检查间隔
+    wallCheckInterval: 5,
+    // 墙壁的关注时间
+    focusTime: 100
+}

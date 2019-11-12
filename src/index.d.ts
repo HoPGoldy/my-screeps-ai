@@ -195,6 +195,12 @@ interface RoomMemory {
 
     // 该房间是否暂时不再需要进行能量填充
     allStructureFillEnergy: boolean
+
+    // 当前被 repairer 或 tower 关注的墙
+    focusWall: {
+        id: string
+        endTime: number
+    }
 }
 
 interface FlagMemory {

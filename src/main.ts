@@ -7,7 +7,7 @@ module.exports.loop = function (): void {
     // 挂载所有拓展
     mountWork()
 
-    //数量控制
+    // 数量控制
     creepNumberController()
 
     // let cost1 = Game.cpu.getUsed()

@@ -1,5 +1,6 @@
 import { getPath } from './utils'
 import { creepConfigs } from './config'
+import { repairSetting } from './setting'
 
 // 挂载拓展到 Creep 原型
 export default function () {
@@ -301,58 +302,42 @@ class CreepExtension extends Creep {
     /**
      * 填充防御性建筑
      * 包括 wall 和 rempart
-     * 
-     * @param expectHits 期望生命值 (大于该生命值的建筑将不会被继续填充)
      */
-    public fillDefenseStructure(expectHits: number=5000): boolean {
-        // 检查自己内存里有没有期望生命值
-        if (!this.memory.expectHits) this.memory.expectHits = expectHits
+    public fillDefenseStructure(): boolean {
+        const focusWall = this.room.memory.focusWall
+        let targetWall: StructureWall | StructureRampart = null
+        // 该属性不存在 或者 当前时间已经大于关注时间 就刷新
+        if (!focusWall || (focusWall && Game.time >= focusWall.endTime)) {
+            // 获取所有没填满的墙
+            const walls = <(StructureWall | StructureRampart)[]>this.room.find(FIND_STRUCTURES, {
+                filter: s => (s.hits < s.hitsMax) && 
+                    (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART)
+            })
+            // 没有目标就啥都不干
+            if (walls.length <= 0) return false
 
-        // 先筛选出来所有的防御建筑
-        const defenseStructures: Structure[] = this.room.find(FIND_STRUCTURES, {
-            filter: s => (s.hits < s.hitsMax) && 
-                (s.structureType == STRUCTURE_WALL ||
-                s.structureType == STRUCTURE_RAMPART)
-        })
-        if (defenseStructures.length <= 0) {
-            this.say('找不到墙！')
+            // 找到血量最小的墙
+            targetWall = walls.sort((a, b) => a.hits - b.hits)[0]
+            console.log(`${this.room.name} 血量最少的墙为 ${targetWall}`)
+
+            // 将其缓存在内存里
+            this.room.memory.focusWall = {
+                id: targetWall.id,
+                endTime: Game.time + repairSetting.focusTime
+            }
+        }
+
+        // 获取墙壁
+        if (!targetWall) Game.getObjectById(focusWall.id)
+        // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
+        if (!targetWall) {
+            delete this.room.memory.focusWall
             return false
         }
 
-        //获取缓存中的墙
-        let target: Structure = Game.getObjectById(this.memory.fillWallId)
-        // 如果有血量只有1的墙的话优先处理 并将期望重设为初始值
-        const newDefenseStructures: Structure[] = _.filter(defenseStructures, s => s.hits == 1)
-        if (newDefenseStructures.length > 0) {
-            this.say('发现新墙，来了')
-            target = newDefenseStructures[0]
-            this.memory.fillWallId = target.id
-            this.memory.expectHits = expectHits
-        }
-
-        if (!target || target.hits > this.memory.expectHits) {
-            // 再检查哪个墙的血量不够
-            let targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
-            while (targets.length <= 0) {
-                // 如果当前期望血量下没有满足添加的墙时，提高期望再次查找 
-                this.memory.expectHits += expectHits
-                targets = _.filter(defenseStructures, s => s.hits < this.memory.expectHits)
-
-                // 做一个兜底 防止死循环
-                if (this.memory.expectHits >= WALL_HITS_MAX) break
-            }
-            
-            // 还是没找到墙的话就返回吧
-            if (targets.length <= 0) return false
-            else {
-                target = targets[0]
-                this.memory.fillWallId = target.id
-            }
-        }
-        
-        // 填充结构
-        if(this.repair(target) == ERR_NOT_IN_RANGE) {
-            this.moveTo(target, getPath('repair'))
+        // 填充墙壁
+        if(this.repair(targetWall) == ERR_NOT_IN_RANGE) {
+            this.moveTo(targetWall, getPath('repair'))
         }
         return true
     }

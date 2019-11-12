@@ -128,10 +128,17 @@ export default {
     repairer: (spawnName: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
-            // 去维修
-            if (!creep.room._towerShoulderRepair && creep.repairStructure()) {}
-            // 没得修就修墙
-            else if (creep.fillDefenseStructure()) {}
+            // 房间内没有 tower 负责维修建筑
+            if (!creep.room._towerShoulderRepair) {
+                // 去维修
+                if (creep.repairStructure()) {}
+                // 没得修就修墙
+                else if (creep.fillDefenseStructure()) {}
+            }
+            else {
+                // 房间内有 tower 负责维修就专心填塔
+                creep.fillTower()
+            }
         },
         switch: creep => creep.updateState('📌 修复'),
         spawn: spawnName,
