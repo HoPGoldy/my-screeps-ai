@@ -28,15 +28,16 @@ class RoomExtension extends Room {
      * @param resourceType 要转移的资源类型
      * @param amount 资源数量
      */
-    public ctadd(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number) {
+    public ctadd(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number): string {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
-        this.addTask({
+        const addResult = this.addTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
             targetId,
             sourceId,
             resourceType,
             amount
         })
+        return `已向 ${this.name} 中央任务队列推送任务，当前排队位置: ${addResult}`
     }
 
     /**

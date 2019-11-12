@@ -1,6 +1,8 @@
 # my-screeps-ai
 
-适用于游戏《[screeps](https://screeps.com/a/#!/map)》的半自动 ai
+适用于游戏《[screeps](https://screeps.com/a/#!/map)》的半自动 ai。
+
+注意，本项目尚未完成，后续可能会进行大范围的代码更改，你可以通过本项目了解 screeps 相关的操作以及如何将 grunt 和 typescript 应用在 screeps 里（本项目包含完整的中文注释），但是如果你并不了解该项目的话，不要直接将本项目应用在实际游戏中。
 
 ## 准备
 
