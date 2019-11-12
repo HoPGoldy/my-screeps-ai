@@ -334,7 +334,7 @@ class CreepExtension extends Creep {
         }
 
         // 获取墙壁
-        if (!targetWall) Game.getObjectById(focusWall.id)
+        if (!targetWall) targetWall = Game.getObjectById(focusWall.id)
         // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
         if (!targetWall) {
             delete this.room.memory.focusWall

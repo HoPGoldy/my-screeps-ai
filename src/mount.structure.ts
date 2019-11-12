@@ -171,6 +171,9 @@ class TowerExtension extends StructureTower {
      */
     public work(): void {
         if (this.store[RESOURCE_ENERGY] > 10) {
+            // 告诉房间内的 repairer 不用再维修了
+            if (!this.room._towerShoulderRepair) this.room._towerShoulderRepair = true
+
             // 先攻击敌人
             if (this.commandAttack()) { }
             // 找不到敌人再维修建筑
@@ -224,8 +227,6 @@ class TowerExtension extends StructureTower {
         // 还没到检查时间就跳过
         if (Game.time % repairSetting.checkInterval) return false
 
-        // 告诉房间内的 repairer 不用再维修了
-        if (!this.room._towerShoulderRepair) this.room._towerShoulderRepair = true
 
         // 找到受损建筑
         // 没有缓存就进行搜索
@@ -260,8 +261,8 @@ class TowerExtension extends StructureTower {
      * @returns 要刷墙返回 true，否则返回 false
      */
     private commandFillWall(): boolean {
-        // 还没到检查时间就跳过
-        if (Game.time % repairSetting.wallCheckInterval) return false
+        // 还没到检查时间或者能量不太够就跳过
+        if ((Game.time % repairSetting.wallCheckInterval) || this.store[RESOURCE_ENERGY] <= repairSetting.energyLimit) return false
 
         const focusWall = this.room.memory.focusWall
         let targetWall: StructureWall | StructureRampart = null
@@ -277,7 +278,6 @@ class TowerExtension extends StructureTower {
 
             // 找到血量最小的墙
             targetWall = walls.sort((a, b) => a.hits - b.hits)[0]
-            console.log(`[tower] ${this.room.name} 血量最少的墙为 ${targetWall}`)
 
             // 将其缓存在内存里
             this.room.memory.focusWall = {
@@ -287,7 +287,7 @@ class TowerExtension extends StructureTower {
         }
 
         // 获取墙壁
-        if (!targetWall) Game.getObjectById(focusWall.id)
+        if (!targetWall) targetWall = Game.getObjectById(focusWall.id)
         // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
         if (!targetWall) {
             delete this.room.memory.focusWall
