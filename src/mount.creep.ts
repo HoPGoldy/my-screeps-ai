@@ -263,7 +263,13 @@ class CreepExtension extends Creep {
         if (!target) return false
         
         // 建设
-        if (this.build(target) == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
+        const buildResult = this.build(target)
+        if (buildResult == OK) {
+            // 如果修好的是 rempart 的话就移除墙壁缓存
+            // 让维修单位可以快速发现新 rempart
+            if (target.structureType == STRUCTURE_RAMPART) delete this.room.memory.focusWall
+        }
+        else if (buildResult == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
         return true
     }
 
