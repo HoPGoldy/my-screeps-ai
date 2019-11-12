@@ -135,6 +135,8 @@ interface CreepMemory {
 interface Room {
     // 已拥有的房间特有，tower 负责维护
     _enemys: Creep[]
+    // 需要维修的建筑，tower 负责维护，为 1 说明建筑均良好
+    _damagedStructure: AnyStructure | 1
     // 外矿房间特有，外矿单位维护
     // 一旦该字段为 true 就告诉出生点暂时禁止自己重生直到 1500 tick 之后
     _hasEnemy: boolean

@@ -1,5 +1,5 @@
 import { creepConfigs } from './config'
-import { bodyConfigs, creepDefaultMemory } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting } from './setting'
 import { createHelp } from './utils'
 
 // 挂载拓展到建筑原型
@@ -170,13 +170,13 @@ class TowerExtension extends StructureTower {
      * 主要任务
      */
     public work(): void {
-        // this.needEnergy()
-
         if (this.store[RESOURCE_ENERGY] > 10) {
             // 先攻击敌人
             if (this.commandAttack()) { }
             // 找不到敌人再维修建筑
             else if (this.commandRepair()) { }
+            // 找不到要维修的建筑就刷墙
+            else if (this.commandFillWall()) { }
         }
     }
 
@@ -202,7 +202,7 @@ class TowerExtension extends StructureTower {
      * 
      * @returns 有敌人返回 true，没敌人返回 false
      */
-    public commandAttack(): boolean {
+    private commandAttack(): boolean {
         // 使用缓存
         if (!this.room._enemys) this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
         // 从缓存中读取
@@ -218,20 +218,85 @@ class TowerExtension extends StructureTower {
      * 维修指令
      * 维修受损的建筑，不维修 WALL 和 RAMPART
      * 
-     * @returns 进行维修返回true，没有维修返回false
+     * @returns 进行维修返回 true，没有维修返回 false
      */
-    public commandRepair(): boolean {
+    private commandRepair(): boolean {
+        // 还没到检查时间就跳过
+        if (Game.time % repairSetting.checkInterval) return false
+
+        // 告诉房间内的 repairer 不用再维修了
         if (!this.room._towerShoulderRepair) this.room._towerShoulderRepair = true
-        // 找到最近的受损建筑
-        const closestDamagedStructure: AnyStructure = this.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: s => s.hits < s.hitsMax && s.structureType != STRUCTURE_RAMPART && s.structureType != STRUCTURE_WALL
-        })
-        // 如果有的话则进行修复
-        if(closestDamagedStructure) {
-            this.repair(closestDamagedStructure)
+
+        // 找到受损建筑
+        // 没有缓存就进行搜索
+        if (!this.room._damagedStructure) {
+            const damagedStructures = <AnyStructure[]>this.room.find(FIND_STRUCTURES, {
+                filter: s => s.hits < s.hitsMax && s.structureType != STRUCTURE_RAMPART && s.structureType != STRUCTURE_WALL
+            })
+
+            // 找到最近的受损建筑并更新缓存
+            if (damagedStructures.length > 0) {
+                this.room._damagedStructure = this.pos.findClosestByRange(damagedStructures)
+            }
+            else {
+                this.room._damagedStructure = 1
+                return false
+            }
+        }
+        
+        // 代码能执行到这里就说明缓存肯定不为空
+        // 如果是 1 说明都不需要维修
+        if (this.room._damagedStructure != 1) {
+            this.repair(this.room._damagedStructure)
             return true
         }
         return false
+    }
+
+    /**
+     * 刷墙指令
+     * 维修 WALL 和 RAMPART
+     * 
+     * @returns 要刷墙返回 true，否则返回 false
+     */
+    private commandFillWall(): boolean {
+        // 还没到检查时间就跳过
+        if (Game.time % repairSetting.wallCheckInterval) return false
+
+        const focusWall = this.room.memory.focusWall
+        let targetWall: StructureWall | StructureRampart = null
+        // 该属性不存在 或者 当前时间已经大于关注时间 就刷新
+        if (!focusWall || (focusWall && Game.time >= focusWall.endTime)) {
+            // 获取所有没填满的墙
+            const walls = <(StructureWall | StructureRampart)[]>this.room.find(FIND_STRUCTURES, {
+                filter: s => (s.hits < s.hitsMax) && 
+                    (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART)
+            })
+            // 没有目标就啥都不干
+            if (walls.length <= 0) return false
+
+            // 找到血量最小的墙
+            targetWall = walls.sort((a, b) => a.hits - b.hits)[0]
+            console.log(`[tower] ${this.room.name} 血量最少的墙为 ${targetWall}`)
+
+            // 将其缓存在内存里
+            this.room.memory.focusWall = {
+                id: targetWall.id,
+                endTime: Game.time + repairSetting.focusTime
+            }
+        }
+
+        // 获取墙壁
+        if (!targetWall) Game.getObjectById(focusWall.id)
+        // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
+        if (!targetWall) {
+            delete this.room.memory.focusWall
+            return false
+        }
+
+        // 填充墙壁
+        this.repair(targetWall)
+        return true
     }
 }
 
