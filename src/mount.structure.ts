@@ -700,7 +700,7 @@ class TerminalExtension extends StructureTerminal {
      * 检查订单单价是否合适
      * 防止投机玩家的过低或过高订单
      * 
-     * @param targetOrder 目标订单的单价
+     * @param targetOrder 目标订单
      */
     private checkPrice(targetOrder: Order): boolean {
         const history = Game.market.getHistory(<ResourceConstant>targetOrder.resourceType)
