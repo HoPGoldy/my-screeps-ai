@@ -137,14 +137,18 @@ interface Room {
     _enemys: Creep[]
     // 需要维修的建筑，tower 负责维护，为 1 说明建筑均良好
     _damagedStructure: AnyStructure | 1
+    // 该 tick 是否已经有 tower 刷过墙了
+    _hasFillWall: boolean
     // 外矿房间特有，外矿单位维护
     // 一旦该字段为 true 就告诉出生点暂时禁止自己重生直到 1500 tick 之后
     _hasEnemy: boolean
     // 当该字段为 true 时, repairer 角色将专心刷墙
     // 由房间中的 tower 负责更新
     _towerShoulderRepair: boolean
-    // 该房间需要填充能量的建筑数组
-    _needFillEnergyStructures: AnyOwnedStructure[]
+
+    /**
+     * 下述方法在 @see /src/mount.room.ts 中定义
+     */
     addTask(task: ITransferTask): number
     hasTask(submitId: string): boolean
     hangTask(): number

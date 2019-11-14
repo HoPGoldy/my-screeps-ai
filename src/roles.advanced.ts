@@ -24,7 +24,7 @@ export default {
                 // 获取有需求的建筑
                 target = <StructureSpawn | StructureExtension | StructureTower>creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
                     // extension 中的能量没填满 或者 tower 中的能量低于 900
-                    // tower 不是能量不满就填充的原因是因为 tower 现在负责刷钱，会频繁消耗能量
+                    // tower 不是能量不满就填充的原因是因为 tower 现在负责刷墙，会频繁消耗能量
                     filter: s => (s.structureType == STRUCTURE_EXTENSION && (s.store.getFreeCapacity(RESOURCE_ENERGY) > 0)) ||
                         (s.structureType == STRUCTURE_TOWER && (s.store.getFreeCapacity(RESOURCE_ENERGY) > 100))
                 })

@@ -9,7 +9,6 @@ export default function () {
     _.assign(StructureLink.prototype, LinkExtension.prototype)
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
-    _.assign(StructureExtension.prototype, ExtensionExtension.prototype)
 }
 
 /**
@@ -184,22 +183,6 @@ class TowerExtension extends StructureTower {
     }
 
     /**
-     * 检查自己的能量是否足够
-     * 不够的话会通知 transfer 转移能量
-     */
-    private needEnergy(): boolean {
-        // 检查自己是否需要填充能量
-        const amount = this.store.getFreeCapacity(RESOURCE_ENERGY)
-        if (amount != 0) {
-            // console.log(`${this} 需要填充能量!`)
-            if (!this.room._needFillEnergyStructures) this.room._needFillEnergyStructures = []
-            this.room._needFillEnergyStructures.push(this)
-            return true
-        }
-        return false
-    }
-
-    /**
      * 攻击指令
      * 检查本房间是否有敌人，有的话则攻击
      * 
@@ -261,8 +244,12 @@ class TowerExtension extends StructureTower {
      * @returns 要刷墙返回 true，否则返回 false
      */
     private commandFillWall(): boolean {
-        // 还没到检查时间或者能量不太够就跳过
-        if ((Game.time % repairSetting.wallCheckInterval) || this.store[RESOURCE_ENERGY] <= repairSetting.energyLimit) return false
+        // 还没到检查时间跳过
+        if (Game.time % repairSetting.wallCheckInterval) return false
+        // 如果有 tower 已经刷过墙了就跳过
+        if (this.room._hasFillWall) return false
+        // 能量不够跳过
+        if (this.store[RESOURCE_ENERGY] <= repairSetting.energyLimit) return false
 
         const focusWall = this.room.memory.focusWall
         let targetWall: StructureWall | StructureRampart = null
@@ -296,6 +283,8 @@ class TowerExtension extends StructureTower {
 
         // 填充墙壁
         this.repair(targetWall)
+        // 标记一下防止其他 tower 继续刷墙
+        this.room._hasFillWall = true
         return true
     }
 }
@@ -750,31 +739,5 @@ class TerminalExtension extends StructureTerminal {
             resourceType: RESOURCE_ENERGY,
             amount
         })
-    }
-}
-
-/**
- * extension 拓展
- */
-class ExtensionExtension extends StructureExtension {
-    public work(): void {
-        // this.needEnergy()
-    }
-
-    /**
-     * 检查自己的能量是否足够
-     * 不够的话会通知 transfer 转移能量
-     */
-    private needEnergy(): boolean {
-        // 如果上了锁或者房间内已经有了需要填充能量的建筑，就跳过检查
-        if (this.room.memory.allStructureFillEnergy) return
-
-        // 检查自己是否需要填充能量
-        const amount = this.store.getFreeCapacity(RESOURCE_ENERGY)
-        if (amount != 0) {
-            // console.log(`${this} 需要填充能量!`)
-            if (!this.room._needFillEnergyStructures) this.room._needFillEnergyStructures = []
-            this.room._needFillEnergyStructures.push(this)
-        }
     }
 }
