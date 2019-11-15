@@ -41,6 +41,50 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作：将能量从 storage 转移至 terminal 里
+     * 
+     * @param amount 要转移的能量数量, 默认 200k
+     */
+    public pute(amount: number = 200000): string {
+        const addResult = this.addTask({
+            submitId: this.memory.centerTransferTasks.length.toString(),
+            targetId: this.terminal.id,
+            sourceId: this.storage.id,
+            resourceType: RESOURCE_ENERGY,
+            amount
+        })
+        return `已向 ${this.name} 中央任务队列推送能量转移任务，storage > terminal, 数量 ${amount}，当前排队位置: ${addResult}`
+    }
+
+    /**
+     * 用户操作：向指定房间发送能量
+     * 
+     * @param roomName 目标房间名
+     * @param amount 要发送的数量, 默认 200k
+     */
+    public givee(roomName: string, amount: number = 200000): string {
+        const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
+        const sendResult = this.terminal.send(RESOURCE_ENERGY, amount - cost, roomName)
+        return `向 ${roomName} 转移能量 ${amount - cost} 消耗运费 ${cost} 返回值 ${sendResult}`
+    }
+
+    /**
+     * 用户操作：将能量从 terminal 转移至 storage 里
+     * 
+     * @param amount 要转移的能量数量, 默认200k
+     */
+    public gete(amount: number = 200000): string {
+        const addResult = this.addTask({
+            submitId: this.memory.centerTransferTasks.length.toString(),
+            targetId: this.storage.id,
+            sourceId: this.terminal.id,
+            resourceType: RESOURCE_ENERGY,
+            amount
+        })
+        return `已向 ${this.name} 中央任务队列推送能量转移任务，terminal > storage, 数量 ${amount}，当前排队位置: ${addResult}`
+    }
+
+    /**
      * 每个建筑同时只能提交一个任务
      * 
      * @param submitId 提交者的 id
@@ -201,7 +245,7 @@ class RoomExtension extends Room {
     public tshow(): string { return this.showTerminalTask() }
 
     /**
-     * 房间操作帮助
+     * 用户操作：房间操作帮助
      */
     public help(): string {
         return createHelp([
@@ -214,6 +258,28 @@ class RoomExtension extends Room {
                     { name: 'amount', desc: '工厂要生产的资源类型' },
                 ],
                 functionName: 'ctadd'
+            },
+            {
+                title: '将能量从 storage 转移至 terminal 里',
+                params: [
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 200k' }
+                ],
+                functionName: 'pute'
+            },
+            {
+                title: '向指定房间发送能量',
+                params: [
+                    { name: 'roomName', desc: '要发送到的房间名' },
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 200k' }
+                ],
+                functionName: 'givee'
+            },
+            {
+                title: '将能量从 terminal 转移至 storage 里',
+                params: [
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 200k' }
+                ],
+                functionName: 'gete'
             },
             {
                 title: '设置房间内工厂目标',
