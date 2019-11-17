@@ -71,6 +71,22 @@ export const bodyConfigs: IBodyConfigs = {
     },
 
     /**
+     * 转移单位
+     * 负责转移中央物流的 creep
+     */
+    centerTransfer: {
+        1: [ CARRY, CARRY, MOVE ],
+        2: [ CARRY, CARRY, CARRY, CARRY, MOVE ],
+        3: [ CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
+        4: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
+        5: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
+        6: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
+        7: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
+        8: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ]
+    },
+
+
+    /**
      * 声明单位
      * 包含 CLAIM 的 creep
      */
@@ -192,9 +208,9 @@ export const repairSetting = {
     // 在 tower 的能量高于该值时才会刷墙
     energyLimit: 600,
     // 普通建筑维修的检查间隔
-    checkInterval: 10,
+    checkInterval: 8,
     // 墙壁维修的检查间隔
-    wallCheckInterval: 4,
+    wallCheckInterval: 3,
     // 墙壁的关注时间
     focusTime: 100
 }

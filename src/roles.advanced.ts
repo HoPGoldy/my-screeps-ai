@@ -110,6 +110,6 @@ export default {
         },
         switch: creep => creep.store.getUsedCapacity() > 0,
         spawn: spawnName,
-        bodyType: 'transfer'
+        bodyType: 'centerTransfer'
     })
 }
