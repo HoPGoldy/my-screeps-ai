@@ -210,7 +210,6 @@ class TowerExtension extends StructureTower {
         // 还没到检查时间就跳过
         if (Game.time % repairSetting.checkInterval) return false
 
-
         // 找到受损建筑
         // 没有缓存就进行搜索
         if (!this.room._damagedStructure) {
@@ -232,6 +231,8 @@ class TowerExtension extends StructureTower {
         // 如果是 1 说明都不需要维修
         if (this.room._damagedStructure != 1) {
             this.repair(this.room._damagedStructure)
+            // 这里把需要维修的建筑置为 1 是为了避免其他的 tower 奶一个满血建筑从而造成 cpu 浪费
+            if (this.room._damagedStructure.hits + 500 >= this.room._damagedStructure.hitsMax) this.room._damagedStructure = 1
             return true
         }
         return false

@@ -38,7 +38,7 @@ export default {
 
             // 如果房间没有视野则默认进行孵化
             if (!Game.rooms[roomName]) {
-                // console.log('[reserver] 房间没有视野 默认孵化')
+                // console.log('[reserver] 房间没有视野 默认孵化')x
                 return true
             }
             
@@ -50,8 +50,8 @@ export default {
                 return true
             }
             // 房间还剩 2500 ticks 预定就到期了则进行孵化
-            // console.log(`[reserver] 房间的预定时长为 ${controller.reservation.ticksToEnd}`)
             if (controller.reservation.ticksToEnd <= 2500) return true
+            // console.log(`[reserver] 房间的预定时长为 ${controller.reservation.ticksToEnd} 不予孵化`)
             // 不然不孵化
             return false
         },
