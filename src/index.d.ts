@@ -209,6 +209,25 @@ interface RoomMemory {
     }
 }
 
+// 资源共享任务
+interface IShareTask {
+    // 资源的提供房间
+    source: string
+    // 资源的接受房间
+    target: string
+    // 共享的资源类型
+    resourceType: ResourceConstant,
+    // 期望数量
+    amount: number
+}
+
+interface Memory {
+    //全局共享任务
+    roomShare: {
+        tasks: IShareTask[]
+    }
+}
+
 interface FlagMemory {
     // 因为外矿房间有可能没视野
     // 所以把房间名缓存进内存
