@@ -558,6 +558,7 @@ class TerminalExtension extends StructureTerminal {
 
         // 如果自己存储的资源数量已经足够了
         if (this.store[task.resourceType] >= task.amount) {
+            console.log('够了！')
             const cost = Game.market.calcTransactionCost(task.amount, this.room.name, task.target)
             
             // 如果要转移能量就需要对路费是否足够的判断条件进行下特殊处理
@@ -567,14 +568,20 @@ class TerminalExtension extends StructureTerminal {
 
             // 如果路费不够的话就继续等
             if (costCondition) {
+                console.log('路费还是不够！', cost + task.amount)
                 this.getEnergy(cost)
                 return 
             }
+            console.log('路费够了！')
 
             // 路费够了就执行转移
-            const sendResult = this.send(task.resourceType, task.amount, task.target, `来自资源共享协议 - ${this.room.name}`)
+            const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.room.controller.owner.username} 的资源共享 - ${this.room.name}`)
             if (sendResult == OK) {
-                // console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
+                console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
+                delete this.room.memory.shareTask
+            }
+            else if (sendResult == ERR_INVALID_ARGS) {
+                console.log(`${this.room.name} 中的共享任务参数异常，无法执行传送，已移除`)
                 delete this.room.memory.shareTask
             }
             else {
@@ -583,9 +590,10 @@ class TerminalExtension extends StructureTerminal {
         }
         // 如果不足
         else {
+            console.log('还不够！')
             // 如果要共享能量，则从 storage 里拿
             if (task.resourceType === RESOURCE_ENERGY) {
-                this.getEnergy(task.amount)
+                this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])
             }
         }
     }

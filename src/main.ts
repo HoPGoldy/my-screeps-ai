@@ -2,7 +2,7 @@ import mountWork from './mount'
 import { creepNumberController, shareController, doing } from './utils'
 
 module.exports.loop = function (): void {
-    console.log(`-------------------------- [${Game.time}] ----`)
+    // console.log(`-------------------------- [${Game.time}] ----`)
     
     // 挂载所有拓展
     mountWork()
@@ -17,7 +17,7 @@ module.exports.loop = function (): void {
     // 所有建筑工作
     doing(Game.structures)
     let cost2 = Game.cpu.getUsed()
-    console.log(`[建筑消耗] ${cost2 - cost1}`)
+    // console.log(`[建筑消耗] ${cost2 - cost1}`)
 
     // 所有 creep 工作
     doing(Game.creeps)

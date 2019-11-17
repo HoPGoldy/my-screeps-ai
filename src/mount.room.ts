@@ -43,9 +43,9 @@ class RoomExtension extends Room {
     /**
      * 用户操作：将能量从 storage 转移至 terminal 里
      * 
-     * @param amount 要转移的能量数量, 默认 200k
+     * @param amount 要转移的能量数量, 默认 100k
      */
-    public pute(amount: number = 200000): string {
+    public pute(amount: number = 100000): string {
         const addResult = this.addTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
             targetId: this.terminal.id,
@@ -58,22 +58,39 @@ class RoomExtension extends Room {
 
     /**
      * 用户操作：向指定房间发送能量
+     * 注意，该操作会自动从 storage 里取出能量
      * 
      * @param roomName 目标房间名
-     * @param amount 要发送的数量, 默认 200k
+     * @param amount 要发送的数量, 默认 100k
      */
-    public givee(roomName: string, amount: number = 200000): string {
+    public givee(roomName: string, amount: number = 100000): string {
+        // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
         const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
-        const sendResult = this.terminal.send(RESOURCE_ENERGY, amount - cost, roomName)
-        return `向 ${roomName} 转移能量 ${amount - cost} 消耗运费 ${cost} 返回值 ${sendResult}`
+        if (amount + cost > TERMINAL_CAPACITY) {
+            return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost}`
+        }
+
+        // 如果在执行其他任务则添加失败
+        if (this.memory.shareTask) {
+            const task = this.memory.shareTask
+            return `[能量共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: \n      目标房间：${task.target}\n      资源类型：${task.resourceType}\n      资源总量：${task.amount}`
+        }
+
+        this.memory.shareTask = {
+            target: roomName,
+            amount,
+            resourceType: RESOURCE_ENERGY
+        }
+
+        return `能量共享任务已填加，等待终端处理任务：\n  房间名：${roomName}\n  共享数量：${amount}\n  路费：${cost}\n`
     }
 
     /**
      * 用户操作：将能量从 terminal 转移至 storage 里
      * 
-     * @param amount 要转移的能量数量, 默认200k
+     * @param amount 要转移的能量数量, 默认100k
      */
-    public gete(amount: number = 200000): string {
+    public gete(amount: number = 100000): string {
         const addResult = this.addTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
             targetId: this.storage.id,
@@ -260,24 +277,24 @@ class RoomExtension extends Room {
                 functionName: 'ctadd'
             },
             {
-                title: '将能量从 storage 转移至 terminal 里',
-                params: [
-                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 200k' }
-                ],
-                functionName: 'pute'
-            },
-            {
-                title: '向指定房间发送能量',
+                title: '向指定房间发送能量，注意，该操作会自动从 storage 里取出能量',
                 params: [
                     { name: 'roomName', desc: '要发送到的房间名' },
-                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 200k' }
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 100k' }
                 ],
                 functionName: 'givee'
             },
             {
+                title: '[即将废弃] 将能量从 storage 转移至 terminal 里',
+                params: [
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 100k' }
+                ],
+                functionName: 'pute'
+            },
+            {
                 title: '将能量从 terminal 转移至 storage 里',
                 params: [
-                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 200k' }
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 100k' }
                 ],
                 functionName: 'gete'
             },
