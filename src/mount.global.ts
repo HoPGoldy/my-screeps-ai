@@ -156,7 +156,7 @@ export const globalExtension = {
             this.includeCheck()
 
             // 检查用户输入是否可靠
-            if (Memory.roomShare.tasks.length >= taskId) return `没有找到指定的任务`
+            if (Memory.roomShare.tasks.length < taskId) return `没有找到指定的任务`
 
             Memory.roomShare.tasks[taskId] = {
                 source,
@@ -214,7 +214,8 @@ export const globalExtension = {
          */
         includeCheck(): void {
             if (!Memory.roomShare) Memory.roomShare = {
-                tasks: []
+                tasks: [],
+                taskIndex: 0
             }
         }
     }

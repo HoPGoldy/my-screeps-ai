@@ -530,14 +530,6 @@ class FactoryExtension extends StructureFactory {
             amount: this.store.getUsedCapacity(resourceType)
         })
     }
-
-    /**
-     * 制作商品的快捷方式
-     * @param resourceType 要制作的商品
-     */
-    public make(resourceType: ResourceConstant): void {
-        console.log(`我要制作 ${resourceType}`)
-    }
 }
 
 // Terminal 拓展
@@ -545,12 +537,56 @@ class TerminalExtension extends StructureTerminal {
     public work(): void {
         // 没有冷却好或者不到 10 tick 就跳过
         if (this.cooldown !== 0 || Game.time % 10) return
+
+        // 优先执行共享任务
+        this.execShareTask()
+
+        // 执行终端工作
         const resource = this.getResourceByIndex()
         // 没有配置监听任务的话就跳过
         if (!resource) return 
 
         // 只有 dealOrder 下命令了才能继续执行 ResourceListener
         if (this.dealOrder(resource)) this.ResourceListener(resource)
+    }
+
+    public execShareTask(): void {
+        // 获取任务
+        const task = this.room.memory.shareTask
+        if (!task) return 
+
+        // 如果自己存储的资源数量已经足够了
+        if (this.store[task.resourceType] >= task.amount) {
+            const cost = Game.market.calcTransactionCost(task.amount, this.room.name, task.target)
+            
+            // 如果要转移能量就需要对路费是否足够的判断条件进行下特殊处理
+            const costCondition = (task.resourceType === RESOURCE_ENERGY) ?
+                this.store[RESOURCE_ENERGY] - task.amount < cost :
+                this.store[RESOURCE_ENERGY] < cost
+
+            // 如果路费不够的话就继续等
+            if (costCondition) {
+                this.getEnergy(cost)
+                return 
+            }
+
+            // 路费够了就执行转移
+            const sendResult = this.send(task.resourceType, task.amount, task.target, `来自资源共享协议 - ${this.room.name}`)
+            if (sendResult == OK) {
+                // console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
+                delete this.room.memory.shareTask
+            }
+            else {
+                console.log(`${this.room.name} 执行共享任务出错, 错误码：${sendResult}`)
+            }
+        }
+        // 如果不足
+        else {
+            // 如果要共享能量，则从 storage 里拿
+            if (task.resourceType === RESOURCE_ENERGY) {
+                this.getEnergy(task.amount)
+            }
+        }
     }
 
     /**

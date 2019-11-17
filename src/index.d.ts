@@ -207,6 +207,9 @@ interface RoomMemory {
         id: string
         endTime: number
     }
+
+    // 该房间要执行的资源共享任务
+    shareTask: IRoomShareTask
 }
 
 // 资源共享任务
@@ -221,10 +224,24 @@ interface IShareTask {
     amount: number
 }
 
+// 房间要执行的资源共享任务
+// 和上面的资源共享任务的不同之处在于，该任务是发布在指定房间上的，所以不需要 source
+interface IRoomShareTask {
+    // 资源的接受房间
+    target: string
+    // 共享的资源类型
+    resourceType: ResourceConstant,
+    // 期望数量
+    amount: number
+}
+
 interface Memory {
     //全局共享任务
     roomShare: {
-        tasks: IShareTask[]
+        // 共享任务实际存放的列表
+        tasks: IShareTask[],
+        // 当前要处理的共享任务索引
+        taskIndex: number
     }
 }
 

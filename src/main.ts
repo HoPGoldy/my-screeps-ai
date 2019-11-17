@@ -1,5 +1,5 @@
 import mountWork from './mount'
-import { creepNumberController, doing } from './utils'
+import { creepNumberController, shareController, doing } from './utils'
 
 module.exports.loop = function (): void {
     // console.log(`-------------------------- [${Game.time}] ----`)
@@ -9,6 +9,9 @@ module.exports.loop = function (): void {
 
     // 数量控制
     creepNumberController()
+
+    // 资源共享控制
+    shareController()
 
     // let cost1 = Game.cpu.getUsed()
     // 所有建筑工作
