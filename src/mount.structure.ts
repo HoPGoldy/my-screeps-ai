@@ -19,7 +19,6 @@ const importantRoles = [ 'Harvester', 'Transfer' ]
 
 /**
  * Spawn 原型拓展
- * @todo 矿工生成前先检查是否有矿
  */
 class SpawnExtension extends StructureSpawn {
     /**  
@@ -294,7 +293,6 @@ class TowerExtension extends StructureTower {
 class LinkExtension extends StructureLink {
     /**
      * link 主要工作
-     * @test 命令式 link
      */
     public work(): void {
         // 冷却好了 能量不为空
