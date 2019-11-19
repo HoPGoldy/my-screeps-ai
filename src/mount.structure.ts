@@ -566,16 +566,16 @@ class TerminalExtension extends StructureTerminal {
 
             // 如果路费不够的话就继续等
             if (costCondition) {
-                console.log('路费还是不够！', cost + task.amount)
+                // console.log('路费还是不够！', cost + task.amount)
                 this.getEnergy(cost)
                 return 
             }
-            console.log('路费够了！')
+            // console.log('路费够了！')
 
             // 路费够了就执行转移
             const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.room.controller.owner.username} 的资源共享 - ${this.room.name}`)
             if (sendResult == OK) {
-                console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
+                // console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
                 delete this.room.memory.shareTask
             }
             else if (sendResult == ERR_INVALID_ARGS) {
