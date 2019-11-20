@@ -13,15 +13,15 @@ class RoomExtension extends Room {
      * @param task 要提交的任务
      * @returns 任务的排队位置, 0 是最前面
      */
-    public addTask(task: ITransferTask): number {
-        if (this.hasTask(task.submitId)) return -1
+    public addCenterTask(task: ITransferTask): number {
+        if (this.hasCenterTask(task.submitId)) return -1
 
         this.memory.centerTransferTasks.push(task)
         return this.memory.centerTransferTasks.length - 1
     }
 
     /**
-     * 用户操作：addTask - 添加中央运输任务
+     * 用户操作：addCenterTask - 添加中央运输任务
      * 
      * @param targetId 资源存放建筑 id
      * @param sourceId 资源来源建筑 id
@@ -30,7 +30,7 @@ class RoomExtension extends Room {
      */
     public ctadd(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number): string {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
-        const addResult = this.addTask({
+        const addResult = this.addCenterTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
             targetId,
             sourceId,
@@ -46,7 +46,7 @@ class RoomExtension extends Room {
      * @param amount 要转移的能量数量, 默认 100k
      */
     public pute(amount: number = 100000): string {
-        const addResult = this.addTask({
+        const addResult = this.addCenterTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
             targetId: this.terminal.id,
             sourceId: this.storage.id,
@@ -91,7 +91,7 @@ class RoomExtension extends Room {
      * @param amount 要转移的能量数量, 默认100k
      */
     public gete(amount: number = 100000): string {
-        const addResult = this.addTask({
+        const addResult = this.addCenterTask({
             submitId: this.memory.centerTransferTasks.length.toString(),
             targetId: this.storage.id,
             sourceId: this.terminal.id,
@@ -107,7 +107,7 @@ class RoomExtension extends Room {
      * @param submitId 提交者的 id
      * @returns 是否有该任务
      */
-    public hasTask(submitId: string): boolean {
+    public hasCenterTask(submitId: string): boolean {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
         
         const task = this.memory.centerTransferTasks.find(task => task.submitId === submitId)
@@ -120,7 +120,7 @@ class RoomExtension extends Room {
      * 
      * @returns 任务的排队位置, 0 是最前面
      */
-    public hangTask(): number {
+    public hangCenterTask(): number {
         const task = this.memory.centerTransferTasks.shift()
         this.memory.centerTransferTasks.push(task)
 
@@ -128,11 +128,11 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 获取队列中第一个任务信息
+     * 获取中央队列中第一个任务信息
      * 
      * @returns 有任务返回任务, 没有返回 null
      */
-    public getTask(): ITransferTask | null {
+    public getCenterTask(): ITransferTask | null {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
         
         if (this.memory.centerTransferTasks.length <= 0) {
@@ -148,7 +148,7 @@ class RoomExtension extends Room {
      * @param submitId 提交者的 id
      * @param transferAmount 本次转移的数量
      */
-    public handleTask(transferAmount: number): void {
+    public handleCenterTask(transferAmount: number): void {
         this.memory.centerTransferTasks[0].amount -= transferAmount
         if (this.memory.centerTransferTasks[0].amount <= 0) {
             this.deleteCurrentCenterTask()

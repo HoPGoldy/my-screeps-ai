@@ -65,8 +65,8 @@ export default {
         source: creep => {
             // 快死了就拒绝执行任务
             if (creep.ticksToLive <= 5) return
-            // 获取订单
-            const task = creep.room.getTask()
+            // 获取任务
+            const task = creep.room.getCenterTask()
             if (!task) return 
 
             // 找到建筑
@@ -83,12 +83,12 @@ export default {
             }
             else if (result !== OK) {
                 creep.say(`取出 ${result}`)
-                creep.room.hangTask()
+                creep.room.hangCenterTask()
             }
         },
         // 身上有能量就放到 Storage 里
         target: creep => {
-            const task = creep.room.getTask()
+            const task = creep.room.getCenterTask()
             if (!task) return
 
             // 提前获取携带量
@@ -102,10 +102,10 @@ export default {
             
             const result = creep.transfer(structure, task.resourceType)
             // 如果转移完成则增加任务进度
-            if (result === OK) creep.room.handleTask(amount)
+            if (result === OK) creep.room.handleCenterTask(amount)
             else {
                 creep.say(`存入 ${result}`)
-                creep.room.hangTask()
+                creep.room.hangCenterTask()
             }
         },
         switch: creep => creep.store.getUsedCapacity() > 0,

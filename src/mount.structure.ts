@@ -382,9 +382,9 @@ class LinkExtension extends StructureLink {
      */
     private centerWork(): void {
         // 之前发的转移任务没有处理好的话就先挂机
-        if (this.room.hasTask(this.id)) return 
+        if (this.room.hasCenterTask(this.id)) return 
 
-        this.room.addTask({
+        this.room.addCenterTask({
             submitId: this.id,
             sourceId: this.id,
             targetId: this.room.storage.id,
@@ -499,9 +499,9 @@ class FactoryExtension extends StructureFactory {
      */
     public addGetTask(resourceType: ResourceConstant, amount: number): void {
         // 发布前先检查下有没有任务
-        if (this.room.hasTask(this.id)) return 
+        if (this.room.hasCenterTask(this.id)) return 
 
-        this.room.addTask({
+        this.room.addCenterTask({
             submitId: this.id,
             // 如果是能量就从 storage 里拿，是其他资源就从 terminal 里拿
             sourceId: resourceType == RESOURCE_ENERGY ? this.room.storage.id : this.room.terminal.id,
@@ -519,9 +519,9 @@ class FactoryExtension extends StructureFactory {
      */
     public addPutTask(resourceType: ResourceConstant): void {
         // 发布前先检查下有没有任务
-        if (this.room.hasTask(this.id)) return 
+        if (this.room.hasCenterTask(this.id)) return 
 
-        this.room.addTask({
+        this.room.addCenterTask({
             submitId: this.id,
             sourceId: this.id,
             targetId: this.room.terminal.id,
@@ -773,9 +773,9 @@ class TerminalExtension extends StructureTerminal {
      */
     private getEnergy(amount: number): void {
         // 发布前先检查下有没有任务
-        if (this.room.hasTask(this.id)) return 
+        if (this.room.hasCenterTask(this.id)) return 
 
-        this.room.addTask({
+        this.room.addCenterTask({
             submitId: this.id,
             sourceId: this.room.storage.id,
             targetId: this.id,

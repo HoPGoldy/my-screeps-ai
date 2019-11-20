@@ -149,11 +149,11 @@ interface Room {
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
      */
-    addTask(task: ITransferTask): number
-    hasTask(submitId: string): boolean
-    hangTask(): number
-    handleTask(transferAmount: number): void
-    getTask(): ITransferTask | null
+    addCenterTask(task: ITransferTask): number
+    hasCenterTask(submitId: string): boolean
+    hangCenterTask(): number
+    handleCenterTask(transferAmount: number): void
+    getCenterTask(): ITransferTask | null
 
     setFactoryTarget(resourceType: ResourceConstant): string
     getFactoryTarget(): ResourceConstant | null
