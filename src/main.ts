@@ -5,6 +5,7 @@ import { creepNumberController, shareController, doing } from './utils'
  * @todo spawn isNeed 阶段应 5 tick 检查一次
  * @todo upgrader 和 builder 的 isNeed 阶段
  * @todo 身体部件和 Room.energy 挂钩
+ * @todo 外矿和 core 的对决
  */
 module.exports.loop = function (): void {
     // console.log(`-------------------------- [${Game.time}] ----`)
