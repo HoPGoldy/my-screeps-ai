@@ -167,6 +167,8 @@ interface Room {
 interface RoomMemory {
     // 中央集群的资源转移任务队列
     centerTransferTasks: ITransferTask[]
+    // 房间物流任务队列
+    transferTasks: RoomTransferTasks[]
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
     // 终端监听矿物列表
@@ -210,6 +212,23 @@ interface RoomMemory {
 
     // 该房间要执行的资源共享任务
     shareTask: IRoomShareTask
+}
+
+// 所有房间物流任务
+type RoomTransferTasks = IFillTower | IFillExtension
+type RoomTransferTaskTypes = FillExtensionType | FillTowerType
+
+// 房间物流任务 - 填充拓展
+type FillExtensionType = 'fillExtension'
+interface IFillExtension {
+    type: FillExtensionType
+}
+
+// 房间物流任务 - 填充塔
+type FillTowerType = 'fillTower'
+interface IFillTower {
+    type: FillTowerType
+    id: string
 }
 
 // 资源共享任务

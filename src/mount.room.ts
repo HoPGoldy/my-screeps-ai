@@ -11,7 +11,7 @@ class RoomExtension extends Room {
      * 
      * @param submitId 提交者的 id 
      * @param task 要提交的任务
-     * @returns 任务的排队位置, 0 是最前面
+     * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
      */
     public addCenterTask(task: ITransferTask): number {
         if (this.hasCenterTask(task.submitId)) return -1
@@ -116,7 +116,7 @@ class RoomExtension extends Room {
 
     /**
      * 暂时挂起当前任务
-     * 会将任务暂时放置在队列末尾
+     * 会将任务放置在队列末尾
      * 
      * @returns 任务的排队位置, 0 是最前面
      */
@@ -145,6 +145,7 @@ class RoomExtension extends Room {
 
     /**
      * 处理任务
+     * 
      * @param submitId 提交者的 id
      * @param transferAmount 本次转移的数量
      */
@@ -160,6 +161,63 @@ class RoomExtension extends Room {
      */
     public deleteCurrentCenterTask(): void {
         this.memory.centerTransferTasks.shift()
+    }
+
+    /**
+     * 向房间物流任务队列推送新的任务
+     * 
+     * @param task 要添加的任务
+     * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
+     */
+    public addRoomTransferTask(task: RoomTransferTasks): number {
+        if (this.hasRoomTransferTask(task.type)) return -1
+
+        this.memory.transferTasks.push(task)
+        return this.memory.transferTasks.length - 1
+    }
+
+    /**
+     * 是否有相同的房间物流任务
+     * 房间物流队列中一种任务只允许同时存在一个
+     * 
+     * @param taskType 任务类型
+     */
+    public hasRoomTransferTask(taskType: RoomTransferTaskTypes): boolean {
+        if (!this.memory.transferTasks) this.memory.transferTasks = []
+        
+        const task = this.memory.transferTasks.find(task => task.type === taskType)
+        return task ? true : false
+    }
+
+    /**
+     * 获取当前的房间物流任务
+     */
+    public getRoomTransferTask(): RoomTransferTasks | null {
+        if (!this.memory.transferTasks) this.memory.transferTasks = []
+        
+        if (this.memory.transferTasks.length <= 0) {
+            return null
+        }
+        else {
+            return this.memory.transferTasks[0]
+        }
+    }
+
+    /**
+     * 处理房间物流任务
+     * 此方法会在实装 lab 物流任务后进行扩充
+     * 
+     * @returns 该任务是否完成
+     */
+    public handleRoomTransferTask(): void {
+        this.deleteCurrentRoomTransferTask()
+    }
+
+    /**
+     * 移除当前处理的房间物流任务
+     */
+    public deleteCurrentRoomTransferTask(): void {
+        this.memory.transferTasks.shift()
     }
 
     /**
