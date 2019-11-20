@@ -10,12 +10,12 @@
 
 **repairer** 
 
-- 在没有 tower 之前依旧是有坏的就修，没有就刷墙，在有了 tower 之后将专职给 tower 充能
+- 在没有 tower 之前依旧是有损坏的建筑的就修，没有就刷墙，在有了 tower 之后将专职给 tower 充能
 
 **tower**
 
 - 每 tick 都会搜索距离最近的敌人，优先级最高，一旦发现敌人直接攻击
-    - 只攻击带有 `WORK`、`ATTACK`、`RANGE_ATTACK` 和 `HEAL` 的敌人。
+    - 如果敌人身体里没有 `WORK`、`ATTACK`、`RANGE_ATTACK` 和 `HEAL` 部件，将不会进行攻击。
 - 每隔 10 tick 搜索受损建筑并维修
 - 每隔 5 tick 搜索未达标围墙并维修，并且在能量低于 500 时跳过该阶段
 
