@@ -182,7 +182,7 @@ class RoomExtension extends Room {
      * 
      * @param taskType 任务类型
      */
-    public hasRoomTransferTask(taskType: RoomTransferTaskTypes): boolean {
+    public hasRoomTransferTask(taskType: string): boolean {
         if (!this.memory.transferTasks) this.memory.transferTasks = []
         
         const task = this.memory.transferTasks.find(task => task.type === taskType)

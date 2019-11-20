@@ -30,7 +30,6 @@ class SpawnExtension extends StructureSpawn {
         if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
         // 进行生成
         const spawnSuccess: MySpawnReturnCode = this.mySpawnCreep(this.memory.spawnList[0])
-        // if (this.room.name == 'W48S5') console.log("TCL: SpawnExtension -> spawnSuccess", this.room.name, spawnSuccess)
 
         switch (spawnSuccess) {
             case ERR_NOT_ENOUGH_ENERGY:
@@ -38,6 +37,7 @@ class SpawnExtension extends StructureSpawn {
                 this.noCreepSave()
             break
             case OK:
+                this.room.addRoomTransferTask({ type: 'FillExtension' })
                 // 生成成功后移除任务
                 this.memory.spawnList.shift()
             break
@@ -194,6 +194,9 @@ class TowerExtension extends StructureTower {
         if (this.room._enemys.length > 0) {
             const target = this.pos.findClosestByRange(this.room._enemys)
             this.attack(target)
+
+            // 如果能量低了就发布填充任务
+            if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: 'fillTower', id: this.id})
             return true
         }
         else return false
@@ -232,6 +235,10 @@ class TowerExtension extends StructureTower {
             this.repair(this.room._damagedStructure)
             // 这里把需要维修的建筑置为 1 是为了避免其他的 tower 奶一个满血建筑从而造成 cpu 浪费
             if (this.room._damagedStructure.hits + 500 >= this.room._damagedStructure.hitsMax) this.room._damagedStructure = 1
+
+            // 如果能量低了就发布填充任务
+            if (this.store[RESOURCE_ENERGY] <= 600) this.room.addRoomTransferTask({ type: 'fillTower', id: this.id})
+
             return true
         }
         return false
@@ -283,6 +290,10 @@ class TowerExtension extends StructureTower {
 
         // 填充墙壁
         this.repair(targetWall)
+
+        // 如果能量低了就发布填充任务
+        if (this.store[RESOURCE_ENERGY] <= 600) this.room.addRoomTransferTask({ type: 'fillTower', id: this.id})
+
         // 标记一下防止其他 tower 继续刷墙
         this.room._hasFillWall = true
         return true

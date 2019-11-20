@@ -149,11 +149,18 @@ interface Room {
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
      */
+    // 中央物流 api
     addCenterTask(task: ITransferTask): number
     hasCenterTask(submitId: string): boolean
     hangCenterTask(): number
     handleCenterTask(transferAmount: number): void
     getCenterTask(): ITransferTask | null
+    // 房间物流 api
+    addRoomTransferTask(task: RoomTransferTasks): number
+    hasRoomTransferTask(taskType: string): boolean
+    getRoomTransferTask(): RoomTransferTasks | null
+    handleRoomTransferTask(): void
+    deleteCurrentRoomTransferTask(): void
 
     setFactoryTarget(resourceType: ResourceConstant): string
     getFactoryTarget(): ResourceConstant | null
@@ -216,19 +223,25 @@ interface RoomMemory {
 
 // 所有房间物流任务
 type RoomTransferTasks = IFillTower | IFillExtension
-type RoomTransferTaskTypes = FillExtensionType | FillTowerType
 
 // 房间物流任务 - 填充拓展
-type FillExtensionType = 'fillExtension'
 interface IFillExtension {
-    type: FillExtensionType
+    type: string
 }
 
 // 房间物流任务 - 填充塔
-type FillTowerType = 'fillTower'
 interface IFillTower {
-    type: FillTowerType
+    type: string
     id: string
+}
+
+interface transferTaskOperation {
+    // creep 工作时执行的方法
+    target: (creep: Creep, task: RoomTransferTasks) => any
+    // creep 非工作(收集资源时)执行的方法
+    source: (creep: Creep, task: RoomTransferTasks, sourceId: string) => any
+    // 更新状态时触发的方法
+    switch: (creep: Creep, task: RoomTransferTasks) => boolean
 }
 
 // 资源共享任务
@@ -296,11 +309,11 @@ interface ICreepConfig {
     prepare?: (creep: Creep) => any
     // 是否准备完成
     isReady?: (creep: Creep) => boolean
-    // creep工作时执行的方法
+    // creep 工作时执行的方法
     target?: (creep: Creep) => any
     // creep 非工作(收集能量时)执行的方法
     source?: (creep: Creep) => any
-    // 更新状态时触发的方法, 该方法必须位于 Creep 上
+    // 更新状态时触发的方法，为 true 执行 target，为 false 执行 source
     switch?: (creep: Creep) => boolean
     // 要进行生产的出生点
     spawn: string
