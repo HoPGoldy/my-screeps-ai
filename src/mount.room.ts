@@ -73,7 +73,7 @@ class RoomExtension extends Room {
         // 如果在执行其他任务则添加失败
         if (this.memory.shareTask) {
             const task = this.memory.shareTask
-            return `[能量共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: \n      目标房间：${task.target}\n      资源类型：${task.resourceType}\n      资源总量：${task.amount}`
+            return `[能量共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`
         }
 
         this.memory.shareTask = {
@@ -82,7 +82,7 @@ class RoomExtension extends Room {
             resourceType: RESOURCE_ENERGY
         }
 
-        return `能量共享任务已填加，等待终端处理任务：\n  房间名：${roomName}\n  共享数量：${amount}\n  路费：${cost}\n`
+        return `能量共享任务已填加，等待终端处理任务：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
     }
 
     /**
@@ -172,6 +172,7 @@ class RoomExtension extends Room {
     public addRoomTransferTask(task: RoomTransferTasks): number {
         if (this.hasRoomTransferTask(task.type)) return -1
 
+        // console.log(`[物流任务] ${this.name} 添加任务 ${task.type}`)
         this.memory.transferTasks.push(task)
         return this.memory.transferTasks.length - 1
     }

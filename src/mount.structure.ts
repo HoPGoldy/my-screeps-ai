@@ -26,7 +26,19 @@ class SpawnExtension extends StructureSpawn {
      * @todo isNeed 不需要进行检查
      */
     public work(): void {
-        // 自己已经在生成了 / 内存里没有生成队列 / 生产队列为空 就啥都不干
+        if (this.spawning) {
+            /**
+             * 如果孵化已经开始了，就向物流队列推送任务
+             * 不在 mySpawnCreep 返回 OK 时判断是因为：
+             * 由于孵化是在 tick 末的行动执行阶段进行的，所以能量在 tick 末期才会从 extension 中扣除
+             * 如果返回 OK 就推送任务的话，就会出现任务已经存在了，而 extension 还是满的
+             * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现：
+             * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > 移除任务 > tick 末期开始孵化 > extension扣除能量的错误逻辑
+             */
+            if (this.spawning.needTime - this.spawning.remainingTime == 1) this.room.addRoomTransferTask({ type: 'fillExtension' })
+            return
+        }
+        // 内存里没有生成队列 / 生产队列为空 就啥都不干
         if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
         // 进行生成
         const spawnSuccess: MySpawnReturnCode = this.mySpawnCreep(this.memory.spawnList[0])
@@ -37,7 +49,6 @@ class SpawnExtension extends StructureSpawn {
                 this.noCreepSave()
             break
             case OK:
-                this.room.addRoomTransferTask({ type: 'FillExtension' })
                 // 生成成功后移除任务
                 this.memory.spawnList.shift()
             break
@@ -567,7 +578,6 @@ class TerminalExtension extends StructureTerminal {
 
         // 如果自己存储的资源数量已经足够了
         if (this.store[task.resourceType] >= task.amount) {
-            console.log('够了！')
             const cost = Game.market.calcTransactionCost(task.amount, this.room.name, task.target)
             
             // 如果要转移能量就需要对路费是否足够的判断条件进行下特殊处理
@@ -577,11 +587,9 @@ class TerminalExtension extends StructureTerminal {
 
             // 如果路费不够的话就继续等
             if (costCondition) {
-                // console.log('路费还是不够！', cost + task.amount)
                 this.getEnergy(cost)
                 return 
             }
-            // console.log('路费够了！')
 
             // 路费够了就执行转移
             const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.room.controller.owner.username} 的资源共享 - ${this.room.name}`)
@@ -599,7 +607,6 @@ class TerminalExtension extends StructureTerminal {
         }
         // 如果不足
         else {
-            console.log('还不够！')
             // 如果要共享能量，则从 storage 里拿
             if (task.resourceType === RESOURCE_ENERGY) {
                 this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])

@@ -10,7 +10,7 @@ export default {
      * @param spawnName 出生点名称
      * @param sourceId 从该建筑中获取能量 (可选, 默认 Storage)
      */
-    transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
+    oldTransfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
         source: creep => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
             let target: StructureSpawn | StructureExtension | StructureTower
@@ -55,7 +55,7 @@ export default {
      * @param spawnName 出生点名称
      * @param sourceId 从该建筑中获取能量 (可选, 默认 Storage)
      */
-    newTransfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
+    transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
         source: creep => {
             const task = getRoomTransferTask(creep.room)
 
@@ -73,7 +73,10 @@ export default {
 
             // 有任务就进行判断
             if (task) return transferTaskOperations[task.type].switch(creep, task)
-            else return false
+            else {
+                creep.say('💤')
+                return false
+            }
         },
         spawn: spawnName,
         bodyType: 'transfer'
@@ -174,8 +177,19 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         target: creep => {
             let target: StructureExtension
             
-            // 没缓存就去查找
-            if (!creep.memory.fillStructureId) {
+            // 有缓存就用缓存
+            if (creep.memory.fillStructureId) {
+                target = <StructureExtension>Game.getObjectById(creep.memory.fillStructureId)
+
+                // 如果找不到对应的建筑或者已经填满了就移除缓存
+                if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+                    delete creep.memory.fillStructureId
+                    target = undefined
+                }
+            }
+
+            // 没缓存就重新获取
+            if (!target) {
                 // 获取有需求的建筑
                 target = <StructureExtension>creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
                     // extension 中的能量没填满
@@ -183,23 +197,13 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 })
                 if (!target) {
                     // 都填满了，任务完成
+                    // console.log(`[物流任务] ${creep.room.name} 关闭了 fillExtension 任务`)
                     creep.room.handleRoomTransferTask()
                     return
                 }
 
                 // 写入缓存
                 creep.memory.fillStructureId = target.id
-            }
-
-            // 有缓存就从缓存获取
-            if (!target) {
-                target = <StructureExtension>Game.getObjectById(creep.memory.fillStructureId)
-
-                // 如果找不到对应的建筑或者已经填满了就移除缓存
-                if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-                    delete creep.memory.fillStructureId
-                    return 
-                }
             }
 
             // 有的话就填充能量
@@ -214,8 +218,19 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         target: (creep, task: IFillTower) => {
             let target: StructureTower
 
-            // 没缓存的话
-            if (!creep.memory.fillStructureId) {
+            // 有缓存的话
+            if (creep.memory.fillStructureId) {
+                target = <StructureTower>Game.getObjectById(creep.memory.fillStructureId)
+                
+                // 如果找不到对应的建筑或者已经填到 900 了就移除缓存
+                if (!target || target.structureType !== STRUCTURE_TOWER || target.store[RESOURCE_ENERGY] > 900) {
+                    delete creep.memory.fillStructureId
+                    target = undefined 
+                }
+            }
+            
+            // 有缓存的话
+            if (!target) {
                 // 先检查下任务发布 tower 能量是否足够
                 target = Game.getObjectById(task.id)
                 if (!target || target.store[RESOURCE_ENERGY] > 900) {
@@ -230,17 +245,9 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                     }
                     target = creep.pos.findClosestByPath(towers) as StructureTower
                 }
-            }
-            
-            // 有缓存的话
-            if (!target) {
-                target = <StructureTower>Game.getObjectById(creep.memory.fillStructureId)
 
-                // 如果找不到对应的建筑或者已经填满了就移除缓存
-                if (!target || target.structureType !== STRUCTURE_TOWER || target.store.getFreeCapacity(RESOURCE_ENERGY) > 900) {
-                    delete creep.memory.fillStructureId
-                    return 
-                }
+                // 写入缓存
+                creep.memory.fillStructureId = target.id
             }
 
             // 有的话就填充能量
