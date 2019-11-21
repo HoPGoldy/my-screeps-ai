@@ -112,10 +112,19 @@ class SpawnExtension extends StructureSpawn {
         const creepConfig = creepConfigs[configName]
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         if (!creepConfig) return <OK>0
-        // 如果 isNeed 表明不需要生成, 则将其移至队列末尾
-        if (creepConfig.isNeed && !creepConfig.isNeed(this.room)) {
-            this.hangTask()
-            return <CREEP_DONT_NEED_SPAWN>-101
+
+        // 检查是否需要生成
+        if (creepConfig.isNeed) {
+            // 每 5 tick 才会检查一次
+            if (Game.time % 5) {
+                if (this.memory.spawnList.length > 1) this.hangTask()
+                return <CREEP_DONT_NEED_SPAWN>-101
+            }
+            // 检查不通过依旧会挂起
+            else if (!creepConfig.isNeed(this.room)) {
+                if (this.memory.spawnList.length > 1) this.hangTask()
+                return <CREEP_DONT_NEED_SPAWN>-101
+            }
         }
 
         // 设置 creep 内存

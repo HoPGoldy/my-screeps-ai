@@ -1,3 +1,4 @@
+import { upgraderEnergyLimit } from './setting'
 /**
  * 初级房间运维角色组
  * 本角色组包括了在没有 Storage 和 Link 的房间内运维所需的角色
@@ -87,12 +88,42 @@ export default {
 
     /**
      * 升级者
+     * 只有在 sourceId 对应建筑中的能量大于指定数量时才会生成 @see setting.ts upgraderEnergyLimit
+     * 从 Source 中采集能量一定会生成
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      * 
-     * @param sourceId 要挖的矿 id
+     * @param sourceId 能量来源 id
      * @param spawnName 出生点名称
      */
     upgrader: (spawnName: string, sourceId: string): ICreepConfig => ({
+        isNeed: room => {
+            const source = Game.getObjectById(sourceId)
+            if (!source) {
+                console.log(`[生成挂起] ${room.name} upgrader 中的 ${sourceId} 不是一个有效的能量来源`)
+                return false
+            }
+
+            // 从带有 store 的建筑里获取能量
+            if (source.hasOwnProperty('store')) {
+                // 由于没有针对”包含 store 的建筑“的类型定义，所以这里使用 StructureStorage 代替
+                // 其实是代指所有有 store 的建筑
+                const sourceStructure = source as StructureStorage
+                if (sourceStructure.structureType in upgraderEnergyLimit) {
+                    // setting 里定义好的能力下限
+                    const limitEnergy = upgraderEnergyLimit[sourceStructure.structureType]
+                    
+                    // 目标建筑能量是否足够
+                    if (sourceStructure.store[RESOURCE_ENERGY] > limitEnergy) return true
+                    else {
+                        console.log(`[生成挂起] ${room.name} 中的 ${sourceStructure} 能量低于规定值 ${limitEnergy}`)
+                        return false
+                    }
+                }
+                else return true
+            }
+            // 没有 store 对象的肯定是 Source，直接无条件生成
+            else return true
+        },
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
@@ -102,12 +133,17 @@ export default {
 
     /**
      * 建筑者
+     * 只有在有工地时才会生成
      * 从指定结构中获取能量 > 查找建筑工地并建造
      * 
      * @param spawnName 出生点名称
      * @param sourceId 要挖的矿 id
      */
     builder: (spawnName: string, sourceId: string): ICreepConfig => ({
+        isNeed: room => {
+            const targets: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
+            return targets.length > 0 ? true : false
+        },
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             if (creep.buildStructure()) { }
