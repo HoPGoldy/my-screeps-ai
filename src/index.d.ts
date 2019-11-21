@@ -371,17 +371,19 @@ interface IPathMap {
 
 /**
  * 单个角色类型的身体部件配置
- * 从 1 ~ 8 的键表示房间从 1 级到 8 级的不同身体配置项
+ * 其键代表房间的 energyAvailable 属性
+ * 300 就代表房间能量为 0 ~ 300 时应该使用的身体部件，该区间前开后闭
+ * 例如：房间的 energyAvailable 为 600，则就会去使用 800 的身体部件，
  */
 interface BodyConfig {
-    1: BodyPartConstant[]
-    2: BodyPartConstant[]
-    3: BodyPartConstant[]
-    4: BodyPartConstant[]
-    5: BodyPartConstant[]
-    6: BodyPartConstant[]
-    7: BodyPartConstant[]
-    8: BodyPartConstant[]
+    300: BodyPartConstant[]
+    550: BodyPartConstant[]
+    800: BodyPartConstant[]
+    1300: BodyPartConstant[]
+    1800: BodyPartConstant[]
+    2300: BodyPartConstant[]
+    5600: BodyPartConstant[]
+    12900: BodyPartConstant[]
 }
 
 /**

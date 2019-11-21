@@ -46,7 +46,8 @@ class SpawnExtension extends StructureSpawn {
         switch (spawnSuccess) {
             case ERR_NOT_ENOUGH_ENERGY:
                 // 失败了就检查下房间是不是危险了
-                this.noCreepSave()
+                console.log(`[noCreepSave] ${this.room.name} 剩余能量 ${this.room.energyAvailable} 不足以生成 ${this.memory.spawnList[0]}`)
+                // this.noCreepSave()
             break
             case OK:
                 // 生成成功后移除任务
@@ -130,9 +131,12 @@ class SpawnExtension extends StructureSpawn {
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
-        const bodys: BodyPartConstant[] = minBody ? 
-            bodyConfigs[creepConfig.bodyType][1] : // 最小的身体部件
-            bodyConfigs[creepConfig.bodyType][this.room.controller.level] // 符合于房间等级的身体部件
+
+        // 根据房间剩余能量找出该类型的 body[]
+        const bodyConfig: BodyConfig = bodyConfigs[creepConfig.bodyType]
+        const targetLevel = Object.keys(bodyConfig).find(level => Number(level) >= this.room.energyAvailable)
+        const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
+
         if (!bodys) {
             console.log(`[spawn] ${configName} 的 body 组装失败`)
             // 直接移除该任务
