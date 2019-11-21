@@ -214,13 +214,3 @@ export const repairSetting = {
     // 墙壁的关注时间
     focusTime: 100
 }
-
-/**
- * upgrader 只有在能量来源大于下面定义的下限时才会生成
- * 例如：从 container 获取能量时，该 container 的能量必须大于 500 才会生成该 upgrader
- */
-export const upgraderEnergyLimit = {
-    [STRUCTURE_CONTAINER]: 500,
-    [STRUCTURE_STORAGE]: 10000,
-    [STRUCTURE_TERMINAL]: 0
-}

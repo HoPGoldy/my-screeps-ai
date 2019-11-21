@@ -1,4 +1,13 @@
-import { upgraderEnergyLimit } from './setting'
+/**
+ * upgrader 只有在能量来源大于下面定义的下限时才会生成
+ * 例如：从 container 获取能量时，该 container 的能量必须大于 500 才会生成该 upgrader
+ */
+export const upgraderEnergyLimit = {
+    [STRUCTURE_CONTAINER]: 500,
+    [STRUCTURE_STORAGE]: 10000,
+    [STRUCTURE_TERMINAL]: 0
+}
+
 /**
  * 初级房间运维角色组
  * 本角色组包括了在没有 Storage 和 Link 的房间内运维所需的角色
