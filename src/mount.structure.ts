@@ -290,15 +290,16 @@ class LinkExtension extends StructureLink {
      * link 主要工作
      */
     public work(): void {
-        // 冷却好了 能量至少为 700
-        if (this.store.getFreeCapacity(RESOURCE_ENERGY) <= 100 && this.cooldown == 0) {
-            if (!this.room.memory.links) this.room.memory.links = {}
-            // 读配置项
-            const linkWorkFunctionName: string = this.room.memory.links[this.id]
-            if (!linkWorkFunctionName) return console.log(`[空闲 link] 请为 ${this.id} 分配角色`)
-            
-            if (this[linkWorkFunctionName]) this[linkWorkFunctionName]()
-        }
+        // 冷却好了再执行
+        if (this.cooldown != 0) return
+        // 兜底
+        if (!this.room.memory.links) this.room.memory.links = {}
+
+        // 读配置项
+        const linkWorkFunctionName: string = this.room.memory.links[this.id]
+        if (!linkWorkFunctionName) return console.log(`[空闲 link] 请为 ${this.id} 分配角色`)
+        
+        if (this[linkWorkFunctionName]) this[linkWorkFunctionName]()
     }
 
     /**
@@ -376,6 +377,8 @@ class LinkExtension extends StructureLink {
      * 否则向房间中的资源转移队列推送任务
      */
     private centerWork(): void {
+        // 能量为空则待机
+        if (<number>this.store.getCapacity(RESOURCE_ENERGY) == 0) return
         // 之前发的转移任务没有处理好的话就先挂机
         if (this.room.hasCenterTask(this.id)) return 
 
@@ -396,6 +399,8 @@ class LinkExtension extends StructureLink {
      * 都不存在时待机
      */
     private sourceWork(): void {
+        // 能量填满再发送
+        if (<number>this.store.getCapacity(RESOURCE_ENERGY) != LINK_CAPACITY) return
         // 优先响应 upgrade
         if (this.room.memory.upgradeLinkId) {
             const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')

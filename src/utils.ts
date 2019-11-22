@@ -206,9 +206,11 @@ export function doing(hashMap: object): void {
     Object.values(hashMap).forEach(item => {
         // let cost1: number
         // let cost2: number
-        // if (item.structureType === STRUCTURE_TOWER) cost1 = Game.cpu.getUsed()
+        // if (item.work && item.structureType) cost1 = Game.cpu.getUsed()
+
         if (item.work) item.work()
-        // if (item.structureType === STRUCTURE_TOWER) {
+         
+        // if (item.work && item.structureType) {
         //     cost2 = Game.cpu.getUsed()
         //     console.log(`建筑 ${item} 消耗 cpu ${cost2 - cost1}`)
         // }

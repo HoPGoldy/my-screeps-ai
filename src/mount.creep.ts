@@ -394,9 +394,9 @@ class CreepExtension extends Creep {
         if (result == ERR_NOT_IN_RANGE) {
             this.moveTo(target, getPath())
         }
-        else if (result !== OK) {
-            this.say(`能量获取${result}`)
-        }
+        // else if (result !== OK) {
+        //     this.say(`能量获取${result}`)
+        // }
         return result
     }
 
