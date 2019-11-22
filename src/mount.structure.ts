@@ -12,12 +12,6 @@ export default function () {
 }
 
 /**
- * 重要角色
- * creep 名包含下面的字符串即代表该角色是用于“维持房间spawn能量”
- */
-const importantRoles = [ 'Harvester', 'Transfer' ]
-
-/**
  * Spawn 原型拓展
  */
 class SpawnExtension extends StructureSpawn {
@@ -41,19 +35,10 @@ class SpawnExtension extends StructureSpawn {
         // 内存里没有生成队列 / 生产队列为空 就啥都不干
         if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
         // 进行生成
-        const spawnSuccess: MySpawnReturnCode = this.mySpawnCreep(this.memory.spawnList[0])
+        const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.memory.spawnList[0])
 
-        switch (spawnSuccess) {
-            case ERR_NOT_ENOUGH_ENERGY:
-                // 失败了就检查下房间是不是危险了
-                console.log(`[noCreepSave] ${this.room.name} 剩余能量 ${this.room.energyAvailable} 不足以生成 ${this.memory.spawnList[0]}`)
-                // this.noCreepSave()
-            break
-            case OK:
-                // 生成成功后移除任务
-                this.memory.spawnList.shift()
-            break
-        }
+        // 生成成功后移除任务
+        if (spawnResult == OK) this.memory.spawnList.shift()
     }
     
     /**
@@ -106,10 +91,9 @@ class SpawnExtension extends StructureSpawn {
      * 从 spawn 生产 creep
      * 
      * @param configName 对应的配置名称
-     * @param minBody 用最小身体部分生成
-     * @returns 开始生成返回 true, 否则返回 false
+     * @returns 无需生成 creep 时返回 CREEP_DONT_NEED_SPAWN，其他情况返回 Spawn.spawnCreep 的返回值
      */
-    private mySpawnCreep(configName, minBody: boolean = false): MySpawnReturnCode {
+    private mySpawnCreep(configName): MySpawnReturnCode {
         const creepConfig = creepConfigs[configName]
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         if (!creepConfig) return <OK>0
@@ -158,30 +142,6 @@ class SpawnExtension extends StructureSpawn {
         else {
             console.log(`[生成失败] ${creepConfig.spawn} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return spawnResult
-        }
-    }
-
-    /**
-     * 房间断供检查
-     * 此方法用于检查房间是否已经无法持续提供能量用于 spawn
-     * 
-     * 通过检查 spawnList 中是否有 importentRoles 来判断
-     * 一旦有 importentRoles 因为能量不足无法重生，则表明房间将在不久之后断供
-     */
-    private noCreepSave(): void {
-        // 遍历生产队列中的所有任务名(creep名)
-        for (const index in this.memory.spawnList) {
-            const spawnTask = this.memory.spawnList[index]
-            // 将任务名和重要角色名比较
-            for (const importantRole of importantRoles) {
-                if (spawnTask.indexOf(importantRole) !== -1) {
-                    console.log(`[断供警告] ${this.room.name} 即将生成最小化 ${spawnTask}`)
-                    // 是重要角色的话则以最小身体生成
-                    if (this.mySpawnCreep(spawnTask, true) === OK) this.memory.spawnList.splice(Number(index), 1)
-                    // 只生成一个
-                    return
-                }
-            }
         }
     }
 }
