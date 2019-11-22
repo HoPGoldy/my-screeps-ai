@@ -330,8 +330,8 @@ class LinkExtension extends StructureLink {
      * link 主要工作
      */
     public work(): void {
-        // 冷却好了 能量不为空
-        if (this.energy > 0 && this.cooldown == 0) {
+        // 冷却好了 能量至少为 700
+        if (this.store.getFreeCapacity(RESOURCE_ENERGY) <= 100 && this.cooldown == 0) {
             if (!this.room.memory.links) this.room.memory.links = {}
             // 读配置项
             const linkWorkFunctionName: string = this.room.memory.links[this.id]
