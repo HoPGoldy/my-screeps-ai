@@ -91,7 +91,7 @@ export default {
         },
         switch: creep => creep.room.name === targetRoomName,
         spawn: spawnName,
-        bodyType: 'worker'
+        bodyType: 'singer'
     }),
 
     /**
