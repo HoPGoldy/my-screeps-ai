@@ -447,7 +447,7 @@ class CreepExtension extends Creep {
         
         this.moveTo(target)
         const attackResult = this.attack(target)
-        console.log(`${this.name} 正在攻击 ${target}, 返回值 ${attackResult}`)
+        this.say(`冲! ${attackResult}`)
 
         return true
     }
@@ -476,7 +476,7 @@ class CreepExtension extends Creep {
 
         this.moveTo(structures[0])
         const result = this.dismantle(structures[0])
-        console.log(`${this.name} 正在拆除 ${structures[0]}, 返回值 ${result}`)
+        this.say(`拆! ${result}`)
     }
 
     /**
