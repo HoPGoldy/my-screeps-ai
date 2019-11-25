@@ -272,35 +272,70 @@ class RoomExtension extends Room {
      * 
      * @param resourceType 要监控的资源类型
      * @param amount 期望的资源数量
+     * @param mod 监听的方式，包括
+     *     @var max 只在资源超过期望值时触发卖出操作
+     *     @var min 只在资源低于期望值时触发补充操作
+     *     @var all 双向监听，包含上述两种（默认值）
+     * @param supplementAction 从哪里补充资源
+     *     @var market 市场（默认值）
+     *     @var share 资源共享协议
      */
-    public addTerminalTask(resourceType: ResourceConstant, amount: number): string {
+    public addTerminalTask(resourceType: ResourceConstant, amount: number, mod: string = 'all', supplementAction: string = 'market'): void {
         if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
 
-        this.memory.terminalTasks[resourceType] = amount
-        return `已添加，当前监听任务如下: \n ${this.showTerminalTask()}`
+        this.memory.terminalTasks[resourceType] = { amount, mod, supplementAction }
     }
 
     /**
      * 用户操作：addTerminalTask
      */
-    public tadd(resourceType: ResourceConstant, amount: number): string { return this.addTerminalTask(resourceType, amount) }
+    public tadd(resourceType: ResourceConstant, amount: number): string { 
+        this.addTerminalTask(resourceType, amount) 
+        return `已添加，当前监听任务如下: \n ${this.showTerminalTask()}`
+    }
 
     /**
      * 移除终端矿物监控
      * 
      * @param resourceType 要停止监控的资源类型
      */
-    public removeTerminalTask(resourceType: ResourceConstant): string {
+    public removeTerminalTask(resourceType: ResourceConstant): void {
         if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
 
         delete this.memory.terminalTasks[resourceType]
-        return `已移除，当前监听任务如下: \n ${this.showTerminalTask()}`
     }
 
     /**
      * 用户操作：removeTerminalTask
      */
-    public tremove(resourceType: ResourceConstant): string { return this.removeTerminalTask(resourceType) }
+    public tremove(resourceType: ResourceConstant): string { 
+        this.removeTerminalTask(resourceType) 
+        return `已移除，当前监听任务如下: \n ${this.showTerminalTask()}`
+    }
+
+    /**
+     * 用户操作：将终端监听设置为默认值
+     */
+    public treset(): string {
+        // 模板任务
+        const templateTask = {
+            amount: 5000,
+            mod: 'min',
+            supplementAction: 'share'
+        }
+        // 重置任务
+        this.memory.terminalTasks = {
+            [RESOURCE_OXYGEN]: templateTask,
+            [RESOURCE_HYDROGEN]: templateTask,
+            [RESOURCE_KEANIUM]: templateTask,
+            [RESOURCE_LEMERGIUM]: templateTask,
+            [RESOURCE_ZYNTHIUM]: templateTask,
+            [RESOURCE_UTRIUM]: templateTask
+        }
+        this.memory.terminalIndex = 0
+        
+        return `已重置，当前监听任务如下: \n ${this.showTerminalTask()}`
+    }
 
     /**
      * 显示所有终端监听任务
@@ -311,8 +346,11 @@ class RoomExtension extends Room {
 
         const resources = Object.keys(this.memory.terminalTasks)
         if (resources.length == 0) return '该房间暂无终端监听任务'
-        
-        return resources.map(res => `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${this.memory.terminalTasks[res]}`).join('\n')
+
+        return resources.map(res => {
+            const task = this.memory.terminalTasks[res]
+            return `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod} 资源来源: ${task.supplementAction}`
+        }).join('\n')
     }
 
     /**

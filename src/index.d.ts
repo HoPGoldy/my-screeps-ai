@@ -178,15 +178,21 @@ interface RoomMemory {
     transferTasks: RoomTransferTasks[]
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
+    
     // 终端监听矿物列表
     // 键为资源名称，值为资源期望数量
     terminalTasks: {
-        [resourceType: string]: number
+        [resourceType: string]: {
+            amount: number
+            mod: string
+            supplementAction: string
+        }
     }
     // 房间内终端缓存的订单id
     targetOrderId: string
     // 当前终端要监听的资源索引
     terminalIndex: number
+    
     // 房间内的元素矿id
     mineralId: string
     
@@ -392,4 +398,15 @@ interface BodyConfig {
  */
 interface IBodyConfigs {
     [roleType: string]: BodyConfig
+}
+
+interface ITerminalListenerTask { 
+    // 要监听的资源类型
+    type: ResourceConstant,
+    // 期望数量 
+    amount: number,
+    // 监听类型: max, min, all 
+    mod: string, 
+    // 补充来源: market, share
+    supplementAction: string 
 }
