@@ -289,8 +289,8 @@ class RoomExtension extends Room {
     /**
      * 用户操作：addTerminalTask
      */
-    public tadd(resourceType: ResourceConstant, amount: number): string { 
-        this.addTerminalTask(resourceType, amount) 
+    public tadd(resourceType: ResourceConstant, amount: number, mod: string = 'all', supplementAction: string = 'market'): string { 
+        this.addTerminalTask(resourceType, amount, mod, supplementAction) 
         return `已添加，当前监听任务如下: \n ${this.showTerminalTask()}`
     }
 

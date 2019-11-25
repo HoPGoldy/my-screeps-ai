@@ -655,29 +655,32 @@ class TerminalExtension extends StructureTerminal {
      * 检查资源是否符合用户给定的期望
      */
     public ResourceListener(resource: ITerminalListenerTask): void {
+        const resourceAmount = this.store[resource.type]
         // 最大值监听，超过才进行卖出
         if (resource.mod == 'max') {
-            if (this.store[resource.type] <= resource.amount) return this.setNextIndex()
+            if (resourceAmount <= resource.amount) return this.setNextIndex()
         }
         // 最小值监听，再判断是从市场买入还是从其他房间共享
         else if (resource.mod == 'min') {
-            if (this.store[resource.type] >= resource.amount) {
+            // console.log('最小值检查！', resourceAmount, resource.type, resource.amount)
+            if (resourceAmount >= resource.amount) return this.setNextIndex()
+            else {
                 // 从其他房间共享
                 if (resource.supplementAction == 'share') {
-                    console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount}`)
+                    // console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount - resourceAmount}`)
                     return this.setNextIndex()
                 }
             }
         }
         // 双向监听，必须相等才不会触发操作
         else {
-            if (this.store[resource.type] == resource.amount) return this.setNextIndex()
+            if (resourceAmount == resource.amount) return this.setNextIndex()
         }
 
         // 获取订单
         const targetOrder = this.getOrder({
             // 根据存储的数量是否超过上限来决定是买单还是卖单
-            type: (this.store[resource.type] > resource.amount) ? ORDER_BUY : ORDER_SELL,
+            type: (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL,
             resourceType: resource.type
         })
         if (!targetOrder) {
@@ -690,7 +693,7 @@ class TerminalExtension extends StructureTerminal {
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
         // 计算要传输的数量
-        let amount = this.store[resource.type] - resource.amount
+        let amount = resourceAmount - resource.amount
         if (amount < 0) amount *= -1
         // 计算路费
         const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
