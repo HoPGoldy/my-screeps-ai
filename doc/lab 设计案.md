@@ -7,42 +7,78 @@
 
 # 前提
 
-lab 集群必须以固定格式搭建，并且初始化命令中传入的必须是指定位置的 lab。
+- lab 集群必须以固定格式搭建，并且初始化命令中传入的必须是指定位置。
+- 必须有一个房间物流模块来处理资源转移任务
+- 其他模块应保证 terminal 中可以自动补充所需的基础矿物
 
 # CLI 设计
 
 初始化 lab 集群
 ```js
-Room.linit('5d9bdd4b1acf0f000174aa4b') // 传入指定位置的 lab
+Room.linit(5, 10) // 传入 lab 集群的固定中心位置，初始化时会自动使用 .lookFor 查找附加的 lab 并写入内存
 ```
 
-# 原则
+# 思路
 
-- lab 将作为一个整体运行，通过 `Room.linit` 可以指定一个 lab，而只有该 lab 会运行资源存取策划，其他的只是被动接收资源。
+lab 将作为一个整体运行，通过 `Room.linit` 可以指定一个 lab，而只有该 lab 会运行资源存取策划，其他的只是被动接收资源。
+
+# Lab 原型拓展
+
+- 检查 `Room.hasRunLab` 字段，如果为 false 则运行定义在 `Room` 原型里的 lab 集群策划。
+- [5t 一次] 如果 lab 发现自己在 `Room.memory.lab.outLab` 里，就会把自己存储的数量写到对应的内存项里。
 
 # 模块化
 
-lab 集群的子模块包括：**长期目标**、**基本资源检查**、**任务规划器**、**当前任务** 和 **物流任务发布**。
+lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模块** 和 **物流任务发布**。
 
-**长期目标**
+**目标指定**
 
-长期目标是指上文工作目标中的一个。lab 会在上一个长期目标完成之后开始进行新的长期目标挑选，当满足下面条件后将会将其确定为自己接下来要制作的目标：
+目标是指提前安排好的工作目标中的一个。lab 会在上一个目标完成之后开始进行新的目标挑选，当满足下面条件后将会将其确定为自己接下来要制作的目标：
 
 - 该目标化合物在 terminal 中的储量不达标
 - 该目标化合物所需要的基础原料都已经存在于 terminal 里（保证不会因原料不足而暂停合成，由基本资源检查模块负责）
 - storage 中的能量大于 100k（暂定）
 
-**基本资源检查**
+暂定的工作目标队列：
+
+```js
+[
+    // 基础
+    { target: RESOURCE_HYDROXIDE, number: 5000},
+    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 5000},
+    { target: RESOURCE_UTRIUM_LEMERGITE, number: 5000},
+    // G
+    { target: RESOURCE_GHODIUM, number: 5000},
+    // XKHO2 生产线，强化 RANGE_ATTACK
+    { target: RESOURCE_KEANIUM_OXIDE, number: 3000},
+    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000},
+    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000},
+    // XLHO2 生产线，强化 HEAL
+    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000},
+    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000},
+    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000},
+    // XZHO2 生产线，强化 MOVE
+    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000},
+    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000},
+    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000},
+    // XGHO2 生产线，强化 TOUGH
+    { target: RESOURCE_GHODIUM_OXIDE, number: 3000},
+    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000},
+    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000},
+]
+```
+
+注：基础矿物不属于 lab 集群的目标，关于基础矿物的收集应有其他模块（例如资源共享协议或 terminal 监控模块）负责，lab 模块在发现对应基础矿物缺失后只会跳过该化合物的合成。
+
+**数量检查**
 
 该模块会接受其他模块传来的目标产物，然后查阅 terminal.store 中的底物是否足够，并返回可以合成的目标产物的数量（为 0 代表无法合成）
 
-**任务规划器**
+注：由于游戏中并没有给出“从目标化合物 > 底物”的常量列表，所以需要额外手动建立一个。
 
-任务规划器是将长期目标细化成当前任务的桥梁，它会根据当前选定的长期目标，来检查 terminal 中的基础资源，从而确定当前需要进行什么化合物的合成（包括1/2/3级化合物），也就是当前任务的目标。于此同时，它还会根据基础资源的数量给出当前任务的目标产物数量。任务规划器会在长期目标确定后和当前任务完成后触发，并且在找到当前任务目标后会通知物流任务发布模块进行底物填充。
+**工作模块**
 
-**当前任务**
-
-当前任务是 lab 自动化合成的核心模块，它会接受任务规划器给出的当前任务目标、等待所需资源到位（由物流任务发布负责，transfer 角色填充），然后调用指定的 lab 建筑运行 `Lab.runReaction`，运行完成后检查产物数量是否足够。不足的话开始等待资源到位并循环进行合成，当产物数量足够时将会通知物流任务发布模块将生成好的产物移送至 terminal。
+工作模块是 lab 自动化合成的核心模块，它会接受当前任务目标、等待所需资源到位（由物流任务发布负责，transfer 角色填充），然后调用指定的 lab 建筑运行 `Lab.runReaction`，直到所有的底物都被消耗，当底物消耗完或者自身容量不足时将会通知物流任务发布模块将生成好的产物移送至 terminal。
 
 **物流任务发布**
 
@@ -50,4 +86,84 @@ lab 集群的子模块包括：**长期目标**、**基本资源检查**、**任
 
 # 流程
 
-- 待补充
+- `state` 检查，并执行下列阶段之一
+
+- `getTarget` 阶段
+    - 检查 `targetIndex`，没有则新建
+    - 通过 `targetIndex` 获取目标
+    - 调用资源监测模块，查看 tarminal 中的资源是否可以合成当前目标
+        - 可以合成，将 `state` 置为 `getResource`，将资源检查模块返回值设置到 `targetAmount`，return
+        - 不可以合成，将 `targetIndex` 置为下一个，return
+
+- `getResource` 阶段
+    - 两个输入 lab 是否有足够数量的底物？
+        - 有，将 `state` 置为 `working`，return 
+    - 检查当前房间物流队列中有没有任务？
+        - 有任务，直接 return
+    - 通过 `targetAmount` 检查 terminal 终端中的底物数量是否足够
+        - 足够，发布物流任务，return
+    - 移除 `targetAmount`, `targetIndex` + 1 或 = 0，将 `state` 置为 `getTarget`，return
+
+- `working` 阶段
+    - 当前底物是否用完？
+        - 已用尽，将 `state` 置为 `putResource`，return
+    - 获取 outLab 和两个 inLab 的实例
+    - 这三个 lab 的能量是否足够？
+        - 不足，`outLabIndex` + 1 或者 = 0，发布获取能量的物流任务，return
+    - 执行反应，`outLabIndex` + 1 或者 = 0
+
+- `putResource` 阶段
+    - 物流队列中是否已经有任务？
+        - 有任务，等待，return
+    - 遍历 `outLab` 列表，检查是否都已经转移出去了
+        - 都为空，将 `state` 置为 `getTarget`，移除 `targetAmount`，`targetIndex` + 1 或 = 0，return
+    - 根据 `targetIndex` 找到对应产物，发布移出资源的物流任务
+
+# 持久化
+
+**Room**:
+
+```js
+{  
+    // 本 tick 是否已经运行了 lab 策划，lab 会先检查该字段，如果为 false 则执行策划，然后将其置为 true
+    _hasRunLab: false
+}
+```
+
+**Room.memory.lab**:
+
+```js
+{
+    // 当前 lab 模块所处的阶段，包括：getTarget(目标指定)，getResource(底物移入)，working(生成中)，putResource(产物移出)
+    // 这几种状态会按顺序依次循环
+    state: 'getTarget', 
+    // 当前的目标索引，由目标指定模块在 getTarget 阶段修改
+    targetIndex: 2,
+    // 要合成的目标产物数量，由目标指定模块在 getTarget 阶段修改
+    targetAmount: 500,
+    // 集群中的底物存放 lab，在初始化阶段指定
+    inLab: [ 
+        '5d9bdd4b1acf0f000174aa4a',
+        '5d9bdd4b1acf0f000174aa4b' 
+    ],
+    // 集群中的产物存放 lab，在初始化阶段指定
+    // 其键为 lab id，值为其中存放的资源数量
+    outLab: {
+        '5d9bdd4b1acf0f000174aa4c': 100,
+        '5d9bdd4b1acf0f000174aa4d': 300,
+        '5d9bdd4b1acf0f000174aa4e': 300,
+        '5d9bdd4b1acf0f000174aa4f': 100,
+        '5d9bdd4b1acf0f000174aa4g': 200,
+        '5d9bdd4b1acf0f000174aa51': 300,
+        '5d9bdd4b1acf0f000174aa52': 100,
+        '5d9bdd4b1acf0f000174aa53': 100
+    },
+    // 当前 working 阶段要进行反应的 outLab
+    // 由工作模块在 working 阶段修改
+    outLabIndex: 1,
+    // 集群中央位置，在集群出现问题时
+    // lab 模块会根据该位置自动重新初始化集群
+    // 若初始化失败则会移除整个 Room.memory.lab（停止本房间 lab 作业）
+    initPos: [ 5, 12 ],
+}
+```
