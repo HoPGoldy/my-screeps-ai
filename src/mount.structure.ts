@@ -116,16 +116,9 @@ class SpawnExtension extends StructureSpawn {
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
 
-        // 根据房间剩余能量找出该类型的 body[]
-        const bodyConfig: BodyConfig = bodyConfigs[creepConfig.bodyType]
-        const targetLevel = Object.keys(bodyConfig).find(level => Number(level) >= this.room.energyAvailable)
-        const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
-
-        if (!bodys) {
-            console.log(`[spawn] ${configName} 的 body 组装失败`)
-            // 直接移除该任务
-            return <OK>0
-        } 
+        // 获取身体部件
+        const bodys = this.getBodys(creepConfig.bodyType)
+        
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
         })
@@ -143,6 +136,24 @@ class SpawnExtension extends StructureSpawn {
             console.log(`[生成失败] ${creepConfig.spawn} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return spawnResult
         }
+    }
+
+    /**
+     * 获取身体部件数组
+     * 
+     * @param bodyType creepConfig 中的 bodyType
+     */
+    private getBodys(bodyType: string): BodyPartConstant[] {
+        const bodyConfig: BodyConfig = bodyConfigs[bodyType]
+        // 先通过等级粗略判断，再加上 dryRun 精确验证
+        const targetLevel = Object.keys(bodyConfig).find(level => (Number(level) >= this.room.energyAvailable) && 
+            this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
+        if (!targetLevel) return [ WORK, CARRY, MOVE]
+
+        // 获取身体部件
+        const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
+
+        return bodys
     }
 }
 
