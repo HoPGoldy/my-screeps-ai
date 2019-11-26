@@ -359,6 +359,71 @@ class RoomExtension extends Room {
     public tshow(): string { return this.showTerminalTask() }
 
     /**
+     * 向其他房间请求资源共享
+     * 
+     * @param resourceType 请求的资源类型
+     * @param amount 请求的数量
+     */
+    public shareRequest(resourceType: ResourceConstant, amount: number): boolean {
+        const targetRoom = this.shareGetSource(resourceType)
+        if (!targetRoom) return false
+
+        const addResult = targetRoom.shareAdd(this.name, resourceType, amount)
+        return addResult
+    }
+
+    /**
+     * 向本房间添加资源共享任务
+     * 
+     * @param targetRoom 资源发送到的房间
+     * @param resourceType 共享资源类型
+     * @param amount 共享资源数量
+     * @returns 是否成功添加
+     */
+    public shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean {
+        if (this.memory.shareTask) return false
+
+        this.memory.shareTask = {
+            target: targetRoom,
+            resourceType,
+            amount
+        }
+        return true
+    }
+
+    /**
+     * 根据资源类型查找来源房间
+     * 
+     * @param resourceType 要查找的资源类型
+     * @returns 找到的目标房间，没找到返回 null
+     */
+    private shareGetSource(resourceType: ResourceConstant): Room | null {
+        // 兜底
+        if (!Memory.resourceSourceMap) {
+            Memory.resourceSourceMap = {}
+            return null
+        }
+        const SourceRoomsName = Memory.resourceSourceMap[resourceType]
+        if (!SourceRoomsName) return null
+
+        // 寻找合适的房间
+        let targetRoom: Room
+        // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
+        let roomWithEmpty = SourceRoomsName.map(roomName => {
+            const room = Game.rooms[roomName]
+            if (!room) return ''
+
+            // 如果该房间当前没有任务，就选择其为目标
+            if (!room.memory.shareTask) targetRoom = room
+            return roomName
+        })
+
+        // 把上面筛选出来的空字符串元素去除
+        Memory.resourceSourceMap[resourceType] = roomWithEmpty.filter(roomName => roomName)
+        return targetRoom ? targetRoom : null
+    }
+
+    /**
      * 用户操作：房间操作帮助
      */
     public help(): string {

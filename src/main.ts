@@ -14,7 +14,7 @@ module.exports.loop = function (): void {
     creepNumberController()
 
     // 资源共享控制
-    shareController()
+    // shareController()
 
     // let cost1 = Game.cpu.getUsed()
     // 所有建筑工作

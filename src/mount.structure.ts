@@ -9,6 +9,7 @@ export default function () {
     _.assign(StructureLink.prototype, LinkExtension.prototype)
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
+    _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
 }
 
 /**
@@ -805,5 +806,24 @@ class TerminalExtension extends StructureTerminal {
             resourceType: RESOURCE_ENERGY,
             amount
         })
+    }
+}
+
+class ExtractorExtension extends StructureExtractor {
+    public work(): void {
+        if (this.room.memory.mineralId) return
+        
+        // 获取 mineral 并将其 id 保存至房间内存
+        const targets = this.room.find(FIND_MINERALS)
+        const mineral = targets[0]
+        this.room.memory.mineralId = mineral.id
+
+        // 兜底
+        if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
+        if (!Memory.resourceSourceMap[mineral.mineralType]) Memory.resourceSourceMap[mineral.mineralType] = []
+        
+        // 在资源来源表里进行注册
+        const alreadyRegister = Memory.resourceSourceMap[mineral.mineralType].find(roomName => roomName == this.room.name)
+        if (!alreadyRegister) Memory.resourceSourceMap[mineral.mineralType].push(this.room.name)
     }
 }

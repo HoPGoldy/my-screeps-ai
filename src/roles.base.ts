@@ -69,10 +69,9 @@ export default {
         isNeed: room => {
             let mineral: Mineral
             if (!room.memory.mineralId) {
-                // 没有就缓存矿床id
-                const targets = room.find(FIND_MINERALS)
-                mineral = targets[0]
-                room.memory.mineralId = mineral.id
+                // 没有返回警告，mineralId 由 ExtractorExtension 维护
+                console.log(`[miner 警告] ${room.name} 请先建造 Extractor`)
+                return false
             }
             else mineral = Game.getObjectById(room.memory.mineralId)
             // 房间中的矿床是否还有剩余产量

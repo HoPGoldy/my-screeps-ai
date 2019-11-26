@@ -166,6 +166,7 @@ interface Room {
     getFactoryTarget(): ResourceConstant | null
     clearFactoryTarget(): string
     deleteCurrentCenterTask(): void
+    shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
 }
 
 /**
@@ -280,6 +281,11 @@ interface Memory {
         tasks: IShareTask[],
         // 当前要处理的共享任务索引
         taskIndex: number
+    }
+    // 资源来源表
+    resourceSourceMap: {
+        // 资源类型为键，房间名列表为值
+        [resourceType: string]: string[]
     }
 }
 
