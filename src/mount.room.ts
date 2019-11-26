@@ -382,7 +382,7 @@ class RoomExtension extends Room {
                 functionName: 'givee'
             },
             {
-                title: '[即将废弃] 将能量从 storage 转移至 terminal 里',
+                title: '将能量从 storage 转移至 terminal 里',
                 params: [
                     { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 100k' }
                 ],
@@ -414,9 +414,15 @@ class RoomExtension extends Room {
                 title: '添加终端矿物监控',
                 params: [
                     { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
-                    { name: 'amount', desc: '指定类型的期望数量' }
+                    { name: 'amount', desc: '指定类型的期望数量' },
+                    { name: 'mod', desc: '[可选] 监听类型，分为 max, min, all(默认)' },
+                    { name: 'supplementAction', desc: '[可选] 补货来源，分为 share, market(默认)'}
                 ],
                 functionName: 'tadd'
+            },
+            {
+                title: '重设终端矿物监控',
+                functionName: 'treset'
             },
             {
                 title: '移除终端矿物监控',
