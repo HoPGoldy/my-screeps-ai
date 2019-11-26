@@ -408,13 +408,14 @@ class RoomExtension extends Room {
 
         // 寻找合适的房间
         let targetRoom: Room
+        // console.log('来源表健全', SourceRoomsName)
         // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
         let roomWithEmpty = SourceRoomsName.map(roomName => {
             const room = Game.rooms[roomName]
             if (!room) return ''
-
+            // console.log(room.memory.shareTask, room.name, this.name)
             // 如果该房间当前没有任务，就选择其为目标
-            if (!room.memory.shareTask) targetRoom = room
+            if (!room.memory.shareTask && (room.name != this.name)) targetRoom = room
             return roomName
         })
 

@@ -166,6 +166,7 @@ interface Room {
     getFactoryTarget(): ResourceConstant | null
     clearFactoryTarget(): string
     deleteCurrentCenterTask(): void
+    shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
 }
 
