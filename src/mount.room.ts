@@ -330,11 +330,12 @@ class RoomExtension extends Room {
             [RESOURCE_KEANIUM]: templateTask,
             [RESOURCE_LEMERGIUM]: templateTask,
             [RESOURCE_ZYNTHIUM]: templateTask,
-            [RESOURCE_UTRIUM]: templateTask
+            [RESOURCE_UTRIUM]: templateTask,
+            [RESOURCE_CATALYST]: templateTask
         }
         this.memory.terminalIndex = 0
         
-        return `已重置，当前监听任务如下: \n ${this.showTerminalTask()}`
+        return `已重置，当前监听任务如下: \n${this.showTerminalTask()}`
     }
 
     /**
