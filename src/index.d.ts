@@ -145,6 +145,9 @@ interface Room {
     // 当该字段为 true 时, repairer 角色将专心刷墙
     // 由房间中的 tower 负责更新
     _towerShoulderRepair: boolean
+    // 该房间是否已经执行过 lab 集群作业了
+    // 在 Lab.work 中调用，一个房间只会执行一次
+    _hasRunLab: boolean
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -168,6 +171,9 @@ interface Room {
     deleteCurrentCenterTask(): void
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
+
+    // lab 集群作业
+    runLab(): void
 }
 
 /**
@@ -227,6 +233,25 @@ interface RoomMemory {
 
     // 该房间要执行的资源共享任务
     shareTask: IRoomShareTask
+
+    /**
+     * lab 集群所需的信息
+     * @see doc/lab设计案
+     */
+    lab: {
+        // 当前集群的工作状态
+        state: string
+        // 当前生产的目标产物索引
+        targetIndex: number
+        // 当前要生产的数量
+        targetAmount?: number
+        // 底物存放 lab 的 id
+        inLab: string[]
+        // 产物存放 lab 的 id
+        outLab: string[]
+        // 要进行反应的 outLab 索引
+        outLabIndex: number
+    }
 }
 
 // 所有房间物流任务

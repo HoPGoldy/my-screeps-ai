@@ -10,6 +10,7 @@ export default function () {
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
     _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
+    _.assign(StructureLab.prototype, LabExtension.prototype)
 }
 
 /**
@@ -811,6 +812,7 @@ class TerminalExtension extends StructureTerminal {
     }
 }
 
+// Extractor 拓展
 class ExtractorExtension extends StructureExtractor {
     public work(): void {
         if (this.room.memory.mineralId) return
@@ -827,5 +829,23 @@ class ExtractorExtension extends StructureExtractor {
         // 在资源来源表里进行注册
         const alreadyRegister = Memory.resourceSourceMap[mineral.mineralType].find(roomName => roomName == this.room.name)
         if (!alreadyRegister) Memory.resourceSourceMap[mineral.mineralType].push(this.room.name)
+    }
+}
+
+// lab 拓展
+class LabExtension extends StructureLab {
+    public work(): void {
+        // 房间没有初始化 lab 集群则直接退出
+        if (!this.room.memory.lab) return
+
+        // [重要] 执行 lab 集群作业
+        if (!this.room._hasRunLab) {
+            this.room.runLab()
+            this.room._hasRunLab = true
+        }
+
+        // 如果是 outLab 就更新下自己的库存到 memory
+        if (Game.time % 10) return
+        if (this.id in this.room.memory.lab.outLab) this.room.memory.lab.outLab[this.id] = this.store[this.mineralType] | 0
     }
 }
