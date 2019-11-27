@@ -15,12 +15,12 @@
 
 初始化 lab 集群
 ```js
-Room.linit(5, 10) // 传入 lab 集群的固定中心位置，初始化时会自动使用 .lookFor 查找附加的 lab 并写入内存
+Room.linit() // 执行前需要在两个 InLab 上新建旗帜
 ```
 
 # 思路
 
-lab 将作为一个整体运行，通过 `Room.linit` 可以指定一个 lab，而只有该 lab 会运行资源存取策划，其他的只是被动接收资源。
+lab 将作为一个整体运行，每 tick 第一个执行 work 的 lab 将会运行资源存取策划，其他的只是被动接收资源。
 
 # Lab 原型拓展
 
@@ -91,7 +91,7 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
 - `getTarget` 阶段
     - 检查 `targetIndex`，没有则新建
     - 通过 `targetIndex` 获取目标
-    - 调用资源监测模块，查看 tarminal 中的资源是否可以合成当前目标
+    - 调用数量检查模块，查看 tarminal 中的资源是否可以合成当前目标
         - 可以合成，将 `state` 置为 `getResource`，将资源检查模块返回值设置到 `targetAmount`，return
         - 不可以合成，将 `targetIndex` 置为下一个，return
 
@@ -118,6 +118,27 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
     - 遍历 `outLab` 列表，检查是否都已经转移出去了
         - 都为空，将 `state` 置为 `getTarget`，移除 `targetAmount`，`targetIndex` + 1 或 = 0，return
     - 根据 `targetIndex` 找到对应产物，发布移出资源的物流任务
+
+**初始化方法**
+
+- 检查是否有 `lab1` 和 `lab2` 的旗帜
+    - 没有，显示”请新建对应旗帜“，return
+- 初始化 `Room.memory.lab`
+- `Room.find` 查找旗帜，如果坐标等于旗帜的坐标，则放入 `Room.memory.lab.inLab`，否则放入 `Room.memory.lab.outLab`。
+- 移除对应旗帜，返回”初始化成功“
+
+**数量检查模块**
+
+- 接受目标产物类型
+- 在 setting.ts 中查找其底物
+- 从 terminal 中取出对应的数量，并检查其是否为 null
+    - 为 null 直接 return 0
+- 两者取最小值，并找到能被5整除的最大数值（因为化合物反应是1次5个，这么做是为了防止 inLab 中残留底物）
+- 返回该数值
+
+**物流任务发布**
+
+lab 的物流任务一共包含三个任务，in(底物填充)、out(产物移出)、getEnergy(获取能量)，具体内容参加”房间物流设计案“。
 
 # 持久化
 
@@ -160,10 +181,6 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
     },
     // 当前 working 阶段要进行反应的 outLab
     // 由工作模块在 working 阶段修改
-    outLabIndex: 1,
-    // 集群中央位置，在集群出现问题时
-    // lab 模块会根据该位置自动重新初始化集群
-    // 若初始化失败则会移除整个 Room.memory.lab（停止本房间 lab 作业）
-    initPos: [ 5, 12 ],
+    outLabIndex: 1
 }
 ```
