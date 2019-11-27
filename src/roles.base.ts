@@ -136,7 +136,7 @@ export default {
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
         spawn: spawnName,
-        bodyType: 'worker'
+        bodyType: 'upgrader'
     }),
 
     /**
