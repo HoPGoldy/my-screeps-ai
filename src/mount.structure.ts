@@ -669,9 +669,8 @@ class TerminalExtension extends StructureTerminal {
             else {
                 // 从其他房间共享
                 if (resource.supplementAction == 'share') {
-                    console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount - resourceAmount}`)
                     const getShareRequest = this.room.shareRequest(resource.type, resource.amount - resourceAmount)
-                    console.log('请求结果为', getShareRequest)
+                    console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount - resourceAmount}  请求结果为 ${getShareRequest}`)
                     return this.setNextIndex()
                 }
             }

@@ -350,7 +350,9 @@ class RoomExtension extends Room {
 
         return resources.map(res => {
             const task = this.memory.terminalTasks[res]
-            return `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod} 资源来源: ${task.supplementAction}`
+            let result = `${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod}`
+            if (task.mod == 'min') result += ` 资源来源: ${task.supplementAction}`
+            return result
         }).join('\n')
     }
 
