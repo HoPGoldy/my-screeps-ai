@@ -11,6 +11,7 @@ export default function () {
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
     _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
     _.assign(StructureLab.prototype, LabExtension.prototype)
+    _.assign(StructureNuker.prototype, NukerExtension.prototype)
 }
 
 /**
@@ -31,7 +32,7 @@ class SpawnExtension extends StructureSpawn {
              * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现：
              * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > 移除任务 > tick 末期开始孵化 > extension 扣除能量的错误逻辑
              */
-            if (this.spawning.needTime - this.spawning.remainingTime == 1) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION })
+            if (this.spawning.needTime - this.spawning.remainingTime == 1) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION }, 1)
             return
         }
         // 内存里没有生成队列 / 生产队列为空 就啥都不干
@@ -988,5 +989,36 @@ class LabExtension extends StructureLab {
             return (result == -1) ? false : true
         }
         else return false
+    }
+}
+
+// nuker 拓展
+class NukerExtension extends StructureNuker {
+    public work(): void {
+        if (Game.time % 30) return
+
+        // 能量不满并且 storage 能量大于 300k 则开始填充能量
+        if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
+            console.log(`[${this.room.name} nuker] 发布能量填充任务`)
+            this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.FILL_NUKER,
+                id: this.id,
+                resourceType: RESOURCE_ENERGY
+            })
+
+            return
+        }
+
+        // G 矿不满并且 terminal 中 G 矿大于 1k 则开始填充 G
+        if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal.store[RESOURCE_GHODIUM] >= 1000) {
+            console.log(`[${this.room.name} nuker] 发布 G 填充任务`)
+            this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.FILL_NUKER,
+                id: this.id,
+                resourceType: RESOURCE_GHODIUM
+            })
+
+            return
+        }
     }
 }

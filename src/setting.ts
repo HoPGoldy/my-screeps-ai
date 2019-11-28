@@ -316,6 +316,7 @@ export const labTarget = [
 export const ROOM_TRANSFER_TASK = {
     FILL_EXTENSION: 'fillExtension',
     FILL_TOWER: 'fillTower',
+    FILL_NUKER: 'fillNuker',
     LAB_IN: 'labIn',
     LAB_OUT: 'labOut',
     LAB_GET_ENERGY: 'labGetEnergy'

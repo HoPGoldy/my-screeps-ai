@@ -159,7 +159,7 @@ interface Room {
     handleCenterTask(transferAmount: number): void
     getCenterTask(): ITransferTask | null
     // 房间物流 api
-    addRoomTransferTask(task: RoomTransferTasks): number
+    addRoomTransferTask(task: RoomTransferTasks, priority?: number): number
     hasRoomTransferTask(taskType: string): boolean
     getRoomTransferTask(): RoomTransferTasks | null
     handleRoomTransferTask(): void
@@ -254,7 +254,7 @@ interface RoomMemory {
 }
 
 // 所有房间物流任务
-type RoomTransferTasks = IFillTower | IFillExtension | ILabIn | ILabOut | ILabGetEnergy
+type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | ILabGetEnergy
 
 // 房间物流任务 - 填充拓展
 interface IFillExtension {
@@ -265,6 +265,13 @@ interface IFillExtension {
 interface IFillTower {
     type: string
     id: string
+}
+
+// 房间物流任务 - 填充核弹
+interface IFillNuker {
+    type: string
+    id: string
+    resourceType: ResourceConstant
 }
 
 // 房间物流任务 - lab 底物填充
