@@ -24,8 +24,8 @@ lab 将作为一个整体运行，每 tick 第一个执行 work 的 lab 将会�
 
 # Lab 原型拓展
 
-- 检查 `Room.hasRunLab` 字段，如果为 false 则运行定义在 `Room` 原型里的 lab 集群策划。
-- [5t 一次] 如果 lab 发现自己在 `Room.memory.lab.outLab` 里，就会把自己存储的数量写到对应的内存项里。
+- 检查 `Room._hasRunLab` 字段，如果为 false 则运行定义在 `Room` 原型里的 lab 集群策划。
+- [10t 一次] 如果 lab 发现自己在 `Room.memory.lab.outLab` 里，就会把自己存储的数量写到对应的内存项里。
 
 # 模块化
 
@@ -44,27 +44,27 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
 ```js
 [
     // 基础
-    { target: RESOURCE_HYDROXIDE, number: 5000},
-    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 5000},
-    { target: RESOURCE_UTRIUM_LEMERGITE, number: 5000},
+    { target: RESOURCE_HYDROXIDE, number: 5000 },
+    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 5000 },
+    { target: RESOURCE_UTRIUM_LEMERGITE, number: 5000 },
     // G
-    { target: RESOURCE_GHODIUM, number: 5000},
+    { target: RESOURCE_GHODIUM, number: 5000 },
     // XKHO2 生产线，强化 RANGE_ATTACK
-    { target: RESOURCE_KEANIUM_OXIDE, number: 3000},
-    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000},
-    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000},
+    { target: RESOURCE_KEANIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000 },
     // XLHO2 生产线，强化 HEAL
-    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000},
-    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000},
-    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000},
+    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000 },
     // XZHO2 生产线，强化 MOVE
-    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000},
-    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000},
-    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000},
+    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000 },
     // XGHO2 生产线，强化 TOUGH
-    { target: RESOURCE_GHODIUM_OXIDE, number: 3000},
-    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000},
-    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000},
+    { target: RESOURCE_GHODIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
 ]
 ```
 
