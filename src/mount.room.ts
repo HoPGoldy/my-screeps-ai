@@ -441,13 +441,19 @@ class RoomExtension extends Room {
         if (!lab1Flag || !lab2Flag) return `[lab 集群] 初始化失败，请新建名为 [lab1] 和 [lab2] 的旗帜`
         if (lab1Flag.pos.roomName != this.name || lab2Flag.pos.roomName != this.name) return `[lab 集群] 初始化失败，旗帜不在本房间内，请进行检查`
 
-        // 初始化内存
-        this.memory.lab = {
-            state: 'getTarget',
-            targetIndex: 1,
-            inLab: [],
-            outLab: [],
-            outLabIndex: 0
+        // 初始化内存, 之前有就刷新 id 缓存，没有就新建
+        if (this.memory.lab) {
+            this.memory.lab.inLab = []
+            this.memory.lab.outLab = {}
+        }
+        else {
+            this.memory.lab = {
+                state: 'getTarget',
+                targetIndex: 1,
+                inLab: [],
+                outLab: {},
+                outLabIndex: 0
+            }
         }
 
         // 获取并分配 lab
@@ -456,7 +462,7 @@ class RoomExtension extends Room {
         })
         labs.forEach(lab => {
             if (lab.pos.isEqualTo(lab1Flag.pos) || lab.pos.isEqualTo(lab2Flag.pos)) this.memory.lab.inLab.push(lab.id)
-            else this.memory.lab.outLab.push(lab.id)
+            else this.memory.lab.outLab[lab.id] = 0
         })
 
         lab1Flag.remove()
@@ -469,13 +475,6 @@ class RoomExtension extends Room {
      * 用户操作：初始化 lab 集群
      */
     public linit(): string { return this.initLab() }
-
-    /**
-     * lab 集群的工作总入口
-     */
-    public runLab(): void {
-        console.log(`${this.name} lab 集群执行工作`)
-    }
 
     /**
      * 用户操作：房间操作帮助

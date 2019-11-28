@@ -239,7 +239,7 @@ export const repairSetting = {
 }
 
 // 从反应目标产物获取其底物的对应表
-export const reactionSource = {
+export const reactionSource: IReactionSource = {
     // 三级化合物
     [RESOURCE_CATALYZED_GHODIUM_ACID]: [ RESOURCE_GHODIUM_ACID, RESOURCE_CATALYST ],
     [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: [ RESOURCE_GHODIUM_ALKALIDE, RESOURCE_CATALYST ],
@@ -273,4 +273,50 @@ export const reactionSource = {
     [RESOURCE_UTRIUM_OXIDE]: [ RESOURCE_UTRIUM, RESOURCE_OXYGEN ],
     [RESOURCE_ZYNTHIUM_HYDRIDE]: [ RESOURCE_ZYNTHIUM, RESOURCE_HYDROGEN ],
     [RESOURCE_ZYNTHIUM_OXIDE]: [ RESOURCE_ZYNTHIUM, RESOURCE_OXYGEN ],
+}
+
+/**
+ * lab 集群的工作状态常量
+ */
+export const LAB_STATE = {
+    GET_TARGET: 'getTarget',
+    GET_RESOURCE: 'getResource',
+    WORKING: 'working',
+    PUT_RESOURCE: 'putResource'
+}
+
+/**
+ * lab 集群的目标产物及其数量列表
+ */
+export const labTarget = [
+    // 基础
+    { target: RESOURCE_HYDROXIDE, number: 5000 },
+    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 5000 },
+    { target: RESOURCE_UTRIUM_LEMERGITE, number: 5000 },
+    // G
+    { target: RESOURCE_GHODIUM, number: 5000 },
+    // XKHO2 生产线，强化 RANGE_ATTACK
+    { target: RESOURCE_KEANIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000 },
+    // XLHO2 生产线，强化 HEAL
+    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000 },
+    // XZHO2 生产线，强化 MOVE
+    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000 },
+    // XGHO2 生产线，强化 TOUGH
+    { target: RESOURCE_GHODIUM_OXIDE, number: 3000 },
+    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
+    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
+]
+
+export const ROOM_TRANSFER_TASK = {
+    FILL_EXTENSION: 'fillExtension',
+    FILL_TOWER: 'fillTower',
+    LAB_IN: 'labIn',
+    LAB_OUT: 'labOut',
+    LAB_GET_ENERGY: 'labGetEnergy'
 }

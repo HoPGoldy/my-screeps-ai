@@ -1,5 +1,5 @@
 import { creepConfigs } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, ROOM_TRANSFER_TASK } from './setting'
 import { createHelp } from './utils'
 
 // 挂载拓展到建筑原型
@@ -29,9 +29,9 @@ class SpawnExtension extends StructureSpawn {
              * 由于孵化是在 tick 末的行动执行阶段进行的，所以能量在 tick 末期才会从 extension 中扣除
              * 如果返回 OK 就推送任务的话，就会出现任务已经存在了，而 extension 还是满的
              * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现：
-             * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > 移除任务 > tick 末期开始孵化 > extension扣除能量的错误逻辑
+             * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > 移除任务 > tick 末期开始孵化 > extension 扣除能量的错误逻辑
              */
-            if (this.spawning.needTime - this.spawning.remainingTime == 1) this.room.addRoomTransferTask({ type: 'fillExtension' })
+            if (this.spawning.needTime - this.spawning.remainingTime == 1) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION })
             return
         }
         // 内存里没有生成队列 / 生产队列为空 就啥都不干
@@ -193,7 +193,7 @@ class TowerExtension extends StructureTower {
             this.attack(target)
 
             // 如果能量低了就发布填充任务
-            if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: 'fillTower', id: this.id})
+            if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })
             return true
         }
         else return false
@@ -839,12 +839,154 @@ class LabExtension extends StructureLab {
 
         // [重要] 执行 lab 集群作业
         if (!this.room._hasRunLab) {
-            this.room.runLab()
+            this.runLab()
             this.room._hasRunLab = true
         }
 
         // 如果是 outLab 就更新下自己的库存到 memory
         if (Game.time % 10) return
         if (this.id in this.room.memory.lab.outLab) this.room.memory.lab.outLab[this.id] = this.store[this.mineralType] | 0
+    }
+
+    /**
+     * lab 集群的工作总入口
+     */
+    private runLab(): void {
+        switch (this.room.memory.lab.state) {
+            case LAB_STATE.GET_TARGET: 
+                this.labGetTarget()
+            break
+            case LAB_STATE.GET_RESOURCE:
+                this.labGetResource()
+            break
+            case LAB_STATE.WORKING:
+                this.labWorking()
+            break
+            case LAB_STATE.PUT_RESOURCE:
+                this.labPutResource()
+            break
+            default:
+                this.labGetTarget()
+            break
+        }
+    }
+
+    /**
+     * lab 阶段：获取全局目标
+     */
+    private labGetTarget(): void {
+        console.log(`[${this.room.name} lab] - 获取目标`)
+        
+        // 获取目标
+        if (!this.room.memory.lab.targetIndex) this.room.memory.lab.targetIndex = 0
+        const resource = labTarget[this.room.memory.lab.targetIndex]
+        
+        // 确认是否可以合成
+        const canReactionAmount = this.labAmountCheck(resource.target)
+        // 可以合成
+        if (canReactionAmount > 0) {
+            this.room.memory.lab.state = LAB_STATE.GET_RESOURCE
+            // 单次作业数量不能超过 lab 容量上限
+            this.room.memory.lab.targetAmount = canReactionAmount > LAB_MINERAL_CAPACITY ? LAB_MINERAL_CAPACITY : canReactionAmount
+            console.log(`[${this.room.name} lab] 可以合成 ${resource.target} 合成数量 ${this.room.memory.lab.targetAmount}`)
+        }
+        // 合成不了
+        else {
+            this.room.memory.lab.targetIndex = (this.room.memory.lab.targetIndex + 1 >= labTarget.length) ?
+                0 : this.room.memory.lab.targetIndex + 1
+            
+            console.log(`[${this.room.name} lab] 无法合成 ${resource.target}`)
+        }
+    }
+
+    /**
+     * lab 阶段：获取底物
+     */
+    private labGetResource(): void {
+        console.log(`[${this.room.name} lab] - 获取底物`)
+    }
+
+    /**
+     * lab 阶段：进行反应
+     */
+    private labWorking(): void {
+        console.log(`[${this.room.name} lab] - 进行反应`)
+    }
+
+    /**
+     * lab 阶段：移出产物
+     */
+    private labPutResource(): void {
+        console.log(`[${this.room.name} lab] - 移出产物`)
+    }
+
+    /**
+     * 查询目标资源可以合成的数量
+     * 会查询 setting.ts 中的 reactionSource 来找到底物，然后在 terminal 中查找
+     * 
+     * @param resourceType 要查询的资源类型
+     * @returns 可以合成的数量，为 0 代表无法合成
+     */
+    private labAmountCheck(resourceType: ResourceConstant): number {
+        // 获取资源及其数量, 并将数量从小到大排序
+        const needResourcesName = reactionSource[resourceType]
+        const needResources = needResourcesName
+            .map(res => this.store[res] | 0)
+            .sort((a, b) => a - b)
+
+        // 找到能被5整除的最大底物数量
+        if (needResources.length <= 0) return 0
+        return needResources[0] - (needResources[0] % 5)
+    }
+
+    /**
+     * 向房间物流队列推送任务
+     * 任务包括：in(底物填充)、out(产物移出)、getEnergy(获取能量)
+     * 
+     * @param taskType 要添加的任务类型
+     * @returns 是否成功添加了物流任务
+     */
+    private addTransferTask(taskType: string): boolean {
+        // 底物移入任务
+        if (taskType == ROOM_TRANSFER_TASK.LAB_IN) {
+            // 获取目标产物
+            const targetResource = labTarget[this.room.memory.lab.targetIndex].target
+            // 获取底物及其数量
+            const resource = reactionSource[targetResource].map(res => ({
+                type: <ResourceConstant>res,
+                amount: this.room.memory.lab.targetAmount
+            }))
+
+            // 发布任务
+            const result = this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.LAB_IN,
+                resource: resource
+            })
+
+            return (result == -1) ? false : true
+        }
+        // 产物移出任务
+        else if (taskType == ROOM_TRANSFER_TASK.LAB_OUT) {
+            // 获取目标产物
+            const targetResource = labTarget[this.room.memory.lab.targetIndex].target
+            
+            // 发布任务
+            const result = this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.LAB_OUT,
+                resourceType: targetResource
+            })
+
+            return (result == -1) ? false : true
+        }
+        // 获取能量任务
+        else if (taskType == ROOM_TRANSFER_TASK.LAB_GET_ENERGY) {
+            // 发布任务
+            const result = this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.LAB_GET_ENERGY
+            })
+
+            return (result == -1) ? false : true
+        }
+        else return false
     }
 }

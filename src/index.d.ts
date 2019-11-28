@@ -171,9 +171,6 @@ interface Room {
     deleteCurrentCenterTask(): void
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
-
-    // lab 集群作业
-    runLab(): void
 }
 
 /**
@@ -248,14 +245,16 @@ interface RoomMemory {
         // 底物存放 lab 的 id
         inLab: string[]
         // 产物存放 lab 的 id
-        outLab: string[]
+        outLab: {
+            [labId: string]: number
+        }
         // 要进行反应的 outLab 索引
         outLabIndex: number
     }
 }
 
 // 所有房间物流任务
-type RoomTransferTasks = IFillTower | IFillExtension
+type RoomTransferTasks = IFillTower | IFillExtension | ILabIn | ILabOut | ILabGetEnergy
 
 // 房间物流任务 - 填充拓展
 interface IFillExtension {
@@ -266,6 +265,26 @@ interface IFillExtension {
 interface IFillTower {
     type: string
     id: string
+}
+
+// 房间物流任务 - lab 底物填充
+interface ILabIn {
+    type: string
+    resource: {
+        type: ResourceConstant
+        amount: number
+    }[]
+}
+
+// 房间物流任务 - lab 产物移出
+interface ILabOut {
+    type: string
+    resourceType: ResourceConstant
+}
+
+// 房间物流任务 - lab 能量填充
+interface ILabGetEnergy {
+    type: string
 }
 
 interface transferTaskOperation {
@@ -441,4 +460,9 @@ interface ITerminalListenerTask {
     mod: string, 
     // 补充来源: market, share
     supplementAction: string 
+}
+
+// 反应底物表接口
+interface IReactionSource {
+    [targetResourceName: string]: string[]
 }

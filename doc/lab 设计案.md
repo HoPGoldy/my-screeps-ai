@@ -92,7 +92,7 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
     - 检查 `targetIndex`，没有则新建
     - 通过 `targetIndex` 获取目标
     - 调用数量检查模块，查看 tarminal 中的资源是否可以合成当前目标
-        - 可以合成，将 `state` 置为 `getResource`，将资源检查模块返回值设置到 `targetAmount`，return
+        - 可以合成，将 `state` 置为 `getResource`，将资源检查模块返回值设置到 `targetAmount` (注意不能超过两千)，return
         - 不可以合成，将 `targetIndex` 置为下一个，return
 
 - `getResource` 阶段
