@@ -1,3 +1,5 @@
+import { ROOM_TRANSFER_TASK } from './setting'
+
 /**
  * 高级房间运营角色组
  * 本角色组包括了有 Storage 和 Link 的房间内运维所需的角色
@@ -127,7 +129,7 @@ const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
  * 该对象的属性名即为任务类型
  */
 const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
-    fillExtension: {
+    [ROOM_TRANSFER_TASK.FILL_EXTENSION]: {
         source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
             let target: StructureExtension
@@ -168,7 +170,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
     },
-    fillTower: {
+    [ROOM_TRANSFER_TASK.FILL_TOWER]: {
         source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: (creep, task: IFillTower) => {
             let target: StructureTower

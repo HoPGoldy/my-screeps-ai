@@ -836,6 +836,7 @@ class LabExtension extends StructureLab {
     public work(): void {
         // 房间没有初始化 lab 集群则直接退出
         if (!this.room.memory.lab) return
+        if (Game.time % 10) return
 
         // [重要] 执行 lab 集群作业
         if (!this.room._hasRunLab) {
@@ -844,7 +845,6 @@ class LabExtension extends StructureLab {
         }
 
         // 如果是 outLab 就更新下自己的库存到 memory
-        if (Game.time % 10) return
         if (this.id in this.room.memory.lab.outLab) this.room.memory.lab.outLab[this.id] = this.store[this.mineralType] | 0
     }
 

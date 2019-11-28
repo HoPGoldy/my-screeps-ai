@@ -167,14 +167,24 @@ class RoomExtension extends Room {
      * 向房间物流任务队列推送新的任务
      * 
      * @param task 要添加的任务
+     * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
      * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
      */
-    public addRoomTransferTask(task: RoomTransferTasks): number {
+    public addRoomTransferTask(task: RoomTransferTasks, priority: number = null): number {
         if (this.hasRoomTransferTask(task.type)) return -1
 
         // console.log(`[物流任务] ${this.name} 添加任务 ${task.type}`)
-        this.memory.transferTasks.push(task)
-        return this.memory.transferTasks.length - 1
+
+        // 默认追加到队列末尾
+        if (!priority) {
+            this.memory.transferTasks.push(task)
+            return this.memory.transferTasks.length - 1
+        }
+        // 追加到队列指定位置
+        else {
+            this.memory.transferTasks.splice(priority, 0, task)
+            return priority < this.memory.transferTasks.length ? priority : this.memory.transferTasks.length - 1
+        }
     }
 
     /**
