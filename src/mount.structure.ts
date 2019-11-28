@@ -1,5 +1,6 @@
 import { creepConfigs } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, ROOM_TRANSFER_TASK } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget } from './setting'
+import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
 // 挂载拓展到建筑原型
@@ -671,7 +672,7 @@ class TerminalExtension extends StructureTerminal {
                 // 从其他房间共享
                 if (resource.supplementAction == 'share') {
                     const getShareRequest = this.room.shareRequest(resource.type, resource.amount - resourceAmount)
-                    console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount - resourceAmount}  请求结果为 ${getShareRequest}`)
+                    // console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount - resourceAmount}  请求结果为 ${getShareRequest}`)
                     return this.setNextIndex()
                 }
             }
@@ -886,7 +887,7 @@ class LabExtension extends StructureLab {
         const canReactionAmount = this.labAmountCheck(resource.target)
         // 可以合成
         if (canReactionAmount > 0) {
-            this.room.memory.lab.state = LAB_STATE.GET_RESOURCE
+            // this.room.memory.lab.state = LAB_STATE.GET_RESOURCE
             // 单次作业数量不能超过 lab 容量上限
             this.room.memory.lab.targetAmount = canReactionAmount > LAB_MINERAL_CAPACITY ? LAB_MINERAL_CAPACITY : canReactionAmount
             console.log(`[${this.room.name} lab] 可以合成 ${resource.target} 合成数量 ${this.room.memory.lab.targetAmount}`)
@@ -931,9 +932,12 @@ class LabExtension extends StructureLab {
     private labAmountCheck(resourceType: ResourceConstant): number {
         // 获取资源及其数量, 并将数量从小到大排序
         const needResourcesName = reactionSource[resourceType]
+        console.log("TCL: LabExtension -> needResourcesName", needResourcesName)
         const needResources = needResourcesName
-            .map(res => this.store[res] | 0)
+            .map(res => this.room.terminal.store[res] | 0)
             .sort((a, b) => a - b)
+        
+        console.log("TCL: LabExtension -> needResources", needResources)
 
         // 找到能被5整除的最大底物数量
         if (needResources.length <= 0) return 0

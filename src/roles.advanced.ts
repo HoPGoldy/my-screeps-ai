@@ -1,4 +1,11 @@
-import { ROOM_TRANSFER_TASK } from './setting'
+export const ROOM_TRANSFER_TASK = {
+    FILL_EXTENSION: 'fillExtension',
+    FILL_TOWER: 'fillTower',
+    FILL_NUKER: 'fillNuker',
+    LAB_IN: 'labIn',
+    LAB_OUT: 'labOut',
+    LAB_GET_ENERGY: 'labGetEnergy'
+}
 
 /**
  * 高级房间运营角色组

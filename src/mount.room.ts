@@ -301,7 +301,7 @@ class RoomExtension extends Room {
      */
     public tadd(resourceType: ResourceConstant, amount: number, mod: string = 'all', supplementAction: string = 'market'): string { 
         this.addTerminalTask(resourceType, amount, mod, supplementAction) 
-        return `已添加，当前监听任务如下: \n ${this.showTerminalTask()}`
+        return `已添加，当前监听任务如下: \n${this.showTerminalTask()}`
     }
 
     /**
@@ -320,7 +320,7 @@ class RoomExtension extends Room {
      */
     public tremove(resourceType: ResourceConstant): string { 
         this.removeTerminalTask(resourceType) 
-        return `已移除，当前监听任务如下: \n ${this.showTerminalTask()}`
+        return `已移除，当前监听任务如下:\n ${this.showTerminalTask()}`
     }
 
     /**
@@ -345,7 +345,7 @@ class RoomExtension extends Room {
         }
         this.memory.terminalIndex = 0
         
-        return `已重置，当前监听任务如下: \n${this.showTerminalTask()}`
+        return `已重置，当前监听任务如下:\n${this.showTerminalTask()}`
     }
 
     /**
@@ -446,8 +446,8 @@ class RoomExtension extends Room {
          * 获取旗帜及兜底
          * @danger 这里包含魔法常量，若有需要应改写成数组形式
          */
-        const lab1Flag = Game.flags['lab1Flag']
-        const lab2Flag = Game.flags['lab2Flag']
+        const lab1Flag = Game.flags['lab1']
+        const lab2Flag = Game.flags['lab2']
         if (!lab1Flag || !lab2Flag) return `[lab 集群] 初始化失败，请新建名为 [lab1] 和 [lab2] 的旗帜`
         if (lab1Flag.pos.roomName != this.name || lab2Flag.pos.roomName != this.name) return `[lab 集群] 初始化失败，旗帜不在本房间内，请进行检查`
 

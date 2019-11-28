@@ -21,7 +21,7 @@ class CreepExtension extends Creep {
         // let cost1 = Game.cpu.getUsed()
         // 检查 creep 内存中的角色是否存在
         if (!(this.memory.role in creepConfigs)) {
-            console.log(`creep ${this.name} 内存属性 role 不属于任何已存在的 creepConfigs 名称`)
+            console.log(`${this.name} 找不到对应的 creepConfig`)
             this.say('我凉了！')
             return 
         }

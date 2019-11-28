@@ -106,6 +106,17 @@ export const bodyConfigs: IBodyConfigs = {
         550: [ MOVE, CLAIM ],
         800: [ MOVE, CLAIM ],
         1300: [ MOVE, CLAIM ],
+        1800: [ MOVE, CLAIM ],
+        2300: [ MOVE, CLAIM ],
+        5600: [ MOVE, CLAIM ],
+        12900: [ MOVE, CLAIM ],
+    },
+
+    reserver: {
+        300: [ MOVE, CLAIM ],
+        550: [ MOVE, CLAIM ],
+        800: [ MOVE, CLAIM ],
+        1300: [ MOVE, CLAIM ],
         1800: [ MOVE, CLAIM, MOVE, CLAIM ],
         2300: [ MOVE, CLAIM, MOVE, CLAIM, MOVE, CLAIM ],
         5600: [ MOVE, CLAIM, MOVE, CLAIM, MOVE, CLAIM, MOVE, CLAIM ],
@@ -273,6 +284,11 @@ export const reactionSource: IReactionSource = {
     [RESOURCE_UTRIUM_OXIDE]: [ RESOURCE_UTRIUM, RESOURCE_OXYGEN ],
     [RESOURCE_ZYNTHIUM_HYDRIDE]: [ RESOURCE_ZYNTHIUM, RESOURCE_HYDROGEN ],
     [RESOURCE_ZYNTHIUM_OXIDE]: [ RESOURCE_ZYNTHIUM, RESOURCE_OXYGEN ],
+    // 基础化合物
+    [RESOURCE_ZYNTHIUM_KEANITE]: [ RESOURCE_ZYNTHIUM, RESOURCE_KEANIUM ],
+    [RESOURCE_UTRIUM_LEMERGITE]: [ RESOURCE_UTRIUM, RESOURCE_LEMERGIUM ],
+    [RESOURCE_HYDROXIDE]: [ RESOURCE_HYDROGEN, RESOURCE_OXYGEN ],
+    [RESOURCE_GHODIUM]: [ RESOURCE_ZYNTHIUM_KEANITE, RESOURCE_UTRIUM_LEMERGITE ]
 }
 
 /**
@@ -312,12 +328,3 @@ export const labTarget = [
     { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
     { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
 ]
-
-export const ROOM_TRANSFER_TASK = {
-    FILL_EXTENSION: 'fillExtension',
-    FILL_TOWER: 'fillTower',
-    FILL_NUKER: 'fillNuker',
-    LAB_IN: 'labIn',
-    LAB_OUT: 'labOut',
-    LAB_GET_ENERGY: 'labGetEnergy'
-}

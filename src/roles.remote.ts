@@ -71,7 +71,7 @@ export default {
             }
         },
         spawn: spawnName,
-        bodyType: 'claimer'
+        bodyType: 'reserver'
     }),
 
     /**
