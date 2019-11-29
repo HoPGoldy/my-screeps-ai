@@ -993,7 +993,8 @@ class LabExtension extends StructureLab {
             // 获取目标产物
             const targetResource = labTarget[this.room.memory.lab.targetIndex].target
             // 获取底物及其数量
-            const resource = reactionSource[targetResource].map(res => ({
+            const resource = reactionSource[targetResource].map((res, index) => ({
+                id: this.room.memory.lab.inLab[index],
                 type: <ResourceConstant>res,
                 amount: this.room.memory.lab.targetAmount
             }))

@@ -271,5 +271,50 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             else creep.say(`错误! ${transferResult}`)
         },
         switch: (creep, task: IFillNuker) => creep.store[task.resourceType] > 0
-    }
+    },
+
+    [ROOM_TRANSFER_TASK.LAB_IN]: {
+        source: (creep, task: ILabIn, sourceId) => {
+            // 获取 terminal
+            const terminal = creep.room.terminal
+            if (!terminal) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] labin, 未找到 terminal，任务已移除`)
+            }
+
+            // 把多余的能量放终端里
+            if (creep.store[RESOURCE_ENERGY] > 0) return creep.transferTo(terminal, RESOURCE_ENERGY)
+
+            // 找到第一个需要的底物，然后从终端拿出
+            const targetResource = task.resource.find(res => res.amount > 0)
+            const getAmount = targetResource.amount > creep.store.getFreeCapacity() ?
+                creep.store.getFreeCapacity() :
+                targetResource.amount
+
+            if (creep.withdraw(terminal, targetResource.type, getAmount) == ERR_NOT_IN_RANGE) creep.moveTo(terminal, { reusePath: 20 })
+        },
+        target: (creep, task: ILabIn) => {
+            const targetResource = task.resource.find(res => res.amount > 0)
+            // 找不到了就说明都成功转移了
+            if (!targetResource) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return
+            }
+            
+            const targetLab: StructureLab = Game.getObjectById(targetResource.id)
+
+            // 转移资源
+            const transferResult = creep.transfer(targetLab, targetResource.type)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(targetLab, { reusePath: 20 })
+            // 正常转移资源则更新任务
+            else if (transferResult == OK) {
+                // 这里直接更新到 0 的原因是因为这样可以最大化运载效率
+                // 抱住在产物移出的时候可以一次就拿完
+                creep.room.handleLabInTask(targetResource.type, 0)
+                console.log(`[${creep.name}] 完成 labin 填充任务`)
+            }
+            else creep.say(`错误! ${transferResult}`)
+        },
+        switch: (creep, task: ILabIn) => creep.store.getUsedCapacity() > 0
+    },
 }

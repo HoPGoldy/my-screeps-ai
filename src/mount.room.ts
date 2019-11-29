@@ -1,4 +1,5 @@
 import { createHelp } from './utils'
+import { ROOM_TRANSFER_TASK } from './roles.advanced'
 
 // 挂载拓展到 Room 原型
 export default function () {
@@ -222,6 +223,30 @@ class RoomExtension extends Room {
      */
     public handleRoomTransferTask(): void {
         this.deleteCurrentRoomTransferTask()
+    }
+
+    /**
+     * 更新 labIn 任务信息
+     * @param resourceType 要更新的资源 id
+     * @param amount 要更新成的数量
+     */
+    public handleLabInTask(resourceType: ResourceConstant, amount: number): boolean {
+        const currentTask = <ILabIn>this.getRoomTransferTask()
+        // 判断当前任务为 labin
+        if (currentTask.type == ROOM_TRANSFER_TASK.LAB_IN) {
+            // 找到对应的底物
+            for (const index in currentTask.resource) {
+                if (currentTask.resource[Number(index)].type == resourceType) {
+                    // 更新底物数量
+                    currentTask.resource[Number(index)].amount = amount
+                    break
+                }
+            }
+            // 更新对应的任务
+            this.memory.transferTasks.splice(0, 1, currentTask)
+            return true
+        }
+        else return false
     }
 
     /**

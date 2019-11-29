@@ -162,6 +162,7 @@ interface Room {
     addRoomTransferTask(task: RoomTransferTasks, priority?: number): number
     hasRoomTransferTask(taskType: string): boolean
     getRoomTransferTask(): RoomTransferTasks | null
+    handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
     handleRoomTransferTask(): void
     deleteCurrentRoomTransferTask(): void
 
@@ -171,6 +172,7 @@ interface Room {
     deleteCurrentCenterTask(): void
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
+    
 }
 
 /**
@@ -278,6 +280,7 @@ interface IFillNuker {
 interface ILabIn {
     type: string
     resource: {
+        id: string
         type: ResourceConstant
         amount: number
     }[]
