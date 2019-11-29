@@ -458,6 +458,7 @@ interface IBodyConfigs {
     [roleType: string]: BodyConfig
 }
 
+// 终端监听任务
 interface ITerminalListenerTask { 
     // 要监听的资源类型
     type: ResourceConstant,

@@ -177,6 +177,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
     },
+
     [ROOM_TRANSFER_TASK.FILL_TOWER]: {
         source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: (creep, task: IFillTower) => {
@@ -220,5 +221,55 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
+    },
+
+    [ROOM_TRANSFER_TASK.FILL_NUKER]: {
+        source: (creep, task: IFillNuker, sourceId) => {
+            // 获取资源存储建筑
+            let sourceStructure: StructureStorage | StructureTerminal
+            if (task.resourceType == RESOURCE_ENERGY) sourceStructure = sourceId ? Game.getObjectById(sourceId) : creep.room.storage
+            else sourceStructure = creep.room.terminal
+            // 获取 nuker
+            const nuker: StructureNuker = Game.getObjectById(task.id)
+
+            // 兜底
+            if (!sourceStructure || !nuker) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] nuker 填充任务，未找到 Storage 或者 Nuker`)
+            }
+
+            // 获取应拿取的数量
+            let getAmount = creep.store.getCapacity() > nuker.store.getFreeCapacity(task.resourceType) ?
+                creep.store.getCapacity() :
+                nuker.store.getFreeCapacity(task.resourceType)
+            // 没那么多的话就有多少拿多少
+            if (sourceStructure.store[task.resourceType] < getAmount) getAmount = sourceStructure.store[task.resourceType]
+            
+            if (getAmount <= 0) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] nuker 填充任务，资源不足`)
+            }
+            
+            // 拿取资源
+            if (creep.withdraw(sourceStructure, task.resourceType, getAmount) == ERR_NOT_IN_RANGE) creep.moveTo(sourceStructure, { reusePath: 20 })
+        },
+        target: (creep, task: IFillNuker) => {
+            // 获取 nuker 及兜底
+            let target: StructureNuker = Game.getObjectById(task.id)
+            if (!target) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] nuker 填充任务，Nuker`)
+            }
+
+            // 转移资源
+            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
+            else if (transferResult == OK) {
+                creep.room.handleRoomTransferTask()
+                console.log(`[${creep.name}] 完成 nuker 填充任务`)
+            }
+            else creep.say(`错误! ${transferResult}`)
+        },
+        switch: (creep, task: IFillNuker) => creep.store[task.resourceType] > 0
     }
 }
