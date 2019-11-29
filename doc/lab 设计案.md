@@ -96,10 +96,10 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
         - 不可以合成，将 `targetIndex` 置为下一个，return
 
 - `getResource` 阶段
-    - 两个输入 lab 是否有足够数量的底物？
-        - 有，将 `state` 置为 `working`，return 
     - 检查当前房间物流队列中有没有任务？
         - 有任务，直接 return
+    - 两个输入 lab 是否有足够数量的底物？
+        - 有，将 `state` 置为 `working`，return 
     - 通过 `targetAmount` 检查 terminal 终端中的底物数量是否足够
         - 足够，发布物流任务，return
     - 移除 `targetAmount`, `targetIndex` + 1 或 = 0，将 `state` 置为 `getTarget`，return

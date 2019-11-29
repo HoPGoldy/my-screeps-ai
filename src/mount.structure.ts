@@ -894,8 +894,7 @@ class LabExtension extends StructureLab {
         }
         // 合成不了
         else {
-            this.room.memory.lab.targetIndex = (this.room.memory.lab.targetIndex + 1 >= labTarget.length) ?
-                0 : this.room.memory.lab.targetIndex + 1
+            this.setNextIndex()
             
             console.log(`[${this.room.name} lab] 无法合成 ${resource.target}`)
         }
@@ -906,6 +905,31 @@ class LabExtension extends StructureLab {
      */
     private labGetResource(): void {
         console.log(`[${this.room.name} lab] - 获取底物`)
+        
+        // 检查是否有能量移入任务
+        if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_IN)) return
+
+        // 检查 InLab 底物数量，都有底物的话就进入下个阶段
+        const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId) as StructureLab)
+        if (!inLabs.find(lab => lab.store.getUsedCapacity() == 0)) {
+            this.room.memory.lab.state = LAB_STATE.WORKING
+            return
+        }
+
+        // 获取终端
+        const termial = this.room.terminal
+        if (!termial) return console.log(`[${this.room.name} lab] 错误! 找不到终端`)
+
+        // 检查底物是否足够
+        const targetResource = labTarget[this.room.memory.lab.targetIndex].target
+        const hasInsufficientResource = reactionSource[targetResource].find(res => termial.store[res] >= this.room.memory.lab.targetAmount)
+        // 有不足的底物, 重新查找目标
+        if (hasInsufficientResource) {
+            this.room.memory.lab.state = LAB_STATE.GET_TARGET
+            this.setNextIndex()
+        }
+        // 没有就正常发布底物填充任务
+        else this.addTransferTask(ROOM_TRANSFER_TASK.LAB_IN)
     }
 
     /**
@@ -920,6 +944,18 @@ class LabExtension extends StructureLab {
      */
     private labPutResource(): void {
         console.log(`[${this.room.name} lab] - 移出产物`)
+    }
+
+    /**
+     * 将 lab.targetIndex 设置到下一个目标
+     * 
+     * @returns 当前的目标索引
+     */
+    private setNextIndex(): number {
+        this.room.memory.lab.targetIndex = (this.room.memory.lab.targetIndex + 1 >= labTarget.length) ?
+            0 : this.room.memory.lab.targetIndex + 1
+        
+        return this.room.memory.lab.targetIndex
     }
 
     /**
@@ -963,12 +999,10 @@ class LabExtension extends StructureLab {
             }))
 
             // 发布任务
-            const result = this.room.addRoomTransferTask({
+            return (this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.LAB_IN,
                 resource: resource
-            })
-
-            return (result == -1) ? false : true
+            }) == -1) ? false : true
         }
         // 产物移出任务
         else if (taskType == ROOM_TRANSFER_TASK.LAB_OUT) {
@@ -976,21 +1010,17 @@ class LabExtension extends StructureLab {
             const targetResource = labTarget[this.room.memory.lab.targetIndex].target
             
             // 发布任务
-            const result = this.room.addRoomTransferTask({
+            return (this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.LAB_OUT,
                 resourceType: targetResource
-            })
-
-            return (result == -1) ? false : true
+            }) == -1) ? false : true
         }
         // 获取能量任务
         else if (taskType == ROOM_TRANSFER_TASK.LAB_GET_ENERGY) {
             // 发布任务
-            const result = this.room.addRoomTransferTask({
+            return (this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.LAB_GET_ENERGY
-            })
-
-            return (result == -1) ? false : true
+            }) == -1) ? false : true
         }
         else return false
     }
