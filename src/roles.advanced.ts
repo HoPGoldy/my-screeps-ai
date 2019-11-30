@@ -21,6 +21,8 @@ export default {
      */
     transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
         source: creep => {
+            if (creep.ticksToLive <= 20) deathPrepare(creep, sourceId)
+
             const task = getRoomTransferTask(creep.room)
 
             // 有任务就执行
@@ -33,6 +35,12 @@ export default {
             if (task) transferTaskOperations[task.type].target(creep, task)
         },
         switch: creep => {
+            // 快死了就处理后事
+            if (creep.ticksToLive <= 20) {
+                creep.say('下辈子再干')
+                return false
+            }
+
             const task = getRoomTransferTask(creep.room)
 
             // 有任务就进行判断
@@ -110,6 +118,35 @@ export default {
         spawn: spawnName,
         bodyType: 'centerTransfer'
     })
+}
+
+/**
+ * 快死时的后事处理
+ * 将资源存放在对应的地方
+ * 存完了就自杀
+ * 
+ * @param creep transfer
+ * @param sourceId 能量存放处
+ */
+const deathPrepare = function(creep: Creep, sourceId: string): void {
+    if (creep.store.getCapacity() > 0) {
+        for (const resourceType in creep.store) {
+            let target: StructureStorage | StructureTerminal
+            // 不是能量就放到 terminal 里
+            if (resourceType != RESOURCE_ENERGY && creep.room.terminal) {
+                target = creep.room.terminal
+                
+            }
+            // 否则就放到 storage 或者玩家指定的地方
+            else target = sourceId ? Game.getObjectById(sourceId) as StructureStorage : creep.room.storage
+
+            // 转移资源
+            if (creep.transfer(target, <ResourceConstant>resourceType) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
+            
+            break
+        }
+    }
+    else creep.suicide()
 }
 
 /**
