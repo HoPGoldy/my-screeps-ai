@@ -239,7 +239,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
 
             // 获取应拿取的数量
-            let getAmount = creep.store.getCapacity() > nuker.store.getFreeCapacity(task.resourceType) ?
+            let getAmount = creep.store.getCapacity() < nuker.store.getFreeCapacity(task.resourceType) ?
                 creep.store.getCapacity() :
                 nuker.store.getFreeCapacity(task.resourceType)
             // 没那么多的话就有多少拿多少
@@ -251,7 +251,9 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
             
             // 拿取资源
-            if (creep.withdraw(sourceStructure, task.resourceType, getAmount) == ERR_NOT_IN_RANGE) creep.moveTo(sourceStructure, { reusePath: 20 })
+            const getResult = creep.withdraw(sourceStructure, task.resourceType, getAmount)
+            if (getResult == ERR_NOT_IN_RANGE) creep.moveTo(sourceStructure, { reusePath: 20 })
+            else if (getResult != OK) console.log(`[${creep.name}] nuker 填充任务，withdrow`, getResult)
         },
         target: (creep, task: IFillNuker) => {
             // 获取 nuker 及兜底
@@ -287,6 +289,13 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 找到第一个需要的底物，然后从终端拿出
             const targetResource = task.resource.find(res => res.amount > 0)
+            
+            // 找不到了就说明都成功转移了
+            if (!targetResource) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return
+            }
+
             const getAmount = targetResource.amount > creep.store.getFreeCapacity() ?
                 creep.store.getFreeCapacity() :
                 targetResource.amount

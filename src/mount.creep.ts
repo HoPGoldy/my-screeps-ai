@@ -120,7 +120,7 @@ class CreepExtension extends Creep {
         // 如果已经在待命位置则原地不动
         if (this.memory.isStanBy) return
         // 获取旗帜
-        let standByFlag = this.getFlag(`${this.room.name} StandBy`)
+        let standByFlag = this.getFlag(`${this.name} StandBy`)
         if (!standByFlag) {
             this.say('去哪待命?')
             return
@@ -146,7 +146,9 @@ class CreepExtension extends Creep {
         const enemy = this.pos.findClosestByRange(this.room._enemys)
         this.say(`正在消灭 ${enemy.name}`)
         this.moveTo(enemy.pos, getPath('attack'))
-        this.rangedAttack(enemy)
+
+        if (this.getActiveBodyparts(RANGED_ATTACK) > 0) this.rangedAttack(enemy)
+        else this.attack(enemy)
 
         // 如果有可用 HEAL 身体并且掉血了则自我治疗
         if (this.getActiveBodyparts(HEAL) > 0 && this.hits < this.hitsMax) {
@@ -488,8 +490,12 @@ class CreepExtension extends Creep {
         creeps.push(this)
         // 生命值损失比例从大到小排序
         let sortedHitCreeps = creeps.sort((a, b) => (a.hits / a.hitsMax) - (b.hits / b.hitsMax))
-        this.heal(sortedHitCreeps[0])
-        this.moveTo(sortedHitCreeps[0])
+        const target = sortedHitCreeps[0]
+
+        // 掉血就治疗
+        if (target.hits < target.hitsMax) this.heal(target)
+        // 远了就靠近
+        if (!this.pos.isNearTo(target.pos)) this.moveTo(target)
     }
 
     /**
