@@ -87,7 +87,7 @@ export const bodyConfigs: IBodyConfigs = {
      */
     centerTransfer: {
         300: [ CARRY, CARRY, MOVE ],
-        550: [ CARRY, CARRY, CARRY ],
+        550: [ CARRY, CARRY, MOVE ],
         800: [ CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
         1300: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],
         1800: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ],

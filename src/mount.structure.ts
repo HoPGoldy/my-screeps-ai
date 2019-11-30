@@ -940,6 +940,49 @@ class LabExtension extends StructureLab {
      */
     private labWorking(): void {
         console.log(`[${this.room.name} lab] - 进行反应`)
+
+        const labMemory = this.room.memory.lab
+
+        // 获取 inLab
+        let inLabs: StructureLab[]
+        labMemory.inLab.forEach(labId => {
+            const lab = Game.getObjectById(labId) as StructureLab
+            if (!lab) console.log(`[${this.room.name} lab] 错误! 找不到 inLab ${labId}`)
+            else inLabs.push(lab)
+        })
+        if (inLabs.length < 2) return
+
+        // 底物用光了就进入下一阶段        
+        const runOutResource = inLabs.find(lab => lab.store[lab.mineralType] == 0)
+        if (runOutResource) {
+            this.room.memory.lab.state = LAB_STATE.PUT_RESOURCE
+            return
+        }
+
+        // 获取本次要进行反应的 outLab
+        const outLabIds = Object.keys(labMemory.outLab)
+        const outLab: StructureLab = Game.getObjectById(outLabIds[labMemory.outLabIndex])
+        
+        // 兜底
+        if (!outLab) {
+            console.log(`[${this.room.name} lab] 错误! 找不到 outLab ${labMemory.outLabIndex}, 已移除`)
+            delete this.room.memory.lab.outLab[outLabIds[labMemory.outLabIndex]]
+            this.setNextOutLabIndex()
+            return
+        }
+
+        // 能量不足的话就发布能量填充任务
+        for (const lab of [...inLabs, outLab]) {
+            if (lab.store[RESOURCE_ENERGY] == 0) {
+                this.setNextOutLabIndex()
+                this.addTransferTask(ROOM_TRANSFER_TASK.LAB_GET_ENERGY)
+                return
+            }
+        }
+
+        outLab.runReaction(inLabs[0], inLabs[1])
+        
+        this.setNextOutLabIndex()
     }
 
     /**
@@ -959,6 +1002,21 @@ class LabExtension extends StructureLab {
             0 : this.room.memory.lab.targetIndex + 1
         
         return this.room.memory.lab.targetIndex
+    }
+
+    /**
+     * 将 lab.outLabIndex 设置到下一个 outLab
+     * 
+     * @returns 当前的 outLab 索引
+     */
+    private setNextOutLabIndex(): number {
+        const outLabIds = Object.keys(this.room.memory.lab.outLab)
+        const index = this.room.memory.lab.outLabIndex
+
+        this.room.memory.lab.outLabIndex = index + 1 >= outLabIds.length ? 
+            0 : index + 1
+        
+        return this.room.memory.lab.outLabIndex
     }
 
     /**

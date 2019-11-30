@@ -363,4 +363,34 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         },
         switch: (creep, task: ILabIn) => creep.store.getUsedCapacity() > 0
     },
+
+    [ROOM_TRANSFER_TASK.LAB_GET_ENERGY]: {
+        source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
+        target: creep => {
+            const labMemory = creep.room.memory.lab
+            
+            // 获取能量为空的 lab
+            let targetLab: StructureLab
+            for (const labId of [...labMemory.inLab, ...Object.keys(labMemory.outLab)]) {
+                const lab: StructureLab = Game.getObjectById(labId)
+                if (lab && lab.store[RESOURCE_ENERGY] == 0) {
+                    targetLab = lab
+                    break
+                }
+            }
+
+            // 找不到就说明任务完成
+            if (!targetLab) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return
+            }
+
+            // 转移资源
+            const transferResult = creep.transfer(targetLab, RESOURCE_ENERGY)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(targetLab, { reusePath: 20 })
+            // 正常转移资源则更新任务
+            else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
+        },
+        switch: creep => creep.store[RESOURCE_ENERGY] > 0
+    },
 }
