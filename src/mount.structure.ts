@@ -859,7 +859,7 @@ class LabExtension extends StructureLab {
                 this.labGetTarget()
             break
             case LAB_STATE.GET_RESOURCE:
-                if (Game.time % 10) return
+                if (Game.time % 15) return
                 this.labGetResource()
             break
             case LAB_STATE.WORKING:
@@ -867,7 +867,7 @@ class LabExtension extends StructureLab {
                 this.labWorking()
             break
             case LAB_STATE.PUT_RESOURCE:
-                if (Game.time % 10) return
+                if (Game.time % 15) return
                 this.labPutResource()
             break
             default:
@@ -915,7 +915,7 @@ class LabExtension extends StructureLab {
 
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
         const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId) as StructureLab)
-        const hasEmptyLab = inLabs.find(lab => lab.store.getFreeCapacity() == LAB_MINERAL_CAPACITY)
+        const hasEmptyLab = inLabs.find(lab => !lab.mineralType)
         console.log("TCL: LabExtension -> hasEmptyLab", hasEmptyLab)
         if (!hasEmptyLab) {
             this.room.memory.lab.state = LAB_STATE.WORKING
@@ -957,8 +957,8 @@ class LabExtension extends StructureLab {
         if (inLabs.length < 2) return
 
         // 底物用光了就进入下一阶段        
-        const runOutResource = inLabs.find(lab => lab.store[lab.mineralType] == 0)
-        if (runOutResource) {
+        const notRunOutResource = inLabs.find(lab => lab.store[lab.mineralType] >= 0)
+        if (!notRunOutResource) {
             this.room.memory.lab.state = LAB_STATE.PUT_RESOURCE
             return
         }
@@ -985,6 +985,21 @@ class LabExtension extends StructureLab {
      */
     private labPutResource(): void {
         console.log(`[${this.room.name} lab] - 移出产物`)
+
+        // 检查是否已经有正在执行的移出任务嘛
+        if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)) return
+
+        // 检查资源有没有全部转移出去
+        for (const labId in this.room.memory.lab.outLab) {
+            if (this.room.memory.lab.outLab[labId] > 0) {
+                // 没有的话就发布移出任务
+                this.addTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)
+                return
+            }
+        }
+
+        // 都移出去的话就可以开始新的轮回了
+        this.room.memory.lab.state = LAB_STATE.GET_TARGET
     }
 
     /**

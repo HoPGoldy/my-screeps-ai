@@ -393,4 +393,52 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
     },
+
+    [ROOM_TRANSFER_TASK.LAB_OUT]: {
+        /**
+         * @todo 一次拿多个 lab 的产物
+         */
+        source: (creep, task: ILabOut, sourceId) => {
+            const labMemory = creep.room.memory.lab
+
+            // 获取还有资源的 lab
+            let targetLab: StructureLab
+            for (const outLabId in labMemory.outLab) {
+                if (labMemory.outLab[outLabId] > 0){
+                    targetLab = Game.getObjectById(outLabId)
+                    break
+                }
+            }
+
+            // 找不到的话就说明任务完成
+            if (!targetLab) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return
+            }
+
+            // 转移资源
+            const withdrawResult = creep.withdraw(targetLab, task.resourceType)
+            if (withdrawResult === ERR_NOT_IN_RANGE) creep.moveTo(targetLab, { reusePath: 20 })
+            // 正常转移资源则更新任务
+            else if (withdrawResult != OK) creep.say(`draw ${withdrawResult}`)
+        },
+        target: (creep, task: ILabOut) => {
+            const terminal = creep.room.terminal
+
+            /**
+             * @todo 没有 terminal 应该把资源转移到其他储藏地
+             */
+            if (!terminal) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] labin, 未找到 terminal，任务已移除`)
+            }
+
+            // 转移资源
+            const transferResult = creep.transfer(terminal, task.resourceType)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(terminal, { reusePath: 20 })
+            // 正常转移资源则更新任务
+            else if (transferResult != OK) creep.say(`labout ${transferResult}`)
+        },
+        switch: (creep, task: ILabOut) => creep.store[task.resourceType] > 0
+    },
 }

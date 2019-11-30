@@ -108,8 +108,6 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
     - 当前底物是否用完？
         - 已用尽，将 `state` 置为 `putResource`，return
     - 获取 outLab 和两个 inLab 的实例
-    - 这三个 lab 的能量是否足够？
-        - 不足，`outLabIndex` + 1 或者 = 0，发布获取能量的物流任务，return
     - 执行反应，`outLabIndex` + 1 或者 = 0
 
 - `putResource` 阶段
