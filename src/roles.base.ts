@@ -111,6 +111,9 @@ export default {
                 return false
             }
 
+            // 八级时只有降级倒计时低于 10000 时才会生成
+            if (room.controller.level == 8 && room.controller.ticksToDowngrade > 10000) return false
+
             // 从带有 store 的建筑里获取能量
             if (source.hasOwnProperty('store')) {
                 // 由于没有针对”包含 store 的建筑“的类型定义，所以这里使用 StructureStorage 代替

@@ -838,7 +838,6 @@ class LabExtension extends StructureLab {
     public work(): void {
         // 房间没有初始化 lab 集群则直接退出
         if (!this.room.memory.lab) return
-        if (Game.time % 10) return
 
         // [重要] 执行 lab 集群作业
         if (!this.room._hasRunLab) {
@@ -856,18 +855,23 @@ class LabExtension extends StructureLab {
     private runLab(): void {
         switch (this.room.memory.lab.state) {
             case LAB_STATE.GET_TARGET: 
+                if (Game.time % 10) return
                 this.labGetTarget()
             break
             case LAB_STATE.GET_RESOURCE:
+                if (Game.time % 10) return
                 this.labGetResource()
             break
             case LAB_STATE.WORKING:
+                if (Game.time % 2) return
                 this.labWorking()
             break
             case LAB_STATE.PUT_RESOURCE:
+                if (Game.time % 10) return
                 this.labPutResource()
             break
             default:
+                if (Game.time % 10) return
                 this.labGetTarget()
             break
         }
@@ -944,7 +948,7 @@ class LabExtension extends StructureLab {
         const labMemory = this.room.memory.lab
 
         // 获取 inLab
-        let inLabs: StructureLab[]
+        let inLabs: StructureLab[] = []
         labMemory.inLab.forEach(labId => {
             const lab = Game.getObjectById(labId) as StructureLab
             if (!lab) console.log(`[${this.room.name} lab] 错误! 找不到 inLab ${labId}`)
@@ -970,18 +974,9 @@ class LabExtension extends StructureLab {
             this.setNextOutLabIndex()
             return
         }
-
-        // 能量不足的话就发布能量填充任务
-        for (const lab of [...inLabs, outLab]) {
-            if (lab.store[RESOURCE_ENERGY] == 0) {
-                this.setNextOutLabIndex()
-                this.addTransferTask(ROOM_TRANSFER_TASK.LAB_GET_ENERGY)
-                return
-            }
-        }
+        if (outLab.cooldown != 0) return
 
         outLab.runReaction(inLabs[0], inLabs[1])
-        
         this.setNextOutLabIndex()
     }
 

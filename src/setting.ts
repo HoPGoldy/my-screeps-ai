@@ -312,19 +312,19 @@ export const labTarget = [
     // G
     { target: RESOURCE_GHODIUM, number: 5000 },
     // XKHO2 生产线，强化 RANGE_ATTACK
-    { target: RESOURCE_KEANIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000 },
-    // XLHO2 生产线，强化 HEAL
-    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000 },
-    // XZHO2 生产线，强化 MOVE
-    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000 },
-    // XGHO2 生产线，强化 TOUGH
-    { target: RESOURCE_GHODIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
+    // { target: RESOURCE_KEANIUM_OXIDE, number: 3000 },
+    // { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000 },
+    // { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000 },
+    // // XLHO2 生产线，强化 HEAL
+    // { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000 },
+    // { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000 },
+    // { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000 },
+    // // XZHO2 生产线，强化 MOVE
+    // { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000 },
+    // { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000 },
+    // { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000 },
+    // // XGHO2 生产线，强化 TOUGH
+    // { target: RESOURCE_GHODIUM_OXIDE, number: 3000 },
+    // { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
+    // { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
 ]

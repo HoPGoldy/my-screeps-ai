@@ -373,7 +373,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             let targetLab: StructureLab
             for (const labId of [...labMemory.inLab, ...Object.keys(labMemory.outLab)]) {
                 const lab: StructureLab = Game.getObjectById(labId)
-                if (lab && lab.store[RESOURCE_ENERGY] == 0) {
+                if (lab && lab.store[RESOURCE_ENERGY] != LAB_ENERGY_CAPACITY) {
                     targetLab = lab
                     break
                 }
