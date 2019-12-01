@@ -1,6 +1,9 @@
 import mountWork from './mount'
 import { creepNumberController, doing } from './utils'
 
+/**
+ * @todo factory 添加启动下限
+ */
 module.exports.loop = function (): void {
     // console.log(`-------------------------- [${Game.time}] ----`)
     

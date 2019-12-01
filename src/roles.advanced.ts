@@ -21,7 +21,7 @@ export default {
      */
     transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
         source: creep => {
-            if (creep.ticksToLive <= 20) deathPrepare(creep, sourceId)
+            if (creep.ticksToLive <= 20) return deathPrepare(creep, sourceId)
 
             const task = getRoomTransferTask(creep.room)
 
@@ -135,7 +135,6 @@ const deathPrepare = function(creep: Creep, sourceId: string): void {
             // 不是能量就放到 terminal 里
             if (resourceType != RESOURCE_ENERGY && creep.room.terminal) {
                 target = creep.room.terminal
-                
             }
             // 否则就放到 storage 或者玩家指定的地方
             else target = sourceId ? Game.getObjectById(sourceId) as StructureStorage : creep.room.storage
@@ -277,7 +276,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 获取应拿取的数量
             let getAmount = creep.store.getCapacity() < nuker.store.getFreeCapacity(task.resourceType) ?
-                creep.store.getCapacity() :
+                creep.store.getFreeCapacity() :
                 nuker.store.getFreeCapacity(task.resourceType)
             // 没那么多的话就有多少拿多少
             if (sourceStructure.store[task.resourceType] < getAmount) getAmount = sourceStructure.store[task.resourceType]
@@ -301,7 +300,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
 
             // 转移资源
-            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
+            const transferResult = creep.transfer(target, task.resourceType)
             if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
             else if (transferResult == OK) {
                 creep.room.handleRoomTransferTask()
@@ -361,7 +360,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
             else creep.say(`错误! ${transferResult}`)
         },
-        switch: (creep, task: ILabIn) => creep.store.getUsedCapacity() > 0
+        // 只要 creep 存储里有需要的资源就进入 target
+        switch: (creep, task: ILabIn) => task.resource.find(res => creep.store[res.type] > 0) ? true : false
     },
 
     [ROOM_TRANSFER_TASK.LAB_GET_ENERGY]: {
@@ -398,7 +398,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         /**
          * @todo 一次拿多个 lab 的产物
          */
-        source: (creep, task: ILabOut, sourceId) => {
+        source: (creep, task: ILabOut) => {
             const labMemory = creep.room.memory.lab
 
             // 获取还有资源的 lab
@@ -419,8 +419,11 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 转移资源
             const withdrawResult = creep.withdraw(targetLab, task.resourceType)
             if (withdrawResult === ERR_NOT_IN_RANGE) creep.moveTo(targetLab, { reusePath: 20 })
-            // 正常转移资源则更新任务
-            else if (withdrawResult != OK) creep.say(`draw ${withdrawResult}`)
+            // 正常转移资源则更新 memory 数量信息
+            else if (withdrawResult == OK) {
+                creep.room.memory.lab.outLab[targetLab.id] = targetLab.mineralType ? targetLab.store[targetLab.mineralType] : 0
+            }
+            else creep.say(`draw ${withdrawResult}`)
         },
         target: (creep, task: ILabOut) => {
             const terminal = creep.room.terminal
@@ -439,6 +442,18 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 正常转移资源则更新任务
             else if (transferResult != OK) creep.say(`labout ${transferResult}`)
         },
-        switch: (creep, task: ILabOut) => creep.store[task.resourceType] > 0
+        switch: (creep, task: ILabOut) => {
+            const carry = creep.store.getCapacity()
+            // 装满了就 target 阶段
+            if (creep.store.getFreeCapacity() == 0) return true
+            // 完全没有携带指定资源就 source 阶段
+            else if (!creep.store[task.resourceType]) return false
+
+            // 没有就检查下有没有没搬完的
+            const labMemory = creep.room.memory.lab
+            const hasNotEvacuated = Object.keys(labMemory.outLab).find(outLabId => labMemory.outLab[outLabId] > 0)
+
+            return hasNotEvacuated ? false : true
+        }
     },
 }

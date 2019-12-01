@@ -640,7 +640,8 @@ class TerminalExtension extends StructureTerminal {
         const dealResult = Game.market.deal(targetOrder.id, amount, this.room.name)
         // 检查返回值
         if (dealResult === OK) {
-            console.log(`${this.room.name} 交易成功! 资源: ${targetOrder.resourceType} 类型: ${targetOrder.type} 数量: ${amount} 单价: ${targetOrder.price}`)
+            const crChange = (targetOrder.type == ORDER_BUY ? '+' : '-') + (amount * targetOrder.price).toString() + ' Cr' 
+            console.log(`${this.room.name} 交易成功! 资源: ${targetOrder.resourceType} 类型: ${targetOrder.type} 数量: ${amount} 单价: ${targetOrder.price} ${crChange}`)
             delete this.room.memory.targetOrderId
             this.setNextIndex()
             return false // 把这个改成 true 可以加快交易速度
@@ -694,7 +695,7 @@ class TerminalExtension extends StructureTerminal {
             return
         }
         
-        console.log(`${this.room.name} 为 ${targetOrder.resourceType} 找到了一个合适的订单 类型: ${targetOrder.type} 单价: ${targetOrder.price}`)
+        // console.log(`${this.room.name} 为 ${targetOrder.resourceType} 找到了一个合适的订单 类型: ${targetOrder.type} 单价: ${targetOrder.price}`)
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
         // 计算要传输的数量
@@ -1000,6 +1001,8 @@ class LabExtension extends StructureLab {
 
         // 都移出去的话就可以开始新的轮回了
         this.room.memory.lab.state = LAB_STATE.GET_TARGET
+        delete this.room.memory.lab.targetAmount
+        this.setNextIndex()
     }
 
     /**
@@ -1039,12 +1042,11 @@ class LabExtension extends StructureLab {
     private labAmountCheck(resourceType: ResourceConstant): number {
         // 获取资源及其数量, 并将数量从小到大排序
         const needResourcesName = reactionSource[resourceType]
-        console.log("TCL: LabExtension -> needResourcesName", needResourcesName)
+        // console.log("TCL: LabExtension -> needResourcesName", needResourcesName)
         const needResources = needResourcesName
             .map(res => this.room.terminal.store[res] | 0)
             .sort((a, b) => a - b)
-        
-        console.log("TCL: LabExtension -> needResources", needResources)
+        // console.log("TCL: LabExtension -> needResources", needResources)
 
         // 找到能被5整除的最大底物数量
         if (needResources.length <= 0) return 0

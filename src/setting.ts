@@ -306,9 +306,9 @@ export const LAB_STATE = {
  */
 export const labTarget = [
     // 基础
-    { target: RESOURCE_HYDROXIDE, number: 5000 },
-    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 5000 },
-    { target: RESOURCE_UTRIUM_LEMERGITE, number: 5000 },
+    { target: RESOURCE_HYDROXIDE, number: 4000 },
+    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 4000 },
+    { target: RESOURCE_UTRIUM_LEMERGITE, number: 4000 },
     // G
     { target: RESOURCE_GHODIUM, number: 5000 },
     // XKHO2 生产线，强化 RANGE_ATTACK
