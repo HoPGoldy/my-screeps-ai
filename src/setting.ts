@@ -328,3 +328,18 @@ export const labTarget = [
     // { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
     // { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
 ]
+
+/**
+ * factory 会优先保证底物的数量超过下面的限制之后才会进行生产
+ * 例如：factory 想要生产 oxidant，但是 O 的数量低于 FACTORY_LOCK_AMOUNT.RESOURCE_OXYGEN 所以 factory 就会暂时停工
+ */
+export const FACTORY_LOCK_AMOUNT = {
+    [RESOURCE_HYDROGEN]: 40000,
+    [RESOURCE_OXYGEN]: 40000,
+    [RESOURCE_UTRIUM]: 40000,
+    [RESOURCE_LEMERGIUM]: 40000,
+    [RESOURCE_KEANIUM]: 40000,
+    [RESOURCE_ZYNTHIUM]: 40000,
+    [RESOURCE_CATALYST]: 40000,
+    [RESOURCE_GHODIUM]: 40000,
+}

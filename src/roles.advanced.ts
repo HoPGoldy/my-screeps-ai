@@ -129,7 +129,7 @@ export default {
  * @param sourceId 能量存放处
  */
 const deathPrepare = function(creep: Creep, sourceId: string): void {
-    if (creep.store.getCapacity() > 0) {
+    if (creep.store.getUsedCapacity() > 0) {
         for (const resourceType in creep.store) {
             let target: StructureStorage | StructureTerminal
             // 不是能量就放到 terminal 里

@@ -1,5 +1,5 @@
 import { creepConfigs } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
@@ -492,11 +492,24 @@ class FactoryExtension extends StructureFactory {
      * @param target 想要合成的资源
      * @returns 是否装填完成
      */
-    getNeedResource(target: ResourceConstant): boolean {
+    private getNeedResource(target: ResourceConstant): boolean {
         const componentResources = COMMODITIES[target].components
         for (const component in componentResources) {
             // 如果自己存储里该资源的数量不足，则发布任务
             if (this.store[component] < componentResources[component]) {
+                // 检查 terminal 中底物数量是否足够
+                if (!this.room.terminal) {
+                    console.log(`[${this.room.name} factory] 未发现 terminal，已停工`)
+                    return false
+                }
+
+                // 如果底物有数量限制的话要先达标才会发布任务
+                if ((component in FACTORY_LOCK_AMOUNT) && (this.room.terminal.store[component] < FACTORY_LOCK_AMOUNT[component])) {
+                    console.log(`[${this.room.name} factory] ${component} 数量不足, ${this.room.terminal.store[component]}/${FACTORY_LOCK_AMOUNT[component]}，已停工`)
+                    // 在这里添加进入休眠阶段
+                    return false
+                }
+
                 this.addGetTask(component as ResourceConstant, componentResources[component])
                 return false
             }
@@ -882,11 +895,18 @@ class LabExtension extends StructureLab {
      * lab 阶段：获取全局目标
      */
     private labGetTarget(): void {
-        console.log(`[${this.room.name} lab] - 获取目标`)
+        // console.log(`[${this.room.name} lab] - 获取目标`)
         
         // 获取目标
         if (!this.room.memory.lab.targetIndex) this.room.memory.lab.targetIndex = 0
         const resource = labTarget[this.room.memory.lab.targetIndex]
+
+        // 检查目标资源数量是否已经足够
+        if (!this.room.terminal) return console.log(`[${this.room.name} lab] 错误! 找不到终端`)
+        if (this.room.terminal.store[resource.target] >= resource.number) {
+            this.setNextIndex()
+            return
+        }
         
         // 确认是否可以合成
         const canReactionAmount = this.labAmountCheck(resource.target)
@@ -895,13 +915,12 @@ class LabExtension extends StructureLab {
             this.room.memory.lab.state = LAB_STATE.GET_RESOURCE
             // 单次作业数量不能超过 lab 容量上限
             this.room.memory.lab.targetAmount = canReactionAmount > LAB_MINERAL_CAPACITY ? LAB_MINERAL_CAPACITY : canReactionAmount
-            console.log(`[${this.room.name} lab] 可以合成 ${resource.target} 合成数量 ${this.room.memory.lab.targetAmount}`)
+            console.log(`[${this.room.name} lab] 指定目标：${resource.target}`)
         }
         // 合成不了
         else {
+            // console.log(`[${this.room.name} lab] 无法合成 ${resource.target}`)
             this.setNextIndex()
-            
-            console.log(`[${this.room.name} lab] 无法合成 ${resource.target}`)
         }
     }
 
@@ -917,7 +936,6 @@ class LabExtension extends StructureLab {
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
         const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId) as StructureLab)
         const hasEmptyLab = inLabs.find(lab => !lab.mineralType)
-        console.log("TCL: LabExtension -> hasEmptyLab", hasEmptyLab)
         if (!hasEmptyLab) {
             this.room.memory.lab.state = LAB_STATE.WORKING
             return
@@ -930,7 +948,7 @@ class LabExtension extends StructureLab {
         // 检查底物是否足够
         const targetResource = labTarget[this.room.memory.lab.targetIndex].target
         const hasInsufficientResource = reactionSource[targetResource].find(res => termial.store[res] < this.room.memory.lab.targetAmount)
-        console.log("TCL: LabExtension -> hasInsufficientResource", hasInsufficientResource, termial.store[hasInsufficientResource], this.room.memory.lab.targetAmount)
+
         // 有不足的底物, 重新查找目标
         if (hasInsufficientResource) {
             this.room.memory.lab.state = LAB_STATE.GET_TARGET
@@ -944,7 +962,7 @@ class LabExtension extends StructureLab {
      * lab 阶段：进行反应
      */
     private labWorking(): void {
-        console.log(`[${this.room.name} lab] - 进行反应`)
+        // console.log(`[${this.room.name} lab] - 进行反应`)
 
         const labMemory = this.room.memory.lab
 
