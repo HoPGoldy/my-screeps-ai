@@ -505,7 +505,7 @@ class FactoryExtension extends StructureFactory {
 
                 // 如果底物有数量限制的话要先达标才会发布任务
                 if ((component in FACTORY_LOCK_AMOUNT) && (this.room.terminal.store[component] < FACTORY_LOCK_AMOUNT[component])) {
-                    console.log(`[${this.room.name} factory] ${component} 数量不足, ${this.room.terminal.store[component]}/${FACTORY_LOCK_AMOUNT[component]}，已停工`)
+                    // console.log(`[${this.room.name} factory] ${component} 数量不足, ${this.room.terminal.store[component]}/${FACTORY_LOCK_AMOUNT[component]}，已停工`)
                     // 在这里添加进入休眠阶段
                     return false
                 }
@@ -653,8 +653,9 @@ class TerminalExtension extends StructureTerminal {
         const dealResult = Game.market.deal(targetOrder.id, amount, this.room.name)
         // 检查返回值
         if (dealResult === OK) {
-            const crChange = (targetOrder.type == ORDER_BUY ? '+' : '-') + (amount * targetOrder.price).toString() + ' Cr' 
-            console.log(`${this.room.name} 交易成功! 资源: ${targetOrder.resourceType} 类型: ${targetOrder.type} 数量: ${amount} 单价: ${targetOrder.price} ${crChange}`)
+            const crChange = (targetOrder.type == ORDER_BUY ? '+ ' : '- ') + (amount * targetOrder.price).toString() + ' Cr' 
+            const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.type} 单价: ${targetOrder.price}`
+            console.log(`[${this.room.name} terminal] 交易成功! ${introduce} ${crChange}`)
             delete this.room.memory.targetOrderId
             this.setNextIndex()
             return false // 把这个改成 true 可以加快交易速度
