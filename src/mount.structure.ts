@@ -255,7 +255,7 @@ class TowerExtension extends StructureTower {
         // 如果有 tower 已经刷过墙了就跳过
         if (this.room._hasFillWall) return false
         // 能量不够跳过
-        if (this.store[RESOURCE_ENERGY] <= repairSetting.energyLimit) return false
+        if (this.store[RESOURCE_ENERGY] < repairSetting.energyLimit) return false
 
         const focusWall = this.room.memory.focusWall
         let targetWall: StructureWall | StructureRampart = null
@@ -901,6 +901,13 @@ class LabExtension extends StructureLab {
         // 获取目标
         if (!this.room.memory.lab.targetIndex) this.room.memory.lab.targetIndex = 0
         const resource = labTarget[this.room.memory.lab.targetIndex]
+
+        // 如果 targetIndex 没有找到对应资源的话，就更新索引再试一次
+        // 一般都是因为修改了 labTarget 导致的
+        if (!resource) {
+            this.setNextIndex()
+            return
+        }
 
         // 检查目标资源数量是否已经足够
         if (!this.room.terminal) return console.log(`[${this.room.name} lab] 错误! 找不到终端`)
