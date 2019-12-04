@@ -213,8 +213,36 @@ export default {
                 }
             }
             
+            const harvestResult = creep.harvest(Game.getObjectById(creep.memory.sourceId))
+            // 一旦被 core 占领就不再生成
+            if (harvestResult == ERR_NOT_OWNER && !(Game.time % 20)) {
+                const core = creep.room.find(FIND_STRUCTURES, {
+                    filter: s => s.structureType == STRUCTURE_INVADER_CORE
+                })
+
+                // 发现入侵者 core
+                if (core.length > 0) {
+                    const spawn = Game.spawns[spawnName]
+                    if (!spawn) return console.log(`${creep.name} 在 source 阶段中找不到 ${spawnName}`)
+                    if (!spawn.room.memory.remote) spawn.room.memory.remote = {}
+                    // 如果还没有设置重生时间的话
+                    if (!spawn.room.memory.remote[sourceFlag.room.name]) {
+                        const collapseTimerEffect = core[0].effects.find(e => e.effect == EFFECT_COLLAPSE_TIMER)
+
+                        if (collapseTimerEffect) {
+                            /**
+                             * @danger core 消失之后还有 4000 tick 无法采集
+                             * 但是由于 remoteHarvester 和 reserver 生成用的是同一个计时器
+                             * 所以在 core 消失之后依旧会直接生成 remoteHarvester 在 source 前傻站至多 4000 tick
+                             */
+                            // 将重生时间设置为 core 消失之后
+                            spawn.room.memory.remote[sourceFlag.room.name] = Game.time + collapseTimerEffect.ticksRemaining
+                        }
+                    }
+                }
+            }
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
-            if (creep.harvest(Game.getObjectById(creep.memory.sourceId)) !== OK) {
+            else if (harvestResult !== OK) {
                 creep.farMoveTo(sourceFlag.pos)
             }
         },
