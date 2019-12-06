@@ -294,17 +294,14 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         target: (creep, task: IFillNuker) => {
             // 获取 nuker 及兜底
             let target: StructureNuker = Game.getObjectById(task.id)
-            if (!target) {
-                creep.room.deleteCurrentRoomTransferTask()
-                return console.log(`[${creep.name}] nuker 填充任务，Nuker`)
-            }
+            if (!target) return creep.room.deleteCurrentRoomTransferTask()
 
             // 转移资源
             const transferResult = creep.transfer(target, task.resourceType)
             if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
             else if (transferResult == OK) {
                 creep.room.handleRoomTransferTask()
-                console.log(`[${creep.name}] 完成 nuker 填充任务`)
+                // console.log(`[${creep.name}] 完成 nuker 填充任务`)
             }
             else creep.say(`错误! ${transferResult}`)
         },

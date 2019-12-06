@@ -111,29 +111,15 @@ export default {
                 return false
             }
 
-            // 八级时只有降级倒计时低于 10000 时才会生成
-            if (room.controller.level == 8 && room.controller.ticksToDowngrade > 10000) return false
+            // 能量快满了一定会生成
+            if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 95000) return true
 
-            // 从带有 store 的建筑里获取能量
-            if (source.hasOwnProperty('store')) {
-                // 由于没有针对”包含 store 的建筑“的类型定义，所以这里使用 StructureStorage 代替
-                // 其实是代指所有有 store 的建筑
-                const sourceStructure = source as StructureStorage
-                if (sourceStructure.structureType in upgraderEnergyLimit) {
-                    // setting 里定义好的能力下限
-                    const limitEnergy = upgraderEnergyLimit[sourceStructure.structureType]
-                    
-                    // 目标建筑能量是否足够
-                    if (sourceStructure.store[RESOURCE_ENERGY] > limitEnergy) return true
-                    else {
-                        console.log(`[生成挂起] ${room.name} 中的 ${sourceStructure} 能量低于规定值 ${limitEnergy}`)
-                        return false
-                    }
-                }
-                else return true
-            }
-            // 没有 store 对象的肯定是 Source，直接无条件生成
-            else return true
+            // 八级时只有降级倒计时低于 100000 时才会生成
+            if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
+
+            // 只有在 storage 中能量大于 10000 时才会生成，其他建筑没有限制
+            if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 10000) return true
+            else return false
         },
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),

@@ -152,7 +152,7 @@ class SpawnExtension extends StructureSpawn {
         // 先通过等级粗略判断，再加上 dryRun 精确验证
         const targetLevel = Object.keys(bodyConfig).find(level => (Number(level) >= this.room.energyAvailable) && 
             this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
-        if (!targetLevel) return [ WORK, CARRY, MOVE]
+        if (!targetLevel) return [ ]
 
         // 获取身体部件
         const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
@@ -1068,11 +1068,13 @@ class LabExtension extends StructureLab {
     private labAmountCheck(resourceType: ResourceConstant): number {
         // 获取资源及其数量, 并将数量从小到大排序
         const needResourcesName = reactionSource[resourceType]
-        // console.log("TCL: LabExtension -> needResourcesName", needResourcesName)
+        if (!needResourcesName) {
+            console.log(`[${this.room.name} lab] reactionSource 中未定义 ${resourceType}`)
+            return 0
+        }
         const needResources = needResourcesName
             .map(res => this.room.terminal.store[res] | 0)
             .sort((a, b) => a - b)
-        // console.log("TCL: LabExtension -> needResources", needResources)
 
         // 找到能被5整除的最大底物数量
         if (needResources.length <= 0) return 0
@@ -1133,7 +1135,6 @@ class NukerExtension extends StructureNuker {
 
         // 能量不满并且 storage 能量大于 300k 则开始填充能量
         if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
-            console.log(`[${this.room.name} nuker] 发布能量填充任务`)
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
@@ -1145,7 +1146,6 @@ class NukerExtension extends StructureNuker {
 
         // G 矿不满并且 terminal 中 G 矿大于 1k 则开始填充 G
         if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal.store[RESOURCE_GHODIUM] >= 1000) {
-            console.log(`[${this.room.name} nuker] 发布 G 填充任务`)
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
