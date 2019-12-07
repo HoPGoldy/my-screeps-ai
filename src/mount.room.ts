@@ -83,7 +83,7 @@ class RoomExtension extends Room {
             resourceType: RESOURCE_ENERGY
         }
 
-        return `能量共享任务已填加，等待终端处理任务：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
+        return `[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
     }
 
     /**
