@@ -350,16 +350,19 @@ class RoomExtension extends Room {
 
     /**
      * 用户操作：将终端监听设置为默认值
+     * 
+     * @param hard 设为 true 来移除其默认值中不包含的监听资源
      */
-    public treset(): string {
+    public treset(hard: boolean = false): string {
         // 模板任务
         const templateTask = {
             amount: 5000,
             mod: 'min',
             supplementAction: 'share'
         }
+
         // 重置任务
-        this.memory.terminalTasks = {
+        if (hard) this.memory.terminalTasks = {
             [RESOURCE_OXYGEN]: templateTask,
             [RESOURCE_HYDROGEN]: templateTask,
             [RESOURCE_KEANIUM]: templateTask,
@@ -368,6 +371,16 @@ class RoomExtension extends Room {
             [RESOURCE_UTRIUM]: templateTask,
             [RESOURCE_CATALYST]: templateTask
         }
+        else {
+            this.memory.terminalTasks[RESOURCE_OXYGEN] = templateTask
+            this.memory.terminalTasks[RESOURCE_HYDROGEN] = templateTask
+            this.memory.terminalTasks[RESOURCE_KEANIUM] = templateTask
+            this.memory.terminalTasks[RESOURCE_LEMERGIUM] = templateTask
+            this.memory.terminalTasks[RESOURCE_ZYNTHIUM] = templateTask
+            this.memory.terminalTasks[RESOURCE_UTRIUM] = templateTask
+            this.memory.terminalTasks[RESOURCE_CATALYST] = templateTask
+        }
+        
         this.memory.terminalIndex = 0
         
         return `已重置，当前监听任务如下:\n${this.showTerminalTask()}`
@@ -503,7 +516,7 @@ class RoomExtension extends Room {
         lab1Flag.remove()
         lab2Flag.remove()
 
-        return `[lab 集群] ${this.name} 初始化成功`
+        return `[${this.name} lab] 初始化成功`
     }
 
     /**
@@ -575,6 +588,10 @@ class RoomExtension extends Room {
             },
             {
                 title: '重设终端矿物监控',
+                params: [
+                    { name: 'hard', desc: '[可选] 设为 true 来移除其默认值中不包含的监听资源, 默认为 false' }
+                ],
+                
                 functionName: 'treset'
             },
             {
@@ -587,6 +604,10 @@ class RoomExtension extends Room {
             {
                 title: '显示所有终端监听任务',
                 functionName: 'tshow'
+            },
+            {
+                title: '初始化 lab 集群',
+                functionName: 'linit'
             },
         ])
     }
