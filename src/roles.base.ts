@@ -1,14 +1,4 @@
 /**
- * upgrader 只有在能量来源大于下面定义的下限时才会生成
- * 例如：从 container 获取能量时，该 container 的能量必须大于 500 才会生成该 upgrader
- */
-export const upgraderEnergyLimit = {
-    [STRUCTURE_CONTAINER]: 500,
-    [STRUCTURE_STORAGE]: 10000,
-    [STRUCTURE_TERMINAL]: 0
-}
-
-/**
  * 初级房间运维角色组
  * 本角色组包括了在没有 Storage 和 Link 的房间内运维所需的角色
  */
@@ -69,7 +59,7 @@ export default {
         isNeed: room => {
             let mineral: Mineral
             if (!room.memory.mineralId) {
-                // 没有返回警告，mineralId 由 ExtractorExtension 维护
+                // 没有则返回警告，mineralId 由 ExtractorExtension 维护
                 console.log(`[miner 警告] ${room.name} 请先建造 Extractor`)
                 return false
             }
@@ -111,14 +101,14 @@ export default {
                 return false
             }
 
-            // 能量快满了一定会生成
-            if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 950000) return true
+            // Storage 能量快满了一定会生成
+            if ((source instanceof StructureStorage || source instanceof StructureLink) && source.store[RESOURCE_ENERGY] > 950000) return true
 
             // 八级时只有降级倒计时低于 100000 时才会生成
             if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
 
             // 只有在 storage 中能量大于 10000 时才会生成，其他建筑没有限制
-            if (source instanceof StructureStorage) {
+            if (source instanceof StructureStorage || source instanceof StructureLink) {
                 if (source.store[RESOURCE_ENERGY] > 10000)  return true
                 else return false
             }

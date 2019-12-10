@@ -9,7 +9,7 @@ const pathMap: IPathMap = {
     build: '#FFCC99',
     repair: '#000099',
     attack: '#DC143C', // 猩红
-    claimer: 'Indigo' //靛青
+    claimer: 'Indigo' // 靛青
 }
 
 /**
@@ -31,19 +31,6 @@ export function getPath (pathName: string='default'): MoveToOpts {
 }
 
 /**
- * 死亡 creep 记忆清除
- */
-export function clearDiedCreep (): boolean {
-    for(const name in Memory.creeps) {
-        if(!Game.creeps[name]) {
-            delete Memory.creeps[name]
-            console.log('清除死去蠕虫记忆', name)
-        }
-    }
-    return true
-}
-
-/**
  * creep 数量控制器
  * 
  * 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
@@ -59,7 +46,7 @@ export function creepNumberController (): void {
             // 获取配置项
             const creepConfig: ICreepConfig = creepConfigs[role]
             if (!creepConfig) {
-                console.log(`死亡 ${name} 未找到指定的 creepConfig 已删除`)
+                console.log(`死亡 ${name} 未找到对应 creepConfig, 已删除`)
                 delete Memory.creeps[name]
                 return
             }

@@ -392,9 +392,6 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
     },
 
     [ROOM_TRANSFER_TASK.LAB_OUT]: {
-        /**
-         * @todo 一次拿多个 lab 的产物
-         */
         source: (creep, task: ILabOut) => {
             const labMemory = creep.room.memory.lab
 
@@ -433,7 +430,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             const terminal = creep.room.terminal
 
             /**
-             * @todo 没有 terminal 应该把资源转移到其他储藏地
+             * @todo 没有 terminal 应该把资源转移到其他储藏里
              */
             if (!terminal) {
                 creep.room.deleteCurrentRoomTransferTask()

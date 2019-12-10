@@ -21,7 +21,6 @@ export default function () {
 class SpawnExtension extends StructureSpawn {
     /**  
      * spawn 主要工作
-     * @todo isNeed 不需要进行检查
      */
     public work(): void {
         if (this.spawning) {
