@@ -372,10 +372,8 @@ interface ITransferTask {
 interface ICreepConfig {
     //在孵化前进行的判断，只有返回 true 时才会进行生成
     isNeed?: (room: Room) => boolean
-    // 准备阶段执行的方法
-    prepare?: (creep: Creep) => any
-    // 是否准备完成
-    isReady?: (creep: Creep) => boolean
+    // 准备阶段执行的方法, 返回 true 时代表准备完成
+    prepare?: (creep: Creep) => boolean
     // creep 工作时执行的方法
     target?: (creep: Creep) => any
     // creep 非工作(收集能量时)执行的方法

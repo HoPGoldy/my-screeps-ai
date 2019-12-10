@@ -56,9 +56,14 @@ export default {
             return false
         },
         // 朝房间移动
-        prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, roomName)),
-        // 只要进入房间则准备结束
-        isReady: creep => creep.room.name == roomName,
+        prepare: creep => {
+            // 只要进入房间则准备结束
+            if (creep.room.name == roomName) {
+                creep.farMoveTo(new RoomPosition(25, 25, roomName))
+                return false
+            }
+            else return true
+        },
         // 一直进行预定
         target: creep => {
             // 如果房间的预订者不是自己, 就攻击控制器
@@ -104,9 +109,14 @@ export default {
      */
     remoteBuilder: (spawnName: string, targetRoomName: string, sourceId: string): ICreepConfig => ({
         // 向指定房间移动
-        prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
-        // 自己所在的房间为指定房间则准备完成
-        isReady: creep => creep.room.name === targetRoomName,
+        prepare: creep => {
+            // 只要进入房间则准备结束
+            if (creep.room.name === targetRoomName) {
+                creep.farMoveTo(new RoomPosition(25, 25, targetRoomName))
+                return false
+            }
+            else return true
+        },
         // 下面是正常的建造者逻辑
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
@@ -128,9 +138,14 @@ export default {
      */
     remoteUpgrader: (spawnName: string, targetRoomName: string, sourceId: string): ICreepConfig => ({
         // 向指定房间移动
-        prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
-        // 自己所在的房间为指定房间则准备完成
-        isReady: creep => creep.room.name === targetRoomName,
+        prepare: creep => {
+            // 只要进入房间则准备结束
+            if (creep.room.name === targetRoomName) {
+                creep.farMoveTo(new RoomPosition(25, 25, targetRoomName))
+                return false
+            }
+            else return true
+        },
         // 下面是正常的升级者逻辑
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),
@@ -172,25 +187,30 @@ export default {
         },
         // 获取旗帜附近的 source
         prepare: creep => {
-            const sourceFlag = Game.flags[sourceFlagName]
-            // 旗帜所在房间没视野, 就进行移动
-            if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
-            else {
-                // 缓存外矿房间名
-                sourceFlag.memory.roomName = sourceFlag.room.name
-                const source = sourceFlag.pos.findClosestByRange(FIND_SOURCES)
-                if (!source) return console.log(`${sourceFlagName} 附近没有找到 source`)
-                // 找到 source 后就写入内存
-                creep.memory.sourceId = source.id
+            if (!creep.memory.sourceId) {
+                const sourceFlag = Game.flags[sourceFlagName]
+                // 旗帜所在房间没视野, 就进行移动
+                if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
+                else {
+                    // 缓存外矿房间名
+                    sourceFlag.memory.roomName = sourceFlag.room.name
+                    const source = sourceFlag.pos.findClosestByRange(FIND_SOURCES)
+                    if (!source) {
+                        console.log(`${sourceFlagName} 附近没有找到 source`)
+                        return false
+                    }
+                    // 找到 source 后就写入内存
+                    creep.memory.sourceId = source.id
 
-                // 再检查下有没有工地, 没有则以后再也不检查
-                const constructionSites = sourceFlag.room.find(FIND_CONSTRUCTION_SITES)
-                if (constructionSites.length <= 0)
-                creep.memory.dontBuild = true
+                    // 再检查下有没有工地, 没有则以后再也不检查
+                    const constructionSites = sourceFlag.room.find(FIND_CONSTRUCTION_SITES)
+                    if (constructionSites.length <= 0)
+                    creep.memory.dontBuild = true
+                }
+                return false
             }
+            else return true
         },
-        // 内存中是否拥有sourceId
-        isReady: creep => creep.memory.sourceId ? true : false,
         // 向旗帜出发
         source: creep => {
             const sourceFlag = Game.flags[sourceFlagName]
@@ -284,9 +304,14 @@ export default {
      */
     remoteDefender: (spawnName: string, roomName: string): ICreepConfig => ({
         // 向指定房间移动
-        prepare: creep => creep.farMoveTo(new RoomPosition(25, 25, roomName)),
-        // 自己所在的房间为指定房间则准备完成
-        isReady: creep => creep.room.name === roomName,
+        prepare: creep => {
+            // 只要进入房间则准备结束
+            if (creep.room.name === roomName) {
+                creep.farMoveTo(new RoomPosition(25, 25, roomName))
+                return false
+            }
+            else return true
+        },
         source: creep => creep.standBy(),
         target: creep => creep.defense(),
         switch: creep => creep.checkEnemy(),
