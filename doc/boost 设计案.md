@@ -7,7 +7,6 @@
 - 哪怕 lab 集群已被损毁，只要保证所需的最少 lab 数量，就可以进行强化。
 - 强化不应影响 lab 集群的正常化合反应。
 - 控制强化的模块应独立于每个房间，保证可以多个房间同时进行强化。
-- 强化任务应与孵化待强化 creep 解耦。
 
 # Room 原型拓展
 
@@ -49,8 +48,12 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
 
 # 流程
 
+**boost creep 流程**
+
 - creepConfig 新建 boost 单位
-- isNeed: 查看当前房间是否存在 boost 任务
+- isNeed: 检查是否有 [房间名 + Boost] 的旗帜存在
+- 不存在，弹出提示，return
+- 存在，查看当前房间是否存在 boost 任务
     - 不存在, 检查资源数量
         - 合适则发布 boost 任务, return
         - 不合适则 return
@@ -58,14 +61,36 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
     - 不是，等待，return
 - 检查 boost 任务阶段
     - 资源移入阶段, return
-    - 等待强化阶段, 检查是否有 [房间名 + Boost] 的旗帜存在
+    - 等待强化阶段, 
         - 有，开始生成
         - 没有，弹出 log，return
 - prepare: 是否抵达指定位置？
-    - 是，执行 `Room.boostCreep`
-        - 执行成功，准备完成
+    - 是，执行 `Room.boostCreep`, 执行结果是否正常？
+        - 正常，准备完成
+        - 不正常，打印 log，原地待命
     - 否，移动
+
+**boost 模块流程**
+
+- 检查是否有 Room.memory.boost 任务
+    - 没有，待机，return
+- lab 集群正处于什么阶段？
+    - 不是 getTarget，待机，return
+    - 是 getTarget，将其修改为 boost
+- boost 任务正处于什么阶段？
+    - 资源移入阶段：检查资源是否到位
+        - 已到位，将状态切换为 waitBoost，return
+        - 没到位，检查是否有 boostGet 任务存在
+            - 有，return
+            - 没有，发布任务
+    - 等待强化阶段：啥都不干（直到 creep 执行 Room.boostCreep）
+    - 资源清理阶段：检查资源是否清空
+        - 已清空，将 lab 集群的阶段切换为 getTarget，移除 boost 任务，return
+        - 没到位，检查是否有 boostClear 任务存在
+            - 有，return
+            - 没有，发布任务
 
 # 问题
 
 - boost 要在 creep 生成前准备对应的强化材料，但是 boost 模块和 spawn 模块怎么协商要生成的身体部件数量？
+    - 解决方案：升级 spawn 模块，boost creep 在生成时会按照房间最大能量进行生成。boost 模块会始终按照最大身体数量进行资源转移，在强化完成后再将剩余的资源移回 terminal。

@@ -13,8 +13,9 @@ export const ROOM_TRANSFER_TASK = {
  */
 export default {
     /**
-     * 新运输者
-     * 从 Storage 中获取能量，并填充 Spawn Extension 和 Tower
+     * 房间物流运输者
+     * 执行 ROOM_TRANSFER_TASK 中定义的任务
+     * 任务处理逻辑定义在 transferTaskOperations 中
      * 
      * @param spawnName 出生点名称
      * @param sourceId 从该建筑中获取能量 (可选, 默认 Storage)

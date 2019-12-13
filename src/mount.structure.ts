@@ -21,6 +21,7 @@ export default function () {
 class SpawnExtension extends StructureSpawn {
     /**  
      * spawn 主要工作
+     * @todo 能量不足时挂起任务
      */
     public work(): void {
         if (this.spawning) {
