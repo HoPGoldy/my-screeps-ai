@@ -178,6 +178,12 @@ const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
  * 该对象的属性名即为任务类型
  */
 const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
+    /**
+     * extension 填充任务
+     * 维持正常孵化的任务
+     * 
+     * 注：因为有些 spawn 放的比较远，所以这里只会填充 extension 而不是 spawn。
+     */
     [ROOM_TRANSFER_TASK.FILL_EXTENSION]: {
         source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
@@ -220,6 +226,10 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
     },
 
+    /**
+     * tower 填充任务
+     * 维持房间内所有 tower 的能量
+     */
     [ROOM_TRANSFER_TASK.FILL_TOWER]: {
         source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: (creep, task: IFillTower) => {
@@ -265,6 +275,11 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
     },
 
+    /**
+     * nuker 填充任务
+     * 由 nuker 在 Nuker.work 中发布
+     * 任务的搬运量取决于 transfer 的最大存储量，搬一次就算任务完成
+     */
     [ROOM_TRANSFER_TASK.FILL_NUKER]: {
         source: (creep, task: IFillNuker, sourceId) => {
             // 获取资源存储建筑
@@ -314,6 +329,12 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         switch: (creep, task: IFillNuker) => creep.store[task.resourceType] > 0
     },
 
+    /**
+     * lab 资源移入任务
+     * 在 lab 集群的 getResource 阶段发布
+     * 在 inLab 中填充两种底物
+     * 并不会填满，而是根据自己最大的存储量进行填充，保证在取出产物时可以一次搬完
+     */
     [ROOM_TRANSFER_TASK.LAB_IN]: {
         source: (creep, task: ILabIn, sourceId) => {
             // 获取 terminal
@@ -357,16 +378,21 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 正常转移资源则更新任务
             else if (transferResult == OK) {
                 // 这里直接更新到 0 的原因是因为这样可以最大化运载效率
-                // 抱住在产物移出的时候可以一次就拿完
+                // 保证在产物移出的时候可以一次就拿完
                 creep.room.handleLabInTask(targetResource.type, 0)
                 console.log(`[${creep.name}] 完成 labin 填充任务`)
             }
             else creep.say(`错误! ${transferResult}`)
         },
-        // 只要 creep 存储里有需要的资源就进入 target
+        // 只要 creep 存储里有需要的资源就执行 target
         switch: (creep, task: ILabIn) => task.resource.find(res => creep.store[res.type] > 0) ? true : false
     },
 
+    /**
+     * lab 能量填充任务
+     * 在 boost 阶段发布
+     * 将给指定的 lab 填满能量
+     */
     [ROOM_TRANSFER_TASK.LAB_GET_ENERGY]: {
         source: (creep, task, sourceId) => creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage),
         target: creep => {
@@ -397,6 +423,10 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
     },
 
+    /**
+     * lab 产物移出任务
+     * 将 lab 的反应产物统一从 outLab 中移动到 terminal 中
+     */
     [ROOM_TRANSFER_TASK.LAB_OUT]: {
         source: (creep, task: ILabOut) => {
             const labMemory = creep.room.memory.lab
