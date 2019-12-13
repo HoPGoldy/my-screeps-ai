@@ -57,7 +57,7 @@ export default {
 
     /**
      * 中心搬运者
-     * 从 centerLink 中获取能量，并填充 Storage
+     * 从房间的中央任务队列 Room.memory.centerTransferTasks 中取出任务并执行
      * 
      * @param spawnName 出生点名称
      * @param x 要移动到的 x 坐标
@@ -295,7 +295,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 拿取资源
             const getResult = creep.withdraw(sourceStructure, task.resourceType, getAmount)
             if (getResult == ERR_NOT_IN_RANGE) creep.moveTo(sourceStructure, { reusePath: 20 })
-            else if (getResult != OK) console.log(`[${creep.name}] nuker 填充任务，withdrow`, getResult)
+            else if (getResult != OK) console.log(`[${creep.name}] nuker 填充任务，withdraw`, getResult)
         },
         target: (creep, task: IFillNuker) => {
             // 获取 nuker 及兜底
