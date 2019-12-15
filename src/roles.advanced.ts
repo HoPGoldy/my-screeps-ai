@@ -380,7 +380,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 // 这里直接更新到 0 的原因是因为这样可以最大化运载效率
                 // 保证在产物移出的时候可以一次就拿完
                 creep.room.handleLabInTask(targetResource.type, 0)
-                console.log(`[${creep.name}] 完成 labin 填充任务`)
+                // console.log(`[${creep.name}] 完成 labin 填充任务`)
             }
             else creep.say(`错误! ${transferResult}`)
         },

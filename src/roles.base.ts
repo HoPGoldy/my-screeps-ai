@@ -72,7 +72,11 @@ export default {
             }
             else mineral = Game.getObjectById(room.memory.mineralId)
             // 房间中的矿床是否还有剩余产量
-            return (mineral.mineralAmount > 0) ? true : false
+            if (mineral.mineralAmount <= 0) return false
+
+            // 再检查下 terminal 是否已经满了
+            if (!room.terminal || room.terminal.store.getFreeCapacity() <= 0) return false
+            else return true
         },
         source: creep => {
             const mineral: Mineral = Game.getObjectById(creep.room.memory.mineralId)

@@ -654,7 +654,7 @@ class TerminalExtension extends StructureTerminal {
         // 检查返回值
         if (dealResult === OK) {
             const crChange = (targetOrder.type == ORDER_BUY ? '+ ' : '- ') + (amount * targetOrder.price).toString() + ' Cr' 
-            const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.type} 单价: ${targetOrder.price}`
+            const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.resourceType} 单价: ${targetOrder.price}`
             console.log(`[${this.room.name} terminal] 交易成功! ${introduce} ${crChange}`)
             delete this.room.memory.targetOrderId
             this.setNextIndex()
@@ -936,7 +936,7 @@ class LabExtension extends StructureLab {
      * lab 阶段：获取底物
      */
     private labGetResource(): void {
-        console.log(`[${this.room.name} lab] - 获取底物`)
+        // console.log(`[${this.room.name} lab] - 获取底物`)
         
         // 检查是否有能量移入任务
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_IN)) return
