@@ -67,13 +67,13 @@ interface Creep {
     buildStructure(): boolean
     repairStructure(): boolean
     fillDefenseStructure(expectHits?: number): boolean
-    claim(): boolean
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
     attackFlag()
     dismantleFlag()
     healTo(creeps: Creep[]): void
     getFlag(flagName: string): Flag|null
+    farMoveByPathRooms(pathRooms: string[]): void
     isHealthy(): boolean
 }
 

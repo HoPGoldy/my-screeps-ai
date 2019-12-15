@@ -1,3 +1,6 @@
+// 占领旗帜的名称
+const CLAIM_FLAG_NAME = 'claim'
+
 /**
  * 多房间角色组
  * 本角色组包括了多房间拓展所需要的角色
@@ -9,9 +12,30 @@ export default {
      * target: 占领指定房间
      * 
      * @param spawnName 出生点名称
+     * @param pathRooms 路径房间名数组，可以通过该参数强制指定 creep 的移动路线（请将 creep 出生房间放在数组首位）
      */ 
-    claimer: (spawnName: string): ICreepConfig => ({
-        target: creep => creep.claim(),
+    claimer: (spawnName: string, pathRooms: string[] = []): ICreepConfig => ({
+        target: creep => {
+            const claimFlag = creep.getFlag(CLAIM_FLAG_NAME)
+            if (!claimFlag) return
+
+            // 如果 creep 不在房间里 则一直向旗帜移动
+            if (!claimFlag.room || (claimFlag.room && creep.room.name !== claimFlag.room.name)) {
+                creep.farMoveTo(claimFlag.pos)
+            }
+
+            // 已经抵达了该房间
+            const room = claimFlag.room
+            // 如果房间已经被占领或者被预定了则攻击控制器
+            if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
+                if(creep.attackController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller)
+                return
+            }
+            // 如果房间无主则占领
+            if (room && creep.claimController(room.controller) == ERR_NOT_IN_RANGE) {
+                creep.moveTo(room.controller)
+            }
+        },
         spawn: spawnName,
         bodyType: 'claimer'
     }),
@@ -38,7 +62,7 @@ export default {
 
             // 如果房间没有视野则默认进行孵化
             if (!Game.rooms[roomName]) {
-                // console.log('[reserver] 房间没有视野 默认孵化')x
+                // console.log('[reserver] 房间没有视野 默认孵化')
                 return true
             }
             
@@ -58,11 +82,11 @@ export default {
         // 朝房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
-            if (creep.room.name == roomName) {
+            if (creep.room.name == roomName) return true
+            else {
                 creep.farMoveTo(new RoomPosition(25, 25, roomName))
                 return false
             }
-            else return true
         },
         // 一直进行预定
         target: creep => {
@@ -86,9 +110,12 @@ export default {
      * @param spawnName 出生点名称
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
+     * @param pathRooms 路径房间名数组，可以通过该参数强制指定 creep 的移动路线（请将 creep 出生房间放在数组首位）
      */
-    signer: (spawnName: string, targetRoomName: string, signText: string): ICreepConfig => ({
-        source: creep => creep.farMoveTo(new RoomPosition(25, 25, targetRoomName)),
+    signer: (spawnName: string, targetRoomName: string, signText: string, pathRooms: string[] = []): ICreepConfig => ({
+        source: creep => {
+            creep.farMoveTo(new RoomPosition(25, 25, targetRoomName))
+        },
         target: creep => {
             if (creep.signController(creep.room.controller, signText) === ERR_NOT_IN_RANGE) {
                 creep.moveTo(creep.room.controller, { reusePath: 30 })

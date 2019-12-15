@@ -7,8 +7,6 @@ export default function () {
     _.assign(Creep.prototype, CreepExtension.prototype)
 }
 
-// 占领旗帜的名称
-const CLAIM_FLAG_NAME = 'claim'
 // 进攻旗帜的名称
 const ATTACK_FLAG_NAME = 'attack'
 
@@ -222,6 +220,31 @@ class CreepExtension extends Creep {
     }
 
     /**
+     * 根据指定的房间名数组进行移动
+     * 
+     * @param pathRooms 路径房间名数组，可以通过该参数强制指定 creep 的移动路线
+     */
+    farMoveByPathRooms(pathRooms: string[]) {
+        // console.log('要移动的房间路径为', pathRooms)
+        
+        // 查找目标房间名
+        let targetRoomName: string
+        const currentRoomNameIndex = pathRooms.findIndex(roomName => roomName == this.room.name)
+        // 到最后一个房间了
+        if (currentRoomNameIndex == pathRooms.length - 1) return OK
+        targetRoomName = pathRooms[currentRoomNameIndex + 1]
+        console.log("TCL: CreepExtension -> farMoveByPathRooms -> targetRoomName", targetRoomName)
+
+        // 找到出口
+        const exitConstant = this.room.findExitTo(targetRoomName)
+        if (exitConstant == ERR_NO_PATH || exitConstant == ERR_INVALID_ARGS) return exitConstant
+        const exitPos = this.pos.findClosestByPath(exitConstant)
+        console.log("TCL: CreepExtension -> farMoveByPathRooms -> this.room.find(exitConstant)", exitPos.x, exitPos.y)
+        
+        this.memory.path = this.findPathInRoom(exitPos)
+    }
+
+    /**
      * 填充本房间内所有 tower
      */
     public fillTower(): boolean {
@@ -343,36 +366,6 @@ class CreepExtension extends Creep {
         // 填充墙壁
         if(this.repair(targetWall) == ERR_NOT_IN_RANGE) {
             this.moveTo(targetWall, getPath('repair'))
-        }
-        return true
-    }
-
-    /**
-     * 占领指定房间
-     * 要占领的房间由名称为 CLAIM_FLAG_NAME 的旗帜指定
-     */
-    public claim(): boolean {
-        // 获取旗帜
-        const claimFlag = this.getFlag(CLAIM_FLAG_NAME)
-        if (!claimFlag) return false
-
-        // 如果 creep 不在房间里 则一直向旗帜移动
-        if (!claimFlag.room || (claimFlag.room && this.room.name !== claimFlag.room.name)) {
-            this.farMoveTo(claimFlag.pos)
-            return true
-        }
-
-        // 已经抵达了该房间
-        const room = claimFlag.room
-        // 如果房间已经被占领或者被预定了则攻击控制器
-        if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
-            if(this.attackController(room.controller) == ERR_NOT_IN_RANGE) this.moveTo(room.controller, getPath('claimer'))
-            return false
-        }
-        // 如果房间无主则占领
-        if (room && this.claimController(room.controller) == ERR_NOT_IN_RANGE) {
-            this.moveTo(room.controller, getPath('claimer'))
-            return false
         }
         return true
     }
