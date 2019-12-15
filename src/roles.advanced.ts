@@ -67,11 +67,11 @@ export default {
     centerTransfer: (spawnName: string, x: number, y: number): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => {
-            if (creep.pos.isEqualTo(x, y)) {
+            if (creep.pos.isEqualTo(x, y)) return true
+            else {
                 creep.moveTo(x, y, { reusePath: 20 })
                 return false
             }
-            else return true
         },
         // 从中央任务队列中取出任务并执行
         source: creep => {

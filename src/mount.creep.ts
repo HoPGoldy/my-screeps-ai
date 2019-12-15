@@ -38,10 +38,7 @@ class CreepExtension extends Creep {
         // 没准备的时候就执行准备阶段
         if (!this.memory.ready) {
             // 有准备阶段配置则执行
-            if (creepConfig.prepare && creepConfig.isReady) {
-                creepConfig.prepare(this)
-                this.memory.ready = creepConfig.isReady(this)
-            }
+            if (creepConfig.prepare) this.memory.ready = creepConfig.prepare(this)
             // 没有就直接准备完成
             else this.memory.ready = true
         }

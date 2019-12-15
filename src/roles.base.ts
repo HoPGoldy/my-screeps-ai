@@ -28,8 +28,15 @@ export default {
      * @param targetId 指定建筑 id (默认为 room.storage)
      */
     collector: (spawnName: string, sourceId: string, targetId: string=''): ICreepConfig => ({
-        prepare: creep => creep.moveTo(<Source | Mineral>Game.getObjectById(sourceId), { reusePath: 20 }),
-        isReady: creep => creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos),
+        prepare: creep => {
+            // 已经到附近了就准备完成
+            if (creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos)) return true
+            // 否则就继续移动
+            else {
+                creep.moveTo(<Source | Mineral>Game.getObjectById(sourceId), { reusePath: 20 })
+                return false
+            }
+        },
         source: creep => {
             const source: Source|Mineral = Game.getObjectById(sourceId)
             if (!source) return creep.say('目标找不到!')
