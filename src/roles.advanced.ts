@@ -449,7 +449,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 自己还拿着能量就先放到终端里
             if (!creep.room.terminal) {
                 creep.room.deleteCurrentRoomTransferTask()
-                return console.log(`[${creep.name}] labin, 未找到 terminal，任务已移除`)
+                return console.log(`[${creep.name}] labout, 未找到 terminal，任务已移除`)
             }
             if (creep.store[RESOURCE_ENERGY] > 0) return creep.transferTo(creep.room.terminal, RESOURCE_ENERGY)
 
