@@ -1,4 +1,4 @@
-# Boost 设计案
+# Boost 设计案（设计阶段）
 
 本设计案建立在 lab 设计案和房间物流设计案已实装的基础上。
 
@@ -70,25 +70,104 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
         - 不正常，打印 log，原地待命
     - 否，移动
 
+**lab 集群切换工作模式为 boost 模式**
+
+- 如果自己是 getTarget 阶段，检查房间中是否有 boost 任务，有的话将自己的状态切换为 boost。
+
 **boost 模块流程**
 
 - 检查是否有 Room.memory.boost 任务
     - 没有，待机，return
 - lab 集群正处于什么阶段？
-    - 不是 getTarget，待机，return
-    - 是 getTarget，将其修改为 boost
+    - 不是 boost 阶段，待机，return
 - boost 任务正处于什么阶段？
     - 资源移入阶段：检查资源是否到位
-        - 已到位，将状态切换为 waitBoost，return
+        - 已到位，检查能量是否足够
+            - 能量足够，将状态切换为 waitBoost，return
+            - 不足，发布 labGetEnergy 任务，return
         - 没到位，检查是否有 boostGet 任务存在
             - 有，return
             - 没有，发布任务
     - 等待强化阶段：啥都不干（直到 creep 执行 Room.boostCreep）
     - 资源清理阶段：检查资源是否清空
-        - 已清空，将 lab 集群的阶段切换为 getTarget，移除 boost 任务，return
+        - 已清空，检查是否有 boostGet 任务存在（防止 Room.cboot 取消任务后出现问题）
+            - 有，return
+            - 没有，将 lab 集群的阶段切换为 getTarget，移除 boost 任务，return
         - 没到位，检查是否有 boostClear 任务存在
             - 有，return
             - 没有，发布任务
+
+**Room.boost(boostType)**
+
+- 检查是否有 boost 任务
+    - 有，return 已存在任务
+- 检查是否有 [房间名 + Boost] 的旗帜存在
+    - 不存在，return 未找到旗帜
+- 获取紧邻旗帜的 lab。
+- 获取到的 lab 数量是否超过强化所需的材料种类数量？
+    - 没超过，return 资源不足
+- 将足够数量的 lab id 筛选出来，并分配资源类型
+- 新建 `Room.memory.boost` 任务，return OK
+
+**Room.boostCreep()**
+
+- 检查是否有 boost 任务
+    - 没有任务，return 未找到任务
+- 检查 `Room.memory.boost.pos` 位置上是否有 creep 存在
+    - 没有，return 位置上没有 creep
+- 检查资源数量是否达标
+    - 不达标，return 资源不足
+- 进行强化，将 boost 状态修改为 `boostClear` return OK
+
+**Room.cancelBoost()**
+
+- 检查是否有 boost 任务
+    - 没有任务，给出提示, return
+- 将 `Room.memory.boost.state` 设置为 `boostClear`
+- return 取消成功
+
+# 持久化
+
+**Room.memory.boost**
+
+```js
+{
+    // 当前强化任务状态，包括：boostGet, labGetEnergy, waitBoost, boostClear
+    state: 'boostGet',
+    // 强化类型
+    type: BOOST_TYPE.DISMANTLE,
+    // boost 强化位置，pos[0] 是 x 坐标，pos[1] 是 y 坐标，
+    pos: [ 12, 43 ],
+    // 要进行强化的材料及执行强化的 lab
+    lab: [
+        [RESOURCE_CATALYZED_GHODIUM_ACID]: '5d9bdd4b1acf0f000174aa4a',
+        [RESOURCE_CATALYZED_KEANIUM_ACID]: '5d9bdd4b1acf0f000174aa4b',
+        [RESOURCE_CATALYZED_LEMERGIUM_ACID]: '5d9bdd4b1acf0f000174aa4c',
+        [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: '5d9bdd4b1acf0f000174aa4e'
+    ]
+}
+```
+
+**setting.ts**
+
+```js
+const BOOST_TYPE = {
+    // 拆除专用 12T 5W 10M 23H
+    DISMANTLE: 'dismantle',
+    // 范围攻击 12T 5RA 10M 23H
+    RANGE_ATTACK: 'rangeAttack', 
+}
+
+const boostConfig = {
+    // 每个 BOOST_TYPE 都会对应一个配置项
+    [BOOST_TYPE.DISMANTLE]: {
+        // 其中的键值对代表这需要什么材料以及最大需要的数量
+        ['XZH20']: 150,
+        // ...
+    },
+    // ...
+}
+```
 
 # 问题
 
