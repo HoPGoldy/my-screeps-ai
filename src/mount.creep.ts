@@ -176,11 +176,16 @@ class CreepExtension extends Creep {
      * 查找到目标的路径并返回
      * 
      * @param target 目标的位置
+     * @param ignoreRoom 不让过的房间名数组
      * @returns 路径
      */
-    public findPathInRoom(target: RoomPosition): PathStep[] {
+    public findPathInRoom(target: RoomPosition, ignoreRoom: string[] = []): PathStep[] {
         return this.pos.findPathTo(target, {
-            serialize: true
+            serialize: true,
+            // 房间绕路
+            costCallback(roomName, costMatrix) {
+                return ignoreRoom.includes(roomName) ? false : costMatrix
+            }
         })
     }
 
@@ -189,18 +194,19 @@ class CreepExtension extends Creep {
      * 该方法会在进入下个房间后使用 room.findPath 规划路径并写入缓存
      * 
      * @param target 终点的坐标
+     * @param ignoreRoom 不让过的房间名数组
      * @returns creep.moveByPath 的返回值
      */
-    farMoveTo(target: RoomPosition): 0|-1|-4|-11|-12|-5|-10 {
+    farMoveTo(target: RoomPosition, ignoreRoom: string[] = []): 0|-1|-4|-11|-12|-5|-10 {
         // 确认目标有没有变化, 变化了则重新规划路线
         const targetPosTag = `${target.x}/${target.y}${target.roomName}`
         if (targetPosTag !== this.memory.targetPosTag) {
             this.memory.targetPosTag = targetPosTag
-            this.memory.path = this.findPathInRoom(target)
+            this.memory.path = this.findPathInRoom(target, ignoreRoom)
         }
         // 确认缓存有没有被清除
         if (!this.memory.path) {
-            this.memory.path = this.findPathInRoom(target)
+            this.memory.path = this.findPathInRoom(target, ignoreRoom)
             return 0
         }
         else {
@@ -208,7 +214,7 @@ class CreepExtension extends Creep {
             // 这里导致 ERR_NOT_FOUND 的原因大多是刚移动到下一个房间
             let moveResult = this.moveByPath(this.memory.path)
             if (moveResult == ERR_NOT_FOUND) {
-                this.memory.path = this.findPathInRoom(target)
+                this.memory.path = this.findPathInRoom(target, ignoreRoom)
                 moveResult = this.moveByPath(this.memory.path)
             }
             else if (moveResult !== OK) {

@@ -12,16 +12,16 @@ export default {
      * target: 占领指定房间
      * 
      * @param spawnName 出生点名称
-     * @param pathRooms 路径房间名数组，可以通过该参数强制指定 creep 的移动路线（请将 creep 出生房间放在数组首位）
+     * @param ignoreRoom 不让过的房间名数组
      */ 
-    claimer: (spawnName: string, pathRooms: string[] = []): ICreepConfig => ({
+    claimer: (spawnName: string, ignoreRoom: string[] = []): ICreepConfig => ({
         target: creep => {
             const claimFlag = creep.getFlag(CLAIM_FLAG_NAME)
             if (!claimFlag) return
 
             // 如果 creep 不在房间里 则一直向旗帜移动
             if (!claimFlag.room || (claimFlag.room && creep.room.name !== claimFlag.room.name)) {
-                creep.farMoveTo(claimFlag.pos)
+                creep.farMoveTo(claimFlag.pos, ignoreRoom)
             }
 
             // 已经抵达了该房间
@@ -47,8 +47,9 @@ export default {
      * 
      * @param spawnName 出生点名称
      * @param roomName 要预定的房间名
+     * @param ignoreRoom 不让过的房间名数组
      */
-    reserver: (spawnName: string, roomName: string): ICreepConfig => ({
+    reserver: (spawnName: string, roomName: string, ignoreRoom: string[] = []): ICreepConfig => ({
         isNeed: (room) => {
             if (!room.memory.remote) room.memory.remote = {}
             // 存在该字段说明外矿有入侵者
@@ -84,7 +85,7 @@ export default {
             // 只要进入房间则准备结束
             if (creep.room.name == roomName) return true
             else {
-                creep.farMoveTo(new RoomPosition(25, 25, roomName))
+                creep.farMoveTo(new RoomPosition(25, 25, roomName), ignoreRoom)
                 return false
             }
         },
@@ -92,11 +93,11 @@ export default {
         target: creep => {
             // 如果房间的预订者不是自己, 就攻击控制器
             if (creep.room.controller.reservation && creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
-                if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
+                if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom)
             }
             // 房间没有预定满, 就继续预定
             if (!creep.room.controller.reservation || creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-                if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos)
+                if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom)
             }
         },
         spawn: spawnName,
@@ -110,11 +111,11 @@ export default {
      * @param spawnName 出生点名称
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
-     * @param pathRooms 路径房间名数组，可以通过该参数强制指定 creep 的移动路线（请将 creep 出生房间放在数组首位）
+     * @param ignoreRoom 不让过的房间名数组
      */
-    signer: (spawnName: string, targetRoomName: string, signText: string, pathRooms: string[] = []): ICreepConfig => ({
+    signer: (spawnName: string, targetRoomName: string, signText: string, ignoreRoom: string[] = []): ICreepConfig => ({
         source: creep => {
-            creep.farMoveTo(new RoomPosition(25, 25, targetRoomName))
+            creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
         },
         target: creep => {
             if (creep.signController(creep.room.controller, signText) === ERR_NOT_IN_RANGE) {
@@ -133,13 +134,14 @@ export default {
      * @param spawnName 出生点名称
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
+     * @param ignoreRoom 不让过的房间名数组
      */
-    remoteBuilder: (spawnName: string, targetRoomName: string, sourceId: string): ICreepConfig => ({
+    remoteBuilder: (spawnName: string, targetRoomName: string, sourceId: string, ignoreRoom: string[] = []): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name === targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, targetRoomName))
+                creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
                 return false
             }
             else return true
@@ -162,13 +164,14 @@ export default {
      * @param spawnName 出生点名称
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
+     * @param ignoreRoom 不让过的房间名数组
      */
-    remoteUpgrader: (spawnName: string, targetRoomName: string, sourceId: string): ICreepConfig => ({
+    remoteUpgrader: (spawnName: string, targetRoomName: string, sourceId: string, ignoreRoom: string[] = []): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name === targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, targetRoomName))
+                creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
                 return false
             }
             else return true
@@ -188,8 +191,9 @@ export default {
      * @param spawnName 出生点名称
      * @param sourceFlagName 外矿旗帜的名称 (要确保 source 就在该旗帜附件)
      * @param targetId 要移动到的建筑 id
+     * @param ignoreRoom 不让过的房间名数组
      */
-    remoteHarvester: (spawnName: string, sourceFlagName: string, targetId: string): ICreepConfig => ({
+    remoteHarvester: (spawnName: string, sourceFlagName: string, targetId: string, ignoreRoom: string[] = []): ICreepConfig => ({
         // 如果外矿目前有入侵者就不生成
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
@@ -217,7 +221,7 @@ export default {
             if (!creep.memory.sourceId) {
                 const sourceFlag = Game.flags[sourceFlagName]
                 // 旗帜所在房间没视野, 就进行移动
-                if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
+                if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos, ignoreRoom)
                 else {
                     // 缓存外矿房间名
                     sourceFlag.memory.roomName = sourceFlag.room.name
@@ -290,7 +294,7 @@ export default {
             }
             // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
             else if (harvestResult !== OK) {
-                creep.farMoveTo(sourceFlag.pos)
+                creep.farMoveTo(sourceFlag.pos, ignoreRoom)
             }
         },
         target: creep => {
@@ -313,7 +317,7 @@ export default {
             
             // 再把剩余能量运回去
             if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
-                creep.farMoveTo(Game.getObjectById(targetId))
+                creep.farMoveTo(Game.getObjectById(targetId), ignoreRoom)
             }
         },
         switch: creep => creep.updateState('🍚 收获'),
