@@ -119,7 +119,7 @@ export default {
             if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
 
             // 只有在 storage 中能量大于 10000 时才会生成，其他建筑没有限制
-            if (source instanceof StructureStorage || source instanceof StructureLink) {
+            if (source instanceof StructureStorage) {
                 if (source.store[RESOURCE_ENERGY] > 10000)  return true
                 else return false
             }

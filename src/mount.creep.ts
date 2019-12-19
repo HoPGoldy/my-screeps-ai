@@ -183,8 +183,22 @@ class CreepExtension extends Creep {
         return this.pos.findPathTo(target, {
             serialize: true,
             // 房间绕路
-            costCallback(roomName, costMatrix) {
-                return ignoreRoom.includes(roomName) ? false : costMatrix
+            costCallback: (roomName, costMatrix) => {
+                if (roomName === this.room.name) {
+                    if (this.name === 'sign1') console.log('in', this.room.controller)
+                    // 没有控制器时才会刷传送门
+                    if (!this.room.controller) {
+                        if (this.name === 'sign1') console.log('公路房间')
+                        const portals = this.room.find(FIND_STRUCTURES, {
+                            filter: s => s.structureType === STRUCTURE_PORTAL
+                        })
+
+                        if (this.name === 'sign1') console.log('发现传送门', portals)
+                        // 把传送门设置为不可行走
+                        if (portals.length > 0) portals.map(portal => costMatrix.set(portal.pos.x, portal.pos.y, 255))
+                    }
+                }
+                return costMatrix
             }
         })
     }

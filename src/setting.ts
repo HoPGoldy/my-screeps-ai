@@ -108,8 +108,8 @@ export const bodyConfigs: IBodyConfigs = {
         1300: [ MOVE, CLAIM ],
         1800: [ MOVE, CLAIM ],
         2300: [ MOVE, CLAIM ],
-        5600: [ MOVE, CLAIM ],
-        12900: [ MOVE, CLAIM ],
+        5600: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CLAIM ],
+        12900: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, CLAIM ],
     },
 
     reserver: {

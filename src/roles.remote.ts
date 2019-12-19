@@ -28,8 +28,11 @@ export default {
             const room = claimFlag.room
             // 如果房间已经被占领或者被预定了则攻击控制器
             if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
-                if(creep.attackController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller)
-                return
+                // 确保房间所有者不是自己
+                if (room.controller.owner.username != Game.spawns[spawnName].owner.username) {
+                    if (creep.attackController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller)
+                    return
+                }
             }
             // 如果房间无主则占领
             if (room && creep.claimController(room.controller) == ERR_NOT_IN_RANGE) {
