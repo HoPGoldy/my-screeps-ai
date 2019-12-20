@@ -500,7 +500,8 @@ class RoomExtension extends Room {
                 targetIndex: 1,
                 inLab: [],
                 outLab: {},
-                outLabIndex: 0
+                outLabIndex: 0,
+                pause: false
             }
         }
 
@@ -520,9 +521,37 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 暂停 lab 集群工作
+     */
+    private pauseLab(): string {
+        if (!this.memory.lab) return `[${this.name} lab] 集群尚未初始化`
+        this.memory.lab.pause = true
+        return `[${this.name} lab] 已暂停工作`
+    }
+    
+    /**
+     * 重启 lab 集群工作
+     */
+    private resumeLab(): string {
+        if (!this.memory.lab) return `[${this.name} lab] 集群尚未初始化`
+        this.memory.lab.pause = false
+        return `[${this.name} lab] 已恢复工作`
+    }
+
+    /**
      * 用户操作：初始化 lab 集群
      */
     public linit(): string { return this.initLab() }
+
+    /**
+     * 用户操作：暂停 lab 集群
+     */
+    public lpause(): string { return this.pauseLab() }
+
+    /**
+     * 用户操作：重启 lab 集群
+     */
+    public lresume(): string { return this.resumeLab() }
 
     /**
      * 用户操作：房间操作帮助
@@ -591,7 +620,6 @@ class RoomExtension extends Room {
                 params: [
                     { name: 'hard', desc: '[可选] 设为 true 来移除其默认值中不包含的监听资源, 默认为 false' }
                 ],
-                
                 functionName: 'treset'
             },
             {
@@ -608,6 +636,14 @@ class RoomExtension extends Room {
             {
                 title: '初始化 lab 集群',
                 functionName: 'linit'
+            },
+            {
+                title: '暂停 lab 集群',
+                functionName: 'lpause'
+            },
+            {
+                title: '重启 lab 集群',
+                functionName: 'lresume'
             },
         ])
     }

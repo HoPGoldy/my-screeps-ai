@@ -252,6 +252,8 @@ interface RoomMemory {
         }
         // 要进行反应的 outLab 索引
         outLabIndex: number
+        // lab 是否暂停运行
+        pause: boolean
     }
 }
 

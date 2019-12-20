@@ -853,6 +853,8 @@ class LabExtension extends StructureLab {
     public work(): void {
         // 房间没有初始化 lab 集群则直接退出
         if (!this.room.memory.lab) return
+        // lab 集群已被暂停 同样退出
+        if (this.room.memory.lab.pause) return
 
         // [重要] 执行 lab 集群作业
         if (!this.room._hasRunLab) {
