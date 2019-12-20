@@ -59,7 +59,6 @@ interface Creep {
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    fillSpawnEngry(backupStorageId?: string): boolean
     findPathInRoom(target: RoomPosition): PathStep[]
     farMoveTo(target: RoomPosition, ignoreRoom?: string[]): 0|-1|-4|-11|-12|-5|-10
     fillTower(): boolean

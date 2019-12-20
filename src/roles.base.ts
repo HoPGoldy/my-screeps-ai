@@ -13,7 +13,34 @@ export default {
      */
     harvester: (spawnName: string, sourceId: string, backupStorageId: string=''): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
-        target: creep => creep.fillSpawnEngry(backupStorageId),
+        target: creep => {
+            // 找需要填充能量的建筑
+            let targets: AnyStructure[] = creep.room.find(FIND_STRUCTURES, {
+                filter: s => {
+                    // 是否有目标 extension 和 tower
+                    const hasTargetSpawn = (s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_SPAWN) && 
+                        (s.energy < s.energyCapacity)
+                    // 是否有目标 tower
+                    const hasTargetTower = (s.structureType == STRUCTURE_TOWER) && 
+                        (s.store[RESOURCE_ENERGY] < 900)
+                    
+                    return hasTargetSpawn || hasTargetTower
+                }
+            })
+
+            let target: AnyStructure
+            // 有目标的话就找到最近的
+            if (targets.length > 0) target = creep.pos.findClosestByPath(targets)
+            // 能量都已经填满就尝试获取冗余存储
+            else {
+                if (backupStorageId === '') return 
+                target = Game.getObjectById(backupStorageId)
+                if (!target) return 
+            }
+            
+            // 将能量移送至目标建筑
+            creep.transferTo(target, RESOURCE_ENERGY)
+        },
         switch: creep => creep.updateState('🍚 收获'),
         spawn: spawnName,
         bodyType: 'worker'
