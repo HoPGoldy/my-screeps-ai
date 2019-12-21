@@ -58,35 +58,6 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 用户操作：向指定房间发送能量
-     * 注意，该操作会自动从 storage 里取出能量
-     * 
-     * @param roomName 目标房间名
-     * @param amount 要发送的数量, 默认 100k
-     */
-    public givee(roomName: string, amount: number = 100000): string {
-        // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
-        const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
-        if (amount + cost > TERMINAL_CAPACITY) {
-            return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost}`
-        }
-
-        // 如果在执行其他任务则添加失败
-        if (this.memory.shareTask) {
-            const task = this.memory.shareTask
-            return `[能量共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`
-        }
-
-        this.memory.shareTask = {
-            target: roomName,
-            amount,
-            resourceType: RESOURCE_ENERGY
-        }
-
-        return `[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
-    }
-
-    /**
      * 用户操作：将能量从 terminal 转移至 storage 里
      * 
      * @param amount 要转移的能量数量, 默认100k
@@ -100,6 +71,70 @@ class RoomExtension extends Room {
             amount
         })
         return `已向 ${this.name} 中央任务队列推送能量转移任务，terminal > storage, 数量 ${amount}，当前排队位置: ${addResult}`
+    }
+
+    /**
+     * 用户操作：向指定房间发送能量
+     * 注意，该操作会自动从 storage 里取出能量
+     * 
+     * @param roomName 目标房间名
+     * @param amount 要发送的数量, 默认 100k
+     */
+    public givee(roomName: string, amount: number = 100000): string {
+        // 如果在执行其他任务则添加失败
+        if (this.memory.shareTask) {
+            const task = this.memory.shareTask
+            return `[能量共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`
+        }
+
+        // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
+        const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
+        if (amount + cost > TERMINAL_CAPACITY) {
+            return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost}`
+        }
+
+        this.memory.shareTask = {
+            target: roomName,
+            amount,
+            resourceType: RESOURCE_ENERGY
+        }
+
+        return `[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
+    }
+
+    /**
+     * 用户操作：向指定房间发送资源
+     * 注意，请保证资源就在 Terminal 中
+     * 
+     * @param roomName 目标房间名
+     * @param resourceType 要共享的资源类型
+     * @param amount 要发送的数量, 默认 100k
+     */
+    public giver(roomName: string, resourceType: ResourceConstant, amount: number = 1000): string {
+        // 如果在执行其他任务则添加失败
+        if (this.memory.shareTask) {
+            const task = this.memory.shareTask
+            return `[资源共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`
+        }
+
+        // 检查资源是否足够
+        if (!this.terminal) return `[资源共享] 该房间没有终端`
+        const resourceAmount = this.terminal.store[resourceType]
+        if (! resourceAmount || resourceAmount < amount) return `[资源共享] 数量不足 ${resourceType} 剩余 ${resourceAmount | 0}`
+
+        // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
+        const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
+        if (amount + cost > TERMINAL_CAPACITY) {
+            return `[资源共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost}`
+        }
+
+        this.memory.shareTask = {
+            target: roomName,
+            amount,
+            resourceType
+        }
+
+        return `[资源共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
     }
 
     /**
@@ -575,6 +610,15 @@ class RoomExtension extends Room {
                     { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 100k' }
                 ],
                 functionName: 'givee'
+            },
+            {
+                title: '向指定房间发送资源',
+                params: [
+                    { name: 'roomName', desc: '要发送到的房间名' },
+                    { name: 'resourceType', desc: '要发送的资源类型' },
+                    { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 1k' }
+                ],
+                functionName: 'giver'
             },
             {
                 title: '将能量从 storage 转移至 terminal 里',

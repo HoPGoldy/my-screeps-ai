@@ -25,7 +25,7 @@ Room.boostCreep(creep)
 取消当前 boost 进程：将已经填进 lab 的化合物移会 terminal
 
 ```js
-Room.cboost()
+Room.bcancel()
 ```
 
 # 模块化
@@ -119,7 +119,7 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
     - 不达标，return 资源不足
 - 进行强化，将 boost 状态修改为 `boostClear` return OK
 
-**Room.cancelBoost()**
+**Room.boostCancel()**
 
 - 检查是否有 boost 任务
     - 没有任务，给出提示, return
