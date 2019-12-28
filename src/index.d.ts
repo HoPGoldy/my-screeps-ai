@@ -171,6 +171,7 @@ interface Room {
     getRoomTransferTask(): RoomTransferTasks | null
     handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
     handleRoomTransferTask(): void
+    handleBoostGetResourceTask(resourceIndex: number, number: number): void
     deleteCurrentRoomTransferTask(): void
 
     setFactoryTarget(resourceType: ResourceConstant): string
@@ -244,7 +245,7 @@ interface RoomMemory {
      * lab 集群所需的信息
      * @see doc/lab设计案
      */
-    lab: {
+    lab?: {
         // 当前集群的工作状态
         state: string
         // 当前生产的目标产物索引
@@ -262,10 +263,27 @@ interface RoomMemory {
         // lab 是否暂停运行
         pause: boolean
     }
+
+    /**
+     * boost 强化任务
+     * @see doc/boost设计案
+     */
+    boost?: {
+        // 当前任务的所处状态
+        state: string
+        // 当前任务的种类
+        type: string
+        // 进行 boost 强化的位置
+        pos: number[]
+        // 要进行强化的材料以及执行强化的 lab
+        lab: {
+            [resourceType: string]: string
+        }
+    }
 }
 
 // 所有房间物流任务
-type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | ILabGetEnergy
+type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear
 
 // 房间物流任务 - 填充拓展
 interface IFillExtension {
@@ -301,8 +319,23 @@ interface ILabOut {
     resourceType: ResourceConstant
 }
 
-// 房间物流任务 - lab 能量填充
-interface ILabGetEnergy {
+// 房间物流任务 - boost 资源填充
+interface IBoostGetResource {
+    type: string
+    resource: {
+        type: ResourceConstant
+        labId: string
+        number: number
+    }[]
+}
+
+// 房间物流任务 - boost 能量填充
+interface IBoostGetEnergy {
+    type: string
+}
+
+// 房间物流任务 - boost 资源清理
+interface IBoostClear {
     type: string
 }
 

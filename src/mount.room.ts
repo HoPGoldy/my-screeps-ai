@@ -1,4 +1,5 @@
 import { createHelp } from './utils'
+import { boostConfigs, BOOST_STATE } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 
 // 挂载拓展到 Room 原型
@@ -277,6 +278,25 @@ class RoomExtension extends Room {
                     break
                 }
             }
+            // 更新对应的任务
+            this.memory.transferTasks.splice(0, 1, currentTask)
+            return true
+        }
+        else return false
+    }
+
+    /**
+     * 更新 boostGetResource 任务信息
+     * @param resourceIndex 要更新的资源索引
+     * @param number 完成搬运的数量
+     */
+    public handleBoostGetResourceTask(resourceIndex: number, number: number): boolean {
+        const currentTask = <IBoostGetResource>this.getRoomTransferTask()
+        // 判断当前任务为 labin
+        if (currentTask.type == ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE) {
+            // 更新数量
+            currentTask.resource[resourceIndex].number -= number
+            
             // 更新对应的任务
             this.memory.transferTasks.splice(0, 1, currentTask)
             return true
@@ -687,6 +707,113 @@ class RoomExtension extends Room {
      * 用户操作：重启 Observer 工作
      */
     public oresume(): string{ return this.resumeObserver()}
+    /*
+     * 启动 boost 进程
+     * 该方法主要由 boost creep 在 isNeed 阶段调用，当然也可以手动调用
+     * 
+     * @param boostType 要启动的 boost 任务类型，在 setting.ts 的 BOOST_TYPE 中定义
+     */
+    public boost(boostType: string): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES {
+        // 检查是否存在 boost 任务
+        if (this.memory.boost) return ERR_NAME_EXISTS
+        
+        // 获取 boost 旗帜
+        const boostFlagName = this.name + 'Boost'
+        const boostFlag = Game.flags[boostFlagName]
+        if (!boostFlag) return ERR_NOT_FOUND
+
+        // 获取强化配置项
+        const boostConfig = boostConfigs[boostType]
+        if (!boostConfig) return ERR_INVALID_ARGS
+
+        // 获取执行强化的 lab
+        const labs = boostFlag.pos.findInRange<StructureLab>(FIND_STRUCTURES, 1, {
+            filter: s => s.structureType == STRUCTURE_LAB
+        })
+        // 如果数量不够
+        if (labs.length < Object.keys(boostConfig).length) return ERR_NOT_ENOUGH_RESOURCES
+
+        // 初始化 boost 任务
+        let boostTask = {
+            state: BOOST_STATE.GET_RESOURCE,
+            type: boostType,
+            pos: [ boostFlag.pos.x, boostFlag.pos.y ],
+            lab: {}
+        }
+
+        // 填充需要执行的 lab
+        for (const resourceType in boostConfig) {
+            boostTask.lab[resourceType] = labs.pop().id
+        }
+
+        // 发布 boost 任务
+        this.memory.boost = boostTask
+        return OK
+    }
+
+    /**
+     * 强化指定 creep
+     * 
+     * @param creep 要进行强化的 creep，该 creep 应站在指定好的强化位置上
+     */
+    public boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE {
+        if (!this.memory.boost) return ERR_NOT_FOUND
+
+        // 获取强化配置项，这里不做兜底，因为 Room.boost() 已经做过了
+        // 万一改内存的时候改错了不能怨代码 XD
+        const boostConfig = boostConfigs[this.memory.boost.type]
+
+        // 检查是否准备好了
+        if (this.memory.boost.state != BOOST_STATE.WAIT_BOOST) return ERR_BUSY
+
+        // 获取全部 lab
+        let executiveLab: StructureLab[]
+        for (const resourceType in this.memory.boost.lab) {
+            const lab = Game.getObjectById<StructureLab>(this.memory.boost.lab[resourceType])
+            // 这里没有直接 return 是为了避免 lab 集群已经部分被摧毁而导致整个 boost 进程无法执行
+            if (lab) executiveLab.push(lab)
+        }
+
+        // 执行强化
+        const boostResults = executiveLab.map(lab => lab.boostCreep(creep))
+
+        // 有一个强化成功了就算强化成功
+        if (boostResults.filter(res => res == OK)) {
+            this.memory.boost.state = BOOST_STATE.CLEAR
+            return OK
+        }
+        else return ERR_NOT_IN_RANGE
+    }
+
+    /**
+     * 取消 boost 进程
+     */
+    public boostCancel(): OK | ERR_NOT_FOUND {
+        if (!this.memory.boost) return ERR_NOT_FOUND
+
+        // 将 boost 状态置为 clear，labExtension 会自动发布清理任务并移除 boostTask
+        this.memory.boost.state = BOOST_STATE.CLEAR
+        return OK
+    }
+
+    /**
+     * 用户操作：取消 boost 任务
+     */
+    public bcancel(): string {
+        const cancelResult = this.boostCancel()
+        if (cancelResult == OK) return `[${this.name} boost] 任务取消成功，正在执行清理`
+        else if (cancelResult == ERR_NOT_FOUND) return `[${this.name} boost] 未找到任务`
+    }
+
+    /**
+     * 用户操作：显示当前正在执行的 boost 任务
+     */
+    public bshow(): string {
+        if (!this.memory.boost) return `[${this.name} boost] 未找到任务`
+
+        return `[${this.name} boost] 正在执行强化任务: ${this.memory.boost.type} | 当前阶段: ${this.memory.boost.state}\n`
+    }
+
     /**
      * 用户操作：房间操作帮助
      */
@@ -787,6 +914,14 @@ class RoomExtension extends Room {
             {
                 title: '重启 lab 集群',
                 functionName: 'lresume'
+            },
+            {
+                title: '显示当前正在进行的 boost 任务',
+                functionName: 'bshow'
+            },
+            {
+                title: '终止当前正在进行的 boost 任务',
+                functionName: 'bcancel'
             },
         ])
     }

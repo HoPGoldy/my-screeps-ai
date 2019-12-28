@@ -301,7 +301,8 @@ export const LAB_STATE = {
     GET_TARGET: 'getTarget',
     GET_RESOURCE: 'getResource',
     WORKING: 'working',
-    PUT_RESOURCE: 'putResource'
+    PUT_RESOURCE: 'putResource',
+    BOOST: 'boost'
 }
 
 /**
@@ -349,5 +350,50 @@ export const FACTORY_LOCK_AMOUNT = {
 
 export const powerSettings = {
     processEnergyLimit:500000,
-    
+  
+/**
+ * boost 强化的阶段
+ * 仅在房间的 LAB_STATE 为 boost 时有效
+ */
+export const BOOST_STATE = {
+    // 获取资源, boost 进程的默认阶段
+    GET_RESOURCE: 'boostGet',
+    // 获取能量, 有 lab 能量不足时触发
+    GET_ENERGY: 'labGetEnergy',
+    // 等待强化，lab 在该阶段会一直等待直到 creep 调用强化
+    WAIT_BOOST: 'waitBoost',
+    // 清除资源，在强化完成后打扫 lab
+    CLEAR: 'boostClear'
+}
+
+/**
+ * boost 强化的类型，用于提供给 `Room.boost` 来启动 boost 进程
+ * 每个一 BOOST_TYPE 都应对应一个 boostConfig
+ */
+export const BOOST_TYPE = {
+    // 拆除专用 12T 5W 10M 23H
+    DISMANTLE: 'dismantle',
+    // 范围攻击 12T 5RA 10M 23H
+    RANGE_ATTACK: 'rangeAttack',
+}
+
+/**
+ * boost 强化配置项
+ * 描述了对应 BOOST_TYPE 所需的材料及数量
+ * 数量是指要强化多少个身体部件，在执行强化进程时会将其乘以 LAB_BOOST_MINERAL(30)
+ * 应与上面的 BOOST_TYPE 保持对应关系
+ */
+export const boostConfigs = {
+    [BOOST_TYPE.DISMANTLE]: {
+        [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12,
+        [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: 5,
+        [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10,
+        [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 23
+    },
+    [BOOST_TYPE.RANGE_ATTACK]: {
+        [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12,
+        [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: 5,
+        [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10,
+        [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 23
+    },
 }
