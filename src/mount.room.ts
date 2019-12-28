@@ -593,16 +593,6 @@ class RoomExtension extends Room {
         return `[${this.name} lab] 已恢复工作`
     }
 
-    /**
-     * 初始化 PowerSpawn 工作
-     */
-    private initPowerSpapwn(): string{
-        this.memory.powerSpawn={
-            process:true,
-            id:null
-        }
-        return `[${this.name} PowerSpawn] 已初始化`
-    }
 
     /**
      * 暂停 PowerSpawn 工作
@@ -677,11 +667,6 @@ class RoomExtension extends Room {
      * 用户操作：重启 lab 集群
      */
     public lresume(): string { return this.resumeLab() }
-
-    /**
-     * 用户操作：初始化 PowerSpawn 工作
-     */
-    public pinit(): string{ return this.initPowerSpapwn()}
 
     /**
      * 用户操作：暂停 PowerSpawn 工作
