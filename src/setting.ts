@@ -195,6 +195,10 @@ export const bodyConfigs: IBodyConfigs = {
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ]
     },
 
+    /**
+     * 签名者
+     * 没啥用
+     */
     signer: {
         300: [ MOVE ],
         550: [ MOVE ],

@@ -54,7 +54,7 @@ class CreepExtension extends Creep {
             if (creepConfig.source) creepConfig.source(this)
         }
         // let cost2 = Game.cpu.getUsed()
-        // console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
+        // if ((cost2 - cost1) > 0.5) console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
     }
 
     /**
@@ -180,6 +180,107 @@ class CreepExtension extends Creep {
                 return costMatrix
             }
         })
+    }
+
+    /**
+     * 远程寻路
+     * 
+     * @param target 目标位置
+     * @param ignoreRoom 要绕开的房间数组
+     * @param range 搜索范围 默认为 1
+     * @returns PathFinder.search 的返回值
+     */
+    public findPath(target: RoomPosition, ignoreRoom: string[] = [], range: number = 1): string | null {
+        this.memory.moveIndex = 0
+
+        const result = PathFinder.search(this.pos, { pos: target, range }, {
+            roomCallback(roomName) {
+                const room = Game.rooms[roomName]
+                // 房间没有视野
+                if (!room) return
+                // 强调了不许走就不走
+                if (ignoreRoom.includes(roomName)) return false
+
+                let costs = new PathFinder.CostMatrix
+
+                room.find(FIND_STRUCTURES).forEach(struct => {
+                    if (struct.structureType === STRUCTURE_ROAD) {
+                        costs.set(struct.pos.x, struct.pos.y, 1)
+                    }
+                    // 不能穿过无法行走的建筑
+                    else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                        (struct.structureType !== STRUCTURE_RAMPART || !struct.my)
+                    ) costs.set(struct.pos.x, struct.pos.y, 255)
+                })
+
+                // 躲避房间中的 creep
+                room.find(FIND_CREEPS).forEach(function(creep) {
+                    costs.set(creep.pos.x, creep.pos.y, 0xff);
+                });
+
+                return costs
+            }
+        })
+
+        // 没找到就返回 null
+        if (result.path.length <= 0) return null
+        // 找到了就压缩后返回
+        return this.serializeFarPath(result.path)
+    }
+
+    /**
+     * 压缩 PathFinder 返回的路径数组
+     * 
+     * @param positions 房间位置对象数组，必须连续
+     * @returns 压缩好的路径
+     */
+    public serializeFarPath(positions: RoomPosition[]): string {
+        return positions.map((pos, index) => {
+            // 最后一个位置就不用再移动
+            if (index >= positions.length - 1) return null
+
+            // 获取到下个位置的方向
+            return pos.getDirectionTo(positions[index + 1])
+        }).join('')
+    }
+
+    public newfarMoveTo(target: RoomPosition, ignoreRoom: string[] = []): 0|-1|-4|-11|-12|-5|-10 {
+        // 确认目标有没有变化, 变化了则重新规划路线
+        const targetPosTag = `${target.x}/${target.y}${target.roomName}`
+        if (targetPosTag !== this.memory.targetPosTag) {
+            this.memory.targetPosTag = targetPosTag
+            this.memory.movePath = this.findPath(target, ignoreRoom)
+        }
+        // 确认缓存有没有被清除
+        if (!this.memory.farPath) {
+            this.memory.movePath = this.findPath(target, ignoreRoom)
+            return 0
+        }
+        
+        const index = this.memory.moveIndex
+        // 移动索引超过数组上限代表到达目的地
+        if (index >= this.memory.farPath.length) return OK
+
+        // 获取下一个位置方向
+        const getDirection = index => {
+            let nextPos = this.memory.farPath[index]
+            return this.pos.getDirectionTo(new RoomPosition(nextPos.x, nextPos.y, nextPos.roomName))
+        }
+        let direction = getDirection(index)
+        // 穿过房间边界时会获取不到方向，这里直接获取下下个方向
+        if (!direction) direction = getDirection(index + 1)
+
+        const moveResult = this.move(direction)
+
+        // console.log("TCL: moveResult", index, JSON.stringify(this.memory.farPath[index]), direction, moveResult)
+        if (moveResult == OK) this.memory.moveIndex ++
+        else if (moveResult == ERR_INVALID_ARGS) delete this.memory.farPath
+        else {
+            if (moveResult != ERR_TIRED) this.say(`远程寻路 ${moveResult}`)
+            // console.log(`${this.name} 出现问题无法移动, 错误码 ${moveResult}`)
+        }
+        
+        return moveResult
     }
 
     /**

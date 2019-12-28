@@ -61,6 +61,7 @@ interface Creep {
     defense(): void
     findPathInRoom(target: RoomPosition): PathStep[]
     farMoveTo(target: RoomPosition, ignoreRoom?: string[]): 0|-1|-4|-11|-12|-5|-10
+    newfarMoveTo(target: RoomPosition, ignoreRoom?: string[]): 0|-1|-4|-11|-12|-5|-10
     fillTower(): boolean
     upgrade(): boolean
     buildStructure(): boolean
@@ -109,6 +110,14 @@ interface CreepMemory {
     sourceId?: string
     // 远程寻路的行进路线缓存
     path?: PathStep[]
+    // 远程寻路的路线缓存（新）
+    farPath?: RoomPosition[]
+    // 远程寻路的路线缓存（新新）
+    movePath?: string
+    // farPath 的移动索引，标志 creep 现在走到的第几个位置
+    moveIndex?: number
+    // deposit 采集者特有，deposit 的类型
+    depositType?: DepositConstant
     // 缓存路径的目标，该目标发生变化时刷新路径, 总是和上面的 path 成对出现
     targetPosTag?: string
     // 要填充的墙 id 
@@ -342,13 +351,21 @@ interface Memory {
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
         [resourceType: string]: string[]
-    }
+   }
 }
 
 interface FlagMemory {
+    // deposit 旗帜特有，最长冷却时间
+    depositCooldown?: number
+    // 公路房旗帜特有，抵达目标需要的时间
+    travelTime?: number
+    // 公路房旗帜特有，travelTime 是否已经计算完成
+    travelComplete?: boolean
+    // 该旗帜下标注的资源 id
+    sourceId?: string
     // 因为外矿房间有可能没视野
     // 所以把房间名缓存进内存
-    roomName: string
+    roomName?: string
 }
 
 /**

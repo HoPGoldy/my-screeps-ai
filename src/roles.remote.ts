@@ -352,4 +352,130 @@ export default {
         spawn: spawnName,
         bodyType: 'remoteDefender'
     }),
+
+    /**
+     * deposit采集者
+     * 从指定矿中挖 deposit > 将矿转移到建筑中
+     * 
+     * @param spawnName 出生点名称
+     * @param sourceFlagName 旗帜的名称 (插在 Deposit 上)
+     * @param targetId 要存放到的目标建筑的 id（默认为 terminal）
+     */
+    depositHarvester: (spawnName: string, sourceFlagName: string, targetId?: string): ICreepConfig => ({
+        isNeed: () => {
+            // 旗帜效验, 没有旗帜则不生成
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
+                return false
+            }
+
+            // 冷却时长过长则放弃该 deposit
+            if (Game.flags[sourceFlagName].memory.depositCooldown >= 100) {
+                delete Memory.flags[targetFlag.name]
+                targetFlag.remove()
+                return false
+            }
+            return true
+        },
+        source: creep => {
+            // 旗帜效验, 没有旗帜则原地待命
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[${creep.name}] 找不到名称为 ${sourceFlagName} 的旗帜`)
+                return creep.say('旗呢？')
+            }
+
+            // 还没到就继续走
+            if (!targetFlag.pos.isNearTo(creep.pos)) {
+                // 边走边记录抵达时间
+                if (targetFlag.memory.travelTime == undefined) targetFlag.memory.travelTime = 0 // 初始化
+                // 旅途时间还没有计算完成
+                else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime ++ // 增量
+
+                return creep.newfarMoveTo(targetFlag.pos)
+            }
+            // 完成旅途时间计算
+            else targetFlag.memory.travelComplete = true
+
+            // 获取目标
+            let target: Deposit
+            if (targetFlag.memory.sourceId) target = Game.getObjectById(targetFlag.memory.sourceId)
+            else {
+                target = targetFlag.pos.lookFor(LOOK_DEPOSITS)[0]
+                console.log("TCL: target", target)
+                // 找到了就赋值并缓存
+                if (target) targetFlag.memory.sourceId = target.id
+                // 找不到就失去了存在的意义
+                else {
+                    delete Memory.flags[targetFlag.name]
+                    targetFlag.remove()
+                    creep.suicide()
+                }
+            }
+
+            if (target.cooldown) return
+
+            const harvestResult = creep.harvest(target)
+            // 采集成功更新冷却时间及资源类型
+            if (harvestResult == OK) {
+                targetFlag.memory.depositCooldown = target.lastCooldown
+                if (!creep.memory.depositType) creep.memory.depositType = target.depositType
+            }
+            // 采集失败就提示
+            else creep.say(`采集 ${harvestResult}`)
+        },
+        target: creep => {
+            let target: Structure
+            if (targetId) {
+                target = Game.getObjectById(targetId)
+                if (!target) return console.log(`[${creep.name}] target 阶段，找不到目标建筑`)
+            }
+            else {
+                // 获取目标终端
+                const spawn = Game.spawns[spawnName]
+                if (!spawn) return console.log(`[${creep.name}] target 阶段，找不到指定 spawn`)
+                const target = spawn.room.terminal
+                if (!target) return console.log(`[${creep.name}] target 阶段，找不到默认 terminal`)
+            }
+            
+            // 转移并检测返回值
+            const transferResult = creep.transfer(target, creep.memory.depositType)
+            if (transferResult == ERR_NOT_IN_RANGE) creep.newfarMoveTo(target.pos)
+            else if (transferResult !== OK) creep.say(`转移 ${transferResult}`)
+        },
+        switch: creep => {
+            // 旗帜效验, 没有旗帜就执行 source
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) return (creep.memory.working = false)
+
+            // 快挂了赶紧回城
+            if (creep.ticksToLive <= (targetFlag.memory.travelTime * 2) + 20) {
+                if (creep.store[creep.memory.depositType] == 0) creep.suicide()
+                else return (creep.memory.working = true)
+            }
+            
+            // 没存 depositType 肯定是还没有开始采集
+            if (!creep.memory.depositType) creep.memory.working = false
+            else {
+                // 没满继续挖
+                if (creep.store.getFreeCapacity(creep.memory.depositType) > 0 && creep.memory.working) {
+                    creep.say('🍎 挖矿')
+                    creep.memory.working = false
+                }
+                // 满了就回家 || 冷却太长了也回家
+                else if (
+                    (creep.store.getFreeCapacity(creep.memory.depositType) <= 0 && !creep.memory.working) ||
+                    (targetFlag.memory.depositCooldown >= 100 && !creep.memory.working)
+                ) {
+                    creep.say('🚛 回家')
+                    creep.memory.working = true
+                }
+            }
+    
+            return creep.memory.working
+        },
+        spawn: spawnName,
+        bodyType: 'remoteHarvester'
+    }),
 }
