@@ -83,6 +83,15 @@ export default {
             // 不然不孵化
             return false
         },
+        // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
+        prepare: creep => {
+            // 只要进入房间则准备结束
+            if (creep.room.name === roomName) {
+                creep.farMoveTo(new RoomPosition(25, 25, roomName), ignoreRoom)
+                return false
+            }
+            else return true
+        },
         // 一直进行预定
         target: creep => {
             // 如果房间的预订者不是自己, 就攻击控制器
@@ -314,10 +323,16 @@ export default {
                 const road = structures[0]
                 if (road.hits < road.hitsMax) creep.repair(road)
             }
+
+            const target: Structure = Game.getObjectById(targetId)
+            if (!target) {
+                creep.say('目标没了!')
+                return console.log(`[${creep.name}] 找不到指定 target`)
+            }
             
             // 再把剩余能量运回去
-            if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
-                creep.farMoveTo(Game.getObjectById(targetId), ignoreRoom, 1)
+            if (creep.transfer(target, RESOURCE_ENERGY) !== OK) {
+                creep.farMoveTo(target.pos, ignoreRoom, 1)
             }
         },
         switch: creep => creep.updateState('🍚 收获'),

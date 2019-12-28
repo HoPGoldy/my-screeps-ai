@@ -160,6 +160,7 @@ class CreepExtension extends Creep {
      * @returns PathFinder.search 的返回值
      */
     public findPath(target: RoomPosition, ignoreRoom: string[] = [], range: number): string | null {
+        // console.log(`[${this.name}] 执行远程寻路`)
         if (!this.memory.farMove) this.memory.farMove = { }
         this.memory.farMove.index = 0
 
