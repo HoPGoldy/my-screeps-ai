@@ -217,8 +217,7 @@ export const bodyConfigs: IBodyConfigs = {
 export const creepDefaultMemory: CreepMemory = {
     role: '',
     ready: false,
-    working: false,
-    path: []
+    working: false
 }
 
 /**

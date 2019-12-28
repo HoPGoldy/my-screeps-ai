@@ -59,9 +59,7 @@ interface Creep {
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    findPathInRoom(target: RoomPosition): PathStep[]
-    farMoveTo(target: RoomPosition, ignoreRoom?: string[]): 0|-1|-4|-11|-12|-5|-10
-    newfarMoveTo(target: RoomPosition, ignoreRoom?: string[]): 0|-1|-4|-11|-12|-5|-10
+    farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): 0|-1|-4|-11|-12|-5|-10
     fillTower(): boolean
     upgrade(): boolean
     buildStructure(): boolean
@@ -108,18 +106,19 @@ interface CreepMemory {
     working: boolean
     // 外矿采集者特有 要采集的 Source Id
     sourceId?: string
-    // 远程寻路的行进路线缓存
-    path?: PathStep[]
-    // 远程寻路的路线缓存（新）
-    farPath?: RoomPosition[]
-    // 远程寻路的路线缓存（新新）
-    movePath?: string
-    // farPath 的移动索引，标志 creep 现在走到的第几个位置
-    moveIndex?: number
+    // 远程寻路缓存
+    farMove?: {
+        // 序列化之后的路径信息
+        path?: string
+        // 移动索引，标志 creep 现在走到的第几个位置
+        index?: number
+        // 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞墙
+        prePos?: string
+        // 缓存路径的目标，该目标发生变化时刷新路径, 形如"14/4E14S1"
+        targetPos?: string
+    }
     // deposit 采集者特有，deposit 的类型
     depositType?: DepositConstant
-    // 缓存路径的目标，该目标发生变化时刷新路径, 总是和上面的 path 成对出现
-    targetPosTag?: string
     // 要填充的墙 id 
     fillWallId?: string
     // transfer 特有 要填充能量的建筑 id

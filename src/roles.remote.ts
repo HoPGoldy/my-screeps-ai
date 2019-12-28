@@ -83,24 +83,15 @@ export default {
             // 不然不孵化
             return false
         },
-        // 朝房间移动
-        prepare: creep => {
-            // 只要进入房间则准备结束
-            if (creep.room.name == roomName) return true
-            else {
-                creep.farMoveTo(new RoomPosition(25, 25, roomName), ignoreRoom)
-                return false
-            }
-        },
         // 一直进行预定
         target: creep => {
             // 如果房间的预订者不是自己, 就攻击控制器
             if (creep.room.controller.reservation && creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
-                if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom)
+                if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom, 1)
             }
             // 房间没有预定满, 就继续预定
             if (!creep.room.controller.reservation || creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-                if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom)
+                if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom, 1)
             }
         },
         spawn: spawnName,
@@ -147,7 +138,10 @@ export default {
                 creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
                 return false
             }
-            else return true
+            else {
+                delete creep.memory.farMove
+                return true
+            }
         },
         // 下面是正常的建造者逻辑
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
@@ -177,7 +171,10 @@ export default {
                 creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
                 return false
             }
-            else return true
+            else {
+                delete creep.memory.farMove
+                return true
+            }
         },
         // 下面是正常的升级者逻辑
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
@@ -320,7 +317,7 @@ export default {
             
             // 再把剩余能量运回去
             if (creep.transfer(Game.getObjectById(targetId), RESOURCE_ENERGY) !== OK) {
-                creep.farMoveTo(Game.getObjectById(targetId), ignoreRoom)
+                creep.farMoveTo(Game.getObjectById(targetId), ignoreRoom, 1)
             }
         },
         switch: creep => creep.updateState('🍚 收获'),
@@ -344,7 +341,10 @@ export default {
                 creep.farMoveTo(new RoomPosition(25, 25, roomName))
                 return false
             }
-            else return true
+            else {
+                delete creep.memory.farMove
+                return true
+            }
         },
         source: creep => creep.standBy(),
         target: creep => creep.defense(),
@@ -393,7 +393,7 @@ export default {
                 // 旅途时间还没有计算完成
                 else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime ++ // 增量
 
-                return creep.newfarMoveTo(targetFlag.pos)
+                return creep.farMoveTo(targetFlag.pos, [], 1)
             }
             // 完成旅途时间计算
             else targetFlag.memory.travelComplete = true
@@ -441,7 +441,7 @@ export default {
             
             // 转移并检测返回值
             const transferResult = creep.transfer(target, creep.memory.depositType)
-            if (transferResult == ERR_NOT_IN_RANGE) creep.newfarMoveTo(target.pos)
+            if (transferResult == ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, [], 1)
             else if (transferResult !== OK) creep.say(`转移 ${transferResult}`)
         },
         switch: creep => {
@@ -477,5 +477,27 @@ export default {
         },
         spawn: spawnName,
         bodyType: 'remoteHarvester'
+    }),
+
+     /**
+     * 移动测试单位
+     * 一直朝着旗帜移动
+     * 
+     * @param spawnName 出生点名称
+     * @param flagName 目标旗帜名称
+     */
+    moveTester: (spawnName: string, flagName: string): ICreepConfig => ({
+        target: creep => {
+            const targetFlag = Game.flags[flagName]
+            if (!targetFlag) {
+                console.log(`[${creep.name}] 找不到 ${flagName} 旗帜`)
+                return creep.say('旗呢？')
+            }
+            let cost1 = Game.cpu.getUsed()
+            creep.farMoveTo(targetFlag.pos, [])
+            console.log('移动消耗', Game.cpu.getUsed() - cost1)
+        },
+        spawn: spawnName,
+        bodyType: 'signer'
     }),
 }
