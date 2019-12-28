@@ -301,7 +301,8 @@ export const LAB_STATE = {
     GET_TARGET: 'getTarget',
     GET_RESOURCE: 'getResource',
     WORKING: 'working',
-    PUT_RESOURCE: 'putResource'
+    PUT_RESOURCE: 'putResource',
+    BOOST: 'boost'
 }
 
 /**

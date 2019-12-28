@@ -286,6 +286,25 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 更新 boostGetResource 任务信息
+     * @param resourceIndex 要更新的资源索引
+     * @param number 完成搬运的数量
+     */
+    public handleBoostGetResourceTask(resourceIndex: number, number: number): boolean {
+        const currentTask = <IBoostGetResource>this.getRoomTransferTask()
+        // 判断当前任务为 labin
+        if (currentTask.type == ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE) {
+            // 更新数量
+            currentTask.resource[resourceIndex].number -= number
+            
+            // 更新对应的任务
+            this.memory.transferTasks.splice(0, 1, currentTask)
+            return true
+        }
+        else return false
+    }
+
+    /**
      * 移除当前处理的房间物流任务
      */
     public deleteCurrentRoomTransferTask(): void {

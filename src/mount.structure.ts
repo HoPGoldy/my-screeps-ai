@@ -1,5 +1,5 @@
 import { creepConfigs } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, boostConfigs } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
@@ -887,6 +887,10 @@ class LabExtension extends StructureLab {
                 if (Game.time % 15) return
                 this.labPutResource()
             break
+            case LAB_STATE.BOOST:
+                if (Game.time % 10) return
+                this.boostController()
+            break
             default:
                 if (Game.time % 10) return
                 this.labGetTarget()
@@ -895,10 +899,145 @@ class LabExtension extends StructureLab {
     }
 
     /**
+     * boost - 流程控制器
+     */
+    private boostController(): void {
+        switch (this.room.memory.boost.state) {
+            case BOOST_STATE.GET_RESOURCE: 
+                this.boostGetResource()
+            break
+            case BOOST_STATE.GET_ENERGY:
+                this.boostGetEnergy()
+            break
+            case BOOST_STATE.WAIT_BOOST:
+                // 感受宁静
+            break
+            case BOOST_STATE.CLEAR:
+                this.boostClear()
+            break
+            default:
+                this.boostGetResource()
+            break
+        }
+    }
+
+    /**
+     * boost 阶段：获取强化材料
+     */
+    private boostGetResource(): void {
+        console.log(`[${this.room.name} boost] 获取 boost 材料`)
+        
+        // 获取强化配置项
+        const boostTask = this.room.memory.boost
+        const boostConfig = boostConfigs[boostTask.type]
+
+        // 遍历检查资源是否到位
+        let allResourceReady = true
+        for (const resourceType in boostTask.lab) {
+            const lab = Game.getObjectById<StructureLab>(boostTask.lab[resourceType])
+            if (!lab) continue
+
+            // 只要有 lab 里的资源没填好就算没有就绪
+            if (lab.store[resourceType] < (boostConfig[resourceType] * LAB_BOOST_MINERAL)) allResourceReady = false
+        }
+
+        // 都就位了就进入下一个阶段
+        if (allResourceReady) this.room.memory.boost.state = BOOST_STATE.GET_ENERGY
+        // 否则就发布任务
+        else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) {
+            // 遍历整理所有要转移的资源、目标 labId 及数量
+            let resources = []
+            for (const resourceType in boostTask.lab) {
+                resources.push({
+                    type: resourceType,
+                    labId: boostTask.lab[resourceType],
+                    number: boostConfig[resourceType] * LAB_BOOST_MINERAL
+                })
+            }
+
+            // 发布任务
+            this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE,
+                resource: resources
+            })
+        }
+    }
+
+    /**
+     * boost 阶段：获取能量
+     */
+    private boostGetEnergy(): void {
+        console.log(`[${this.room.name} boost] 获取强化能量`)
+
+        // 所有执行强化的 labId
+        const boostLabs = Object.values(this.room.memory.boost.lab)
+        
+        // 检查是否有能量为空的 lab
+        for (const labId of boostLabs) {
+            const lab: StructureLab = Game.getObjectById(labId)
+
+            if (lab && lab.store[RESOURCE_ENERGY] != LAB_ENERGY_CAPACITY) {
+                // 有 lab 能量不满的话就发布任务
+                if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_ENERGY)) {
+                    this.room.addRoomTransferTask({
+                        type: ROOM_TRANSFER_TASK.BOOST_GET_ENERGY
+                    })
+                }
+                return
+            }
+        }
+
+        // 能循环完说明能量都填好了
+        this.room.memory.boost.state = BOOST_STATE.WAIT_BOOST
+    }
+
+    /**
+     * boost 阶段：回收材料
+     * 将强化用剩下的材料从 lab 中转移到 terminal 中
+     */
+    private boostClear(): void {
+        console.log(`[${this.room.name} boost] 回收材料`)
+
+        // 所有执行强化的 labId
+        const boostLabs = Object.values(this.room.memory.boost.lab)
+
+        // 检查是否存在没搬空的 lab
+        for (const labId of boostLabs) {
+            const lab: StructureLab = Game.getObjectById(labId)
+
+            // mineralType 不为空就说明还有资源没拿出来
+            if (lab && lab.mineralType) {
+                // 发布任务
+                if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
+                    this.room.addRoomTransferTask({
+                        type: ROOM_TRANSFER_TASK.BOOST_CLEAR
+                    })
+                }
+                return
+            }
+        }
+
+        // 检查是否有 boostGetResource 任务存在
+        // 这里检查它的目的是防止 transfer 还在执行 BOOST_GET_RESOURCE 任务，如果过早的完成 boost 进程的话
+        // 就会出现 lab 集群已经回到了 GET_TARGET 阶段但是 lab 里还有材料存在
+        if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) return
+        // 彻底完成了 boost 进程
+        else {
+            delete this.room.memory.boost
+            this.room.memory.lab.state = LAB_STATE.GET_TARGET
+        }
+    }
+
+    /**
      * lab 阶段：获取全局目标
      */
     private labGetTarget(): void {
         // console.log(`[${this.room.name} lab] - 获取目标`)
+        // 如果有 boost 任务的话就优先执行
+        if (this.room.memory.boost) {
+            this.room.memory.lab.state = LAB_STATE.BOOST
+            return
+        }
         
         // 获取目标
         if (!this.room.memory.lab.targetIndex) this.room.memory.lab.targetIndex = 0
@@ -1085,7 +1224,7 @@ class LabExtension extends StructureLab {
 
     /**
      * 向房间物流队列推送任务
-     * 任务包括：in(底物填充)、out(产物移出)、getEnergy(获取能量)
+     * 任务包括：in(底物填充)、out(产物移出)
      * 
      * @param taskType 要添加的任务类型
      * @returns 是否成功添加了物流任务
@@ -1117,13 +1256,6 @@ class LabExtension extends StructureLab {
             return (this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.LAB_OUT,
                 resourceType: targetResource
-            }) == -1) ? false : true
-        }
-        // 获取能量任务
-        else if (taskType == ROOM_TRANSFER_TASK.LAB_GET_ENERGY) {
-            // 发布任务
-            return (this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.LAB_GET_ENERGY
             }) == -1) ? false : true
         }
         else return false

@@ -171,6 +171,7 @@ interface Room {
     getRoomTransferTask(): RoomTransferTasks | null
     handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
     handleRoomTransferTask(): void
+    handleBoostGetResourceTask(resourceIndex: number, number: number): void
     deleteCurrentRoomTransferTask(): void
 
     setFactoryTarget(resourceType: ResourceConstant): string
@@ -282,7 +283,7 @@ interface RoomMemory {
 }
 
 // 所有房间物流任务
-type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | ILabGetEnergy
+type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear
 
 // 房间物流任务 - 填充拓展
 interface IFillExtension {
@@ -318,8 +319,23 @@ interface ILabOut {
     resourceType: ResourceConstant
 }
 
-// 房间物流任务 - lab 能量填充
-interface ILabGetEnergy {
+// 房间物流任务 - boost 资源填充
+interface IBoostGetResource {
+    type: string
+    resource: {
+        type: ResourceConstant
+        labId: string
+        number: number
+    }[]
+}
+
+// 房间物流任务 - boost 能量填充
+interface IBoostGetEnergy {
+    type: string
+}
+
+// 房间物流任务 - boost 资源清理
+interface IBoostClear {
     type: string
 }
 

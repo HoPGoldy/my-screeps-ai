@@ -93,7 +93,7 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
         - 已清空，检查是否有 boostGet 任务存在（防止 Room.cboot 取消任务后出现问题）
             - 有，return
             - 没有，将 lab 集群的阶段切换为 getTarget，移除 boost 任务，return
-        - 没到位，检查是否有 boostClear 任务存在
+        - 没清空，检查是否有 boostClear 任务存在
             - 有，return
             - 没有，发布任务
 
