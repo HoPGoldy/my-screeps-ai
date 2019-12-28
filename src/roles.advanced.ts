@@ -156,7 +156,7 @@ const deathPrepare = function(creep: Creep, sourceId: string): void {
         for (const resourceType in creep.store) {
             let target: StructureStorage | StructureTerminal
             // 不是能量就放到 terminal 里
-            if (resourceType != RESOURCE_ENERGY&&resourceType!=RESOURCE_POWER && creep.room.terminal) {
+            if (resourceType != RESOURCE_ENERGY && resourceType!=RESOURCE_POWER && creep.room.terminal) {
                 target = creep.room.terminal
             }
             // 否则就放到 storage 或者玩家指定的地方
