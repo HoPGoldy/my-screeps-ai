@@ -908,6 +908,26 @@ class RoomExtension extends Room {
                 title: '终止当前正在进行的 boost 任务',
                 functionName: 'bcancel'
             },
+            {
+                title: '暂停 powerSpawn 工作',
+                functionName: 'ppause'
+            },
+            {
+                title: '恢复 powerSpawn 工作',
+                functionName: 'presume'
+            },
+            {
+                title: '初始化 observer 工作',
+                functionName: 'oinit'
+            },
+            {
+                title: '暂停 observer 工作',
+                functionName: 'opause'
+            },
+            {
+                title: '恢复 observer 工作',
+                functionName: 'oresume'
+            },
         ])
     }
 }
