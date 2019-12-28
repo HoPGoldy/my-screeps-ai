@@ -1330,7 +1330,7 @@ class ObserverExtension extends StructureObserver {
             }})
             if(deposits)
             {
-                for(var deposit of deposits)
+                for(const deposit of deposits)
                 {
                     const flags=deposit.pos.findInRange(FIND_FLAGS,1)
                     if(flags.length==0)
@@ -1342,7 +1342,7 @@ class ObserverExtension extends StructureObserver {
             }
             if(pbs)
             {
-                for(var powerBank of pbs)
+                for(const powerBank of pbs)
                 {
                     const flags=powerBank.pos.findInRange(FIND_FLAGS,1)
                     if(flags.length==0)
