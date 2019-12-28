@@ -86,7 +86,7 @@ export default {
         // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
         prepare: creep => {
             // 只要进入房间则准备结束
-            if (creep.room.name === roomName) {
+            if (creep.room.name !== roomName) {
                 creep.farMoveTo(new RoomPosition(25, 25, roomName), ignoreRoom)
                 return false
             }
@@ -143,7 +143,7 @@ export default {
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
-            if (creep.room.name === targetRoomName) {
+            if (creep.room.name !== targetRoomName) {
                 creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
                 return false
             }
@@ -176,7 +176,7 @@ export default {
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
-            if (creep.room.name === targetRoomName) {
+            if (creep.room.name !== targetRoomName) {
                 creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
                 return false
             }
