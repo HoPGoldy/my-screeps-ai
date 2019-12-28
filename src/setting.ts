@@ -195,6 +195,10 @@ export const bodyConfigs: IBodyConfigs = {
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ]
     },
 
+    /**
+     * 签名者
+     * 没啥用
+     */
     signer: {
         300: [ MOVE ],
         550: [ MOVE ],
@@ -213,8 +217,7 @@ export const bodyConfigs: IBodyConfigs = {
 export const creepDefaultMemory: CreepMemory = {
     role: '',
     ready: false,
-    working: false,
-    path: []
+    working: false
 }
 
 /**
@@ -306,27 +309,27 @@ export const LAB_STATE = {
  */
 export const labTarget = [
     // 基础
-    { target: RESOURCE_HYDROXIDE, number: 4000 },
-    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 4000 },
-    { target: RESOURCE_UTRIUM_LEMERGITE, number: 4000 },
+    { target: RESOURCE_HYDROXIDE, number: 2000 },
+    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 2000 },
+    { target: RESOURCE_UTRIUM_LEMERGITE, number: 2000 },
     // G
     { target: RESOURCE_GHODIUM, number: 5000 },
     // XKHO2 生产线，强化 RANGE_ATTACK
-    { target: RESOURCE_KEANIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_KEANIUM_OXIDE, number: 1000 },
+    { target: RESOURCE_KEANIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 3000 },
     // XLHO2 生产线，强化 HEAL
-    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_LEMERGIUM_OXIDE, number: 1000 },
+    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 3000 },
     // XZHO2 生产线，强化 MOVE
-    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 1000 },
+    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 3000 },
     // XGHO2 生产线，强化 TOUGH
-    { target: RESOURCE_GHODIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_GHODIUM_OXIDE, number: 1000 },
+    { target: RESOURCE_GHODIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 3000 },
 ]
 
 /**

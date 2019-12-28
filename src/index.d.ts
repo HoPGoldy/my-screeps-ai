@@ -59,8 +59,7 @@ interface Creep {
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    findPathInRoom(target: RoomPosition): PathStep[]
-    farMoveTo(target: RoomPosition, ignoreRoom?: string[]): 0|-1|-4|-11|-12|-5|-10
+    farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): 0|-1|-4|-11|-12|-5|-10
     fillTower(): boolean
     upgrade(): boolean
     buildStructure(): boolean
@@ -99,7 +98,6 @@ interface SpawnMemory {
  * creep 内存拓展
  */
 interface CreepMemory {
-    deposit?: ResourceConstant
     // creep是否已经准备好可以工作了
     ready: boolean
     // creep的角色
@@ -108,10 +106,19 @@ interface CreepMemory {
     working: boolean
     // 外矿采集者特有 要采集的 Source Id
     sourceId?: string
-    // 远程寻路的行进路线缓存
-    path?: PathStep[]
-    // 缓存路径的目标，该目标发生变化时刷新路径, 总是和上面的 path 成对出现
-    targetPosTag?: string
+    // 远程寻路缓存
+    farMove?: {
+        // 序列化之后的路径信息
+        path?: string
+        // 移动索引，标志 creep 现在走到的第几个位置
+        index?: number
+        // 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞墙
+        prePos?: string
+        // 缓存路径的目标，该目标发生变化时刷新路径, 形如"14/4E14S1"
+        targetPos?: string
+    }
+    // deposit 采集者特有，deposit 的类型
+    depositType?: DepositConstant
     // 要填充的墙 id 
     fillWallId?: string
     // transfer 特有 要填充能量的建筑 id
@@ -179,18 +186,6 @@ interface Room {
  * 房间内存
  */
 interface RoomMemory {
-    observer: {
-        checked: {
-            room: string
-            isChecked: boolean
-        }
-        listNum: number
-        pause: boolean;
-    }
-    powerSpawn?: { 
-        process: boolean;
-        id: string
-    }
     // 中央集群的资源转移任务队列
     centerTransferTasks: ITransferTask[]
     // 房间物流任务队列
@@ -311,13 +306,6 @@ interface ILabGetEnergy {
     type: string
 }
 
-// 房间物流任务 - powerspawn 能量填充
-interface IFillPowerSpawn{
-    type:string
-    id:string
-    resourceType:ResourceConstant
-}
-
 interface transferTaskOperation {
     // creep 工作时执行的方法
     target: (creep: Creep, task: RoomTransferTasks) => any
@@ -362,16 +350,21 @@ interface Memory {
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
         [resourceType: string]: string[]
-    }
+   }
 }
 
 interface FlagMemory {
-    sourceId?: string
-    moveDepositTime?: number
+    // deposit 旗帜特有，最长冷却时间
     depositCooldown?: number
+    // 公路房旗帜特有，抵达目标需要的时间
+    travelTime?: number
+    // 公路房旗帜特有，travelTime 是否已经计算完成
+    travelComplete?: boolean
+    // 该旗帜下标注的资源 id
+    sourceId?: string
     // 因为外矿房间有可能没视野
     // 所以把房间名缓存进内存
-    roomName: string
+    roomName?: string
 }
 
 /**

@@ -54,7 +54,7 @@ class CreepExtension extends Creep {
             if (creepConfig.source) creepConfig.source(this)
         }
         // let cost2 = Game.cpu.getUsed()
-        // console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
+        // if ((cost2 - cost1) > 0.5) console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
     }
 
     /**
@@ -152,95 +152,121 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 查找到目标的路径并返回
+     * 远程寻路
      * 
-     * @param target 目标的位置
-     * @param ignoreRoom 不让过的房间名数组
-     * @returns 路径
+     * @param target 目标位置
+     * @param ignoreRoom 要绕开的房间数组
+     * @param range 搜索范围 默认为 1
+     * @returns PathFinder.search 的返回值
      */
-    public findPathInRoom(target: RoomPosition, ignoreRoom: string[] = []): PathStep[] {
-        return this.pos.findPathTo(target, {
-            serialize: true,
-            // 房间绕路
-            costCallback: (roomName, costMatrix) => {
-                if (roomName === this.room.name) {
-                    if (this.name === 'sign1') console.log('in', this.room.controller)
-                    // 没有控制器时才会刷传送门
-                    if (!this.room.controller) {
-                        if (this.name === 'sign1') console.log('公路房间')
-                        const portals = this.room.find(FIND_STRUCTURES, {
-                            filter: s => s.structureType === STRUCTURE_PORTAL
-                        })
+    public findPath(target: RoomPosition, ignoreRoom: string[] = [], range: number): string | null {
+        // console.log(`[${this.name}] 执行远程寻路`)
+        if (!this.memory.farMove) this.memory.farMove = { }
+        this.memory.farMove.index = 0
 
-                        if (this.name === 'sign1') console.log('发现传送门', portals)
-                        // 把传送门设置为不可行走
-                        if (portals.length > 0) portals.map(portal => costMatrix.set(portal.pos.x, portal.pos.y, 255))
+        const result = PathFinder.search(this.pos, { pos: target, range }, {
+            roomCallback(roomName) {
+                const room = Game.rooms[roomName]
+                // 房间没有视野
+                if (!room) return
+                // 强调了不许走就不走
+                if (ignoreRoom.includes(roomName)) return false
+
+                let costs = new PathFinder.CostMatrix
+
+                room.find(FIND_STRUCTURES).forEach(struct => {
+                    if (struct.structureType === STRUCTURE_ROAD) {
+                        costs.set(struct.pos.x, struct.pos.y, 1)
                     }
-                }
-                return costMatrix
+                    // 不能穿过无法行走的建筑
+                    else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                        (struct.structureType !== STRUCTURE_RAMPART || !struct.my) 
+                    ) costs.set(struct.pos.x, struct.pos.y, 255)
+                })
+
+                // 躲避房间中的 creep
+                room.find(FIND_CREEPS).forEach(function(creep) {
+                    costs.set(creep.pos.x, creep.pos.y, 0xff);
+                });
+
+                return costs
             }
         })
+
+        // 没找到就返回 null
+        if (result.path.length <= 0) return null
+        
+        // 找到了就压缩后返回
+        return this.serializeFarPath(result.path)
     }
 
     /**
-     * 远距离跨房间移动
-     * 该方法会在进入下个房间后使用 room.findPath 规划路径并写入缓存
+     * 压缩 PathFinder 返回的路径数组
      * 
-     * @param target 终点的坐标
-     * @param ignoreRoom 不让过的房间名数组
-     * @returns creep.moveByPath 的返回值
+     * @param positions 房间位置对象数组，必须连续
+     * @returns 压缩好的路径
      */
-    farMoveTo(target: RoomPosition, ignoreRoom: string[] = []): 0|-1|-4|-11|-12|-5|-10 {
+    public serializeFarPath(positions: RoomPosition[]): string {
+        if (positions.length == 0) return ''
+        // 确保路径的第一个位置是自己的当前位置
+        if (!positions[0].isEqualTo(this.pos)) positions.splice(0, 0, this.pos)
+
+        return positions.map((pos, index) => {
+            // 最后一个位置就不用再移动
+            if (index >= positions.length - 1) return null
+            // 由于房间边缘地块会有重叠，所以这里筛除掉重叠的步骤
+            if (pos.roomName != positions[index + 1].roomName) return null
+            // 获取到下个位置的方向
+            return pos.getDirectionTo(positions[index + 1])
+        }).join('')
+    }
+
+    public farMoveTo(target: RoomPosition, ignoreRoom: string[] = [], range: number = 0): 0|-1|-4|-11|-12|-5|-10 {
+        if (this.memory.farMove == undefined) this.memory.farMove = { }
         // 确认目标有没有变化, 变化了则重新规划路线
         const targetPosTag = `${target.x}/${target.y}${target.roomName}`
-        if (targetPosTag !== this.memory.targetPosTag) {
-            this.memory.targetPosTag = targetPosTag
-            this.memory.path = this.findPathInRoom(target, ignoreRoom)
+        if (targetPosTag !== this.memory.farMove.targetPos) {
+            // console.log(`[${this.name}] 目标变更`)
+            this.memory.farMove.targetPos = targetPosTag
+            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
         }
         // 确认缓存有没有被清除
-        if (!this.memory.path) {
-            this.memory.path = this.findPathInRoom(target, ignoreRoom)
-            return 0
+        if (!this.memory.farMove.path) {
+            // console.log(`[${this.name}] 更新缓存`)
+            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
         }
-        else {
-            // 移动 如果移动出现问题就再次规划后重试
-            // 这里导致 ERR_NOT_FOUND 的原因大多是刚移动到下一个房间
-            let moveResult = this.moveByPath(this.memory.path)
-            if (moveResult == ERR_NOT_FOUND) {
-                this.memory.path = this.findPathInRoom(target, ignoreRoom)
-                moveResult = this.moveByPath(this.memory.path)
-            }
-            else if (moveResult !== OK) {
-                // console.log(`${this.name} 出现问题无法移动, 错误码 ${moveResult}`)
-            }
-            
-            return moveResult
+
+        // 还为空的话就是没找到路径
+        if (!this.memory.farMove.path) {
+            // console.log(`[${this.name}] 未找到路径`)
+            delete this.memory.farMove.path
+            return OK
         }
-    }
-
-    /**
-     * 根据指定的房间名数组进行移动
-     * 
-     * @param pathRooms 路径房间名数组，可以通过该参数强制指定 creep 的移动路线
-     */
-    farMoveByPathRooms(pathRooms: string[]) {
-        // console.log('要移动的房间路径为', pathRooms)
         
-        // 查找目标房间名
-        let targetRoomName: string
-        const currentRoomNameIndex = pathRooms.findIndex(roomName => roomName == this.room.name)
-        // 到最后一个房间了
-        if (currentRoomNameIndex == pathRooms.length - 1) return OK
-        targetRoomName = pathRooms[currentRoomNameIndex + 1]
-        console.log("TCL: CreepExtension -> farMoveByPathRooms -> targetRoomName", targetRoomName)
+        const index = this.memory.farMove.index
+        // 移动索引超过数组上限代表到达目的地
+        if (index >= this.memory.farMove.path.length) {
+            delete this.memory.farMove.path
+            return OK
+        }
 
-        // 找到出口
-        const exitConstant = this.room.findExitTo(targetRoomName)
-        if (exitConstant == ERR_NO_PATH || exitConstant == ERR_INVALID_ARGS) return exitConstant
-        const exitPos = this.pos.findClosestByPath(exitConstant)
-        console.log("TCL: CreepExtension -> farMoveByPathRooms -> this.room.find(exitConstant)", exitPos.x, exitPos.y)
+        const moveResult = this.move(<DirectionConstant>Number(this.memory.farMove.path[index]))
+
+        // console.log(`移动记录: ${index}\\${this.memory.farMove.path.length} 方向: ${this.memory.farMove.path[index]} 返回: ${moveResult}`)
+        if (moveResult == OK) {
+            const currentPos = `${this.pos.x}/${this.pos.y}`
+            if (this.memory.farMove.prePos && currentPos == this.memory.farMove.prePos) {
+                // console.log('撞墙了！')
+                delete this.memory.farMove.path
+                return ERR_INVALID_ARGS
+            }
+            this.memory.farMove.index ++
+            this.memory.farMove.prePos = currentPos
+        }
+        else if (moveResult == ERR_INVALID_ARGS) delete this.memory.farMove.path
+        else if (moveResult != ERR_TIRED) this.say(`远程寻路 ${moveResult}`)
         
-        this.memory.path = this.findPathInRoom(exitPos)
+        return moveResult
     }
 
     /**
