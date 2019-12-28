@@ -1295,9 +1295,9 @@ class NukerExtension extends StructureNuker {
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work():void{
         if(!this.room.memory.powerSpawn) return
-        if(!this.room.memory.powerSpawn.id) this.room.memory.powerSpawn.id=this.id
+        if(!this.room.memory.powerSpawn.id) this.room.memory.powerSpawn.id = this.id
         if(!this.room.memory.powerSpawn.process) return
-        if(this.store[RESOURCE_POWER] < 10 && this.room.storage.store.getUsedCapacity(RESOURCE_POWER)>0)
+        if(this.store[RESOURCE_POWER] < 10 && this.room.storage.store.getUsedCapacity(RESOURCE_POWER) > 0)
         {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
@@ -1305,7 +1305,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 resourceType: RESOURCE_POWER
             })
         }
-        if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)>powerSettings.processEnergyLimit)
+        if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit)
         {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
@@ -1313,7 +1313,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 resourceType: RESOURCE_ENERGY
             })
         }
-        if(this.store[RESOURCE_ENERGY]>50 && this.store[RESOURCE_POWER]>0) this.processPower()
+        if(this.store[RESOURCE_ENERGY] > 50 && this.store[RESOURCE_POWER] > 0) this.processPower()
     }
 }
 
