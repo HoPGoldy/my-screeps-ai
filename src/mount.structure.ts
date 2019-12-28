@@ -1332,18 +1332,18 @@ class ObserverExtension extends StructureObserver {
         return
     }
    private searchRoom():void {
-        const room=Game.rooms[this.room.memory.observer.checked.room]
-        const deposits=room.find(FIND_DEPOSITS)
-        const pbs=room.find(FIND_STRUCTURES,{filter:(structure)=>{
-            return (structure.structureType==STRUCTURE_POWER_BANK);
+        const room = Game.rooms[this.room.memory.observer.checked.room]
+        const deposits = room.find(FIND_DEPOSITS)
+        const pbs = room.find(FIND_STRUCTURES,{filter:(structure)=>{
+            return (structure.structureType == STRUCTURE_POWER_BANK);
         }})
         //查询deposit
         if(deposits)
         {
             for(const deposit of deposits)
             {
-                const flags=deposit.pos.findInRange(FIND_FLAGS,1)
-                if(flags.length==0)
+                const flags = deposit.pos.findInRange(FIND_FLAGS,1)
+                if(flags.length == 0)
                 {
                     room.createFlag(deposit.pos)//TODO: name
                     console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新deposit,已插旗`)
@@ -1355,29 +1355,29 @@ class ObserverExtension extends StructureObserver {
         {
             for(const powerBank of pbs)
             {
-                const flags=powerBank.pos.findInRange(FIND_FLAGS,1)
-                if(flags.length==0)
+                const flags = powerBank.pos.findInRange(FIND_FLAGS,1)
+                if(flags.length == 0)
                 {
                     room.createFlag(powerBank.pos)
                     console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新pb,已插旗`)
                 }
             }
         }
-        this.room.memory.observer.checked.isChecked=false
+        this.room.memory.observer.checked.isChecked = false
    }
     private checkRoom():void {
         if(Game.time % 5) return
         this.observeRoom(observeRooms[this.room.memory.observer.listNum])
-        this.room.memory.observer.checked.isChecked=true
-        this.room.memory.observer.checked.room=observeRooms[this.room.memory.observer.listNum]
+        this.room.memory.observer.checked.isChecked = true
+        this.room.memory.observer.checked.room = observeRooms[this.room.memory.observer.listNum]
         //查询下一个房间
-        if(this.room.memory.observer.listNum<(observeRooms.length-1))
+        if(this.room.memory.observer.listNum < (observeRooms.length-1))
         {
             this.room.memory.observer.listNum++
         }
         else
         {
-            this.room.memory.observer.listNum=0
+            this.room.memory.observer.listNum = 0
         }   
     }
 }
