@@ -99,6 +99,7 @@ interface SpawnMemory {
  * creep 内存拓展
  */
 interface CreepMemory {
+    deposit?: ResourceConstant
     // creep是否已经准备好可以工作了
     ready: boolean
     // creep的角色
@@ -178,6 +179,18 @@ interface Room {
  * 房间内存
  */
 interface RoomMemory {
+    observer: {
+        checked: {
+            room: string
+            isChecked: boolean
+        }
+        listNum: number
+        pause: boolean;
+    }
+    powerSpawn?: { 
+        process: boolean;
+        id: string
+    }
     // 中央集群的资源转移任务队列
     centerTransferTasks: ITransferTask[]
     // 房间物流任务队列
@@ -298,6 +311,13 @@ interface ILabGetEnergy {
     type: string
 }
 
+// 房间物流任务 - powerspawn 能量填充
+interface IFillPowerSpawn{
+    type:string
+    id:string
+    resourceType:ResourceConstant
+}
+
 interface transferTaskOperation {
     // creep 工作时执行的方法
     target: (creep: Creep, task: RoomTransferTasks) => any
@@ -346,6 +366,9 @@ interface Memory {
 }
 
 interface FlagMemory {
+    sourceId?: string
+    moveDepositTime?: number
+    depositCooldown?: number
     // 因为外矿房间有可能没视野
     // 所以把房间名缓存进内存
     roomName: string

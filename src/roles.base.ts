@@ -142,9 +142,6 @@ export default {
             // Storage 能量快满了一定会生成
             if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 950000) return true
 
-            // 八级时只有降级倒计时低于 100000 时才会生成
-            if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
-
             // 只有在 storage 中能量大于 10000 时才会生成，其他建筑没有限制
             if (source instanceof StructureStorage) {
                 if (source.store[RESOURCE_ENERGY] > 10000)  return true

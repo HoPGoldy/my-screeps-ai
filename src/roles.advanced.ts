@@ -4,7 +4,8 @@ export const ROOM_TRANSFER_TASK = {
     FILL_NUKER: 'fillNuker',
     LAB_IN: 'labIn',
     LAB_OUT: 'labOut',
-    LAB_GET_ENERGY: 'labGetEnergy'
+    LAB_GET_ENERGY: 'labGetEnergy',
+    FILL_POWERSPAWN: 'fillPowerSpawn'
 }
 
 /**
@@ -139,7 +140,7 @@ const deathPrepare = function(creep: Creep, sourceId: string): void {
         for (const resourceType in creep.store) {
             let target: StructureStorage | StructureTerminal
             // 不是能量就放到 terminal 里
-            if (resourceType != RESOURCE_ENERGY && creep.room.terminal) {
+            if (resourceType != RESOURCE_ENERGY&&resourceType!=RESOURCE_POWER && creep.room.terminal) {
                 target = creep.room.terminal
             }
             // 否则就放到 storage 或者玩家指定的地方
@@ -493,4 +494,58 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             return hasNotEvacuated ? false : true
         }
     },
+    /**
+     * powerspawn 填充任务
+     * 由 powerSpawn 在 powerSpawn.work 中发布
+     * 任务的搬运量取决于 transfer 的最大存储量，搬一次就算任务完成
+     */
+    [ROOM_TRANSFER_TASK.FILL_POWERSPAWN]: {
+        source: (creep, task: IFillPowerSpawn, sourceId) => {
+            // 获取资源存储建筑
+            let sourceStructure: StructureStorage | StructureTerminal
+            if (task.resourceType == RESOURCE_ENERGY) sourceStructure = sourceId ? Game.getObjectById(sourceId) : creep.room.storage
+            else sourceStructure = creep.room.storage
+            // 获取 powerspawn
+            const powerspawn: StructurePowerSpawn = Game.getObjectById(task.id)
+
+            // 兜底
+            if (!sourceStructure || !powerspawn) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] powerSpawn 填充任务，未找到 Storage 或者 powerSpawn`)
+            }
+
+            // 获取应拿取的数量
+            let getAmount = creep.store.getCapacity() < powerspawn.store.getFreeCapacity(task.resourceType) ?
+                creep.store.getFreeCapacity() :
+                powerspawn.store.getFreeCapacity(task.resourceType)
+            // 没那么多的话就有多少拿多少
+            if (sourceStructure.store[task.resourceType] < getAmount) getAmount = sourceStructure.store[task.resourceType]
+            
+            if (getAmount <= 0) {
+                creep.room.deleteCurrentRoomTransferTask()
+                return console.log(`[${creep.name}] powerSpawn 填充任务，资源不足`)
+            }
+            
+            // 拿取资源
+            const getResult = creep.withdraw(sourceStructure, task.resourceType, getAmount)
+            if (getResult == ERR_NOT_IN_RANGE) creep.moveTo(sourceStructure, { reusePath: 20 })
+            else if (getResult != OK) console.log(`[${creep.name}] powerSpawn 填充任务，withdraw`, getResult)
+        },
+        target: (creep, task: IFillNuker) => {
+            // 获取 powerSpawn 及兜底
+            let target: StructurePowerSpawn = Game.getObjectById(task.id)
+            if (!target) return creep.room.deleteCurrentRoomTransferTask()
+
+            // 转移资源
+            const transferResult = creep.transfer(target, task.resourceType)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
+            else if (transferResult == OK) {
+                creep.room.handleRoomTransferTask()
+                // console.log(`[${creep.name}] 完成 nuker 填充任务`)
+            }
+            else creep.say(`错误! ${transferResult}`)
+        },
+        switch: (creep, task: IFillPowerSpawn) => creep.store[task.resourceType] > 0
+    },
 }
+

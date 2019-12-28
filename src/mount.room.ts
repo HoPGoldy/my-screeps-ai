@@ -574,6 +574,76 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 初始化 PowerSpawn 工作
+     */
+    private initPowerSpapwn(): string{
+        this.memory.powerSpawn={
+            process:true,
+            id:null
+        }
+        return `[${this.name} PowerSpawn] 已初始化`
+    }
+
+    /**
+     * 暂停 PowerSpawn 工作
+     */
+    private pauseProceesPower(): string{
+        if(!this.memory.powerSpawn){
+            return `[${this.name} PowerSpawn] 暂停process失败 请确认是否初始化PowerSpawn`
+        }
+        this.memory.powerSpawn.process=false
+        return `[${this.name} PowerSpawn] 已暂停process power`
+    }
+
+    /**
+     * 重启 PowerSpawn 工作
+     */
+    private resumeProcessPower(): string{
+        if(!this.memory.powerSpawn){
+            return `[${this.name} PowerSpawn] 恢复process失败 请确认是否初始化PowerSpawn`
+        }
+        this.memory.powerSpawn.process=true
+        return `[${this.name} PowerSpawn] 已恢复process power`
+    }
+
+    /**
+     * 初始化 Observer 工作
+     */
+    private initObserver(): string{
+        this.memory.observer={
+            checked:{
+                room:null,
+                isChecked:false,
+            },
+            listNum:0,
+            pause:false
+        }
+        return `[${this.name} Observer] 已初始化`
+    }
+
+    /**
+     * 暂停 Observer 工作
+     */
+    private pauseObserver(): string{
+        if(!this.memory.observer){
+            return `[${this.name} Observer] 暂停observer失败 请确认是否初始化Observer`
+        }
+        this.memory.observer.pause=true
+        return `[${this.name} Observer] 已暂停observer`
+    }
+
+    /**
+     * 重启 Observer 工作
+     */
+    private resumeObserver(): string{
+        if(!this.memory.observer){
+            return `[${this.name} Observer] 恢复observer失败 请确认是否初始化Observer`
+        }
+        this.memory.observer.pause=false
+        return `[${this.name} Observer] 已恢复observer`
+    }
+
+    /**
      * 用户操作：初始化 lab 集群
      */
     public linit(): string { return this.initLab() }
@@ -588,6 +658,35 @@ class RoomExtension extends Room {
      */
     public lresume(): string { return this.resumeLab() }
 
+    /**
+     * 用户操作：初始化 PowerSpawn 工作
+     */
+    public pinit(): string{ return this.initPowerSpapwn()}
+
+    /**
+     * 用户操作：暂停 PowerSpawn 工作
+     */
+    public ppause(): string{ return this.pauseProceesPower()}
+
+    /**
+     * 用户操作：重启 PowerSpawn 工作
+     */
+    public presume(): string{ return this.resumeProcessPower()}
+
+    /**
+     * 用户操作：初始化 Observer 工作
+     */
+    public oinit(): string{ return this.initObserver()}
+
+    /**
+     * 用户操作：暂停 Observer 工作
+     */
+    public opause(): string{ return this.pauseObserver()}
+
+    /**
+     * 用户操作：重启 Observer 工作
+     */
+    public oresume(): string{ return this.resumeObserver()}
     /**
      * 用户操作：房间操作帮助
      */

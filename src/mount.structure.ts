@@ -1,5 +1,5 @@
-import { creepConfigs } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT } from './setting'
+import { creepConfigs, observeRooms } from './config'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, powerSettings } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
@@ -13,6 +13,8 @@ export default function () {
     _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
     _.assign(StructureLab.prototype, LabExtension.prototype)
     _.assign(StructureNuker.prototype, NukerExtension.prototype)
+    _.assign(StructurePowerSpawn.prototype,PowerSpawnExtension.prototype)
+    _.assign(StructureObserver.prototype,ObserverExtension.prototype)
 }
 
 /**
@@ -1135,17 +1137,6 @@ class NukerExtension extends StructureNuker {
     public work(): void {
         if (Game.time % 30) return
 
-        // 能量不满并且 storage 能量大于 300k 则开始填充能量
-        if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
-            this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.FILL_NUKER,
-                id: this.id,
-                resourceType: RESOURCE_ENERGY
-            })
-
-            return
-        }
-
         // G 矿不满并且 terminal 中 G 矿大于 1k 则开始填充 G
         if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal.store[RESOURCE_GHODIUM] >= 1000) {
             this.room.addRoomTransferTask({
@@ -1156,5 +1147,98 @@ class NukerExtension extends StructureNuker {
 
             return
         }
+        // 能量不满并且 storage 能量大于 300k 则开始填充能量
+        if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
+            this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.FILL_NUKER,
+                id: this.id,
+                resourceType: RESOURCE_ENERGY
+            })
+
+            return
+        }
+    }
+}
+
+class PowerSpawnExtension extends StructurePowerSpawn {
+    public work():void{
+        if(!this.room.memory.powerSpawn) return
+        if(!this.room.memory.powerSpawn.id) this.room.memory.powerSpawn.id=this.id
+        if(!this.room.memory.powerSpawn.process) return
+        if(this.store[RESOURCE_POWER] < 10 && this.room.storage.store.getUsedCapacity(RESOURCE_POWER)>0)
+        {
+            this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
+                id:this.id,
+                resourceType:RESOURCE_POWER
+            })
+        }
+        if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)>powerSettings.processEnergyLimit)
+        {
+            this.room.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
+                id:this.id,
+                resourceType:RESOURCE_ENERGY
+            })
+        }
+        if(this.store[RESOURCE_ENERGY]>50 && this.store[RESOURCE_POWER]>0) this.processPower()
+    }
+}
+
+class ObserverExtension extends StructureObserver {
+    public work():void{
+        if(!this.room.memory.observer) return
+        if(this.room.memory.observer.pause)return
+        if(this.room.memory.observer.checked.isChecked)
+        {
+            const room=Game.rooms[this.room.memory.observer.checked.room]
+            const deposits=room.find(FIND_DEPOSITS)
+            const pbs=room.find(FIND_STRUCTURES,{filter:(structure)=>{
+                return (structure.structureType==STRUCTURE_POWER_BANK);
+            }})
+            if(deposits)
+            {
+                for(var deposit of deposits)
+                {
+                    const flags=deposit.pos.findInRange(FIND_FLAGS,1)
+                    if(flags.length==0)
+                    {
+                        room.createFlag(deposit.pos)//TODO: name
+                        console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新deposit,已插旗`)
+                    }
+                }
+            }
+            if(pbs)
+            {
+                for(var powerBank of pbs)
+                {
+                    const flags=powerBank.pos.findInRange(FIND_FLAGS,1)
+                    if(flags.length==0)
+                    {
+                        room.createFlag(powerBank.pos)
+                        console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新pb,已插旗`)
+                    }
+                }
+            }
+            this.room.memory.observer.checked.isChecked=false
+        }
+        else
+        {
+            if(Game.time % 5) return
+            this.observeRoom(observeRooms[this.room.memory.observer.listNum])
+            this.room.memory.observer.checked.isChecked=true
+            this.room.memory.observer.checked.room=observeRooms[this.room.memory.observer.listNum]
+            if(this.room.memory.observer.listNum<(observeRooms.length-1))
+            {
+                this.room.memory.observer.listNum++
+            }
+            else
+            {
+                this.room.memory.observer.listNum=0
+            }
+            
+            
+        }
+        return
     }
 }
