@@ -348,6 +348,10 @@ export const FACTORY_LOCK_AMOUNT = {
     [RESOURCE_GHODIUM]: 40000,
 }
 
+/**
+ * powerProcess 的设置
+ * 当当前房间 storage 内存量低于limit时自动停止 process
+ */
 export const powerSettings = {
     processEnergyLimit:500000,
   
