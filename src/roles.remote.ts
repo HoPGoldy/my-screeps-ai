@@ -367,120 +367,6 @@ export default {
         spawn: spawnName,
         bodyType: 'remoteDefender'
     }),
-<<<<<<< HEAD
-    /**
-     * deposit采集者
-     * 从指定矿中挖deposit > 将矿转移到建筑中
-     * 
-     * @param spawnName 出生点名称
-     * @param sourceFlagName 外矿旗帜的名称 (要确保 deposit 就在该旗帜附近)
-     * @param targetId 要移动到的建筑 id
-     */
-    remoteDepositHarvester: (spawnName: string, sourceFlagName: string, targetId: string): ICreepConfig => ({
-        isNeed: room => {
-            // 旗帜效验, 没有旗帜则不生成
-            if (!Game.flags[sourceFlagName]) {
-                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
-                return false
-            }
-            // 从旗帜内存中获取房间名
-            // 内存中没有房间名就说明刚刚插旗，默认进行生成
-            const remoteRoomName = Game.flags[sourceFlagName].memory.roomName
-            if (!remoteRoomName) return true
-
-            if (!room.memory.remote) room.memory.remote = {}
-            // 不存在该字段说明deposit房间状态良好
-            //初始化冷却时长记录
-            if(!Game.flags[sourceFlagName].memory.depositCooldown) Game.flags[sourceFlagName].memory.depositCooldown=0
-            //如果冷却时长过长则不生成
-            if (Game.flags[sourceFlagName].memory.depositCooldown>=100) return false
-            return true
-        },
-        prepare: creep => {
-            //初始化记录移动变量
-            const sourceFlag = Game.flags[sourceFlagName]
-            if(!sourceFlag.memory.moveDepositTime)sourceFlag.memory.moveDepositTime=0
-            if (!sourceFlag.memory.sourceId) {
-                // 旗帜所在房间没视野, 就进行移动
-                if (!sourceFlag.room){
-                    creep.farMoveTo(sourceFlag.pos)
-                    sourceFlag.memory.moveDepositTime++
-                }
-                else {
-                    // 缓存deposit房间名
-                    sourceFlag.memory.roomName = sourceFlag.room.name
-                    const source = sourceFlag.pos.findClosestByRange(FIND_DEPOSITS)
-                    creep.memory.deposit=source.depositType
-                    if (!source) {
-                        console.log(`${sourceFlagName} 附近没有找到 deposit`)
-                        return false
-                    }
-                    if(!creep.pos.inRangeTo(source.pos,1))
-                    {
-                        creep.moveTo(source)
-                        sourceFlag.memory.moveDepositTime++
-                    }
-                    else
-                    {
-                        //准备阶段完成,记录deposit id
-                        sourceFlag.memory.sourceId = source.id
-                    }                    
-                }
-                return false
-            }
-            else return true
-        },
-        source: creep => {
-            const sourceFlag = Game.flags[sourceFlagName]
-            if (!sourceFlag.room){
-                creep.farMoveTo(sourceFlag.pos)
-                return
-            }   
-            const deposit:Deposit=Game.getObjectById(sourceFlag.memory.sourceId)
-            if(deposit.cooldown)
-            {
-                return
-            }
-            const harvestResult = creep.harvest(deposit)
-            if (harvestResult !== OK) {
-                creep.moveTo(deposit)
-            }
-            else
-            {
-                //记录lastCooldown
-                sourceFlag.memory.depositCooldown=deposit.lastCooldown
-            }
-        },
-        target: creep => {
-            if (creep.transfer(Game.getObjectById(targetId), creep.memory.deposit) !== OK) {
-                creep.farMoveTo(Game.getObjectById(targetId))
-            }
-        },
-        switch: creep =>{
-           const resourceType: ResourceConstant =<ResourceConstant>Object.keys(creep.store)[0]
-           const resourceAmount = creep.store.getUsedCapacity(resourceType)
-           if (creep.ticksToLive <= (Game.flags[sourceFlagName].memory.moveDepositTime*2)+20)
-           {
-               creep.memory.working=true
-           }
-           // creep 身上没有能量 && creep 之前的状态为“工作”
-           if(resourceAmount <= 0 && creep.memory.working) {
-               // 切换状态
-               creep.memory.working = false
-               creep.say('⚡ 挖矿')
-           }
-           // creep 身上能量满了 && creep 之前的状态为“不工作”
-           else if((resourceAmount >= creep.store.getCapacity() && !creep.memory.working )|| (Game.flags[sourceFlagName].memory.depositCooldown>=100&& !creep.memory.working)) {
-               creep.memory.working = true
-               creep.say('🍚 收获')
-           }
-   
-           return creep.memory.working
-       },
-        spawn: spawnName,
-        bodyType: 'remoteHarvester'
-=======
-
     /**
      * deposit采集者
      * 从指定矿中挖 deposit > 将矿转移到建筑中
@@ -627,6 +513,5 @@ export default {
         },
         spawn: spawnName,
         bodyType: 'signer'
->>>>>>> 61ad98c556afd29223c25d8c813272d672bb632f
     }),
 }
