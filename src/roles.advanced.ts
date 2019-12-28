@@ -473,8 +473,12 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return console.log(`[${creep.name}] labin, 未找到 terminal，任务已移除`)
             }
 
+            // 指定资源类型
+            let resourceType: ResourceConstant = (creep.store[RESOURCE_ENERGY] > 0) ?
+                RESOURCE_ENERGY : task.resourceType
+            
             // 转移资源
-            const transferResult = creep.transfer(terminal, task.resourceType)
+            const transferResult = creep.transfer(terminal, resourceType)
             if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(terminal, { reusePath: 20 })
             // 正常转移资源则更新任务
             else if (transferResult != OK) creep.say(`labout ${transferResult}`)

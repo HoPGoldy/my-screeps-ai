@@ -244,7 +244,7 @@ interface RoomMemory {
      * lab 集群所需的信息
      * @see doc/lab设计案
      */
-    lab: {
+    lab?: {
         // 当前集群的工作状态
         state: string
         // 当前生产的目标产物索引
@@ -261,6 +261,23 @@ interface RoomMemory {
         outLabIndex: number
         // lab 是否暂停运行
         pause: boolean
+    }
+
+    /**
+     * boost 强化任务
+     * @see doc/boost设计案
+     */
+    boost?: {
+        // 当前任务的所处状态
+        state: string
+        // 当前任务的种类
+        type: string
+        // 进行 boost 强化的位置
+        pos: number[]
+        // 要进行强化的材料以及执行强化的 lab
+        lab: {
+            [resourceType: string]: string
+        }
     }
 }
 
