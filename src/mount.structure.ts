@@ -1301,16 +1301,16 @@ class PowerSpawnExtension extends StructurePowerSpawn {
         {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
-                id:this.id,
-                resourceType:RESOURCE_POWER
+                id: this.id,
+                resourceType: RESOURCE_POWER
             })
         }
         if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY)>powerSettings.processEnergyLimit)
         {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
-                id:this.id,
-                resourceType:RESOURCE_ENERGY
+                id: this.id,
+                resourceType: RESOURCE_ENERGY
             })
         }
         if(this.store[RESOURCE_ENERGY]>50 && this.store[RESOURCE_POWER]>0) this.processPower()
@@ -1320,57 +1320,64 @@ class PowerSpawnExtension extends StructurePowerSpawn {
 class ObserverExtension extends StructureObserver {
     public work():void{
         if(!this.room.memory.observer) return
-        if(this.room.memory.observer.pause)return
+        if(this.room.memory.observer.pause) return
         if(this.room.memory.observer.checked.isChecked)
         {
-            const room=Game.rooms[this.room.memory.observer.checked.room]
-            const deposits=room.find(FIND_DEPOSITS)
-            const pbs=room.find(FIND_STRUCTURES,{filter:(structure)=>{
-                return (structure.structureType==STRUCTURE_POWER_BANK);
-            }})
-            if(deposits)
-            {
-                for(const deposit of deposits)
-                {
-                    const flags=deposit.pos.findInRange(FIND_FLAGS,1)
-                    if(flags.length==0)
-                    {
-                        room.createFlag(deposit.pos)//TODO: name
-                        console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新deposit,已插旗`)
-                    }
-                }
-            }
-            if(pbs)
-            {
-                for(const powerBank of pbs)
-                {
-                    const flags=powerBank.pos.findInRange(FIND_FLAGS,1)
-                    if(flags.length==0)
-                    {
-                        room.createFlag(powerBank.pos)
-                        console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新pb,已插旗`)
-                    }
-                }
-            }
-            this.room.memory.observer.checked.isChecked=false
+            searchRoom()
         }
         else
         {
-            if(Game.time % 5) return
-            this.observeRoom(observeRooms[this.room.memory.observer.listNum])
-            this.room.memory.observer.checked.isChecked=true
-            this.room.memory.observer.checked.room=observeRooms[this.room.memory.observer.listNum]
-            if(this.room.memory.observer.listNum<(observeRooms.length-1))
-            {
-                this.room.memory.observer.listNum++
-            }
-            else
-            {
-                this.room.memory.observer.listNum=0
-            }
-            
-            
+            checkRoom()
         }
         return
+    }
+   private searchRoom():void {
+        const room=Game.rooms[this.room.memory.observer.checked.room]
+        const deposits=room.find(FIND_DEPOSITS)
+        const pbs=room.find(FIND_STRUCTURES,{filter:(structure)=>{
+            return (structure.structureType==STRUCTURE_POWER_BANK);
+        }})
+        //查询deposit
+        if(deposits)
+        {
+            for(const deposit of deposits)
+            {
+                const flags=deposit.pos.findInRange(FIND_FLAGS,1)
+                if(flags.length==0)
+                {
+                    room.createFlag(deposit.pos)//TODO: name
+                    console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新deposit,已插旗`)
+                }
+            }
+        }
+       //查询pb
+        if(pbs)
+        {
+            for(const powerBank of pbs)
+            {
+                const flags=powerBank.pos.findInRange(FIND_FLAGS,1)
+                if(flags.length==0)
+                {
+                    room.createFlag(powerBank.pos)
+                    console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新pb,已插旗`)
+                }
+            }
+        }
+        this.room.memory.observer.checked.isChecked=false
+   }
+    private checkRoom():void {
+        if(Game.time % 5) return
+        this.observeRoom(observeRooms[this.room.memory.observer.listNum])
+        this.room.memory.observer.checked.isChecked=true
+        this.room.memory.observer.checked.room=observeRooms[this.room.memory.observer.listNum]
+        //查询下一个房间
+        if(this.room.memory.observer.listNum<(observeRooms.length-1))
+        {
+            this.room.memory.observer.listNum++
+        }
+        else
+        {
+            this.room.memory.observer.listNum=0
+        }   
     }
 }
