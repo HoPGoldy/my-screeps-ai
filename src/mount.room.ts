@@ -613,6 +613,10 @@ class RoomExtension extends Room {
      * 该方法主要由 boost creep 在 isNeed 阶段调用，当然也可以手动调用
      * 
      * @param boostType 要启动的 boost 任务类型，在 setting.ts 的 BOOST_TYPE 中定义
+     * @returns ERR_NAME_EXISTS 已经存在强化任务了
+     * @returns ERR_NOT_FOUND 未找到强化旗帜
+     * @returns ERR_INVALID_ARGS 错误的boostType
+     * @returns ERR_NOT_ENOUGH_RESOURCES 强化旗帜附近的lab数量不足
      */
     public boost(boostType: string): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES {
         // 检查是否存在 boost 任务
@@ -656,19 +660,18 @@ class RoomExtension extends Room {
      * 强化指定 creep
      * 
      * @param creep 要进行强化的 creep，该 creep 应站在指定好的强化位置上
+     * @returns ERR_NOT_FOUND 未找到boost任务
+     * @returns ERR_BUSY boost尚未准备完成
+     * @returns ERR_NOT_IN_RANGE creep不在强化位置上
      */
     public boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE {
         if (!this.memory.boost) return ERR_NOT_FOUND
-
-        // 获取强化配置项，这里不做兜底，因为 Room.boost() 已经做过了
-        // 万一改内存的时候改错了不能怨代码 XD
-        const boostConfig = boostConfigs[this.memory.boost.type]
 
         // 检查是否准备好了
         if (this.memory.boost.state != BOOST_STATE.WAIT_BOOST) return ERR_BUSY
 
         // 获取全部 lab
-        let executiveLab: StructureLab[]
+        let executiveLab: StructureLab[] = []
         for (const resourceType in this.memory.boost.lab) {
             const lab = Game.getObjectById<StructureLab>(this.memory.boost.lab[resourceType])
             // 这里没有直接 return 是为了避免 lab 集群已经部分被摧毁而导致整个 boost 进程无法执行

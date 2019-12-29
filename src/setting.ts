@@ -1,4 +1,15 @@
-import { colorful } from './utils'
+// import { colorful } from './utils'
+
+/**
+ * 给指定文本添加颜色
+ * 
+ * @todo 这个直接引用 utils 里的方法会导致报错，原因不明，所以暂时复制过来
+ * @param content 要添加颜色的文本
+ * @param color 要添加的颜色
+ */
+function colorful(content: string, color: string): string {
+    return `<text style="color: ${color}">${content}</text>`
+}
 
 /**
  * 设置项
@@ -195,15 +206,20 @@ export const bodyConfigs: IBodyConfigs = {
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ]
     },
 
+    /**
+     * 强化 - RANGE_ATTACK creep
+     * 该身体配置项大部分都为空的原因时，只有七级以上才能负担得起抗塔伤害所需的身体孵化能量消耗（7级抗3塔，8级抗6塔）。
+     * 而七级以下的造不出来，所以置空
+     */
     boostRangeAttack: {
-        300: [ MOVE, MOVE, ATTACK, ATTACK ],
-        550: [ MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK ],
-        800: [ MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK ],
-        1300: [ MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK ],
-        1800: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK ],
-        2300: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK ],
-        5600: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK ],
-        12900: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK, ATTACK ]
+        300: [ ],
+        550: [ ],
+        800: [ ],
+        1300: [ ],
+        1800: [ ],
+        2300: [ ],
+        5600: [ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL ],
+        12900: [ TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, TOUGH, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, RANGED_ATTACK, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL ]
     },
 
     /**
@@ -386,7 +402,7 @@ export const BOOST_TYPE = {
 }
 
 /**
- * boost 强化配置项
+ * boost 强化配置项 (boostConfig)
  * 描述了对应 BOOST_TYPE 所需的材料及数量
  * 数量是指要强化多少个身体部件，在执行强化进程时会将其乘以 LAB_BOOST_MINERAL(30)
  * 应与上面的 BOOST_TYPE 保持对应关系

@@ -165,6 +165,8 @@ interface Room {
     hangCenterTask(): number
     handleCenterTask(transferAmount: number): void
     getCenterTask(): ITransferTask | null
+    deleteCurrentCenterTask(): void
+
     // 房间物流 api
     addRoomTransferTask(task: RoomTransferTasks, priority?: number): number
     hasRoomTransferTask(taskType: string): boolean
@@ -174,12 +176,18 @@ interface Room {
     handleBoostGetResourceTask(resourceIndex: number, number: number): void
     deleteCurrentRoomTransferTask(): void
 
+    // 工厂 api
     setFactoryTarget(resourceType: ResourceConstant): string
     getFactoryTarget(): ResourceConstant | null
     clearFactoryTarget(): string
-    deleteCurrentCenterTask(): void
+
+    // 资源共享 api
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
+
+    // boost api
+    boost(boostType: string): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
+    boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
 }
 
 /**

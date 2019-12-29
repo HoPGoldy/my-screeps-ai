@@ -900,7 +900,7 @@ class LabExtension extends StructureLab {
                 this.labPutResource()
             break
             case LAB_STATE.BOOST:
-                if (Game.time % 10) return
+                if (Game.time % 5) return
                 this.boostController()
             break
             default:
