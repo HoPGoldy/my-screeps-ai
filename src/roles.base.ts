@@ -159,6 +159,8 @@ export default {
 
             // Storage 能量快满了一定会生成
             if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 950000) return true
+            // 如果是 link 的话同样会检查 Room.storage 的能量
+            else if (source instanceof StructureLink && room.storage && room.storage.store[RESOURCE_ENERGY] > 950000) return true
 
             // 八级时只有降级倒计时低于 100000 时才会生成
             if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
