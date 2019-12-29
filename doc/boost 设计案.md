@@ -93,7 +93,7 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
         - 已清空，检查是否有 boostGet 任务存在（防止 Room.cboot 取消任务后出现问题）
             - 有，return
             - 没有，将 lab 集群的阶段切换为 getTarget，移除 boost 任务，return
-        - 没到位，检查是否有 boostClear 任务存在
+        - 没清空，检查是否有 boostClear 任务存在
             - 有，return
             - 没有，发布任务
 
@@ -113,10 +113,8 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
 
 - 检查是否有 boost 任务
     - 没有任务，return 未找到任务
-- 检查 `Room.memory.boost.pos` 位置上是否有 creep 存在
-    - 没有，return 位置上没有 creep
-- 检查资源数量是否达标
-    - 不达标，return 资源不足
+- 检查当前是否是 `waitBoost` 状态
+    - 不是，说明没准备好强化，return 繁忙中
 - 进行强化，将 boost 状态修改为 `boostClear` return OK
 
 **Room.boostCancel()**
@@ -139,12 +137,12 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
     // boost 强化位置，pos[0] 是 x 坐标，pos[1] 是 y 坐标，
     pos: [ 12, 43 ],
     // 要进行强化的材料及执行强化的 lab
-    lab: [
+    lab: {
         [RESOURCE_CATALYZED_GHODIUM_ACID]: '5d9bdd4b1acf0f000174aa4a',
         [RESOURCE_CATALYZED_KEANIUM_ACID]: '5d9bdd4b1acf0f000174aa4b',
         [RESOURCE_CATALYZED_LEMERGIUM_ACID]: '5d9bdd4b1acf0f000174aa4c',
         [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: '5d9bdd4b1acf0f000174aa4e'
-    ]
+    }
 }
 ```
 
@@ -162,7 +160,7 @@ const boostConfig = {
     // 每个 BOOST_TYPE 都会对应一个配置项
     [BOOST_TYPE.DISMANTLE]: {
         // 其中的键值对代表这需要什么材料以及最大需要的数量
-        ['XZH20']: 150,
+        ['XZH20']: 12,
         // ...
     },
     // ...
