@@ -470,6 +470,39 @@ class CreepExtension extends Creep {
     }
 
     /**
+     * 使用 range_attack 进攻旗帜
+     */
+    public rangedAttackFlag(): boolean {
+        // 获取旗帜
+        const attackFlag = this.getFlag(ATTACK_FLAG_NAME)
+        if (!attackFlag) return false
+
+        // 根据 massMode 选择不同给攻击模式
+        if (this.memory.massMode) this.rangedMassAttack()
+        else {
+            const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
+            if (structures.length > 0) this.rangedAttack(structures[0])
+        }
+
+        // 无脑移动
+        this.moveTo(attackFlag)
+    }
+
+    /**
+     * 切换 RANGE_ATTACK 的攻击模式 (switch mass mode)
+     */
+    public smass(): string {
+        if (this.memory.massMode) {
+            delete this.memory.massMode
+            return `MassAttack [OFF]`
+        }
+        else {
+            this.memory.massMode = true
+            return `MassAttack [ON]`
+        }
+    }
+
+    /**
      * 拆除旗帜下的建筑
      * 向 ATTACK_FLAG_NAME 发起进攻并拆除旗帜下的建筑
      */

@@ -697,6 +697,8 @@ class RoomExtension extends Room {
 
         // 将 boost 状态置为 clear，labExtension 会自动发布清理任务并移除 boostTask
         this.memory.boost.state = BOOST_STATE.CLEAR
+        delete this.memory.hasMoreBoost
+
         return OK
     }
 
@@ -715,7 +717,10 @@ class RoomExtension extends Room {
     public bshow(): string {
         if (!this.memory.boost) return `[${this.name} boost] 未找到任务`
 
-        return `[${this.name} boost] 正在执行强化任务: ${this.memory.boost.type} | 当前阶段: ${this.memory.boost.state}\n`
+        let report = `[${this.name} boost] 正在执行强化任务: ${this.memory.boost.type} | 当前阶段: ${this.memory.boost.state}`
+        if (this.memory.hasMoreBoost) report + `\n  ┖─ 当前房间还有后续强化任务`
+
+        return report
     }
 
     /**

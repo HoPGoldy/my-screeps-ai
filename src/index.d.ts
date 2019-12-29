@@ -67,7 +67,9 @@ interface Creep {
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
-    attackFlag()
+    attackFlag(): boolean
+    rangedAttackFlag(): boolean
+    smass(): void
     dismantleFlag()
     healTo(creeps: Creep[]): void
     getFlag(flagName: string): Flag|null
@@ -133,6 +135,9 @@ interface CreepMemory {
     squad?: number
     // 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用pos.isEqualTo()
     isStanBy?: boolean
+
+    // rangeSoldier 特有，是否启用 massAttack
+    massMode?: boolean
 }
 
 /**
@@ -287,6 +292,11 @@ interface RoomMemory {
             [resourceType: string]: string
         }
     }
+    /**
+     * 是否还有 boost 任务在排队
+     * 如果为 true 的话则 lab 集群会一直停留在 GetTarget 阶段
+     */
+    hasMoreBoost: boolean
 }
 
 // 所有房间物流任务
