@@ -1,9 +1,5 @@
 import { creepConfigs, observeRooms } from './config'
-<<<<<<< HEAD
 import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, boostConfigs,powerSettings } from './setting'
-=======
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, boostConfigs, powerSettings } from './setting'
->>>>>>> 5289b2a837ec1b3ca7e950995f2ec066d13b36d2
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
@@ -17,8 +13,8 @@ export default function () {
     _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
     _.assign(StructureLab.prototype, LabExtension.prototype)
     _.assign(StructureNuker.prototype, NukerExtension.prototype)
-    _.assign(StructurePowerSpawn.prototype,PowerSpawnExtension.prototype)
-    _.assign(StructureObserver.prototype,ObserverExtension.prototype)
+    _.assign(StructurePowerSpawn.prototype, PowerSpawnExtension.prototype)
+    _.assign(StructureObserver.prototype, ObserverExtension.prototype)
 }
 
 /**
@@ -1299,8 +1295,8 @@ class NukerExtension extends StructureNuker {
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work():void{
         if(!this.room.memory.powerSpawn) return
-        if(!this.room.memory.powerSpawn.id) this.room.memory.powerSpawn.id = this.id
         if(!this.room.memory.powerSpawn.process) return
+        //powerSpawn内power不足
         if(this.store[RESOURCE_POWER] < 10 && this.room.storage.store.getUsedCapacity(RESOURCE_POWER) > 0)
         {
             this.room.addRoomTransferTask({
@@ -1309,6 +1305,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 resourceType: RESOURCE_POWER
             })
         }
+        //powerSpawn内energy不足且storage内energy充足
         if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit)
         {
             this.room.addRoomTransferTask({
@@ -1317,6 +1314,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 resourceType: RESOURCE_ENERGY
             })
         }
+        //process power
         if(this.store[RESOURCE_ENERGY] > 50 && this.store[RESOURCE_POWER] > 0) this.processPower()
     }
 }
@@ -1327,14 +1325,15 @@ class ObserverExtension extends StructureObserver {
         if(this.room.memory.observer.pause) return
         if(this.room.memory.observer.checked.isChecked)
         {
-            searchRoom()
+            this.searchRoom()
         }
         else
         {
-            checkRoom()
+            this.checkRoom()
         }
         return
     }
+    //对当前有视野的room进行检查
    private searchRoom():void {
         const room = Game.rooms[this.room.memory.observer.checked.room]
         const deposits = room.find(FIND_DEPOSITS)
@@ -1369,6 +1368,7 @@ class ObserverExtension extends StructureObserver {
         }
         this.room.memory.observer.checked.isChecked = false
    }
+   //对当前memory里所存room进行获取视野操作
     private checkRoom():void {
         if(Game.time % 5) return
         this.observeRoom(observeRooms[this.room.memory.observer.listNum])

@@ -598,10 +598,10 @@ class RoomExtension extends Room {
      * 暂停 PowerSpawn 工作
      */
     private pauseProceesPower(): string {
-        if(!this.memory.powerSpawn){
+        if (!this.memory.powerSpawn) {
             return `[${this.name} PowerSpawn] 暂停process失败 请确认是否初始化PowerSpawn`
         }
-        this.memory.powerSpawn.process=false
+        this.memory.powerSpawn.process = false
         return `[${this.name} PowerSpawn] 已暂停process power`
     }
 
@@ -609,10 +609,10 @@ class RoomExtension extends Room {
      * 重启 PowerSpawn 工作
      */
     private resumeProcessPower(): string {
-        if(!this.memory.powerSpawn){
+        if (!this.memory.powerSpawn) {
             return `[${this.name} PowerSpawn] 恢复process失败 请确认是否初始化PowerSpawn`
         }
-        this.memory.powerSpawn.process=true
+        this.memory.powerSpawn.process = true
         return `[${this.name} PowerSpawn] 已恢复process power`
     }
 
@@ -620,8 +620,8 @@ class RoomExtension extends Room {
      * 初始化 Observer 工作
      */
     private initObserver(): string {
-        this.memory.observer={
-            checked:{
+        this.memory.observer = {
+            checked: {
                 room:null,
                 isChecked:false,
             },
@@ -635,10 +635,10 @@ class RoomExtension extends Room {
      * 暂停 Observer 工作
      */
     private pauseObserver(): string {
-        if(!this.memory.observer){
+        if (!this.memory.observer) {
             return `[${this.name} Observer] 暂停observer失败 请确认是否初始化Observer`
         }
-        this.memory.observer.pause=true
+        this.memory.observer.pause = true
         return `[${this.name} Observer] 已暂停observer`
     }
 
@@ -646,10 +646,10 @@ class RoomExtension extends Room {
      * 重启 Observer 工作
      */
     private resumeObserver(): string {
-        if(!this.memory.observer){
+        if(!this.memory.observer) {
             return `[${this.name} Observer] 恢复observer失败 请确认是否初始化Observer`
         }
-        this.memory.observer.pause=false
+        this.memory.observer.pause = false
         return `[${this.name} Observer] 已恢复observer`
     }
 

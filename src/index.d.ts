@@ -187,8 +187,17 @@ interface Room {
  * 房间内存
  */
 interface RoomMemory {
-    powerSpawn: any
-    observer: any
+    powerSpawn: {
+        process: boolean
+    }
+    observer: {
+        checked: {
+            room: string
+            isChecked: boolean
+        }
+        listNum: number
+        pause: boolean
+    }
     // 中央集群的资源转移任务队列
     centerTransferTasks: ITransferTask[]
     // 房间物流任务队列
@@ -285,7 +294,7 @@ interface RoomMemory {
 }
 
 // 所有房间物流任务
-type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear
+type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear | IFillPowerSpawn
 
 // 房间物流任务 - 填充拓展
 interface IFillExtension {
@@ -305,7 +314,7 @@ interface IFillNuker {
     resourceType: ResourceConstant
 }
 
-// 房间物流任务 - 填充核弹
+// 房间物流任务 - 填充PowerSpawn
 interface IFillPowerSpawn {
     type: string
     id: string

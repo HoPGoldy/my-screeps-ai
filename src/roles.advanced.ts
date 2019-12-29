@@ -12,11 +12,7 @@ export const ROOM_TRANSFER_TASK = {
     LAB_IN: 'labIn',
     LAB_OUT: 'labOut',
     LAB_GET_ENERGY: 'labGetEnergy',
-<<<<<<< HEAD
     FILL_POWERSPAWN: 'fillPowerSpawn',
-=======
-    FILL_POWERSPAWN: 'fillPowerSpawn'
->>>>>>> 5289b2a837ec1b3ca7e950995f2ec066d13b36d2
     // boost 物流
     BOOST_GET_RESOURCE: 'boostGetResource',
     BOOST_GET_ENERGY: 'boostGetEnergy',
@@ -536,11 +532,6 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         },
         switch: (creep, task: IFillPowerSpawn) => creep.store[task.resourceType] > 0
     },
-<<<<<<< HEAD
-=======
-}
-
->>>>>>> 5289b2a837ec1b3ca7e950995f2ec066d13b36d2
     /**
      * boost 资源移入任务
      * 在 boost 任务的 getResource 阶段发布
