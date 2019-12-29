@@ -694,7 +694,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
         },
         switch: (creep, task: IBoostClear) => {
             // 装了东西就 target 阶段
-            if (creep.store.getCapacity() > 0) creep.memory.working = true
+            if (creep.store.getUsedCapacity() > 0) creep.memory.working = true
             // 身上没东西了就 source 阶段
             else if (!creep.store.getUsedCapacity()) creep.memory.working = false
 

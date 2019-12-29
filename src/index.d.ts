@@ -67,7 +67,9 @@ interface Creep {
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
-    attackFlag()
+    attackFlag(): boolean
+    rangedAttackFlag(): boolean
+    smass(): void
     dismantleFlag()
     healTo(creeps: Creep[]): void
     getFlag(flagName: string): Flag|null
@@ -133,6 +135,9 @@ interface CreepMemory {
     squad?: number
     // 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用pos.isEqualTo()
     isStanBy?: boolean
+
+    // rangeSoldier 特有，是否启用 massAttack
+    massMode?: boolean
 }
 
 /**
@@ -165,6 +170,8 @@ interface Room {
     hangCenterTask(): number
     handleCenterTask(transferAmount: number): void
     getCenterTask(): ITransferTask | null
+    deleteCurrentCenterTask(): void
+
     // 房间物流 api
     addRoomTransferTask(task: RoomTransferTasks, priority?: number): number
     hasRoomTransferTask(taskType: string): boolean
@@ -174,13 +181,18 @@ interface Room {
     handleBoostGetResourceTask(resourceIndex: number, number: number): void
     deleteCurrentRoomTransferTask(): void
 
+    // 工厂 api
     setFactoryTarget(resourceType: ResourceConstant): string
     getFactoryTarget(): ResourceConstant | null
     clearFactoryTarget(): string
-    deleteCurrentCenterTask(): void
+
+    // 资源共享 api
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
-    
+
+    // boost api
+    boost(boostType: string): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
+    boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
 }
 
 /**
@@ -299,6 +311,11 @@ interface RoomMemory {
             [resourceType: string]: string
         }
     }
+    /**
+     * 是否还有 boost 任务在排队
+     * 如果为 true 的话则 lab 集群会一直停留在 GetTarget 阶段
+     */
+    hasMoreBoost: boolean
 }
 
 // 所有房间物流任务
@@ -460,6 +477,8 @@ interface ICreepConfig {
     spawn: string
     // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键
     bodyType: string
+    // 是否强制生成，若设置为 true 则不会根据当前房间能量自动调整身体部件
+    bodyForce?: boolean
 }
 
 /**
