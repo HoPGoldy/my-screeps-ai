@@ -367,7 +367,6 @@ export default {
         spawn: spawnName,
         bodyType: 'remoteDefender'
     }),
-
     /**
      * deposit采集者
      * 从指定矿中挖 deposit > 将矿转移到建筑中
