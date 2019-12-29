@@ -53,5 +53,12 @@ export default {
         target: creep => creep.dismantleFlag(),
         spawn: spawnName,
         bodyType: 'dismantler'
+    }),
+
+    boostRangeAttacker: (spawnName: string): ICreepConfig => ({
+        target: creep => creep.dismantleFlag(),
+        spawn: spawnName,
+        bodyType: 'boostRangeAttack',
+        bodyForce: true
     })
 }

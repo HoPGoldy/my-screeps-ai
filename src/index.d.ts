@@ -180,7 +180,6 @@ interface Room {
     deleteCurrentCenterTask(): void
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
-    
 }
 
 /**
@@ -434,6 +433,8 @@ interface ICreepConfig {
     spawn: string
     // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键
     bodyType: string
+    // 是否强制生成，若设置为 true 则不会根据当前房间能量自动调整身体部件
+    bodyForce?: boolean
 }
 
 /**
