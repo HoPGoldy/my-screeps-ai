@@ -1,15 +1,4 @@
-// import { colorful } from './utils'
-
-/**
- * 给指定文本添加颜色
- * 
- * @todo 这个直接引用 utils 里的方法会导致报错，原因不明，所以暂时复制过来
- * @param content 要添加颜色的文本
- * @param color 要添加的颜色
- */
-function colorful(content: string, color: string): string {
-    return `<text style="color: ${color}">${content}</text>`
-}
+import { colorful } from './utils'
 
 /**
  * 设置项

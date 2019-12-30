@@ -1,5 +1,6 @@
 import { BOOST_TYPE, BOOST_STATE } from './setting'
 import { calcBodyPart } from './utils'
+
 /**
  * 战斗角色组
  * 本角色组包括了对外战斗和房间防御所需要的角色

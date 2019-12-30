@@ -1,6 +1,3 @@
-import { creepConfigs } from './config'
-// import { shareSetting } from './setting'
-
 // 路径名到颜色的对应列表
 const pathMap: IPathMap = {
     default: '#ffffff',
@@ -45,64 +42,21 @@ export function calcBodyPart(bodySet: BodySet): BodyPartConstant[] {
 }
 
 /**
- * creep 数量控制器
- * 
- * 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
- * 此函数可以同时清除死去 creep 的内存
- */
-export function creepNumberController (): void {
-    // if (Game.time % 20) return
-
-    for (const name in Memory.creeps) {
-        // 如果 creep 已经凉了
-        if (!Game.creeps[name]) {
-            const role: string = Memory.creeps[name].role
-            // 获取配置项
-            const creepConfig: ICreepConfig = creepConfigs[role]
-            if (!creepConfig) {
-                console.log(`死亡 ${name} 未找到对应 creepConfig, 已删除`)
-                delete Memory.creeps[name]
-                return
-            }
-
-            // 检查指定的 spawn 中有没有它的生成任务
-            const spawn = Game.spawns[creepConfig.spawn]
-            if (!spawn) {
-                console.log(`死亡 ${name} 未找到 ${creepConfig.spawn}`)
-                return
-            }
-            // 没有的话加入生成
-            if (!spawn.hasTask(role)) {
-                spawn.addTask(role)
-                // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列`)
-            }
-            // 有的话删除过期内存
-            else {
-                delete Memory.creeps[name]
-                // console.log('清除死去 creep 记忆', name)
-            }
-        }
-    }
-}
-
-/**
  * 执行 Hash Map 中子元素对象的 work 方法
  * 
  * @param hashMap 游戏对象的 hash map。如 Game.creeps、Game.spawns 等
+ * @param showCpu [可选] 传入指定字符串来启动该 Map 的数量统计
  */
-export function doing(hashMap: object): void {
-    Object.values(hashMap).forEach(item => {
-        // let cost1: number
-        // let cost2: number
-        // if (item.work && item.structureType) cost1 = Game.cpu.getUsed()
+export function doing(hashMap: object, showCpu: string = ''): void {
+    let startCost = Game.cpu.getUsed()
 
+    // 遍历执行 work
+    Object.values(hashMap).forEach(item => {
         if (item.work) item.work()
-         
-        // if (item.work && item.structureType) {
-        //     cost2 = Game.cpu.getUsed()
-        //     console.log(`建筑 ${item} 消耗 cpu ${cost2 - cost1}`)
-        // }
     })
+
+    // 如果有需求的话就显示 cpu 消耗
+    if (showCpu) console.log(`[${showCpu}] 消耗 ${Game.cpu.getUsed() - startCost}`)
 }
 
 /**

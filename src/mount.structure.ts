@@ -24,6 +24,12 @@ class SpawnExtension extends StructureSpawn {
      * @todo 能量不足时挂起任务
      */
     public work(): void {
+        // [重要] 执行 creep 数量控制器
+        if (!Game._hasRunCreepNumberController) {
+            this.creepNumberController()
+            Game._hasRunCreepNumberController = true
+        }
+
         if (this.spawning) {
             /**
              * 如果孵化已经开始了，就向物流队列推送任务
@@ -43,6 +49,45 @@ class SpawnExtension extends StructureSpawn {
 
         // 生成成功后移除任务
         if (spawnResult == OK) this.memory.spawnList.shift()
+    }
+
+    /**
+     * creep 数量控制器
+     * 
+     * 每 tick 执行一次, 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
+     * 此函数可以同时清除死去 creep 的内存
+     */
+    private creepNumberController(): void {
+        for (const name in Memory.creeps) {
+            // 如果 creep 已经凉了
+            if (!Game.creeps[name]) {
+                const role: string = Memory.creeps[name].role
+                // 获取配置项
+                const creepConfig: ICreepConfig = creepConfigs[role]
+                if (!creepConfig) {
+                    console.log(`死亡 ${name} 未找到对应 creepConfig, 已删除`)
+                    delete Memory.creeps[name]
+                    return
+                }
+    
+                // 检查指定的 spawn 中有没有它的生成任务
+                const spawn = Game.spawns[creepConfig.spawn]
+                if (!spawn) {
+                    console.log(`死亡 ${name} 未找到 ${creepConfig.spawn}`)
+                    return
+                }
+                // 没有的话加入生成
+                if (!spawn.hasTask(role)) {
+                    spawn.addTask(role)
+                    // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列`)
+                }
+                // 有的话删除过期内存
+                else {
+                    delete Memory.creeps[name]
+                    // console.log('清除死去 creep 记忆', name)
+                }
+            }
+        }
     }
     
     /**

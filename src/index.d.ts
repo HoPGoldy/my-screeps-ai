@@ -27,6 +27,15 @@ declare module NodeJS {
 }
 
 /**
+ * Game 对象拓展
+ */
+interface Game {
+    // 本 tick 是否已经执行了 creep 数量控制器了
+    // 每 tick 只会调用一次
+    _hasRunCreepNumberController: boolean
+}
+
+/**
  * 建筑拓展
  * 有可能有自定义的 work 方法
  */
