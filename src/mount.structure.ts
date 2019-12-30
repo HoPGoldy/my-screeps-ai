@@ -120,8 +120,8 @@ class SpawnExtension extends StructureSpawn {
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
 
-        // 获取身体部件
-        const bodys = this.getBodys(creepConfig.bodyType)
+        // 获取身体部件, 优先使用 bodys
+        const bodys = creepConfig.bodys ? creepConfig.bodys : this.getBodys(creepConfig.bodyType)
         
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
