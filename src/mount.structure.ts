@@ -1245,6 +1245,7 @@ class LabExtension extends StructureLab {
      * @returns 是否成功添加了物流任务
      */
     private addTransferTask(taskType: string): boolean {
+        const labMemory = this.room.memory.lab
         // 底物移入任务
         if (taskType == ROOM_TRANSFER_TASK.LAB_IN) {
             // 获取目标产物
@@ -1264,13 +1265,20 @@ class LabExtension extends StructureLab {
         }
         // 产物移出任务
         else if (taskType == ROOM_TRANSFER_TASK.LAB_OUT) {
-            // 获取目标产物
-            const targetResource = labTarget[this.room.memory.lab.targetIndex].target
-            
+            // 获取还有资源的 lab, 将其内容物类型作为任务的资源类型
+            let targetLab: StructureLab
+            for (const outLabId in labMemory.outLab) {
+                if (labMemory.outLab[outLabId] > 0) {
+                    targetLab = Game.getObjectById(outLabId)
+                    break
+                }
+            }
+            if (!targetLab) return false
+
             // 发布任务
             return (this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.LAB_OUT,
-                resourceType: targetResource
+                resourceType: targetLab.mineralType
             }) == -1) ? false : true
         }
         else return false

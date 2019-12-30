@@ -1,3 +1,5 @@
+import { labTarget } from "./setting"
+
 /**
  * 此处定义了所有的房间物流任务类型
  * 每个房间物流的任务的 type 属性都必须是下列定义之一
@@ -436,6 +438,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 转移资源
             const withdrawResult = creep.withdraw(targetLab, task.resourceType)
+
             if (withdrawResult === ERR_NOT_IN_RANGE) creep.moveTo(targetLab, { reusePath: 20 })
             // 正常转移资源则更新 memory 数量信息
             else if (withdrawResult == OK) {
@@ -460,8 +463,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             
             // 转移资源
             const transferResult = creep.transfer(terminal, resourceType)
+
             if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(terminal, { reusePath: 20 })
-            // 正常转移资源则更新任务
             else if (transferResult != OK) creep.say(`labout ${transferResult}`)
         },
         switch: (creep, task: ILabOut) => {
