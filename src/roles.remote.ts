@@ -450,7 +450,7 @@ export default {
                 // 获取目标终端
                 const spawn = Game.spawns[spawnName]
                 if (!spawn) return console.log(`[${creep.name}] target 阶段，找不到指定 spawn`)
-                const target = spawn.room.terminal
+                target = spawn.room.terminal
                 if (!target) return console.log(`[${creep.name}] target 阶段，找不到默认 terminal`)
             }
             

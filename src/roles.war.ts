@@ -12,8 +12,10 @@ export default {
      * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
      * 
      * @param spawnName 出生点名称
+     * @param flagName 要攻击的旗帜名称
      */
-    soldier: (spawnName: string): ICreepConfig => ({
+    soldier: (spawnName: string, flagName: string = 'attack'): ICreepConfig => ({
+        ...battleBase(flagName),
         target: creep => creep.attackFlag(),
         spawn: spawnName,
         bodyType: 'attacker'
@@ -34,7 +36,7 @@ export default {
 
     /**
      * 强化 - HEAL
-     * 7 级以上可用
+     * 7 级以上可用 25HEAL 25MOVE
      * 详情见 role.doctor, 并且请配合 boostRangeSoldier 使用
      * 
      * @param spawnName 出生点名称
@@ -51,8 +53,12 @@ export default {
      * 强化 - 范围型攻击士兵
      * 7 级以上可用
      * 会一直向旗帜发起进攻, 可以切换状态, 请配合 boostDoctor 使用
+     * 
+     * @param spawnName 出生点名称
+     * @param flagName 要攻击的旗帜名称
      */
-    boostRangeSoldier: (spawnName: string): ICreepConfig => ({
+    boostRangeSoldier: (spawnName: string, flagName: string = 'attack'): ICreepConfig => ({
+        ...battleBase(flagName),
         ...boostPrepare(BOOST_TYPE.PURE_RANGE_ATTACK),
         target: creep => creep.rangedAttackFlag(),
         spawn: spawnName,
@@ -78,8 +84,10 @@ export default {
      * 会一直向旗帜发起进攻，拆除旗帜下的建筑
      * 
      * @param spawnName 出生点名称
+     * @param flagName 要攻击的旗帜名称
      */
-    dismantler: (spawnName: string): ICreepConfig => ({
+    dismantler: (spawnName: string, flagName: string = 'attack'): ICreepConfig => ({
+        ...battleBase(flagName),
         target: creep => creep.dismantleFlag(),
         spawn: spawnName,
         bodyType: 'dismantler'
@@ -91,21 +99,23 @@ export default {
      * 
      * @param spawnName 出生点名称
      * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能量越强，默认为 6 (1~6)
+     * @param flagName 要攻击的旗帜名称
      */
-    apocalypse: (spawnName: string, bearTowerNum: number = 6): ICreepConfig => {
+    apocalypse: (spawnName: string, bearTowerNum: number = 6, flagName: string = 'attack'): ICreepConfig => {
         // 越界就置为 6
         if (bearTowerNum < 0 || bearTowerNum > 6) bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
         const bodyMap = {
-            1: { TOUGH: 2, RANGE_ATTACK: 15, MOVE: 10, HEAL: 23 },
-            2: { TOUGH: 4, RANGE_ATTACK: 13, MOVE: 10, HEAL: 23 },
-            3: { TOUGH: 6, RANGE_ATTACK: 11, MOVE: 10, HEAL: 23 },
-            4: { TOUGH: 8, RANGE_ATTACK: 9, MOVE: 10, HEAL: 23 },
-            5: { TOUGH: 10, RANGE_ATTACK: 7, MOVE: 10, HEAL: 23 },
+            1: { TOUGH: 2, RANGE_ATTACK: 15, MOVE: 6, HEAL: 5 },
+            2: { TOUGH: 4, RANGE_ATTACK: 20, MOVE: 9, HEAL: 9 },
+            3: { TOUGH: 6, RANGE_ATTACK: 21, MOVE: 10, HEAL: 13 },
+            4: { TOUGH: 8, RANGE_ATTACK: 15, MOVE: 10, HEAL: 17 },
+            5: { TOUGH: 10, RANGE_ATTACK: 9, MOVE: 10, HEAL: 21 },
             6: { TOUGH: 12, RANGE_ATTACK: 5, MOVE: 10, HEAL: 23 }
         }
         // 组装 CreepConfig
         return {
+            ...battleBase(flagName),
             ...boostPrepare(BOOST_TYPE.RANGE_ATTACK),
             target: creep => creep.rangedAttackFlag(),
             spawn: spawnName,
@@ -185,4 +195,57 @@ const boostPrepare = (boostType: string) => ({
         else creep.moveTo(boostPos, { reusePath: 10 })
         return false
     }
+})
+
+/**
+ * 战斗 creep 基础阶段
+ * 本方法抽象出了战斗 Creep 通用的 source 阶段和 switch 阶段
+ * 
+ * @param flagName 目标旗帜名称
+ */
+const battleBase = (flagName: string) => ({
+    /**
+     * 获取旗帜，然后向指定房间移动
+     * 同时保证自己的健康状态
+     */
+    source: (creep: Creep) => {
+        const targetFlag = creep.getFlag(flagName)
+        if (!targetFlag) return creep.say('旗呢?')
+
+        // 远程移动
+        creep.farMoveTo(targetFlag.pos)
+
+        // 保证自己血量健康（兼容没有 HEAL 的 creep）
+        if ((creep.hits < creep.hitsMax) && creep.getActiveBodyparts(HEAL)) {
+            creep.heal(creep)
+            creep.say('💔')
+        }
+    },
+    /**
+     * 战斗单位的通用 switch 阶段
+     * 如果在旗帜房间内则 target
+     * 如果不在则 source
+     * 
+     * @param flagName 目标旗帜名称
+     */
+    switch: (creep: Creep) => {
+        const targetFlag = creep.getFlag(flagName)
+
+        // 没有旗帜就为战斗模式
+        if (!targetFlag) {
+            creep.say('旗呢?')
+            creep.memory.working = true
+        }
+
+        if (creep.room.name == targetFlag.pos.roomName && !creep.memory.working) {
+            console.log(`[${creep.name}] 已经抵达指定房间，展开作战模式`)
+            creep.memory.working = true
+        }
+        else if (creep.room.name != targetFlag.pos.roomName && creep.memory.working) {
+            console.log(`[${creep.name}] 不在指定房间内，切换迁徙模式`)
+            creep.memory.working = false
+        }
+
+        return creep.memory.working
+    },
 })
