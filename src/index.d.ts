@@ -480,14 +480,14 @@ interface ICreepConfigs {
  * @example { [TOUGH]: 3, [WORK]: 4, [MOVE]: 7 }
  */
 interface BodySet {
-    MOVE?: number
-    CARRY?: number
-    ATTACK?: number
-    RANGE_ATTACK?: number
-    WORK?: number
-    CLIAM?: number
-    TOUGH?: number
-    HEAL?: number
+    [MOVE]?: number
+    [CARRY]?: number
+    [ATTACK]?: number
+    [RANGED_ATTACK]?: number
+    [WORK]?: number
+    [CLAIM]?: number
+    [TOUGH]?: number
+    [HEAL]?: number
 }
 
 // factory 配置项

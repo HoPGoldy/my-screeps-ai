@@ -982,7 +982,7 @@ class LabExtension extends StructureLab {
      * boost 阶段：获取强化材料
      */
     private boostGetResource(): void {
-        console.log(`[${this.room.name} boost] 获取 boost 材料`)
+        // console.log(`[${this.room.name} boost] 获取 boost 材料`)
         
         // 获取强化配置项
         const boostTask = this.room.memory.boost
@@ -999,7 +999,10 @@ class LabExtension extends StructureLab {
         }
 
         // 都就位了就进入下一个阶段
-        if (allResourceReady) this.room.memory.boost.state = BOOST_STATE.GET_ENERGY
+        if (allResourceReady) {
+            console.log(`[${this.room.name} boost] 材料准备完成，开始填充能量`)
+            this.room.memory.boost.state = BOOST_STATE.GET_ENERGY
+        }
         // 否则就发布任务
         else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) {
             // 遍历整理所有要转移的资源、目标 labId 及数量
@@ -1024,7 +1027,7 @@ class LabExtension extends StructureLab {
      * boost 阶段：获取能量
      */
     private boostGetEnergy(): void {
-        console.log(`[${this.room.name} boost] 获取强化能量`)
+        // console.log(`[${this.room.name} boost] 获取强化能量`)
 
         // 所有执行强化的 labId
         const boostLabs = Object.values(this.room.memory.boost.lab)
@@ -1046,6 +1049,7 @@ class LabExtension extends StructureLab {
 
         // 能循环完说明能量都填好了
         this.room.memory.boost.state = BOOST_STATE.WAIT_BOOST
+        console.log(`[${this.room.name} boost] 能量填充完成，等待强化`)
     }
 
     /**
@@ -1053,7 +1057,7 @@ class LabExtension extends StructureLab {
      * 将强化用剩下的材料从 lab 中转移到 terminal 中
      */
     private boostClear(): void {
-        console.log(`[${this.room.name} boost] 回收材料`)
+        // console.log(`[${this.room.name} boost] 回收材料`)
 
         // 所有执行强化的 labId
         const boostLabs = Object.values(this.room.memory.boost.lab)
@@ -1061,11 +1065,11 @@ class LabExtension extends StructureLab {
         // 检查是否存在没搬空的 lab
         for (const labId of boostLabs) {
             const lab: StructureLab = Game.getObjectById(labId)
-
             // mineralType 不为空就说明还有资源没拿出来
             if (lab && lab.mineralType) {
                 // 发布任务
                 if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
+                    console.log(`[${this.room.name} boost] 开始回收材料`)
                     this.room.addRoomTransferTask({
                         type: ROOM_TRANSFER_TASK.BOOST_CLEAR
                     })
@@ -1080,6 +1084,7 @@ class LabExtension extends StructureLab {
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) return
         // 彻底完成了 boost 进程
         else {
+            console.log(`[${this.room.name} boost] 材料回收完成`)
             delete this.room.memory.boost
             this.room.memory.lab.state = LAB_STATE.GET_TARGET
         }

@@ -38,7 +38,7 @@ export function calcBodyPart(bodySet: BodySet): BodyPartConstant[] {
     // [ [ TOUGH ], [ WORK, WORK ], [ MOVE, MOVE, MOVE ] ]
     const bodys = Object.keys(bodySet).map(type => Array(bodySet[type]).fill(type))
     // 把二维数组展平
-    return [].concat(bodys)
+    return [].concat(...bodys)
 }
 
 /**

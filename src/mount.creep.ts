@@ -471,6 +471,7 @@ class CreepExtension extends Creep {
 
     /**
      * 使用 range_attack 进攻旗帜
+     * 整合了 heal 逻辑
      */
     public rangedAttackFlag(): boolean {
         // 获取旗帜
@@ -483,6 +484,9 @@ class CreepExtension extends Creep {
             const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
             if (structures.length > 0) this.rangedAttack(structures[0])
         }
+
+        // 治疗自己
+        if ((this.hits < this.hitsMax) && this.getActiveBodyparts(HEAL)) this.heal(this)
 
         // 无脑移动
         this.moveTo(attackFlag)
