@@ -1,4 +1,4 @@
-import { BOOST_TYPE, BOOST_STATE } from './setting'
+import { BOOST_TYPE, BOOST_STATE, DEFAULT_FLAG_NAME } from './setting'
 import { calcBodyPart } from './utils'
 
 /**
@@ -14,9 +14,9 @@ export default {
      * @param spawnName 出生点名称
      * @param flagName 要攻击的旗帜名称
      */
-    soldier: (spawnName: string, flagName: string = 'attack'): ICreepConfig => ({
+    soldier: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
         ...battleBase(flagName),
-        target: creep => creep.attackFlag(),
+        target: creep => creep.attackFlag(flagName),
         spawn: spawnName,
         bodyType: 'attacker'
     }),
@@ -70,9 +70,9 @@ export default {
      * @param spawnName 出生点名称
      * @param flagName 要攻击的旗帜名称
      */
-    dismantler: (spawnName: string, flagName: string = 'attack'): ICreepConfig => ({
+    dismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
         ...battleBase(flagName),
-        target: creep => creep.dismantleFlag(),
+        target: creep => creep.dismantleFlag(flagName),
         spawn: spawnName,
         bodyType: 'dismantler'
     }),
@@ -85,10 +85,10 @@ export default {
      * @param spawnName 出生点名称
      * @param flagName 要攻击的旗帜名称
      */
-    boostDismantler: (spawnName: string, flagName: string = 'attack'): ICreepConfig => ({
+    boostDismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
         ...battleBase(flagName),
         ...boostPrepare(BOOST_TYPE.DISMANTLE),
-        target: creep => creep.dismantleFlag(),
+        target: creep => creep.dismantleFlag(flagName),
         spawn: spawnName,
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
     }),
@@ -101,7 +101,7 @@ export default {
      * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能量越强，默认为 6 (1~6)
      * @param flagName 要攻击的旗帜名称
      */
-    apocalypse: (spawnName: string, bearTowerNum: number = 6, flagName: string = 'attack'): ICreepConfig => {
+    apocalypse: (spawnName: string, bearTowerNum: number = 6, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => {
         // 越界就置为 6
         if (bearTowerNum < 0 || bearTowerNum > 6) bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
@@ -117,7 +117,7 @@ export default {
         return {
             ...battleBase(flagName),
             ...boostPrepare(BOOST_TYPE.RANGED_ATTACK),
-            target: creep => creep.rangedAttackFlag(),
+            target: creep => creep.rangedAttackFlag(flagName),
             spawn: spawnName,
             bodys: calcBodyPart(bodyMap[bearTowerNum])
         }
@@ -149,7 +149,7 @@ const boostPrepare = (boostType: string) => ({
             const startResult = room.boost(boostType)
             // 启动成功就移除之前的排队标志位
             if (startResult == OK) {
-                console.log(`[${room.name} boost] 已发布 boost 任务，等待准备就绪`)
+                console.log(`[${room.name} boost] 已发布任务，等待强化材料准备就绪`)
                 delete room.memory.hasMoreBoost
             }
             else console.log(`[${room.name}] 暂时无法生成，Room.boost 返回值:${startResult}`)
@@ -237,7 +237,7 @@ const battleBase = (flagName: string) => ({
         // 没有旗帜就为战斗模式
         if (!targetFlag) {
             creep.say('旗呢?')
-            creep.memory.working = true
+            return (creep.memory.working = true)
         }
 
         if (creep.room.name == targetFlag.pos.roomName && !creep.memory.working) {

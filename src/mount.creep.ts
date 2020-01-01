@@ -7,9 +7,6 @@ export default function () {
     _.assign(Creep.prototype, CreepExtension.prototype)
 }
 
-// 进攻旗帜的名称
-const ATTACK_FLAG_NAME = 'attack'
-
 // creep 原型拓展
 class CreepExtension extends Creep {
     /**
@@ -434,11 +431,13 @@ class CreepExtension extends Creep {
 
     /**
      * 进攻
-     * 向 ATTACK_FLAG_NAME 旗帜发起进攻
+     * 向指定旗帜旗帜发起进攻
+     * 
+     * @param flagName 要进攻的旗帜名称
      */
-    public attackFlag(): boolean {
+    public attackFlag(flagName: string): boolean {
         // 获取旗帜
-        const attackFlag = this.getFlag(ATTACK_FLAG_NAME)
+        const attackFlag = this.getFlag(flagName)
         if (!attackFlag) return false
 
         // 如果 creep 不在房间里 则一直向旗帜移动
@@ -472,10 +471,12 @@ class CreepExtension extends Creep {
     /**
      * 使用 range_attack 进攻旗帜
      * 整合了 heal 逻辑
+     * 
+     * @param flagName 要进攻的旗帜名称
      */
-    public rangedAttackFlag(): boolean {
+    public rangedAttackFlag(flagName: string): boolean {
         // 获取旗帜
-        const attackFlag = this.getFlag(ATTACK_FLAG_NAME)
+        const attackFlag = this.getFlag(flagName)
         if (!attackFlag) return false
 
         // 根据 massMode 选择不同给攻击模式
@@ -485,9 +486,10 @@ class CreepExtension extends Creep {
             if (structures.length > 0) this.rangedAttack(structures[0])
         }
 
-        // 治疗自己
-        if ((this.hits < this.hitsMax) && this.getActiveBodyparts(HEAL)) this.heal(this)
-
+        // 治疗自己，不会检查自己生命值，一直治疗
+        // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害足以击穿 tough。
+        if (this.getActiveBodyparts(HEAL)) this.heal(this)
+ 
         // 无脑移动
         this.moveTo(attackFlag)
     }
@@ -508,11 +510,13 @@ class CreepExtension extends Creep {
 
     /**
      * 拆除旗帜下的建筑
-     * 向 ATTACK_FLAG_NAME 发起进攻并拆除旗帜下的建筑
+     * 向指定旗帜发起进攻并拆除旗帜下的建筑
+     * 
+     * @param flagName 要进攻的旗帜名称
      */
-    public dismantleFlag(): boolean {
+    public dismantleFlag(flagName: string): boolean {
         // 获取旗帜
-        let attackFlag = this.getFlag(ATTACK_FLAG_NAME)
+        let attackFlag = this.getFlag(flagName)
         if (!attackFlag) return false
 
         // 如果 creep 不在房间里 则一直向旗帜移动

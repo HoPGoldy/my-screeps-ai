@@ -1,5 +1,4 @@
-// 占领旗帜的名称
-const CLAIM_FLAG_NAME = 'claim'
+import { DEFAULT_FLAG_NAME } from './setting'
 
 /**
  * 多房间角色组
@@ -16,7 +15,7 @@ export default {
      */ 
     claimer: (spawnName: string, ignoreRoom: string[] = []): ICreepConfig => ({
         target: creep => {
-            const claimFlag = creep.getFlag(CLAIM_FLAG_NAME)
+            const claimFlag = creep.getFlag(DEFAULT_FLAG_NAME.CLAIM)
             if (!claimFlag) return
 
             // 如果 creep 不在房间里 则一直向旗帜移动

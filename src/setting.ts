@@ -402,3 +402,13 @@ export const boostConfigs = {
         [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25
     }, 
 }
+
+/**
+ * 默认的旗帜名称
+ */
+export const DEFAULT_FLAG_NAME = {
+    // 进攻旗帜
+    ATTACK: 'attack',
+    // 占领旗帜
+    CLAIM: 'claim'
+}
