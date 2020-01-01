@@ -407,8 +407,10 @@ export const boostConfigs = {
  * 默认的旗帜名称
  */
 export const DEFAULT_FLAG_NAME = {
-    // 进攻旗帜
+    // 进攻
     ATTACK: 'attack',
-    // 占领旗帜
-    CLAIM: 'claim'
+    // 占领
+    CLAIM: 'claim',
+    // 待命
+    STANDBY: 'standBy'
 }

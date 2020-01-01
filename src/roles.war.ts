@@ -26,10 +26,13 @@ export default {
      * 一直治疗给定的 creep
      * 
      * @param spawnName 出生点名称
-     * @param creepsName 要治疗的 creep 名称数组
+     * @param creepsName 要治疗的 creep 名称
+     * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    doctor: (spawnName: string, creepsName: string[]): ICreepConfig => ({
-        target: creep => creep.healTo(creepsName.map(name => Game.creeps[name])),
+    doctor: (spawnName: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+        source: creep => creep.farMoveTo(Game.flags[standByFlagName].pos),
+        target: creep => creep.healTo(Game.creeps[creepsName]),
+        switch: () => standByFlagName in Game.flags,
         spawn: spawnName,
         bodyType: 'healer'
     }),
@@ -42,9 +45,9 @@ export default {
      * @param spawnName 出生点名称
      * @param creepsName 要治疗的 creep 名称数组
      */
-    boostDoctor: (spawnName: string, creepsName: string[]): ICreepConfig => ({
+    boostDoctor: (spawnName: string, creepsName: string): ICreepConfig => ({
         ...boostPrepare(BOOST_TYPE.HEAL),
-        target: creep => creep.healTo(creepsName.map(name => Game.creeps[name])),
+        target: creep => creep.healTo(Game.creeps[creepsName]),
         spawn: spawnName,
         bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
     }),
@@ -69,8 +72,13 @@ export default {
      * 
      * @param spawnName 出生点名称
      * @param flagName 要攻击的旗帜名称
+     * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    dismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
+    dismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+        prepare: creep => {
+            if (!(standByFlagName in Game.flags)) return true
+            creep.moveTo(Game.flags[standByFlagName])
+        },
         ...battleBase(flagName),
         target: creep => creep.dismantleFlag(flagName),
         spawn: spawnName,
@@ -84,8 +92,13 @@ export default {
      * 
      * @param spawnName 出生点名称
      * @param flagName 要攻击的旗帜名称
+     * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    boostDismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
+    boostDismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+        prepare: creep => {
+            if (!(standByFlagName in Game.flags)) return true
+            creep.moveTo(Game.flags[standByFlagName])
+        },
         ...battleBase(flagName),
         ...boostPrepare(BOOST_TYPE.DISMANTLE),
         target: creep => creep.dismantleFlag(flagName),
@@ -159,7 +172,7 @@ const boostPrepare = (boostType: string) => ({
 
         // 有任务但是不是强化自己的就跳过
         if (room.memory.boost.type != boostType) {
-            console.log(`[${room.name}] 等待其他强化完成`)
+            // console.log(`[${room.name}] 等待其他强化完成`)
             room.memory.hasMoreBoost = true
             return false
         }

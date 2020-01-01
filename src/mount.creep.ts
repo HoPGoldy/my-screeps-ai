@@ -527,31 +527,22 @@ class CreepExtension extends Creep {
 
         // 如果到旗帜所在房间了
         const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
-        if (structures.length == 0) {
-            console.log(`${this.name} 找不到目标！`)
-            return false
-        }
+        if (structures.length == 0) this.say('干谁?')
 
-        this.moveTo(structures[0])
-        const result = this.dismantle(structures[0])
-        this.say(`拆! ${result}`)
+        this.moveTo(attackFlag)
+        this.dismantle(structures[0])
     }
 
     /**
      * 治疗指定目标
      * 比较给定目标生命(包括自己)生命损失的百分比, 谁血最低治疗谁
-     * @param creeps 要治疗的目标们
+     * @param creep 要治疗的目标们
      */
-    public healTo(creeps: Creep[]): void {
-        creeps.push(this)
-        // 生命值损失比例从大到小排序
-        let sortedHitCreeps = creeps.sort((a, b) => (a.hits / a.hitsMax) - (b.hits / b.hitsMax))
-        const target = sortedHitCreeps[0]
+    public healTo(creep: Creep): void {
+        const healResult = this.heal(creep)
+        if (healResult == ERR_NOT_IN_RANGE) this.rangedHeal(creep)
 
-        // 掉血就治疗
-        if (target.hits < target.hitsMax) this.heal(target)
-        // 远了就靠近
-        if (!this.pos.isNearTo(target.pos)) this.moveTo(target)
+        this.moveTo(creep)
     }
 
     /**

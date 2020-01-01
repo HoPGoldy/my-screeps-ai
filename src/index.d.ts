@@ -80,7 +80,7 @@ interface Creep {
     rangedAttackFlag(flagName: string): boolean
     smass(): void
     dismantleFlag(flagName: string): boolean
-    healTo(creeps: Creep[]): void
+    healTo(creep: Creep): void
     getFlag(flagName: string): Flag|null
     farMoveByPathRooms(pathRooms: string[]): void
     isHealthy(): boolean

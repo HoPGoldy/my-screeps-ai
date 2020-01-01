@@ -490,7 +490,6 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
      */
     [ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE]: {
         source: (creep, task: IBoostGetResource, sourceId) => {
-
             // 获取 terminal
             const terminal = creep.room.terminal
             if (!terminal) {

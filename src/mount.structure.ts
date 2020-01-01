@@ -196,7 +196,7 @@ class SpawnExtension extends StructureSpawn {
     private getBodys(bodyType: string, force: boolean = false): BodyPartConstant[] {
         const bodyConfig: BodyConfig = bodyConfigs[bodyType]
 
-        const targetLevel = Object.keys(bodyConfig).find(level => {
+        const targetLevel = Object.keys(bodyConfig).reverse().find(level => {
             // 强制生成的话只检查房间能量上限
             if (force) {
                 return Number(level) <= this.room.energyCapacityAvailable
@@ -1028,15 +1028,19 @@ class LabExtension extends StructureLab {
      */
     private boostGetEnergy(): void {
         // console.log(`[${this.room.name} boost] 获取强化能量`)
-
-        // 所有执行强化的 labId
-        const boostLabs = Object.values(this.room.memory.boost.lab)
         
-        // 检查是否有能量为空的 lab
-        for (const labId of boostLabs) {
-            const lab: StructureLab = Game.getObjectById(labId)
+        const boostTask = this.room.memory.boost
+        const boostConfig = boostConfigs[boostTask.type]
 
-            if (lab && lab.store[RESOURCE_ENERGY] != LAB_ENERGY_CAPACITY) {
+        // 遍历所有执行强化的 lab
+        for (const resourceType in boostTask.lab) {
+            const lab: StructureLab = Game.getObjectById(boostTask.lab[resourceType])
+
+            // 获取强化该部件需要的最大能量
+            const needEnergy = boostConfig[resourceType] * LAB_BOOST_ENERGY
+
+            // 有 lab 能量不达标的话就发布能量填充任务
+            if (lab && lab.store[RESOURCE_ENERGY] < needEnergy) {
                 // 有 lab 能量不满的话就发布任务
                 if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_ENERGY)) {
                     this.room.addRoomTransferTask({
@@ -1192,6 +1196,7 @@ class LabExtension extends StructureLab {
         // 底物用光了就进入下一阶段        
         const notRunOutResource = inLabs.find(lab => lab.store[lab.mineralType] >= 0)
         if (!notRunOutResource) {
+            // console.log(`[${this.room.name} lab] - 反应完成，移出产物`)
             this.room.memory.lab.state = LAB_STATE.PUT_RESOURCE
             return
         }
@@ -1217,7 +1222,7 @@ class LabExtension extends StructureLab {
      * lab 阶段：移出产物
      */
     private labPutResource(): void {
-        console.log(`[${this.room.name} lab] - 移出产物`)
+        // console.log(`[${this.room.name} lab] - 移出产物`)
 
         // 检查是否已经有正在执行的移出任务嘛
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)) return
