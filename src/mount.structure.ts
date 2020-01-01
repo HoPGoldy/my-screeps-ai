@@ -199,11 +199,11 @@ class SpawnExtension extends StructureSpawn {
         const targetLevel = Object.keys(bodyConfig).find(level => {
             // 强制生成的话只检查房间能量上限
             if (force) {
-                return Number(level) >= this.room.energyCapacityAvailable
+                return Number(level) <= this.room.energyCapacityAvailable
             }
             // 不强制生成的话（默认）先通过等级粗略判断，再加上 dryRun 精确验证
             else {
-                const availableEnergyCheck = (Number(level) >= this.room.energyAvailable)
+                const availableEnergyCheck = (Number(level) <= this.room.energyAvailable)
                 const dryCheck = (this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
 
                 return availableEnergyCheck && dryCheck
