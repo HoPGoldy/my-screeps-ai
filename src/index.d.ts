@@ -27,6 +27,15 @@ declare module NodeJS {
 }
 
 /**
+ * Game 对象拓展
+ */
+interface Game {
+    // 本 tick 是否已经执行了 creep 数量控制器了
+    // 每 tick 只会调用一次
+    _hasRunCreepNumberController: boolean
+}
+
+/**
  * 建筑拓展
  * 有可能有自定义的 work 方法
  */
@@ -67,11 +76,11 @@ interface Creep {
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
-    attackFlag(): boolean
-    rangedAttackFlag(): boolean
+    attackFlag(flagName: string): boolean
+    rangedAttackFlag(flagName: string): boolean
     smass(): void
-    dismantleFlag()
-    healTo(creeps: Creep[]): void
+    dismantleFlag(flagName: string): boolean
+    healTo(creep: Creep): void
     getFlag(flagName: string): Flag|null
     farMoveByPathRooms(pathRooms: string[]): void
     isHealthy(): boolean
@@ -475,10 +484,12 @@ interface ICreepConfig {
     switch?: (creep: Creep) => boolean
     // 要进行生产的出生点
     spawn: string
-    // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键
-    bodyType: string
+    // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键，该属性和 bodys 必须指定一个
+    bodyType?: string
     // 是否强制生成，若设置为 true 则不会根据当前房间能量自动调整身体部件
     bodyForce?: boolean
+    // 强制指定身体部件，如果指定的话将会忽略 bodyType
+    bodys?: BodyPartConstant[]
 }
 
 /**
@@ -486,6 +497,23 @@ interface ICreepConfig {
  */
 interface ICreepConfigs {
     [creepName: string]: ICreepConfig
+}
+
+/**
+ * bodySet
+ * 简写版本的 bodyPart[]
+ * 形式如下
+ * @example { [TOUGH]: 3, [WORK]: 4, [MOVE]: 7 }
+ */
+interface BodySet {
+    [MOVE]?: number
+    [CARRY]?: number
+    [ATTACK]?: number
+    [RANGED_ATTACK]?: number
+    [WORK]?: number
+    [CLAIM]?: number
+    [TOUGH]?: number
+    [HEAL]?: number
 }
 
 // factory 配置项

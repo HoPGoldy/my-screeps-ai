@@ -26,6 +26,12 @@ class SpawnExtension extends StructureSpawn {
      * @todo 能量不足时挂起任务
      */
     public work(): void {
+        // [重要] 执行 creep 数量控制器
+        if (!Game._hasRunCreepNumberController) {
+            this.creepNumberController()
+            Game._hasRunCreepNumberController = true
+        }
+
         if (this.spawning) {
             /**
              * 如果孵化已经开始了，就向物流队列推送任务
@@ -45,6 +51,45 @@ class SpawnExtension extends StructureSpawn {
 
         // 生成成功后移除任务
         if (spawnResult == OK) this.memory.spawnList.shift()
+    }
+
+    /**
+     * creep 数量控制器
+     * 
+     * 每 tick 执行一次, 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
+     * 此函数可以同时清除死去 creep 的内存
+     */
+    private creepNumberController(): void {
+        for (const name in Memory.creeps) {
+            // 如果 creep 已经凉了
+            if (!Game.creeps[name]) {
+                const role: string = Memory.creeps[name].role
+                // 获取配置项
+                const creepConfig: ICreepConfig = creepConfigs[role]
+                if (!creepConfig) {
+                    console.log(`死亡 ${name} 未找到对应 creepConfig, 已删除`)
+                    delete Memory.creeps[name]
+                    return
+                }
+    
+                // 检查指定的 spawn 中有没有它的生成任务
+                const spawn = Game.spawns[creepConfig.spawn]
+                if (!spawn) {
+                    console.log(`死亡 ${name} 未找到 ${creepConfig.spawn}`)
+                    return
+                }
+                // 没有的话加入生成
+                if (!spawn.hasTask(role)) {
+                    spawn.addTask(role)
+                    // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列`)
+                }
+                // 有的话删除过期内存
+                else {
+                    delete Memory.creeps[name]
+                    // console.log('清除死去 creep 记忆', name)
+                }
+            }
+        }
     }
     
     /**
@@ -122,8 +167,8 @@ class SpawnExtension extends StructureSpawn {
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
 
-        // 获取身体部件
-        const bodys = this.getBodys(creepConfig.bodyType)
+        // 获取身体部件, 优先使用 bodys
+        const bodys = creepConfig.bodys ? creepConfig.bodys : this.getBodys(creepConfig.bodyType)
         
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
@@ -153,14 +198,14 @@ class SpawnExtension extends StructureSpawn {
     private getBodys(bodyType: string, force: boolean = false): BodyPartConstant[] {
         const bodyConfig: BodyConfig = bodyConfigs[bodyType]
 
-        const targetLevel = Object.keys(bodyConfig).find(level => {
+        const targetLevel = Object.keys(bodyConfig).reverse().find(level => {
             // 强制生成的话只检查房间能量上限
             if (force) {
-                return Number(level) >= this.room.energyCapacityAvailable
+                return Number(level) <= this.room.energyCapacityAvailable
             }
             // 不强制生成的话（默认）先通过等级粗略判断，再加上 dryRun 精确验证
             else {
-                const availableEnergyCheck = (Number(level) >= this.room.energyAvailable)
+                const availableEnergyCheck = (Number(level) <= this.room.energyAvailable)
                 const dryCheck = (this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
 
                 return availableEnergyCheck && dryCheck
@@ -939,7 +984,7 @@ class LabExtension extends StructureLab {
      * boost 阶段：获取强化材料
      */
     private boostGetResource(): void {
-        console.log(`[${this.room.name} boost] 获取 boost 材料`)
+        // console.log(`[${this.room.name} boost] 获取 boost 材料`)
         
         // 获取强化配置项
         const boostTask = this.room.memory.boost
@@ -956,7 +1001,10 @@ class LabExtension extends StructureLab {
         }
 
         // 都就位了就进入下一个阶段
-        if (allResourceReady) this.room.memory.boost.state = BOOST_STATE.GET_ENERGY
+        if (allResourceReady) {
+            console.log(`[${this.room.name} boost] 材料准备完成，开始填充能量`)
+            this.room.memory.boost.state = BOOST_STATE.GET_ENERGY
+        }
         // 否则就发布任务
         else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) {
             // 遍历整理所有要转移的资源、目标 labId 及数量
@@ -981,16 +1029,20 @@ class LabExtension extends StructureLab {
      * boost 阶段：获取能量
      */
     private boostGetEnergy(): void {
-        console.log(`[${this.room.name} boost] 获取强化能量`)
-
-        // 所有执行强化的 labId
-        const boostLabs = Object.values(this.room.memory.boost.lab)
+        // console.log(`[${this.room.name} boost] 获取强化能量`)
         
-        // 检查是否有能量为空的 lab
-        for (const labId of boostLabs) {
-            const lab: StructureLab = Game.getObjectById(labId)
+        const boostTask = this.room.memory.boost
+        const boostConfig = boostConfigs[boostTask.type]
 
-            if (lab && lab.store[RESOURCE_ENERGY] != LAB_ENERGY_CAPACITY) {
+        // 遍历所有执行强化的 lab
+        for (const resourceType in boostTask.lab) {
+            const lab: StructureLab = Game.getObjectById(boostTask.lab[resourceType])
+
+            // 获取强化该部件需要的最大能量
+            const needEnergy = boostConfig[resourceType] * LAB_BOOST_ENERGY
+
+            // 有 lab 能量不达标的话就发布能量填充任务
+            if (lab && lab.store[RESOURCE_ENERGY] < needEnergy) {
                 // 有 lab 能量不满的话就发布任务
                 if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_ENERGY)) {
                     this.room.addRoomTransferTask({
@@ -1003,6 +1055,7 @@ class LabExtension extends StructureLab {
 
         // 能循环完说明能量都填好了
         this.room.memory.boost.state = BOOST_STATE.WAIT_BOOST
+        console.log(`[${this.room.name} boost] 能量填充完成，等待强化`)
     }
 
     /**
@@ -1010,7 +1063,7 @@ class LabExtension extends StructureLab {
      * 将强化用剩下的材料从 lab 中转移到 terminal 中
      */
     private boostClear(): void {
-        console.log(`[${this.room.name} boost] 回收材料`)
+        // console.log(`[${this.room.name} boost] 回收材料`)
 
         // 所有执行强化的 labId
         const boostLabs = Object.values(this.room.memory.boost.lab)
@@ -1018,11 +1071,11 @@ class LabExtension extends StructureLab {
         // 检查是否存在没搬空的 lab
         for (const labId of boostLabs) {
             const lab: StructureLab = Game.getObjectById(labId)
-
             // mineralType 不为空就说明还有资源没拿出来
             if (lab && lab.mineralType) {
                 // 发布任务
                 if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
+                    console.log(`[${this.room.name} boost] 开始回收材料`)
                     this.room.addRoomTransferTask({
                         type: ROOM_TRANSFER_TASK.BOOST_CLEAR
                     })
@@ -1035,8 +1088,9 @@ class LabExtension extends StructureLab {
         // 这里检查它的目的是防止 transfer 还在执行 BOOST_GET_RESOURCE 任务，如果过早的完成 boost 进程的话
         // 就会出现 lab 集群已经回到了 GET_TARGET 阶段但是 lab 里还有材料存在
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) return
-        // 彻底完成了 boost 进程
-        else {
+        // lab 净空并且 boost clear 物流任务完成，就算是彻底完成了 boost 进程
+        else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
+            console.log(`[${this.room.name} boost] 材料回收完成`)
             delete this.room.memory.boost
             this.room.memory.lab.state = LAB_STATE.GET_TARGET
         }
@@ -1144,6 +1198,7 @@ class LabExtension extends StructureLab {
         // 底物用光了就进入下一阶段        
         const notRunOutResource = inLabs.find(lab => lab.store[lab.mineralType] >= 0)
         if (!notRunOutResource) {
+            // console.log(`[${this.room.name} lab] - 反应完成，移出产物`)
             this.room.memory.lab.state = LAB_STATE.PUT_RESOURCE
             return
         }
@@ -1169,7 +1224,7 @@ class LabExtension extends StructureLab {
      * lab 阶段：移出产物
      */
     private labPutResource(): void {
-        console.log(`[${this.room.name} lab] - 移出产物`)
+        // console.log(`[${this.room.name} lab] - 移出产物`)
 
         // 检查是否已经有正在执行的移出任务嘛
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)) return
@@ -1247,6 +1302,7 @@ class LabExtension extends StructureLab {
      * @returns 是否成功添加了物流任务
      */
     private addTransferTask(taskType: string): boolean {
+        const labMemory = this.room.memory.lab
         // 底物移入任务
         if (taskType == ROOM_TRANSFER_TASK.LAB_IN) {
             // 获取目标产物
@@ -1266,13 +1322,20 @@ class LabExtension extends StructureLab {
         }
         // 产物移出任务
         else if (taskType == ROOM_TRANSFER_TASK.LAB_OUT) {
-            // 获取目标产物
-            const targetResource = labTarget[this.room.memory.lab.targetIndex].target
-            
+            // 获取还有资源的 lab, 将其内容物类型作为任务的资源类型
+            let targetLab: StructureLab
+            for (const outLabId in labMemory.outLab) {
+                if (labMemory.outLab[outLabId] > 0) {
+                    targetLab = Game.getObjectById(outLabId)
+                    break
+                }
+            }
+            if (!targetLab) return false
+
             // 发布任务
             return (this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.LAB_OUT,
-                resourceType: targetResource
+                resourceType: targetLab.mineralType
             }) == -1) ? false : true
         }
         else return false
