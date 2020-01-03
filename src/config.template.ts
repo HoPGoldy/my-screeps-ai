@@ -26,4 +26,7 @@ export const creepConfigs: ICreepConfigs = {
     // WIN7RemoteUpgrader: role.remoteUpgrader('Spawn1', 'W1N8', 'ab9e0774d1c107c'), // 升级者
 }
 
-export const observeRooms: string[] = ['E10N46','E10N45','E10N44','E10N43']
+/**
+ * 在该列表中添加房间名称来指定 observer 要监控的房间
+ */
+export const observeRooms: string[] = [ ]

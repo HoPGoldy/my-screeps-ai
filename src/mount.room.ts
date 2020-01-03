@@ -610,10 +610,10 @@ class RoomExtension extends Room {
      */
     private resumeProcessPower(): string {
         if (!this.memory.powerSpawn) {
-            return `[${this.name} PowerSpawn] 恢复process失败 请确认是否初始化PowerSpawn`
+            return `[${this.name} PowerSpawn] 恢复 process 失败 请确认是否初始化 PowerSpawn`
         }
         this.memory.powerSpawn.process = true
-        return `[${this.name} PowerSpawn] 已恢复process power`
+        return `[${this.name} PowerSpawn] 已恢复 process power`
     }
 
     /**
@@ -622,11 +622,11 @@ class RoomExtension extends Room {
     private initObserver(): string {
         this.memory.observer = {
             checked: {
-                room:null,
-                isChecked:false,
+                room: null,
+                isChecked: false,
             },
-            listNum:0,
-            pause:false
+            listNum: 0,
+            pause: false
         }
         return `[${this.name} Observer] 已初始化`
     }
@@ -636,10 +636,10 @@ class RoomExtension extends Room {
      */
     private pauseObserver(): string {
         if (!this.memory.observer) {
-            return `[${this.name} Observer] 暂停observer失败 请确认是否初始化Observer`
+            return `[${this.name} Observer] 暂停 observer 失败 请确认是否初始化 Observer`
         }
         this.memory.observer.pause = true
-        return `[${this.name} Observer] 已暂停observer`
+        return `[${this.name} Observer] 已暂停 observer`
     }
 
     /**
@@ -647,10 +647,10 @@ class RoomExtension extends Room {
      */
     private resumeObserver(): string {
         if(!this.memory.observer) {
-            return `[${this.name} Observer] 恢复observer失败 请确认是否初始化Observer`
+            return `[${this.name} Observer] 恢复 observer 失败 请确认是否初始化 Observer`
         }
         this.memory.observer.pause = false
-        return `[${this.name} Observer] 已恢复observer`
+        return `[${this.name} Observer] 已恢复 observer`
     }
 
     /**
@@ -671,27 +671,27 @@ class RoomExtension extends Room {
     /**
      * 用户操作：暂停 PowerSpawn 工作
      */
-    public ppause(): string { return this.pauseProceesPower()}
+    public ppause(): string { return this.pauseProceesPower() }
 
     /**
      * 用户操作：重启 PowerSpawn 工作
      */
-    public presume(): string { return this.resumeProcessPower()}
+    public presume(): string { return this.resumeProcessPower() }
 
     /**
      * 用户操作：初始化 Observer 工作
      */
-    public oinit(): string { return this.initObserver()}
+    public oinit(): string { return this.initObserver() }
 
     /**
      * 用户操作：暂停 Observer 工作
      */
-    public opause(): string { return this.pauseObserver()}
+    public opause(): string { return this.pauseObserver() }
 
     /**
      * 用户操作：重启 Observer 工作
      */
-    public oresume(): string { return this.resumeObserver()}
+    public oresume(): string { return this.resumeObserver() }
     /*
      * 启动 boost 进程
      * 该方法主要由 boost creep 在 isNeed 阶段调用，当然也可以手动调用

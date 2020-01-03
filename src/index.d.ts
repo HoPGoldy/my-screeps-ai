@@ -208,23 +208,23 @@ interface Room {
  * 房间内存
  */
 interface RoomMemory {
-    //powerSpawn 内存
+    // powerSpawn 内存
     powerSpawn: {
-        //是否 process power
+        //是否开始处理 power
         process: boolean
     }
-    //observer 内存
+    // observer 内存
     observer: {
-        //查房记录
+        // 查房记录
         checked: {
-            //查房的房间名
+            // 查房的房间名
             room: string
-            //是否已经查房
+            // 是否已经查房
             isChecked: boolean
         }
-        //查房的索引
+        // 查房的索引
         listNum: number
-        //暂停
+        // 是否暂停
         pause: boolean
     }
     // 中央集群的资源转移任务队列

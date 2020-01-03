@@ -1,5 +1,5 @@
 import { creepConfigs, observeRooms } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, boostConfigs,powerSettings } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, boostConfigs, powerSettings } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
@@ -1348,7 +1348,7 @@ class NukerExtension extends StructureNuker {
         if (Game.time % 30) return
 
         // G 矿不满并且 terminal 中 G 矿大于 1k 则开始填充 G
-        if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal.store[RESOURCE_GHODIUM] >= 1000) {
+        if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal && this.room.terminal.store[RESOURCE_GHODIUM] >= 1000) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
@@ -1358,7 +1358,7 @@ class NukerExtension extends StructureNuker {
             return
         }
         // 能量不满并且 storage 能量大于 300k 则开始填充能量
-        if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
+        if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
@@ -1371,10 +1371,11 @@ class NukerExtension extends StructureNuker {
 }
 
 class PowerSpawnExtension extends StructurePowerSpawn {
-    public work():void{
+    public work(): void {
         if(!this.room.memory.powerSpawn) return
         if(!this.room.memory.powerSpawn.process) return
-        //powerSpawn内power不足
+
+        //powerSpawn 内 power 不足
         if(this.store[RESOURCE_POWER] < 10 && this.room.storage.store.getUsedCapacity(RESOURCE_POWER) > 0)
         {
             this.room.addRoomTransferTask({
@@ -1383,7 +1384,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 resourceType: RESOURCE_POWER
             })
         }
-        //powerSpawn内energy不足且storage内energy充足
+        //powerSpawn 内 energy 不足且 storage 内 energy 充足
         if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit)
         {
             this.room.addRoomTransferTask({
@@ -1392,74 +1393,75 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 resourceType: RESOURCE_ENERGY
             })
         }
-        //process power
+        // 处理 power
         if(this.store[RESOURCE_ENERGY] > 50 && this.store[RESOURCE_POWER] > 0) this.processPower()
     }
 }
 
 class ObserverExtension extends StructureObserver {
-    public work():void{
-        if(!this.room.memory.observer) return
-        if(this.room.memory.observer.pause) return
-        if(this.room.memory.observer.checked.isChecked)
-        {
-            this.searchRoom()
-        }
-        else
-        {
-            this.checkRoom()
-        }
-        return
+    public work(): void {
+        if (!this.room.memory.observer) return
+        if (this.room.memory.observer.pause) return
+
+        // 如果房间没有视野就获取视野，否则就执行搜索
+        if (this.room.memory.observer.checked.isChecked) this.searchRoom()
+        else this.checkRoom()
     }
-    //对当前有视野的room进行检查
-   private searchRoom():void {
+
+    /**
+     * 在房间内执行搜索
+     * 该方法会搜索房间中的 deposits 和 power bank，一旦发现自动插旗
+     */
+    private searchRoom(): void {
+        // 从内存中获取要搜索的房间
         const room = Game.rooms[this.room.memory.observer.checked.room]
+
         const deposits = room.find(FIND_DEPOSITS)
-        const pbs = room.find(FIND_STRUCTURES,{filter:(structure)=>{
-            return (structure.structureType == STRUCTURE_POWER_BANK);
-        }})
-        //查询deposit
-        if(deposits)
-        {
-            for(const deposit of deposits)
-            {
+        // 查询deposit
+        if (deposits) {
+            for (const deposit of deposits) {
                 const flags = deposit.pos.findInRange(FIND_FLAGS,1)
-                if(flags.length == 0)
-                {
-                    room.createFlag(deposit.pos)//TODO: name
+                if (flags.length == 0) {
+                    room.createFlag(deposit.pos)
                     console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新deposit,已插旗`)
                 }
             }
         }
-       //查询pb
-        if(pbs)
-        {
-            for(const powerBank of pbs)
-            {
+
+        const pbs = room.find(FIND_STRUCTURES,{
+            filter:structure => structure.structureType == STRUCTURE_POWER_BANK
+        })
+        // 查询pb
+        if (pbs) {
+            for (const powerBank of pbs) {
                 const flags = powerBank.pos.findInRange(FIND_FLAGS,1)
-                if(flags.length == 0)
-                {
+                if (flags.length == 0) {
                     room.createFlag(powerBank.pos)
                     console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新pb,已插旗`)
                 }
             }
         }
+
+        // 确认该房间已被搜索
         this.room.memory.observer.checked.isChecked = false
    }
-   //对当前memory里所存room进行获取视野操作
-    private checkRoom():void {
-        if(Game.time % 5) return
+
+    /**
+     * 获取指定房间视野
+     */
+    private checkRoom(): void {
+        if (Game.time % 5) return
+
+        // 执行视野获取
         this.observeRoom(observeRooms[this.room.memory.observer.listNum])
+
+        // 标志该房间视野已经获取，可以进行检查
         this.room.memory.observer.checked.isChecked = true
+        // 保存检查的名称
         this.room.memory.observer.checked.room = observeRooms[this.room.memory.observer.listNum]
-        //查询下一个房间
-        if(this.room.memory.observer.listNum < (observeRooms.length-1))
-        {
-            this.room.memory.observer.listNum++
-        }
-        else
-        {
-            this.room.memory.observer.listNum = 0
-        }   
+
+        // 查询下一个房间
+        this.room.memory.observer.listNum = this.room.memory.observer.listNum < (observeRooms.length - 1) ?
+            this.room.memory.observer.listNum + 1 : 0
     }
 }

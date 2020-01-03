@@ -158,7 +158,7 @@ const deathPrepare = function(creep: Creep, sourceId: string): void {
         for (const resourceType in creep.store) {
             let target: StructureStorage | StructureTerminal
             // 不是能量就放到 terminal 里
-            if (resourceType != RESOURCE_ENERGY && resourceType!=RESOURCE_POWER && creep.room.terminal) {
+            if (resourceType != RESOURCE_ENERGY && resourceType != RESOURCE_POWER && creep.room.terminal) {
                 target = creep.room.terminal
             }
             // 否则就放到 storage 或者玩家指定的地方
@@ -482,6 +482,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             return hasNotEvacuated ? false : true
         }
     },
+
     /**
      * powerspawn 填充任务
      * 由 powerSpawn 在 powerSpawn.work 中发布
@@ -529,12 +530,12 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             if (transferResult === ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
             else if (transferResult == OK) {
                 creep.room.handleRoomTransferTask()
-                // console.log(`[${creep.name}] 完成 nuker 填充任务`)
             }
             else creep.say(`错误! ${transferResult}`)
         },
         switch: (creep, task: IFillPowerSpawn) => creep.store[task.resourceType] > 0
     },
+    
     /**
      * boost 资源移入任务
      * 在 boost 任务的 getResource 阶段发布
