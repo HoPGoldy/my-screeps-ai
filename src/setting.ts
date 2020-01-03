@@ -353,6 +353,13 @@ export const FACTORY_LOCK_AMOUNT = {
 }
 
 /**
+ * powerProcess 的设置
+ * 当当前房间 storage 内存量低于limit时自动停止 process
+ */
+export const powerSettings = {
+    processEnergyLimit: 500000,
+}
+/**
  * boost 强化的阶段
  * 仅在房间的 LAB_STATE 为 boost 时有效
  */
@@ -402,7 +409,6 @@ export const boostConfigs = {
         [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25
     }, 
 }
-
 /**
  * 默认的旗帜名称
  */

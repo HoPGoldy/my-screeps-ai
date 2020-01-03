@@ -208,6 +208,25 @@ interface Room {
  * 房间内存
  */
 interface RoomMemory {
+    //powerSpawn 内存
+    powerSpawn: {
+        //是否 process power
+        process: boolean
+    }
+    //observer 内存
+    observer: {
+        //查房记录
+        checked: {
+            //查房的房间名
+            room: string
+            //是否已经查房
+            isChecked: boolean
+        }
+        //查房的索引
+        listNum: number
+        //暂停
+        pause: boolean
+    }
     // 中央集群的资源转移任务队列
     centerTransferTasks: ITransferTask[]
     // 房间物流任务队列
@@ -309,7 +328,7 @@ interface RoomMemory {
 }
 
 // 所有房间物流任务
-type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear
+type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear | IFillPowerSpawn
 
 // 房间物流任务 - 填充拓展
 interface IFillExtension {
@@ -324,6 +343,13 @@ interface IFillTower {
 
 // 房间物流任务 - 填充核弹
 interface IFillNuker {
+    type: string
+    id: string
+    resourceType: ResourceConstant
+}
+
+// 房间物流任务 - 填充PowerSpawn
+interface IFillPowerSpawn {
     type: string
     id: string
     resourceType: ResourceConstant
