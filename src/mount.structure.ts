@@ -176,7 +176,6 @@ class SpawnExtension extends StructureSpawn {
         // 检查是否生成成功
         if (spawnResult == OK) {
             // console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
-            delete this.room.memory.allStructureFillEnergy
             return <OK>0
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
@@ -193,23 +192,16 @@ class SpawnExtension extends StructureSpawn {
      * 获取身体部件数组
      * 
      * @param bodyType creepConfig 中的 bodyType
-     * @param force 是否强制生成，为 true 将不再进行检查而是直接返回对应等级的身体部件
      */
-    private getBodys(bodyType: string, force: boolean = false): BodyPartConstant[] {
+    private getBodys(bodyType: string): BodyPartConstant[] {
         const bodyConfig: BodyConfig = bodyConfigs[bodyType]
 
         const targetLevel = Object.keys(bodyConfig).reverse().find(level => {
-            // 强制生成的话只检查房间能量上限
-            if (force) {
-                return Number(level) <= this.room.energyCapacityAvailable
-            }
-            // 不强制生成的话（默认）先通过等级粗略判断，再加上 dryRun 精确验证
-            else {
-                const availableEnergyCheck = (Number(level) <= this.room.energyAvailable)
-                const dryCheck = (this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
+            // 先通过等级粗略判断，再加上 dryRun 精确验证
+            const availableEnergyCheck = (Number(level) <= this.room.energyAvailable)
+            const dryCheck = (this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
 
-                return availableEnergyCheck && dryCheck
-            }
+            return availableEnergyCheck && dryCheck
         })
         if (!targetLevel) return [ ]
 
