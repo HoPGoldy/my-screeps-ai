@@ -1,5 +1,5 @@
 import { creepConfigs, observeRooms } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, boostConfigs, powerSettings } from './setting'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, powerSettings } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 import { createHelp } from './utils'
 
@@ -986,9 +986,8 @@ class LabExtension extends StructureLab {
     private boostGetResource(): void {
         // console.log(`[${this.room.name} boost] 获取 boost 材料`)
         
-        // 获取强化配置项
+        // 获取 boost 任务
         const boostTask = this.room.memory.boost
-        const boostConfig = boostConfigs[boostTask.type]
 
         // 遍历检查资源是否到位
         let allResourceReady = true
@@ -997,7 +996,7 @@ class LabExtension extends StructureLab {
             if (!lab) continue
 
             // 只要有 lab 里的资源没填好就算没有就绪
-            if (lab.store[resourceType] < (boostConfig[resourceType] * LAB_BOOST_MINERAL)) allResourceReady = false
+            if (lab.store[resourceType] < (boostTask.config[resourceType] * LAB_BOOST_MINERAL)) allResourceReady = false
         }
 
         // 都就位了就进入下一个阶段
@@ -1013,7 +1012,7 @@ class LabExtension extends StructureLab {
                 resources.push({
                     type: resourceType,
                     labId: boostTask.lab[resourceType],
-                    number: boostConfig[resourceType] * LAB_BOOST_MINERAL
+                    number: boostTask.config[resourceType] * LAB_BOOST_MINERAL
                 })
             }
 
@@ -1032,14 +1031,13 @@ class LabExtension extends StructureLab {
         // console.log(`[${this.room.name} boost] 获取强化能量`)
         
         const boostTask = this.room.memory.boost
-        const boostConfig = boostConfigs[boostTask.type]
 
         // 遍历所有执行强化的 lab
         for (const resourceType in boostTask.lab) {
             const lab: StructureLab = Game.getObjectById(boostTask.lab[resourceType])
 
             // 获取强化该部件需要的最大能量
-            const needEnergy = boostConfig[resourceType] * LAB_BOOST_ENERGY
+            const needEnergy = boostTask.config[resourceType] * LAB_BOOST_ENERGY
 
             // 有 lab 能量不达标的话就发布能量填充任务
             if (lab && lab.store[RESOURCE_ENERGY] < needEnergy) {

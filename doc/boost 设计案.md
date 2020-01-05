@@ -1,4 +1,4 @@
-# Boost 设计案（设计阶段）
+# Boost 设计案（已实装）
 
 本设计案建立在 lab 设计案和房间物流设计案已实装的基础上。
 
@@ -150,6 +150,16 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
         [RESOURCE_CATALYZED_LEMERGIUM_ACID]: '5d9bdd4b1acf0f000174aa4c',
         [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: '5d9bdd4b1acf0f000174aa4e'
     }
+    // transfer 会根据这个配置项搬运材料进 lab
+    config: {
+        // 当前强化任务需要的每个材料
+        [BOOST_TYPE.DISMANTLE]: {
+            // 其中的值代表这个材料需要的数量（指强化多少个 bodyPart）
+            ['XZH20']: 12,
+            // ...
+        },
+        // ...
+    }
 }
 ```
 
@@ -161,16 +171,6 @@ const BOOST_TYPE = {
     DISMANTLE: 'dismantle',
     // 范围攻击 12T 5RA 10M 23H
     RANGE_ATTACK: 'rangeAttack', 
-}
-
-const boostConfig = {
-    // 每个 BOOST_TYPE 都会对应一个配置项
-    [BOOST_TYPE.DISMANTLE]: {
-        // 其中的键值对代表这需要什么材料以及最大需要的数量
-        ['XZH20']: 12,
-        // ...
-    },
-    // ...
 }
 ```
 

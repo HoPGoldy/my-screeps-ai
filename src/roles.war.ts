@@ -46,7 +46,9 @@ export default {
      * @param creepsName 要治疗的 creep 名称数组
      */
     boostDoctor: (spawnName: string, creepsName: string): ICreepConfig => ({
-        ...boostPrepare(BOOST_TYPE.HEAL),
+        ...boostPrepare(BOOST_TYPE.HEAL, {
+            [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25
+        }),
         target: creep => creep.healTo(Game.creeps[creepsName]),
         spawn: spawnName,
         bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
@@ -100,7 +102,11 @@ export default {
             creep.moveTo(Game.flags[standByFlagName])
         },
         ...battleBase(flagName),
-        ...boostPrepare(BOOST_TYPE.DISMANTLE),
+        ...boostPrepare(BOOST_TYPE.DISMANTLE, {
+            [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
+            [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: 28,
+            [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10, 
+        }),
         target: creep => creep.dismantleFlag(flagName),
         spawn: spawnName,
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
@@ -109,9 +115,10 @@ export default {
     /**
      * 强化 - 重型作战单位
      * 本角色仅能在 RCL >= 7 时生成
+     * 扛塔数量为 0 时依旧会携带 3 个强化 HEAL (144/T 的回复)，但是不会有 TOUGH
      * 
      * @param spawnName 出生点名称
-     * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能量越强，默认为 6 (1~6)
+     * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能量越强，默认为 6 (0~6)
      * @param flagName 要攻击的旗帜名称
      */
     apocalypse: (spawnName: string, bearTowerNum: number = 6, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => {
@@ -119,6 +126,7 @@ export default {
         if (bearTowerNum < 0 || bearTowerNum > 6) bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
         const bodyMap = {
+            0: { [TOUGH]: 0, [RANGED_ATTACK]: 15, [MOVE]: 6, [HEAL]: 3 },
             1: { [TOUGH]: 2, [RANGED_ATTACK]: 15, [MOVE]: 6, [HEAL]: 5 },
             2: { [TOUGH]: 4, [RANGED_ATTACK]: 20, [MOVE]: 9, [HEAL]: 9 },
             3: { [TOUGH]: 6, [RANGED_ATTACK]: 21, [MOVE]: 10, [HEAL]: 13 },
@@ -126,13 +134,20 @@ export default {
             5: { [TOUGH]: 10, [RANGED_ATTACK]: 9, [MOVE]: 10, [HEAL]: 21 },
             6: { [TOUGH]: 12, [RANGED_ATTACK]: 5, [MOVE]: 10, [HEAL]: 23 }
         }
+        const bodyConfig: BodySet = bodyMap[bearTowerNum]
+
         // 组装 CreepConfig
         return {
             ...battleBase(flagName),
-            ...boostPrepare(BOOST_TYPE.RANGED_ATTACK),
+            ...boostPrepare(BOOST_TYPE.RANGED_ATTACK, {
+                [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: bodyConfig[TOUGH], 
+                [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: bodyConfig[RANGED_ATTACK], 
+                [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: bodyConfig[MOVE], 
+                [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: bodyConfig[HEAL]
+            }),
             target: creep => creep.rangedAttackFlag(flagName),
             spawn: spawnName,
-            bodys: calcBodyPart(bodyMap[bearTowerNum])
+            bodys: calcBodyPart(bodyConfig)
         }
     },
 }
@@ -143,7 +158,7 @@ export default {
  * 
  * @param boostType BOOST.TYPE 类型之一
  */
-const boostPrepare = (boostType: string) => ({
+const boostPrepare = (boostType: string, boostConfig: IBoostConfig) => ({
     /**
      * 自主调起强化进程并等待 lab 准备就绪
      */
@@ -159,7 +174,7 @@ const boostPrepare = (boostType: string) => ({
         // 没有强化任务就新建任务
         if (!room.memory.boost) {
             // 启动强化任务
-            const startResult = room.boost(boostType)
+            const startResult = room.boost(boostType, boostConfig)
             // 启动成功就移除之前的排队标志位
             if (startResult == OK) {
                 console.log(`[${room.name} boost] 已发布任务，等待强化材料准备就绪`)

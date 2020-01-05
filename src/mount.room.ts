@@ -1,5 +1,5 @@
 import { createHelp } from './utils'
-import { boostConfigs, BOOST_STATE } from './setting'
+import { BOOST_STATE } from './setting'
 import { ROOM_TRANSFER_TASK } from './roles.advanced'
 
 // 挂载拓展到 Room 原型
@@ -702,7 +702,7 @@ class RoomExtension extends Room {
      * @returns ERR_INVALID_ARGS 错误的boostType
      * @returns ERR_NOT_ENOUGH_RESOURCES 强化旗帜附近的lab数量不足
      */
-    public boost(boostType: string): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES {
+    public boost(boostType: string, boostConfig: IBoostConfig): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES {
         // 检查是否存在 boost 任务
         if (this.memory.boost) return ERR_NAME_EXISTS
         
@@ -710,10 +710,6 @@ class RoomExtension extends Room {
         const boostFlagName = this.name + 'Boost'
         const boostFlag = Game.flags[boostFlagName]
         if (!boostFlag) return ERR_NOT_FOUND
-
-        // 获取强化配置项
-        const boostConfig = boostConfigs[boostType]
-        if (!boostConfig) return ERR_INVALID_ARGS
 
         // 获取执行强化的 lab
         const labs = boostFlag.pos.findInRange<StructureLab>(FIND_STRUCTURES, 1, {
@@ -727,7 +723,8 @@ class RoomExtension extends Room {
             state: BOOST_STATE.GET_RESOURCE,
             type: boostType,
             pos: [ boostFlag.pos.x, boostFlag.pos.y ],
-            lab: {}
+            lab: {},
+            config: boostConfig
         }
 
         // 填充需要执行的 lab
@@ -801,10 +798,14 @@ class RoomExtension extends Room {
     public bshow(): string {
         if (!this.memory.boost) return `[${this.name} boost] 未找到任务`
 
-        let report = `[${this.name} boost] 正在执行强化任务: ${this.memory.boost.type} | 当前阶段: ${this.memory.boost.state}`
-        if (this.memory.hasMoreBoost) report + `\n  ┖─ 当前房间还有后续强化任务`
+        // 主体信息
+        let reports = [ `[${this.name} boost] 正在执行强化任务: ${this.memory.boost.type} | 当前阶段: ${this.memory.boost.state}` ]
+        // 后续几行的信息，包括这里的资源类型和对应的填充数量
+        reports.push(...Object.keys(this.memory.boost.config).map(res => `${res} > ${this.memory.boost.config[res] * LAB_BOOST_MINERAL}`))
+        // 以及这里的是否有后续任务
+        if (this.memory.hasMoreBoost) reports.push(`当前房间还有后续强化任务`)
 
-        return report
+        return reports.join('\n  ─ ')
     }
 
     /**

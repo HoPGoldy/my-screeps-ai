@@ -388,28 +388,6 @@ export const BOOST_TYPE = {
 }
 
 /**
- * boost 强化配置项 (boostConfig)
- * 描述了对应 BOOST_TYPE 所需的材料及数量
- * 数量是指要强化多少个身体部件，在执行强化进程时会将其乘以 LAB_BOOST_MINERAL(30)
- * 应与上面的 BOOST_TYPE 保持对应关系
- */
-export const boostConfigs = {
-    [BOOST_TYPE.RANGED_ATTACK]: {
-        [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
-        [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: 25, 
-        [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10, 
-        [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 23
-    }, 
-    [BOOST_TYPE.DISMANTLE]: {
-        [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
-        [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: 28,
-        [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10, 
-    }, 
-    [BOOST_TYPE.HEAL]: {
-        [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25
-    }, 
-}
-/**
  * 默认的旗帜名称
  */
 export const DEFAULT_FLAG_NAME = {

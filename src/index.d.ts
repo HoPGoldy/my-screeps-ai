@@ -200,7 +200,7 @@ interface Room {
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
 
     // boost api
-    boost(boostType: string): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
+    boost(boostType: string, boostConfig: IBoostConfig): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
     boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
 }
 
@@ -318,7 +318,9 @@ interface RoomMemory {
         // 要进行强化的材料以及执行强化的 lab
         lab: {
             [resourceType: string]: string
-        }
+        },
+        // 进行强化的具体配置项
+        config: IBoostConfig
     }
     /**
      * 是否还有 boost 任务在排队
@@ -597,4 +599,12 @@ interface ITerminalListenerTask {
 // 反应底物表接口
 interface IReactionSource {
     [targetResourceName: string]: string[]
+}
+
+/**
+ * 强化配置项
+ * 详情 doc/boost 强化案
+ */
+interface IBoostConfig {
+    [resourceType: string]: number
 }
