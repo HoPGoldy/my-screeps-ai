@@ -230,24 +230,5 @@ export default {
         switch: creep => creep.updateState('📌 修复'),
         spawn: spawnName,
         bodyType: 'smallWorker'
-    }),
-
-    /**
-     * tower 填充者
-     * 从指定结构中获取能量 > 将能量填充到 tower 中
-     * 
-     * @param spawnName 出生点名称
-     * @param sourceId 要挖的矿 id
-     */
-    towerTransfer: (spawnName: string, sourceId: string): ICreepConfig => ({
-        source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
-        target: creep => {
-            if (creep.fillTower()) {}
-            // 没事干就去修墙
-            else if (creep.fillDefenseStructure()) {}
-        },
-        switch: creep => creep.updateState('🍚 填塔'),
-        spawn: spawnName,
-        bodyType: 'smallWorker'
     })
 }

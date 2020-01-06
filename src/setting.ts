@@ -13,7 +13,7 @@ import { colorful } from './utils'
 export const bodyConfigs: IBodyConfigs = {
     /**
      * 工作单位
-     * 诸如 harvester、builder、upgrader 之类的
+     * 诸如 harvester、builder 之类的
      */
     worker: {
         300: [ WORK, CARRY, MOVE ], 
@@ -26,6 +26,10 @@ export const bodyConfigs: IBodyConfigs = {
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
     }, 
 
+    /**
+     * 升级单位
+     * 最大的身体部件只包含 12 个 WORK
+     */
     upgrader: {
         300: [ WORK, CARRY, MOVE ], 
         550: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
@@ -35,21 +39,6 @@ export const bodyConfigs: IBodyConfigs = {
         2300: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
         5600: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
-    }, 
-
-    /**
-     * 纯粹的工作单位
-     * 只包含 WORK 和少量的 MOVE
-     */
-    pureWork: {
-        300: [ WORK, WORK, MOVE ], 
-        550: [ WORK, WORK, MOVE, WORK, MOVE ], 
-        800: [ WORK, WORK, MOVE, WORK, WORK, MOVE ], 
-        1300: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, MOVE ], 
-        1800: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ], 
-        2300: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, MOVE ], 
-        5600: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ], 
-        12900: [ WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE, WORK, WORK, MOVE ]
     }, 
     
     /**
@@ -372,6 +361,27 @@ export const BOOST_STATE = {
     WAIT_BOOST: 'waitBoost', 
     // 清除资源，在强化完成后打扫 lab
     CLEAR: 'boostClear'
+}
+
+/**
+ * 此处定义了所有的房间物流任务类型
+ * 每个房间物流的任务的 type 属性都必须是下列定义之一
+ */
+export const ROOM_TRANSFER_TASK = {
+    // 基础运维
+    FILL_EXTENSION: 'fillExtension',
+    FILL_TOWER: 'fillTower',
+    // nuker 填充
+    FILL_NUKER: 'fillNuker',
+    // lab 物流
+    LAB_IN: 'labIn',
+    LAB_OUT: 'labOut',
+    LAB_GET_ENERGY: 'labGetEnergy',
+    FILL_POWERSPAWN: 'fillPowerSpawn',
+    // boost 物流
+    BOOST_GET_RESOURCE: 'boostGetResource',
+    BOOST_GET_ENERGY: 'boostGetEnergy',
+    BOOST_CLEAR: 'boostClear'
 }
 
 /**

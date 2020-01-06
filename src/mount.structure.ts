@@ -1,6 +1,5 @@
 import { creepConfigs, observeRooms } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, powerSettings } from './setting'
-import { ROOM_TRANSFER_TASK } from './roles.advanced'
+import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, powerSettings, ROOM_TRANSFER_TASK } from './setting'
 import { createHelp } from './utils'
 
 // 挂载拓展到建筑原型

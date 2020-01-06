@@ -1,6 +1,5 @@
 import { createHelp } from './utils'
-import { BOOST_STATE } from './setting'
-import { ROOM_TRANSFER_TASK } from './roles.advanced'
+import { BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
 
 // 挂载拓展到 Room 原型
 export default function () {
