@@ -208,11 +208,6 @@ interface Room {
  * 房间内存
  */
 interface RoomMemory {
-    // powerSpawn 内存
-    powerSpawn: {
-        //是否开始处理 power
-        process: boolean
-    }
     // observer 内存
     observer: {
         // 查房记录
@@ -324,6 +319,12 @@ interface RoomMemory {
      * 如果为 true 的话则 lab 集群会一直停留在 GetTarget 阶段
      */
     hasMoreBoost: boolean
+
+    // powerSpawn 内存
+    powerSpawn: {
+        // 是否暂停处理
+        pause?: boolean
+    }
 }
 
 // 所有房间物流任务
@@ -347,7 +348,7 @@ interface IFillNuker {
     resourceType: ResourceConstant
 }
 
-// 房间物流任务 - 填充PowerSpawn
+// 房间物流任务 - 填充 PowerSpawn
 interface IFillPowerSpawn {
     type: string
     id: string
@@ -485,8 +486,6 @@ interface ICreepConfig {
     spawn: string
     // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键，该属性和 bodys 必须指定一个
     bodyType?: string
-    // 是否强制生成，若设置为 true 则不会根据当前房间能量自动调整身体部件
-    bodyForce?: boolean
     // 强制指定身体部件，如果指定的话将会忽略 bodyType
     bodys?: BodyPartConstant[]
 }

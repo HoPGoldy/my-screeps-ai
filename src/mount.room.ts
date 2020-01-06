@@ -593,15 +593,12 @@ class RoomExtension extends Room {
         return `[${this.name} lab] 已恢复工作`
     }
 
-
     /**
      * 暂停 PowerSpawn 工作
      */
     private pauseProceesPower(): string {
-        if (!this.memory.powerSpawn) {
-            return `[${this.name} PowerSpawn] 暂停process失败 请确认是否初始化PowerSpawn`
-        }
-        this.memory.powerSpawn.process = false
+        if (!this.memory.powerSpawn) this.memory.powerSpawn = { }
+        this.memory.powerSpawn.pause = true
         return `[${this.name} PowerSpawn] 已暂停process power`
     }
 
@@ -609,10 +606,8 @@ class RoomExtension extends Room {
      * 重启 PowerSpawn 工作
      */
     private resumeProcessPower(): string {
-        if (!this.memory.powerSpawn) {
-            return `[${this.name} PowerSpawn] 恢复 process 失败 请确认是否初始化 PowerSpawn`
-        }
-        this.memory.powerSpawn.process = true
+        if (!this.memory.powerSpawn) this.memory.powerSpawn = { }
+        delete this.memory.powerSpawn.pause
         return `[${this.name} PowerSpawn] 已恢复 process power`
     }
 

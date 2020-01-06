@@ -493,14 +493,14 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 获取资源存储建筑
             let sourceStructure: StructureStorage | StructureTerminal
             if (task.resourceType == RESOURCE_ENERGY) sourceStructure = sourceId ? Game.getObjectById(sourceId) : creep.room.storage
-            else sourceStructure = creep.room.storage
+            else sourceStructure = creep.room.terminal
             // 获取 powerspawn
             const powerspawn: StructurePowerSpawn = Game.getObjectById(task.id)
 
             // 兜底
             if (!sourceStructure || !powerspawn) {
                 creep.room.deleteCurrentRoomTransferTask()
-                return console.log(`[${creep.name}] powerSpawn 填充任务，未找到 Storage 或者 powerSpawn`)
+                return console.log(`[${creep.name}] powerSpawn 填充任务，未找到 storage/terminal 或者 powerSpawn`)
             }
 
             // 获取应拿取的数量
@@ -520,7 +520,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             if (getResult == ERR_NOT_IN_RANGE) creep.moveTo(sourceStructure, { reusePath: 20 })
             else if (getResult != OK) console.log(`[${creep.name}] powerSpawn 填充任务，withdraw`, getResult)
         },
-        target: (creep, task: IFillNuker) => {
+        target: (creep, task: IFillPowerSpawn) => {
             // 获取 powerSpawn 及兜底
             let target: StructurePowerSpawn = Game.getObjectById(task.id)
             if (!target) return creep.room.deleteCurrentRoomTransferTask()

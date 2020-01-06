@@ -1360,31 +1360,41 @@ class NukerExtension extends StructureNuker {
     }
 }
 
+/**
+ * PowerSpawn 拓展
+ * ps 的主要任务就是 processPower，一旦 ps 建立完成，他会每隔一段时间对自己存储进行检查
+ * 一旦发现自己资源不足，就会发起向自己运输资源的物流任务。
+ * 
+ * 可以随时通过房间上的指定方法来暂停/重启 ps，详见 Room.help()
+ */
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
-        if(!this.room.memory.powerSpawn) return
-        if(!this.room.memory.powerSpawn.process) return
+        if (Game.time % 10) return
+        if (!this.room.memory.powerSpawn) this.room.memory.powerSpawn = {}
+        if (!this.room.memory.powerSpawn.pause) return
 
-        //powerSpawn 内 power 不足
-        if(this.store[RESOURCE_POWER] < 10 && this.room.storage.store.getUsedCapacity(RESOURCE_POWER) > 0)
-        {
+        // powerSpawn 内 power 不足且 terminal 内 energy 充足
+        if (this.store[RESOURCE_POWER] < 1 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,
                 resourceType: RESOURCE_POWER
             })
+            return
         }
-        //powerSpawn 内 energy 不足且 storage 内 energy 充足
-        if(this.store[RESOURCE_ENERGY] < 300 && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit)
-        {
+
+        // powerSpawn 内 energy 不足且 storage 内 energy 充足
+        if (this.store[RESOURCE_ENERGY] < POWER_SPAWN_ENERGY_RATIO && this.room.storage && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,
                 resourceType: RESOURCE_ENERGY
             })
+            return
         }
+
         // 处理 power
-        if(this.store[RESOURCE_ENERGY] > 50 && this.store[RESOURCE_POWER] > 0) this.processPower()
+        this.processPower()
     }
 }
 
