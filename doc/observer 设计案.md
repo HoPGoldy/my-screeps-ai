@@ -1,4 +1,4 @@
-# Observer设计案
+# Observer 设计案（已实装）
 
 ## 目标
 
