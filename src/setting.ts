@@ -408,3 +408,7 @@ export const DEFAULT_FLAG_NAME = {
     // 待命
     STANDBY: 'standBy'
 }
+
+// 房间 storage 中的数量超过下面值时
+// 该房间就会将自己注册为能量共享的提供房间
+export const ENERGY_SHARE_LIMIT = 700000

@@ -1,6 +1,5 @@
 import { creepConfigs } from './config'
 import { resourcesHelp } from './setting'
-import { createHelp } from './utils'
 
 // 挂载全局拓展
 export default function () {

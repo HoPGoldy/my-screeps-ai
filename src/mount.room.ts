@@ -1,5 +1,5 @@
 import { createHelp } from './utils'
-import { BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
+import { ENERGY_SHARE_LIMIT, BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
 
 // 挂载拓展到 Room 原型
 export default function () {
@@ -478,6 +478,41 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 将本房间添加至资源来源表中
+     * 
+     * @param resourceType 添加到的资源类型
+     */
+    public shareAddSource(resourceType: ResourceConstant): boolean {
+        const alreadyRegister = Memory.resourceSourceMap[resourceType].find(name => name == this.name)
+
+        // 如果没有被添加的话就添加，有的话直接返回 false
+        if (!alreadyRegister) Memory.resourceSourceMap[resourceType].push(this.name)
+        else return false
+
+        return true
+    }
+
+    /**
+     * 从资源来源表中移除本房间房间
+     * 
+     * @param resourceType 从哪种资源类型中移除
+     */
+    public shareRemoveSource(resourceType: ResourceConstant): void {
+        let sourceIndex: number = null
+        // 获取该房间在资源来源表中的索引
+        Memory.resourceSourceMap[resourceType].find((name, index) => {
+            if (name == this.name) {
+                sourceIndex = index 
+                return true
+            }
+            else return false
+        })
+
+        // 找到了就移除该房间
+        if (sourceIndex) Memory.resourceSourceMap[resourceType].splice(sourceIndex, 1)
+    }
+
+    /**
      * 向本房间添加资源共享任务
      * 
      * @param targetRoom 资源发送到的房间
@@ -512,21 +547,29 @@ class RoomExtension extends Room {
         if (!SourceRoomsName) return null
 
         // 寻找合适的房间
-        let targetRoom: Room
+        let targetRoom: Room = null
         // console.log('来源表健全', SourceRoomsName)
         // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
         let roomWithEmpty = SourceRoomsName.map(roomName => {
             const room = Game.rooms[roomName]
             if (!room) return ''
             // console.log(room.memory.shareTask, room.name, this.name)
+
             // 如果该房间当前没有任务，就选择其为目标
-            if (!room.memory.shareTask && (room.name != this.name)) targetRoom = room
+            if (!room.memory.shareTask && (room.name != this.name)) {
+                // 如果请求共享的是能量，并且房间内 storage 低于上限的话，就从资源提供列表中移除该房间
+                if (resourceType === RESOURCE_ENERGY && room.storage && room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return ''
+
+                targetRoom = room
+            }
+            
+            
             return roomName
         })
 
         // 把上面筛选出来的空字符串元素去除
         Memory.resourceSourceMap[resourceType] = roomWithEmpty.filter(roomName => roomName)
-        return targetRoom ? targetRoom : null
+        return targetRoom
     }
 
     /**

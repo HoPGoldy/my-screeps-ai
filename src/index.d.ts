@@ -197,6 +197,8 @@ interface Room {
 
     // 资源共享 api
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
+    shareAddSource(resourceType: ResourceConstant): boolean
+    shareRemoveSource(resourceType: ResourceConstant): void
     shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean
 
     // boost api

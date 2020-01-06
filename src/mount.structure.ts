@@ -1,6 +1,21 @@
 import { creepConfigs, observeRooms } from './config'
-import { bodyConfigs, creepDefaultMemory, repairSetting, reactionSource, LAB_STATE, labTarget, FACTORY_LOCK_AMOUNT, BOOST_STATE, powerSettings, ROOM_TRANSFER_TASK } from './setting'
 import { createHelp } from './utils'
+import { 
+    // spawn 孵化相关
+    bodyConfigs, creepDefaultMemory, 
+    // tower 维修相关
+    repairSetting, 
+    // lab 相关
+    reactionSource, LAB_STATE, labTarget, BOOST_STATE, 
+    // storage 相关
+    ENERGY_SHARE_LIMIT,
+    // factory 相关
+    FACTORY_LOCK_AMOUNT, 
+    // powerSpawn 相关
+    powerSettings, 
+    // 房间物流任务
+    ROOM_TRANSFER_TASK 
+} from './setting'
 
 // 挂载拓展到建筑原型
 export default function () {
@@ -10,10 +25,11 @@ export default function () {
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
     _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
+    _.assign(StorageExtension.prototype, ExtractorExtension.prototype)
     _.assign(StructureLab.prototype, LabExtension.prototype)
     _.assign(StructureNuker.prototype, NukerExtension.prototype)
     _.assign(StructurePowerSpawn.prototype, PowerSpawnExtension.prototype)
-    _.assign(StructureObserver.prototype, ObserverExtension.prototype)
+    _.assign(StructureObserver.prototype, ObserverExtension.prototype)   
 }
 
 /**
@@ -878,7 +894,12 @@ class TerminalExtension extends StructureTerminal {
     }
 }
 
-// Extractor 拓展
+/**
+ * Extractor 拓展
+ * 
+ * 在刚刚建成时会在房间内存里写入 mineral 的 id
+ * 并在资源来源表里注册自己
+ */
 class ExtractorExtension extends StructureExtractor {
     public work(): void {
         if (this.room.memory.mineralId) return
@@ -893,8 +914,21 @@ class ExtractorExtension extends StructureExtractor {
         if (!Memory.resourceSourceMap[mineral.mineralType]) Memory.resourceSourceMap[mineral.mineralType] = []
         
         // 在资源来源表里进行注册
-        const alreadyRegister = Memory.resourceSourceMap[mineral.mineralType].find(roomName => roomName == this.room.name)
-        if (!alreadyRegister) Memory.resourceSourceMap[mineral.mineralType].push(this.room.name)
+        this.room.shareAddSource(mineral.mineralType)
+    }
+}
+
+/**
+ * Storage 拓展
+ * 
+ * storage 会对自己中的能量进行监控，如果大于指定量（ENERGY_SHARE_LIMIT）的话
+ * 就将自己注册到资源来源表中为其他房间提供能量
+ */
+class StorageExtension extends StructureStorage {
+    public work(): void {
+        if (Game.time % 1000) return
+
+        if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.shareAddSource(RESOURCE_ENERGY)
     }
 }
 
