@@ -1034,11 +1034,9 @@ class LabExtension extends StructureLab {
             // 有 lab 能量不达标的话就发布能量填充任务
             if (lab && lab.store[RESOURCE_ENERGY] < needEnergy) {
                 // 有 lab 能量不满的话就发布任务
-                if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_ENERGY)) {
-                    this.room.addRoomTransferTask({
-                        type: ROOM_TRANSFER_TASK.BOOST_GET_ENERGY
-                    })
-                }
+                this.room.addRoomTransferTask({
+                    type: ROOM_TRANSFER_TASK.BOOST_GET_ENERGY
+                })
                 return
             }
         }
@@ -1064,12 +1062,9 @@ class LabExtension extends StructureLab {
             // mineralType 不为空就说明还有资源没拿出来
             if (lab && lab.mineralType) {
                 // 发布任务
-                if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
-                    console.log(`[${this.room.name} boost] 开始回收材料`)
-                    this.room.addRoomTransferTask({
-                        type: ROOM_TRANSFER_TASK.BOOST_CLEAR
-                    })
-                }
+                this.room.addRoomTransferTask({
+                    type: ROOM_TRANSFER_TASK.BOOST_CLEAR
+                })
                 return
             }
         }
