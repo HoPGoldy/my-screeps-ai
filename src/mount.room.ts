@@ -483,6 +483,8 @@ class RoomExtension extends Room {
      * @param resourceType 添加到的资源类型
      */
     public shareAddSource(resourceType: ResourceConstant): boolean {
+        if (!(resourceType in Memory.resourceSourceMap)) Memory.resourceSourceMap[resourceType] = []
+        
         const alreadyRegister = Memory.resourceSourceMap[resourceType].find(name => name == this.name)
 
         // 如果没有被添加的话就添加，有的话直接返回 false
@@ -498,6 +500,9 @@ class RoomExtension extends Room {
      * @param resourceType 从哪种资源类型中移除
      */
     public shareRemoveSource(resourceType: ResourceConstant): void {
+        // 没有该资源就直接停止
+        if (!(resourceType in Memory.resourceSourceMap)) return 
+
         let sourceIndex: number = null
         // 获取该房间在资源来源表中的索引
         Memory.resourceSourceMap[resourceType].find((name, index) => {
@@ -562,7 +567,6 @@ class RoomExtension extends Room {
 
                 targetRoom = room
             }
-            
             
             return roomName
         })

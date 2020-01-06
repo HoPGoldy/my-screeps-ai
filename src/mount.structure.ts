@@ -25,7 +25,7 @@ export default function () {
     _.assign(StructureFactory.prototype, FactoryExtension.prototype)
     _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
     _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
-    _.assign(StorageExtension.prototype, ExtractorExtension.prototype)
+    _.assign(StructureStorage.prototype, StorageExtension.prototype)
     _.assign(StructureLab.prototype, LabExtension.prototype)
     _.assign(StructureNuker.prototype, NukerExtension.prototype)
     _.assign(StructurePowerSpawn.prototype, PowerSpawnExtension.prototype)
@@ -926,7 +926,7 @@ class ExtractorExtension extends StructureExtractor {
  */
 class StorageExtension extends StructureStorage {
     public work(): void {
-        if (Game.time % 1000) return
+        if (Game.time % 10000) return
 
         if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.shareAddSource(RESOURCE_ENERGY)
     }
@@ -1399,10 +1399,10 @@ class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
         if (Game.time % 10) return
         if (!this.room.memory.powerSpawn) this.room.memory.powerSpawn = {}
-        if (!this.room.memory.powerSpawn.pause) return
+        if (this.room.memory.powerSpawn.pause) return
 
         // powerSpawn 内 power 不足且 terminal 内 energy 充足
-        if (this.store[RESOURCE_POWER] < 1 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
+        if (this.store[RESOURCE_POWER] < 10 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,
@@ -1412,7 +1412,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
         }
 
         // powerSpawn 内 energy 不足且 storage 内 energy 充足
-        if (this.store[RESOURCE_ENERGY] < POWER_SPAWN_ENERGY_RATIO && this.room.storage && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit) {
+        if (this.store[RESOURCE_ENERGY] < 1000 && this.room.storage && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,

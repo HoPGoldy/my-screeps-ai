@@ -426,13 +426,6 @@ interface IRoomShareTask {
 }
 
 interface Memory {
-    //全局共享任务
-    roomShare: {
-        // 共享任务实际存放的列表
-        tasks: IShareTask[],
-        // 当前要处理的共享任务索引
-        taskIndex: number
-    }
     // 资源来源表
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
