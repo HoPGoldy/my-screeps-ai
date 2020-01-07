@@ -47,11 +47,13 @@ export default {
      */
     boostDoctor: (spawnName: string, creepsName: string): ICreepConfig => ({
         ...boostPrepare(BOOST_TYPE.HEAL, {
-            [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25
+            [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
+            [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25,
+            [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10,
         }),
         target: creep => creep.healTo(Game.creeps[creepsName]),
         spawn: spawnName,
-        bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
+        bodys: calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
     }),
 
     /**

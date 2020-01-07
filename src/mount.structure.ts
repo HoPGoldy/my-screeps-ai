@@ -1408,7 +1408,6 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 id: this.id,
                 resourceType: RESOURCE_POWER
             })
-            return
         }
 
         // powerSpawn 内 energy 不足且 storage 内 energy 充足
@@ -1418,7 +1417,6 @@ class PowerSpawnExtension extends StructurePowerSpawn {
                 id: this.id,
                 resourceType: RESOURCE_ENERGY
             })
-            return
         }
 
         // 处理 power
