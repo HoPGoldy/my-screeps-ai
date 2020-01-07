@@ -599,3 +599,55 @@ interface IReactionSource {
 interface IBoostConfig {
     [resourceType: string]: number
 }
+
+/**
+ * PowerCreep 内存拓展
+ */
+interface PowerCreepMemory {
+    // 接下来要检查哪个 power
+    powerIndex: number, 
+    // 当前要处理的工作
+    // 字段值均为 PWR_* 常量
+    // 在该字段不存在时将默认执行 PWR_GENERATE_OPS（如果 power 资源足够并且 ops 不足时）
+    task: PowerConstant,
+    // 工作的房间名，在第一次出生时由玩家指定，后面会根据该值自动出生到指定房间
+    workRoom: string
+}
+
+/**
+ * 每种 power 所对应的的任务配置项
+ * 
+ * @property {} needExecute 该 power 的检查方法
+ * @property {} run power 的具体工作内容
+ */
+interface IPowerTaskConfig {
+    /**
+     * 该 power 是否需要执行工作的检查方法
+     * 
+     * @returns 为 true 代表需要执行该 power 工作，为 false 将检查后续 power
+     */
+    needExecute: (creep: PowerCreep) => boolean
+    /**
+     * power 的资源获取逻辑
+     * 
+     * @returns OK 任务完成，将会执行下面的 target 方法
+     * @returns ERR_NOT_ENOUGH_RESOURCES 资源不足，将会强制切入 ops 生成任务
+     * @returns ERR_BUSY 任务未完成，保留工作状态，后续继续执行
+     */
+    source?: (creep: PowerCreep) => OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY
+    /**
+     * power 的具体工作逻辑
+     * 
+     * @returns OK 任务完成，将会继续检查后续 power
+     * @returns ERR_NOT_ENOUGH_RESOURCES 资源不足，将会执行上面的 source 方法，如果没有 source 的话就强制切入 ops 生成任务
+     * @returns ERR_BUSY 任务未完成，保留工作状态，后续继续执行
+     */
+    target: (creep: PowerCreep) => OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY
+}
+
+/**
+ * 所有 power 的任务配置列表
+ */
+interface IPowerTaskConfigs {
+    [powerType: string]: IPowerTaskConfig
+}

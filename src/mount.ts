@@ -1,4 +1,5 @@
 import mountCreep from './mount.creep'
+import mountPowerCreep from './mount.powerCreep'
 import mountRoom from './mount.room'
 import mountGlobal from './mount.global'
 import mountStructure from './mount.structure'
@@ -15,6 +16,7 @@ export default function (): void {
         mountGlobal()
         mountRoom()
         mountCreep()
+        // mountPowerCreep()
         mountStructure()
     }
 }
