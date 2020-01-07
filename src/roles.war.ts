@@ -45,13 +45,18 @@ export default {
      * @param spawnName 出生点名称
      * @param creepsName 要治疗的 creep 名称数组
      */
-    boostDoctor: (spawnName: string, creepsName: string): ICreepConfig => ({
+    boostDoctor: (spawnName: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
         ...boostPrepare(BOOST_TYPE.HEAL, {
             [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
             [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25,
             [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10,
         }),
+        source: creep => {
+            creep.healTo(creep)
+            creep.farMoveTo(Game.flags[standByFlagName].pos)
+        },
         target: creep => creep.healTo(Game.creeps[creepsName]),
+        switch: () => !(standByFlagName in Game.flags),
         spawn: spawnName,
         bodys: calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
     }),
