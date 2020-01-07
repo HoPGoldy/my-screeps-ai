@@ -58,3 +58,9 @@ npm run pull
 ## 设计
 
 访问 [/doc](https://github.com/HoPGoldy/my-screeps-ai/tree/master/doc) 来查看设计细节。
+
+## 统计代码行数及注释率
+
+```
+node count.js ./src
+```
