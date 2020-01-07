@@ -536,12 +536,25 @@ class CreepExtension extends Creep {
     /**
      * 治疗指定目标
      * 比较给定目标生命(包括自己)生命损失的百分比, 谁血最低治疗谁
-     * @param creep 要治疗的目标们
+     * @param creep 要治疗的目标
      */
     public healTo(creep: Creep): void {
-        const healResult = this.heal(creep)
-        if (healResult == ERR_NOT_IN_RANGE) this.rangedHeal(creep)
+        if (!creep) {
+            this.heal(this)
+            return
+        }
 
+        // 获取治疗目标，目标生命值损失大于等于自己的话，就治疗目标
+        // 否则治疗自己
+        let target: Creep = null
+        if ((creep.hitsMax - creep.hits) >= (this.hitsMax - this.hits)) target = creep
+        else target = this
+
+        // 进行治疗，如果失败就远程治疗
+        const healResult = this.heal(target)
+        if (healResult == ERR_NOT_IN_RANGE) this.rangedHeal(target)
+
+        // 一直朝着目标移动
         this.moveTo(creep)
     }
 
