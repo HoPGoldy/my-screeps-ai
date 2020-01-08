@@ -208,25 +208,15 @@ export default {
     /**
      * 维修者
      * 从指定结构中获取能量 > 维修房间内的建筑
+     * 注：目前维修者更适合在能量爆仓或者敌人攻城时使用
      * 
      * @param spawnName 出生点名称
      * @param sourceId 要挖的矿 id
      */
     repairer: (spawnName: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
-        target: creep => {
-            // 房间内没有 tower 负责维修建筑
-            if (!creep.room._towerShoulderRepair) {
-                // 去维修
-                if (creep.repairStructure()) {}
-                // 没得修就修墙
-                else if (creep.fillDefenseStructure()) {}
-            }
-            else {
-                // 房间内有 tower 负责维修就专心填塔
-                creep.fillTower()
-            }
-        },
+        // 一直修墙就完事了
+        target: creep => creep.fillDefenseStructure(),
         switch: creep => creep.updateState('📌 修复'),
         spawn: spawnName,
         bodyType: 'smallWorker'

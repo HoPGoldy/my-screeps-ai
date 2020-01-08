@@ -1397,7 +1397,7 @@ class NukerExtension extends StructureNuker {
  */
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
-        if (Game.time % 10) return
+        if (Game.time % 5) return
         if (!this.room.memory.powerSpawn) this.room.memory.powerSpawn = {}
         if (this.room.memory.powerSpawn.pause) return
 

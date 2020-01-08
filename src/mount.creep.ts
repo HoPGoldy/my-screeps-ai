@@ -267,20 +267,6 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 填充本房间内所有 tower
-     */
-    public fillTower(): boolean {
-        const target: AnyStructure = this.pos.findClosestByPath(FIND_STRUCTURES, {
-            filter: s => s.structureType == STRUCTURE_TOWER && s.energy < s.energyCapacity
-        })
-        // 能量都已经填满
-        if (!target) return false
-
-        this.transferTo(target, RESOURCE_ENERGY)
-        return true
-    }
-
-    /**
      * 填充本房间的 controller
      */
     public upgrade(): boolean {
@@ -288,6 +274,38 @@ class CreepExtension extends Creep {
             this.moveTo(this.room.controller, getPath('upgrade'))
         }
         return true
+    }
+
+    /**
+     * 常用方法：获取要拿取的数量
+     * 获取数量的原则为：来源建筑的对应资源剩余量、creep 的可携带量、目标建筑的可存放数量 三者之间找到最小的
+     * 
+     * @param resourceType 要拿取的资源类型
+     * @param source 从哪个建筑里拿
+     * @param target 要放到哪个建筑里
+     * @returns 最合适的拿取数量
+     */
+    public getAmount(resourceType: ResourceConstant, source: StructureWithStore, target: StructureWithStore): number {
+        if (!source || !target) return 0
+
+        // 本 creep 的剩余容量
+        const creepCapacity = this.store.getFreeCapacity()
+        // 目标建筑的可存放量
+        const targetCapacity = target.store.getFreeCapacity(resourceType)
+        // 来源建筑的当前存量
+        const sourceCapacity = source.store[resourceType]
+
+        // 找到最小值
+        return [ creepCapacity, targetCapacity, sourceCapacity ].reduce((x, y) => x > y ? y : x)
+    }
+
+    /**
+     * 根据不同的返回值进行对应的处理
+     * 
+     * @param returnCode creep 动作返回值
+     */
+    public handleReturn(returnCode: ScreepsReturnCode): void {
+
     }
 
     /**
@@ -330,23 +348,6 @@ class CreepExtension extends Creep {
             return targets[0]
         }
         else return null
-    }
-
-    /**
-     * 维修房间内受损的建筑
-     * 不会维修 wall 和 rempart
-     */
-    public repairStructure(): boolean {
-        let target = this.pos.findClosestByRange(FIND_STRUCTURES, {
-            filter: s => (s.hits < s.hitsMax) && (s.structureType != STRUCTURE_RAMPART) && (s.structureType != STRUCTURE_WALL)
-        })
-        if (!target) return false
-    
-        // 修复结构实现
-        if(this.repair(target) == ERR_NOT_IN_RANGE) {
-            this.moveTo(target, getPath('repair'))
-        }
-        return true
     }
 
     /**

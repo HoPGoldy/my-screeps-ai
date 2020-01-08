@@ -113,6 +113,13 @@ export default {
             const result = creep.transfer(structure, task.resourceType)
             // 如果转移完成则增加任务进度
             if (result === OK) creep.room.handleCenterTask(amount)
+            // 如果目标建筑物太远了，就给出提示、返还资源并移除任务
+            else if (result === ERR_NOT_IN_RANGE) {
+                console.log(`[${creep.name}] 目标建筑物位置过远，任务已移除`)
+                const sourceStructure = Game.getObjectById<Structure>(task.sourceId)
+                if (sourceStructure) creep.transfer(sourceStructure, task.resourceType)
+                creep.room.deleteCurrentCenterTask()
+            }
             else {
                 creep.say(`存入 ${result}`)
                 creep.room.hangCenterTask()
@@ -294,12 +301,11 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return console.log(`[${creep.name}] nuker 填充任务，未找到 Storage 或者 Nuker`)
             }
 
+            // 把多余的能量放终端里
+            if (creep.store[RESOURCE_ENERGY] > 0) return creep.transferTo(sourceStructure, RESOURCE_ENERGY)
+
             // 获取应拿取的数量
-            let getAmount = creep.store.getCapacity() < nuker.store.getFreeCapacity(task.resourceType) ?
-                creep.store.getFreeCapacity() :
-                nuker.store.getFreeCapacity(task.resourceType)
-            // 没那么多的话就有多少拿多少
-            if (sourceStructure.store[task.resourceType] < getAmount) getAmount = sourceStructure.store[task.resourceType]
+            let getAmount = creep.getAmount(task.resourceType, sourceStructure, nuker)
             
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
@@ -482,12 +488,12 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return console.log(`[${creep.name}] powerSpawn 填充任务，未找到 storage/terminal 或者 powerSpawn`)
             }
 
+            // 把多余的能量放终端里
+            if (task.resourceType != RESOURCE_ENERGY && creep.store[RESOURCE_ENERGY] > 0) return creep.transferTo(sourceStructure, RESOURCE_ENERGY)
+
+
             // 获取应拿取的数量
-            let getAmount = creep.store.getCapacity() < powerspawn.store.getFreeCapacity(task.resourceType) ?
-                creep.store.getFreeCapacity() :
-                powerspawn.store.getFreeCapacity(task.resourceType)
-            // 没那么多的话就有多少拿多少
-            if (sourceStructure.store[task.resourceType] < getAmount) getAmount = sourceStructure.store[task.resourceType]
+            let getAmount = creep.getAmount(task.resourceType, sourceStructure, powerspawn)
             
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
@@ -535,7 +541,14 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             if (creep.store[RESOURCE_ENERGY] > 0) return creep.transferTo(terminal, RESOURCE_ENERGY)
 
             // 找到第一个需要的强化材料，然后从终端拿出
-            const resource = task.resource.find(res => res.number > 0)
+            const resource = task.resource.find((res, index) => {
+                // 如果这个材料已经用完了，就直接将任务中对应资源的待搬运量置为 0
+                if (terminal.store[res.type] == 0) {
+                    creep.room.handleBoostGetResourceTask(index, res.number)
+                    return false
+                }
+                return res.number > 0
+            })
             
             // 找不到了就说明都成功转移了
             if (!resource) {
@@ -543,11 +556,15 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return
             }
 
-            const getAmount = resource.number > creep.store.getFreeCapacity() ?
-                creep.store.getFreeCapacity() :
-                resource.number
+            // 获取转移数量
+            let getAmount = [ resource.number, creep.store.getFreeCapacity(), terminal.store[resource.type]].reduce((x, y) => x > y ? y : x)
 
-            if (creep.withdraw(terminal, resource.type, getAmount) == ERR_NOT_IN_RANGE) creep.moveTo(terminal, { reusePath: 20 })
+            // 拿出来
+            const withdrawResult = creep.withdraw(terminal, resource.type, getAmount) 
+            if (withdrawResult == ERR_NOT_IN_RANGE) creep.moveTo(terminal, { reusePath: 20 })
+            else if (withdrawResult !== OK) {
+                creep.say(`boostIn ${withdrawResult}`)
+            }
         },
         target: (creep, task: IBoostGetResource) => {
             // 当前要转移的资源在 task.resource 中的索引值
