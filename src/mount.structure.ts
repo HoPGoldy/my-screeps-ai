@@ -32,6 +32,7 @@ export default function () {
     _.assign(StructureNuker.prototype, NukerExtension.prototype)
     _.assign(StructurePowerSpawn.prototype, PowerSpawnExtension.prototype)
     _.assign(StructureObserver.prototype, ObserverExtension.prototype)   
+    _.assign(StructureController.prototype, ControllerExtension.prototype)   
 }
 
 /**
@@ -1387,6 +1388,35 @@ class LabExtension extends StructureLab {
     }
 }
 
+/**
+ * 控制器拓展
+ * 只统计当前升级进度
+ */
+class ControllerExtension extends StructureController {
+    public work(): void {
+        this.stateScanner()
+    }
+
+    /**
+     * 统计自己存储中的资源数量
+     */
+    private stateScanner(): void {
+        if (Game.time % stateScanInterval) return
+        if (!this.room.memory.stats) this.room.memory.stats = {}
+
+        // 满级了就移除统计信息
+        if (this.level === 8) {
+            delete this.room.memory.stats.controllerLevel
+            delete this.room.memory.stats.controllerRatio
+        }
+        // 没有满级就更新统计信息
+        else {
+            this.room.memory.stats.controllerLevel = this.level
+            this.room.memory.stats.controllerRatio = (this.progress / this.progressTotal) * 100
+        }
+    }
+}
+
 // nuker 拓展
 class NukerExtension extends StructureNuker {
     public work(): void {
@@ -1425,6 +1455,7 @@ class NukerExtension extends StructureNuker {
 
         this.room.memory.stats.nukerEnergy = this.store[RESOURCE_ENERGY]
         this.room.memory.stats.nukerG = this.store[RESOURCE_GHODIUM]
+        this.room.memory.stats.nukerCooldown = this.cooldown
     }
 }
 

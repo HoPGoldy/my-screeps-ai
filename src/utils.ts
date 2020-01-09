@@ -125,16 +125,15 @@ ${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')}   ${createC
 export function stateScanner(): void {
     if (Game.time % stateScanInterval) return 
 
-    Memory.stats = {
-        // 统计 GCL / GPL 的升级百分比和等级
-        gcl: Math.round((Game.gcl.progress / Game.gcl.progressTotal) * 10000) / 100,
-        gclLevel: Game.gcl.level,
-        gpl: Math.round((Game.gpl.progress / Game.gpl.progressTotal) * 10000) / 100,
-        gplLevel: Game.gpl.level,
-        // CPU 的当前使用百分比
-        cpuRatio: Math.round((Game.cpu.getUsed() / Game.cpu.limit) * 10000) / 100,
-        cpu: Game.cpu.getUsed(),
-        // bucket 当前剩余量
-        bucket: Game.cpu.bucket
-    }
+    if (!Memory.stats) Memory.stats = {}
+    
+    // 统计 GCL / GPL 的升级百分比和等级
+    Memory.stats.gcl = (Game.gcl.progress / Game.gcl.progressTotal) * 100,
+    Memory.stats.gclLevel = Game.gcl.level,
+    Memory.stats.gpl = (Game.gpl.progress / Game.gpl.progressTotal) * 100,
+    Memory.stats.gplLevel = Game.gpl.level,
+    // CPU 的当前使用量
+    Memory.stats.cpu = Game.cpu.getUsed(),
+    // bucket 当前剩余量
+    Memory.stats.bucket = Game.cpu.bucket
 }
