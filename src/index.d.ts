@@ -319,6 +319,19 @@ interface RoomMemory {
         // 是否暂停处理
         pause?: boolean
     }
+
+    /**
+     * 房间内的数据统计
+     */
+    stats: {
+        // storage 中的能量剩余量
+        energy?: number
+        // 终端中的 power 数量
+        power?: number
+        // nuker 的资源存储量
+        nukerEnergy?: number
+        nukerG?: number
+    }
 }
 
 // 所有房间物流任务
@@ -430,10 +443,9 @@ interface Memory {
         gclLevel: number
         gpl: number
         gplLevel: number
-        // CPU 当前数值
-        CPU: number
-        // 内存使用百分比
-        memory: number
+        // CPU 当前数值及百分比
+        cpuRatio: number
+        cpu: number
         // bucket 当前数值
         bucket: number
     }

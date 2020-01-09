@@ -14,7 +14,9 @@ import {
     // powerSpawn 相关
     powerSettings, 
     // 房间物流任务
-    ROOM_TRANSFER_TASK 
+    ROOM_TRANSFER_TASK,
+    // 统计间隔
+    stateScanInterval
 } from './setting'
 
 // 挂载拓展到建筑原型
@@ -628,6 +630,8 @@ class FactoryExtension extends StructureFactory {
 // Terminal 拓展
 class TerminalExtension extends StructureTerminal {
     public work(): void {
+        this.stateScanner()
+
         // 没有冷却好或者不到 10 tick 就跳过
         if (this.cooldown !== 0 || Game.time % 10) return
 
@@ -641,6 +645,17 @@ class TerminalExtension extends StructureTerminal {
 
         // 只有 dealOrder 下命令了才能继续执行 ResourceListener
         if (this.dealOrder(resource)) this.ResourceListener(resource)
+    }
+
+    /**
+     * 统计自己存储中的资源数量
+     * 目前将统计 power 数量和战斗化合物数量
+     */
+    private stateScanner(): void {
+        if (Game.time % stateScanInterval) return
+        if (!this.room.memory.stats) this.room.memory.stats = {}
+
+        this.room.memory.stats.power = this.store[RESOURCE_POWER]
     }
 
     public execShareTask(): void {
@@ -926,9 +941,21 @@ class ExtractorExtension extends StructureExtractor {
  */
 class StorageExtension extends StructureStorage {
     public work(): void {
+        this.stateScanner()
+
         if (Game.time % 10000) return
 
         if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.shareAddSource(RESOURCE_ENERGY)
+    }
+
+    /**
+     * 统计自己存储中的剩余能量
+     */
+    private stateScanner(): void {
+        if (Game.time % stateScanInterval) return
+        if (!this.room.memory.stats) this.room.memory.stats = {}
+
+        this.room.memory.stats.energy = this.store[RESOURCE_ENERGY]
     }
 }
 
@@ -1363,6 +1390,8 @@ class LabExtension extends StructureLab {
 // nuker 拓展
 class NukerExtension extends StructureNuker {
     public work(): void {
+        this.stateScanner()
+
         if (Game.time % 30) return
 
         // G 矿不满并且 terminal 中 G 矿大于 1k 则开始填充 G
@@ -1385,6 +1414,17 @@ class NukerExtension extends StructureNuker {
 
             return
         }
+    }
+
+    /**
+     * 统计自己存储中的资源数量
+     */
+    private stateScanner(): void {
+        if (Game.time % stateScanInterval) return
+        if (!this.room.memory.stats) this.room.memory.stats = {}
+
+        this.room.memory.stats.nukerEnergy = this.store[RESOURCE_ENERGY]
+        this.room.memory.stats.nukerG = this.store[RESOURCE_GHODIUM]
     }
 }
 

@@ -97,6 +97,27 @@ export function createHelp(functionInfo: IFunctionDescribe[]): string {
 }
 
 /**
+ * 快捷生成单个常量帮助
+ * 
+ * @param name 常量简称
+ * @param constant 常量名
+ */
+function createConst(name: string, constant: string): string {
+    return `${colorful(name, '#6b9955')} ${colorful(constant, '#8dc5e3')}`
+}
+
+// 资源常量控制台帮助
+export const resourcesHelp: string = `
+${createConst('O', 'RESOURCE_OXYGEN')}              ${createConst('H', 'RESOURCE_HYDROGEN')}         ${createConst('U', 'RESOURCE_UTRIUM')}             ${createConst('X', 'RESOURCE_CATALYST')}
+${createConst('压缩O', 'RESOURCE_OXIDANT')}         ${createConst('压缩H', 'RESOURCE_REDUCTANT')}     ${createConst('压缩U', 'RESOURCE_UTRIUM_BAR')}     ${createConst('压缩X', 'RESOURCE_PURIFIER')}
+${createConst('L', 'RESOURCE_LEMERGIUM')}           ${createConst('K', 'RESOURCE_KEANIUM')}          ${createConst('Z', 'RESOURCE_ZYNTHIUM')}           ${createConst('G', 'RESOURCE_GHODIUM')} 
+${createConst('压缩L', 'RESOURCE_LEMERGIUM_BAR')}   ${createConst('压缩K', 'RESOURCE_KEANIUM_BAR')}   ${createConst('压缩Z', 'RESOURCE_ZYNTHIUM_BAR')}   ${createConst('压缩G', 'RESOURCE_GHODIUM_MELT')}
+
+${createConst('TOUGH强化', 'RESOURCE_CATALYZED_GHODIUM_ALKALIDE')}   ${createConst('RANGE_ATTACK强化', 'RESOURCE_CATALYZED_KEANIUM_ALKALIDE')}
+${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')}   ${createConst('HEAL强化', 'RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE')}
+`
+
+/**
  * 全局统计信息扫描器
  * 负责搜集关于 cpu、memory、GCL、GPL 的相关信息
  * 详情见 ./doc/Grafana 统计信息.md
@@ -104,18 +125,15 @@ export function createHelp(functionInfo: IFunctionDescribe[]): string {
 export function stateScanner(): void {
     if (Game.time % stateScanInterval) return 
 
-    const memoryInfo = Game.cpu.getHeapStatistics()
-
     Memory.stats = {
         // 统计 GCL / GPL 的升级百分比和等级
-        gcl: Game.gcl.progress / Game.gcl.progressTotal,
+        gcl: Math.round((Game.gcl.progress / Game.gcl.progressTotal) * 10000) / 100,
         gclLevel: Game.gcl.level,
-        gpl: Game.gpl.progress / Game.gpl.progressTotal,
+        gpl: Math.round((Game.gpl.progress / Game.gpl.progressTotal) * 10000) / 100,
         gplLevel: Game.gpl.level,
         // CPU 的当前使用百分比
-        CPU: Game.cpu.getUsed() / Game.cpu.limit,
-        // 内存占用百分比
-        memory: memoryInfo.total_heap_size / memoryInfo.heap_size_limit,
+        cpuRatio: Math.round((Game.cpu.getUsed() / Game.cpu.limit) * 10000) / 100,
+        cpu: Game.cpu.getUsed(),
         // bucket 当前剩余量
         bucket: Game.cpu.bucket
     }
