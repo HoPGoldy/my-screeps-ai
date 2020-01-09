@@ -412,3 +412,6 @@ export const DEFAULT_FLAG_NAME = {
 // 房间 storage 中的数量超过下面值时
 // 该房间就会将自己注册为能量共享的提供房间
 export const ENERGY_SHARE_LIMIT = 700000
+
+// 统计信息搜集模块的运行间隔，单位：tick
+export const stateScanInterval = 20

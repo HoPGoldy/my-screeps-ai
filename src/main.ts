@@ -1,5 +1,5 @@
 import mountWork from './mount'
-import { doing } from './utils'
+import { doing, stateScanner } from './utils'
 
 module.exports.loop = function (): void {
     // console.log(`-------------------------- [${Game.time}] ----`)
@@ -12,4 +12,7 @@ module.exports.loop = function (): void {
 
     // 所有 creep 工作
     doing(Game.creeps)
+
+    // 统计全局资源使用
+    stateScanner()
 }

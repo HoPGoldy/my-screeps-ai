@@ -422,7 +422,21 @@ interface Memory {
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
         [resourceType: string]: string[]
-   }
+    },
+    // 全局统计信息
+    stats: {
+        // GCl/GPL 升级百分比
+        gcl: number
+        gclLevel: number
+        gpl: number
+        gplLevel: number
+        // CPU 当前数值
+        CPU: number
+        // 内存使用百分比
+        memory: number
+        // bucket 当前数值
+        bucket: number
+    }
 }
 
 interface FlagMemory {
