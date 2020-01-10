@@ -218,6 +218,107 @@ class CreepExtension extends Creep {
         }).join('')
     }
 
+    /**
+     * 对穿寻路
+     * 由 farMoveTo 拓展而来，详情见 doc/对穿设计案.md
+     * 
+     * @param all 同 farMoveTo
+     */
+    public goTo(target: RoomPosition, ignoreRoom: string[] = [], range: number = 0): 0|-1|-4|-11|-12|-5|-10 {
+        if (this.memory.farMove == undefined) this.memory.farMove = { }
+        // 确认目标有没有变化, 变化了则重新规划路线
+        const targetPosTag = `${target.x}/${target.y}${target.roomName}`
+        if (targetPosTag !== this.memory.farMove.targetPos) {
+            // console.log(`[${this.name}] 目标变更`)
+            this.memory.farMove.targetPos = targetPosTag
+            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
+        }
+        // 确认缓存有没有被清除
+        if (!this.memory.farMove.path) {
+            // console.log(`[${this.name}] 更新缓存`)
+            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
+        }
+
+        // 还为空的话就是没找到路径
+        if (!this.memory.farMove.path) {
+            // console.log(`[${this.name}] 未找到路径`)
+            delete this.memory.farMove.path
+            return OK
+        }
+        
+        const index = this.memory.farMove.index
+        // 移动索引超过数组上限代表到达目的地
+        if (index >= this.memory.farMove.path.length) {
+            delete this.memory.farMove.path
+            return OK
+        }
+
+        // 获取方向，进行移动
+        const direction = <DirectionConstant>Number(this.memory.farMove.path[index])
+        const moveResult = this.move(direction)
+
+        // console.log(`移动记录: ${index}\\${this.memory.farMove.path.length} 方向: ${this.memory.farMove.path[index]} 返回: ${moveResult}`)
+        if (moveResult == OK) {
+            const currentPos = `${this.pos.x}/${this.pos.y}`
+            if (this.memory.farMove.prePos && currentPos == this.memory.farMove.prePos) {
+                // 对穿成功了就继续移动
+                if (this.mutualCross(direction)) return OK
+                // 移动失败（撞上的不是 creep）就重新寻路
+                delete this.memory.farMove.path
+                return ERR_INVALID_ARGS
+            }
+            // 移动成功，设置下次移动索引并更新前一个位置缓存
+            this.memory.farMove.index ++
+            this.memory.farMove.prePos = currentPos
+        }
+        else if (moveResult == ERR_INVALID_ARGS) delete this.memory.farMove.path
+        else if (moveResult != ERR_TIRED) this.say(`远程寻路 ${moveResult}`)
+        
+        return moveResult
+    }
+
+    /**
+     * 向指定方向发起对穿
+     * 
+     * @param direction 要进行对穿的方向
+     */
+    private mutualCross(direction: DirectionConstant): boolean {
+        const targetPos = this.directionToPos(direction)
+        return false
+    }
+
+    /**
+     * 获取当前位置目标房间的 pos 对象
+     * 
+     * @param direction 目标方向
+     */
+    private directionToPos(direction: DirectionConstant): RoomPosition | undefined {
+        let targetPos = _.cloneDeep(this.pos)
+
+        // 纵轴移动，方向朝下就 y ++，否则就 y --
+        if (direction !== LEFT && direction !== RIGHT) {
+            if (direction > LEFT || direction < RIGHT) targetPos.y --
+            else targetPos.y ++
+        }
+        // 横轴移动，方向朝右就 x ++，否则就 x --
+        if (direction !== TOP && direction !== BOTTOM) {
+            if (direction < BOTTOM) targetPos.x ++
+            else targetPos.x --
+        }
+
+        // 如果要移动到另一个房间的话就返回空，否则返回目标 pos
+        if (targetPos.x < 0 || targetPos.y > 49 || targetPos.x > 49 || targetPos.y < 0) return undefined
+        else return new RoomPosition(targetPos.x, targetPos.y, targetPos.roomName)
+    }
+
+    /**
+     * 远程寻路
+     * 在目标变化/没有缓存/move返回OK但位置没有变化时重新寻路
+     * 
+     * @param target 要移动到的目标位置
+     * @param ignoreRoom 寻路时忽略的房间名数组
+     * @param range 目标范围，见 PathFinder
+     */
     public farMoveTo(target: RoomPosition, ignoreRoom: string[] = [], range: number = 0): 0|-1|-4|-11|-12|-5|-10 {
         if (this.memory.farMove == undefined) this.memory.farMove = { }
         // 确认目标有没有变化, 变化了则重新规划路线
@@ -297,15 +398,6 @@ class CreepExtension extends Creep {
 
         // 找到最小值
         return [ creepCapacity, targetCapacity, sourceCapacity ].reduce((x, y) => x > y ? y : x)
-    }
-
-    /**
-     * 根据不同的返回值进行对应的处理
-     * 
-     * @param returnCode creep 动作返回值
-     */
-    public handleReturn(returnCode: ScreepsReturnCode): void {
-
     }
 
     /**
