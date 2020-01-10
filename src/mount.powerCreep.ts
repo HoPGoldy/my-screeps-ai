@@ -12,7 +12,7 @@ class PowerCreepExtension extends PowerCreep {
         // 凉了就尝试生成
         if (!this.ticksToLive && this.spawnCooldownTime === 0) {
             // 请求指定工作房间
-            if (!this.memory.workRoom) return console.log(`[${this.name}] 请使用下述命令为该 powerCreep 指定工作房间:\n  Game.getObjectById(${this.id}).setWorkRoom('roomname')`)
+            if (!this.memory.workRoom) return console.log(`[${this.name}] 请使用下述命令为该 powerCreep 指定工作房间:\n  Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
             else {
                 this.spawnAtRoom(this.memory.workRoom)
             }

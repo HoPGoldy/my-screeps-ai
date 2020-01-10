@@ -1472,28 +1472,30 @@ class PowerSpawnExtension extends StructurePowerSpawn {
         if (!this.room.memory.powerSpawn) this.room.memory.powerSpawn = {}
         if (this.room.memory.powerSpawn.pause) return
 
+        // 处理 power
+        this.processPower()
+
         // powerSpawn 内 power 不足且 terminal 内 energy 充足
-        if (this.store[RESOURCE_POWER] === 0 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
+        if (this.store[RESOURCE_POWER] === 10 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,
                 resourceType: RESOURCE_POWER
             })
+
             return
         }
 
         // powerSpawn 内 energy 不足且 storage 内 energy 充足
-        if (this.store[RESOURCE_ENERGY] < 50 && this.room.storage && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit) {
+        if (this.store[RESOURCE_ENERGY] < 1000 && this.room.storage && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,
                 resourceType: RESOURCE_ENERGY
             })
+
             return
         }
-
-        // 处理 power
-        this.processPower()
     }
 }
 
@@ -1543,7 +1545,7 @@ class ObserverExtension extends StructureObserver {
 
         // 确认该房间已被搜索
         this.room.memory.observer.checked.isChecked = false
-   }
+    }
 
     /**
      * 获取指定房间视野

@@ -743,11 +743,13 @@ class RoomExtension extends Room {
      * 用户操作：重启 Observer 工作
      */
     public oresume(): string { return this.resumeObserver() }
-    /*
+
+    /**
      * 启动 boost 进程
      * 该方法主要由 boost creep 在 isNeed 阶段调用，当然也可以手动调用
      * 
      * @param boostType 要启动的 boost 任务类型，在 setting.ts 的 BOOST_TYPE 中定义
+     * @param boostConfig 强化的配置对象，键为强化化合物，值为要强化的身体部件
      * @returns ERR_NAME_EXISTS 已经存在强化任务了
      * @returns ERR_NOT_FOUND 未找到强化旗帜
      * @returns ERR_INVALID_ARGS 错误的boostType
