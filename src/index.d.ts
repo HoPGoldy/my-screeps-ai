@@ -107,6 +107,9 @@ interface CreepMemory {
     role: string
     // 是否在工作
     working: boolean
+    // 该 Creep 是否在站着不动进行工作
+    // 该字段用于减少 creep 向 Room.restrictedPos 里添加自己位置的次数
+    standed?: boolean
     // 外矿采集者特有 要采集的 Source Id
     sourceId?: string
     // 远程寻路缓存
@@ -146,6 +149,9 @@ interface CreepMemory {
  * 来自于 mount.structure.ts
  */
 interface Room {
+    // 该房间的禁止通行点
+    restrictedPos: Set<string>
+    
     // 已拥有的房间特有，tower 负责维护
     _enemys: Creep[]
     // 需要维修的建筑，tower 负责维护，为 1 说明建筑均良好

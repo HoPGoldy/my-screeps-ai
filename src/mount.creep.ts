@@ -69,6 +69,9 @@ class CreepExtension extends Creep {
             this.memory.working = false
             this.say('⚡ 挖矿')
             onStateChange(this, this.memory.working)
+
+            // 停止工作后自己的位置就不再是禁止通行点了
+            this.room.restrictedPos.delete(this.serializePos(this.pos))
         }
         // creep 身上能量满了 && creep 之前的状态为“不工作”
         if(resourceAmount >= this.store.getCapacity() && !this.memory.working) {
@@ -446,7 +449,14 @@ class CreepExtension extends Creep {
      * 填充本房间的 controller
      */
     public upgrade(): boolean {
-        if(this.upgradeController(this.room.controller) == ERR_NOT_IN_RANGE) {
+        const actionResult = this.upgradeController(this.room.controller)
+
+        // 如果刚开始站定工作，就把自己的位置设置为禁止通行点
+        if (actionResult === OK && !this.memory.standed) {
+            this.memory.standed = true
+            this.room.restrictedPos.add(this.serializePos(this.pos))
+        }
+        else if(actionResult == ERR_NOT_IN_RANGE) {
             this.moveTo(this.room.controller, getPath('upgrade'))
         }
         return true

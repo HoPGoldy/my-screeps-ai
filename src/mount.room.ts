@@ -8,6 +8,13 @@ export default function () {
 
 class RoomExtension extends Room {
     /**
+     * 该房间内的禁止通行点
+     * 一般都是 creep 站在那里进行工作
+     * 防止其他 creep 打扰工作
+     */
+    public restrictedPos = new Set<string>()
+
+    /**
      * 添加任务
      * 
      * @param submitId 提交者的 id 
