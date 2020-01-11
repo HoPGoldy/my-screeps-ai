@@ -71,7 +71,8 @@ class CreepExtension extends Creep {
             onStateChange(this, this.memory.working)
 
             // 停止工作后自己的位置就不再是禁止通行点了
-            this.room.restrictedPos.delete(this.serializePos(this.pos))
+            this.room.removeRestrictedPos(this.pos)
+            delete this.memory.standed
         }
         // creep 身上能量满了 && creep 之前的状态为“不工作”
         if(resourceAmount >= this.store.getCapacity() && !this.memory.working) {
@@ -165,7 +166,9 @@ class CreepExtension extends Creep {
         this.memory.farMove.index = 0
 
         const result = PathFinder.search(this.pos, { pos: target, range }, {
-            roomCallback(roomName) {
+            plainCost: 2,
+            swampCost: 10,
+            roomCallback: roomName => {
                 const room = Game.rooms[roomName]
                 // 房间没有视野
                 if (!room) return
@@ -184,10 +187,11 @@ class CreepExtension extends Creep {
                     ) costs.set(struct.pos.x, struct.pos.y, 255)
                 })
 
-                // 躲避房间中的 creep
-                room.find(FIND_CREEPS).forEach(function(creep) {
-                    costs.set(creep.pos.x, creep.pos.y, 0xff);
-                });
+                // 避开房间中的禁止通行点
+                room.getRestrictedPos().forEach(posStr => {
+                    const pos = this.room.unserializePos(posStr)
+                    costs.set(pos.x, pos.y, 255)
+                })
 
                 return costs
             }
@@ -249,8 +253,8 @@ class CreepExtension extends Creep {
             // 尝试对穿
             const crossResult = this.mutualCross(direction)
 
-            // 没找到说明撞墙上了，返回交给 goTo 重新寻路
-            if (crossResult === ERR_NOT_FOUND) return ERR_INVALID_TARGET
+            // 没找到说明撞墙上了或者前面的 creep 拒绝对穿，返回交给 goTo 重新寻路
+            if (crossResult != OK) return ERR_INVALID_TARGET
             return OK
         }
         
@@ -271,7 +275,7 @@ class CreepExtension extends Creep {
 
         // 如果返回 OK 就额外检查一下
         if (moveResult === OK) {
-            const currentPos = this.serializePos(this.pos)
+            const currentPos = this.room.serializePos(this.pos)
 
             // 如果和之前位置重复了就返回异常
             if (this.memory.farMove.prePos && currentPos == this.memory.farMove.prePos) return ERR_INVALID_TARGET
@@ -284,34 +288,24 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 将指定位置序列化为字符串
-     * 形如: 12/32E1N2
-     * 
-     * @param pos 要进行压缩的位置
-     */
-    private serializePos(pos: RoomPosition): string {
-        return `${pos.x}/${pos.y}${pos.roomName}`
-    }
-
-    /**
      * 对穿寻路
      * 由 farMoveTo 拓展而来，详情见 doc/对穿设计案.md
      * 
      * @param all 同 farMoveTo
      */
-    public goTo(target: RoomPosition, ignoreRoom: string[] = [], range: number = 0): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET {
+    public goTo(target: RoomPosition, range: number = 0): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET {
         if (this.memory.farMove == undefined) this.memory.farMove = { }
         // 确认目标有没有变化, 变化了则重新规划路线
-        const targetPosTag = this.serializePos(target)
+        const targetPosTag = this.room.serializePos(target)
         if (targetPosTag !== this.memory.farMove.targetPos) {
             // console.log(`[${this.name}] 目标变更`)
             this.memory.farMove.targetPos = targetPosTag
-            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
+            this.memory.farMove.path = this.findPath(target, [], range)
         }
         // 确认缓存有没有被清除
         if (!this.memory.farMove.path) {
             // console.log(`[${this.name}] 更新缓存`)
-            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
+            this.memory.farMove.path = this.findPath(target, [], range)
         }
 
         // 还为空的话就是没找到路径
@@ -330,7 +324,7 @@ class CreepExtension extends Creep {
             delete this.memory.farMove.path
         }
         // 其他异常直接报告
-        else if (goResult != ERR_TIRED) this.say(`远程寻路 ${goResult}`)
+        else if (goResult != OK && goResult != ERR_TIRED) this.say(`远程寻路 ${goResult}`)
 
         return goResult
     }
@@ -340,20 +334,39 @@ class CreepExtension extends Creep {
      * 
      * @param direction 要进行对穿的方向
      * @returns OK 成功对穿
+     * @returns ERR_BUSY 对方拒绝对穿
      * @returns ERR_NOT_FOUND 前方没有 creep
      */
-    private mutualCross(direction: DirectionConstant): OK | ERR_NOT_FOUND {
+    private mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
         // 获取前方位置上的 creep（fontCreep）
         const fontPos = this.directionToPos(direction)
         const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
 
         if (!fontCreep) return ERR_NOT_FOUND
 
-        // 前面的 creep 朝自己移动，自己朝前移动
-        fontCreep.move(this.getOppositeDirection(direction))
-        this.move(direction)
+        this.say(`👉`)
+        // 如果前面的 creep 同意对穿了，自己就朝前移动
+        if (fontCreep.requireCross(this.getOppositeDirection(direction))) this.move(direction)
+        else return 
 
         return OK
+    }
+
+    /**
+     * 请求对穿
+     * 自己内存中 standed 为 true 时将拒绝对穿
+     * 
+     * @param direction 请求该 creep 进行对穿
+     */
+    public requireCross(direction: DirectionConstant): Boolean {
+        if (this.memory.standed) {
+            this.say('👊')
+            return false
+        }
+
+        this.say('👌')
+        this.move(direction)
+        return true
     }
 
     /**
@@ -362,22 +375,23 @@ class CreepExtension extends Creep {
      * @param direction 目标方向
      */
     private directionToPos(direction: DirectionConstant): RoomPosition | undefined {
-        let targetPos = _.cloneDeep(this.pos)
+        let targetX = this.pos.x
+        let targetY = this.pos.y
 
         // 纵轴移动，方向朝下就 y ++，否则就 y --
         if (direction !== LEFT && direction !== RIGHT) {
-            if (direction > LEFT || direction < RIGHT) targetPos.y --
-            else targetPos.y ++
+            if (direction > LEFT || direction < RIGHT) targetY --
+            else targetY ++
         }
         // 横轴移动，方向朝右就 x ++，否则就 x --
         if (direction !== TOP && direction !== BOTTOM) {
-            if (direction < BOTTOM) targetPos.x ++
-            else targetPos.x --
+            if (direction < BOTTOM) targetX ++
+            else targetX --
         }
 
         // 如果要移动到另一个房间的话就返回空，否则返回目标 pos
-        if (targetPos.x < 0 || targetPos.y > 49 || targetPos.x > 49 || targetPos.y < 0) return undefined
-        else return new RoomPosition(targetPos.x, targetPos.y, targetPos.roomName)
+        if (targetX < 0 || targetY > 49 || targetX > 49 || targetY < 0) return undefined
+        else return new RoomPosition(targetX, targetY, this.room.name)
     }
 
     /**
@@ -454,10 +468,10 @@ class CreepExtension extends Creep {
         // 如果刚开始站定工作，就把自己的位置设置为禁止通行点
         if (actionResult === OK && !this.memory.standed) {
             this.memory.standed = true
-            this.room.restrictedPos.add(this.serializePos(this.pos))
+            this.room.addRestrictedPos(this.pos)
         }
-        else if(actionResult == ERR_NOT_IN_RANGE) {
-            this.moveTo(this.room.controller, getPath('upgrade'))
+        else if (actionResult == ERR_NOT_IN_RANGE) {
+            this.goTo(this.room.controller.pos)
         }
         return true
     }
@@ -579,16 +593,15 @@ class CreepExtension extends Creep {
     public getEngryFrom(target: Structure|Source): ScreepsReturnCode {
         let result: ScreepsReturnCode
         // 是建筑就用 withdraw
-        if ('structureType' in target) result = this.withdraw(target as Structure, RESOURCE_ENERGY)
+        if (target instanceof Structure) result = this.withdraw(target as Structure, RESOURCE_ENERGY)
         // 不是的话就用 harvest
         else result = this.harvest(target as Source)
 
-        if (result == ERR_NOT_IN_RANGE) {
-            this.moveTo(target, getPath())
-        }
+        if (result == ERR_NOT_IN_RANGE) this.goTo(target.pos)
         // else if (result !== OK) {
         //     this.say(`能量获取${result}`)
         // }
+
         return result
     }
 

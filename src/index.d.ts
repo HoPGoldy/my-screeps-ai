@@ -69,6 +69,8 @@ interface Creep {
     standBy(): void
     defense(): void
     farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): 0|-1|-4|-11|-12|-5|-10
+    goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET
+    requireCross(direction: DirectionConstant): Boolean
     upgrade(): boolean
     buildStructure(): boolean
     fillDefenseStructure(expectHits?: number): boolean
@@ -81,6 +83,14 @@ interface Creep {
     healTo(creep: Creep): void
     getFlag(flagName: string): Flag|null
     getAmount(resourceType: ResourceConstant, source: StructureWithStore, target: StructureWithStore): number
+}
+
+/**
+ * Creep 拓展
+ * 来自于 mount.powerCreep.ts
+ */
+interface PowerCreep {
+    requireCross(direction: DirectionConstant): Boolean
 }
 
 /**
@@ -150,7 +160,7 @@ interface CreepMemory {
  */
 interface Room {
     // 该房间的禁止通行点
-    restrictedPos: Set<string>
+    _restrictedPos: Set<string>
     
     // 已拥有的房间特有，tower 负责维护
     _enemys: Creep[]
@@ -167,6 +177,10 @@ interface Room {
     // 该房间是否已经执行过 lab 集群作业了
     // 在 Lab.work 中调用，一个房间只会执行一次
     _hasRunLab: boolean
+
+    // pos 处理 api
+    serializePos(pos: RoomPosition): string
+    unserializePos(posStr: string): RoomPosition | undefined
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -202,12 +216,19 @@ interface Room {
     // boost api
     boost(boostType: string, boostConfig: IBoostConfig): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
     boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
+
+    // 禁止通行点位 api
+    addRestrictedPos(pos: RoomPosition): void
+    getRestrictedPos(): Set<string>
+    removeRestrictedPos(pos: RoomPosition): void
 }
 
 /**
  * 房间内存
  */
 interface RoomMemory {
+    // 该房间禁止通行点的存储
+    restrictedPos?: string[]
     // observer 内存
     observer: {
         // 查房记录

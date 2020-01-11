@@ -8,13 +8,6 @@ export default function () {
 
 class RoomExtension extends Room {
     /**
-     * 该房间内的禁止通行点
-     * 一般都是 creep 站在那里进行工作
-     * 防止其他 creep 打扰工作
-     */
-    public restrictedPos = new Set<string>()
-
-    /**
      * 添加任务
      * 
      * @param submitId 提交者的 id 
@@ -107,6 +100,85 @@ class RoomExtension extends Room {
         }
 
         return `[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
+    }
+
+    /**
+     * 添加禁止通行位置
+     * 
+     * @param pos 禁止通行的位置
+     */
+    public addRestrictedPos(pos: RoomPosition): void {
+        if (!this._restrictedPos) this.initRestrictedPos()
+
+        const posStr = this.serializePos(pos)
+
+        if (!this._restrictedPos.has(posStr)) {
+            this._restrictedPos.add(posStr)
+            this.memory.restrictedPos.push(posStr)
+        }
+    }
+
+    /**
+     * 获取房间内的禁止通行点位
+     */
+    public getRestrictedPos(): Set<string> {
+        if (!this._restrictedPos) this.initRestrictedPos()
+
+        return this._restrictedPos
+    }
+
+    /**
+     * 将指定位置从禁止通行点位中移除
+     * 
+     * @param pos 要移除的位置
+     */
+    public removeRestrictedPos(pos: RoomPosition): void {
+        if (!this._restrictedPos) this.initRestrictedPos()
+
+        const posStr = this.serializePos(pos)
+
+        if (this._restrictedPos.delete(posStr)) {
+            let posIndex: number = null
+            this.memory.restrictedPos.find((pos, index) => {
+                if (pos === posStr) posIndex = index
+            })
+
+            this.memory.restrictedPos.splice(posIndex, 1)
+        }
+    }
+
+    /**
+     * 初始化禁止通行点位 Set
+     */
+    private initRestrictedPos(): void {
+        if (!this.memory.restrictedPos) {
+            this.memory.restrictedPos = []
+            this._restrictedPos = new Set()
+        }
+        else this._restrictedPos = new Set(this.memory.restrictedPos)
+    }
+
+    /**
+     * 将指定位置序列化为字符串
+     * 形如: 12/32/E1N2
+     * 
+     * @param pos 要进行压缩的位置
+     */
+    public serializePos(pos: RoomPosition): string {
+        return `${pos.x}/${pos.y}/${pos.roomName}`
+    }
+
+    /**
+     * 将位置序列化字符串转换为位置
+     * 位置序列化字符串形如: 12/32E1N2
+     * 
+     * @param posStr 要进行转换的字符串
+     */
+    public unserializePos(posStr: string): RoomPosition | undefined {
+        // 形如 ["12", "32", "E1N2"]
+        const infos = posStr.split('/')
+
+        return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
     }
 
     /**
