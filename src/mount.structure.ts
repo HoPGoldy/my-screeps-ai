@@ -786,7 +786,7 @@ class TerminalExtension extends StructureTerminal {
             resourceType: resource.type
         })
         if (!targetOrder) {
-            console.log(`${this.room.name} 没有为 ${resource.type} 找到合适的订单`)
+            console.log(`[${this.room.name} terminal] 没有为 ${resource.type} 找到合适的订单`)
             this.setNextIndex()
             return
         }
@@ -1476,7 +1476,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
         this.processPower()
 
         // powerSpawn 内 power 不足且 terminal 内 energy 充足
-        if (this.store[RESOURCE_POWER] === 10 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
+        if (this.store[RESOURCE_POWER] < 10 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,

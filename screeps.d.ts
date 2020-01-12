@@ -1233,8 +1233,7 @@ interface Creep extends RoomObject {
      * Requires the MOVE body part if not being pulled.
      * @param direction The direction to move in (`TOP`, `TOP_LEFT`...)
      */
-    move(direction: DirectionConstant): CreepMoveReturnCode;
-    move(target: Creep): OK | ERR_NOT_OWNER | ERR_BUSY | ERR_NOT_IN_RANGE | ERR_INVALID_ARGS;
+    move(target: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET;
     /**
      * Move the creep using the specified predefined path. Needs the MOVE body part.
      * @param path A path value as returned from Room.findPath or RoomPosition.findPathTo methods. Both array form and serialized string form are accepted.

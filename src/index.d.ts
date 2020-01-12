@@ -63,13 +63,14 @@ interface StructureFactory {
  */
 interface Creep {
     _id: string
+    _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     work(): void
     updateState(workingMsg?: string, onStateChange?: Function): boolean
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): 0|-1|-4|-11|-12|-5|-10
-    goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET
+    farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE
+    goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
     upgrade(): boolean
     buildStructure(): boolean
@@ -111,6 +112,8 @@ interface SpawnMemory {
  * creep 内存拓展
  */
 interface CreepMemory {
+    // 内置移动缓存
+    _move?: Object
     // creep是否已经准备好可以工作了
     ready: boolean
     // creep的角色
@@ -133,6 +136,8 @@ interface CreepMemory {
         // 缓存路径的目标，该目标发生变化时刷新路径, 形如"14/4E14S1"
         targetPos?: string
     }
+    // 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞墙
+    prePos?: string
     // deposit 采集者特有，deposit 的类型
     depositType?: DepositConstant
     // 要填充的墙 id 

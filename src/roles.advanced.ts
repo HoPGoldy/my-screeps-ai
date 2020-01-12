@@ -226,7 +226,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 有的话就填充能量
             const transferResult = creep.transfer(target, RESOURCE_ENERGY)
-            if (transferResult === ERR_NOT_IN_RANGE) creep.goTo(target.pos, 1)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.goTo(target.pos)
             else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
         },
         switch: creep => creep.store[RESOURCE_ENERGY] > 0
