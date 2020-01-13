@@ -89,7 +89,7 @@ const PowerTasks: IPowerTaskConfigs = {
          * 把 ops 存到 terminal 里
          */
         target: creep => {
-            // 塞不进去就乐观点，继续干其他的或
+            // 塞不进去就乐观点，继续干其他的活
             if (!creep.room.terminal || creep.room.terminal.store.getFreeCapacity() < 5) return OK
 
             const transferResult = creep.transfer(creep.room.terminal, RESOURCE_OPS)

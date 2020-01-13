@@ -499,7 +499,7 @@ class CreepExtension extends Creep {
             // 让维修单位可以快速发现新 rempart
             if (target.structureType == STRUCTURE_RAMPART) delete this.room.memory.focusWall
         }
-        else if (buildResult == ERR_NOT_IN_RANGE) this.moveTo(target, getPath('build'))
+        else if (buildResult == ERR_NOT_IN_RANGE) this.goTo(target.pos)
         return true
     }
 
@@ -556,7 +556,7 @@ class CreepExtension extends Creep {
 
         // 填充墙壁
         if(this.repair(targetWall) == ERR_NOT_IN_RANGE) {
-            this.moveTo(targetWall, getPath('repair'))
+            this.goTo(targetWall.pos)
         }
         return true
     }
@@ -592,7 +592,7 @@ class CreepExtension extends Creep {
         // 转移能量实现
         const result: ScreepsReturnCode = this.transfer(target, RESOURCE)
         if (result == ERR_NOT_IN_RANGE) {
-            this.moveTo(target, getPath())
+            this.goTo(target.pos)
         }
         return result
     }

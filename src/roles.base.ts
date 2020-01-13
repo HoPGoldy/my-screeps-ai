@@ -33,7 +33,7 @@ export default {
                     filter: s => {
                         // 是否有目标 extension 和 tower
                         const hasTargetSpawn = (s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_SPAWN) && 
-                            (s.energy < s.energyCapacity)
+                            (s.store[RESOURCE_ENERGY] < s.energyCapacity)
                         // 是否有目标 tower
                         const hasTargetTower = (s.structureType == STRUCTURE_TOWER) && 
                             (s.store[RESOURCE_ENERGY] < 800)

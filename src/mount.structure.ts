@@ -464,14 +464,14 @@ class LinkExtension extends StructureLink {
         // 能量为空则待机
         if (<number>this.store.getCapacity(RESOURCE_ENERGY) == 0) return
         // 之前发的转移任务没有处理好的话就先挂机
-        if (this.room.hasCenterTask(this.id)) return 
+        if (this.room.hasCenterTask(this.id) || !this.room.storage) return 
 
         this.room.addCenterTask({
             submitId: this.id,
             sourceId: this.id,
             targetId: this.room.storage.id,
             resourceType: RESOURCE_ENERGY,
-            amount: this.energy
+            amount: this.store[RESOURCE_ENERGY]
         })
     }
 
@@ -489,7 +489,7 @@ class LinkExtension extends StructureLink {
         if (this.room.memory.upgradeLinkId) {
             const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')
             // 如果 upgrade link 没能量了就转发给它
-            if (upgradeLink && upgradeLink.energy == 0) {
+            if (upgradeLink && upgradeLink.store[RESOURCE_ENERGY] == 0) {
                 this.transferEnergy(upgradeLink) 
                 return
             }
@@ -497,7 +497,7 @@ class LinkExtension extends StructureLink {
         // 发送给 center link
         if (this.room.memory.centerLinkId) {
             const centerLink = this.getLinkByMemoryKey('centerLinkId')
-            if (!centerLink) return
+            if (!centerLink || centerLink.store[RESOURCE_ENERGY] >= 799) return
 
             this.transferEnergy(centerLink)
         }
