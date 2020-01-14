@@ -500,6 +500,10 @@ interface FlagMemory {
     travelComplete?: boolean
     // 该旗帜下标注的资源 id
     sourceId?: string
+
+    // 当前 powerbank 采集的状态
+    state?: string
+
     // 因为外矿房间有可能没视野
     // 所以把房间名缓存进内存
     roomName?: string

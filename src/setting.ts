@@ -379,6 +379,18 @@ export const BOOST_TYPE = {
 }
 
 /**
+ * powerbank 的采集阶段
+ * @property {} ATTACK 正在拆除
+ * @property {} PREPARE 快拆完了，transfer 准备过来
+ * @property {} TRANSFE 拆除完成，正在搬运
+ */
+export const PB_HARVESTE_STATE = {
+    ATTACK: 'attack',
+    PREPARE: 'prepare',
+    TRANSFE: 'transfe'
+}
+
+/**
  * 默认的旗帜名称
  */
 export const DEFAULT_FLAG_NAME = {

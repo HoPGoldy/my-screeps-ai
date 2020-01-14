@@ -112,3 +112,18 @@
 - 否则就 return false
 
 **身体部件**: 25\*CARRY, 25\*MOVE
+
+# 持久化
+
+`pbFlag.memory`
+
+```ts
+{
+    // 当前采集所处的阶段
+    state: string
+    // 移动至 pb 所需的时间
+    travelTime: number
+    // pb 的 id
+    sourceId: string
+}
+```

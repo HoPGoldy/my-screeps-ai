@@ -1,4 +1,5 @@
-import { DEFAULT_FLAG_NAME } from './setting'
+import { DEFAULT_FLAG_NAME, PB_HARVESTE_STATE } from './setting'
+import { calcBodyPart } from './utils'
 
 /**
  * 多房间角色组
@@ -366,6 +367,7 @@ export default {
         spawn: spawnName,
         bodyType: 'remoteDefender'
     }),
+
     /**
      * deposit采集者
      * 从指定矿中挖 deposit > 将矿转移到建筑中
@@ -491,6 +493,139 @@ export default {
         spawn: spawnName,
         bodyType: 'remoteHarvester'
     }),
+
+    /**
+     * PowerBank 攻击单位
+     * 移动并攻击 powerBank, 请在 8 级时生成
+     * @see doc "../doc/PB 采集小组设计案"
+     * 
+     * @param spawnName 出生点名称
+     * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
+     */
+    pbAttacker: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
+        isNeed: room => {
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[${room.name}] pbAttacker 未找到旗帜，待命中`)
+                return false
+            }
+
+            // 如果旗帜的状态符合的话，就进行生成
+            if (
+                targetFlag.memory.state == undefined ||
+                targetFlag.memory.state == PB_HARVESTE_STATE.ATTACK ||
+                targetFlag.memory.state == PB_HARVESTE_STATE.PREPARE
+            ) return true
+            
+            // 默认不生成
+            return false
+        },
+        prepare: creep => {
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[${creep.name}] pbAttacker 未找到旗帜，待命中`)
+                return false
+            }
+
+            // 朝目标移动
+            creep.farMoveTo(targetFlag.pos)
+
+            // 如果到了就算准备完成
+            if (creep.pos.isEqualTo(targetFlag.pos)) {
+                // 检查下是否还没统计移动所需时间
+                if (!targetFlag.memory.travelTime) targetFlag.memory.travelTime = CREEP_LIFE_TIME - creep.ticksToLive
+                return true
+            }
+
+            return false
+        },
+        target: creep => {
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[${creep.name}] pbAttacker 未找到旗帜，待命中`)
+                return false
+            }
+
+            let powerbank: StructurePowerBank = undefined
+            if (targetFlag.memory.sourceId) powerbank = Game.getObjectById(targetFlag.memory.sourceId)
+            else {
+                powerbank = targetFlag.pos.findInRange<StructurePowerBank>(FIND_STRUCTURES, 1, {
+                    filter: s => s.structureType === STRUCTURE_POWER_BANK
+                })[0]
+            }
+
+            if (!powerbank) {
+                const powerbankRuin = targetFlag.pos.findInRange(FIND_RUINS, 1, {
+                    filter: r => r.structure.structureType === STRUCTURE_POWER_BANK
+                })[0]
+
+                // 没找到 ruin 的话说明任务失败，释放旗帜并自杀
+                if (!powerbankRuin) {
+                    delete targetFlag.memory
+                    targetFlag.remove()
+                    creep.suicide()
+
+                    return
+                }
+
+                // 找到了就进入下个阶段
+                targetFlag.memory.sourceId = powerbankRuin.id
+                targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFE
+                creep.suicide()
+                return
+            }
+
+            /**
+             * @todo 没写完
+             */
+        },
+        spawn: spawnName,
+        bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
+    }),
+
+    // /**
+    //  * PowerBank 治疗单位
+    //  * 移动并治疗 pbAttacker, 请在 8 级时生成
+    //  * @see doc "../doc/PB 采集小组设计案"
+    //  * 
+    //  * @param spawnName 出生点名称
+    //  * @param targetCreepName 要治疗的 pbAttacker 的名字
+    //  */
+    // pbHealer: (spawnName: string, targetCreepName: string): ICreepConfig => ({
+    //     isNeed: () => {
+            
+    //     },
+    //     target: creep => {
+            
+    //     },
+    //     switch: creep => {
+            
+    //     },
+    //     spawn: spawnName,
+    //     bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
+    // }),
+
+    // /**
+    //  * PowerBank 运输单位
+    //  * 搬运 PowerBank Ruin 中的 power, 请在 8 级时生成
+    //  * @see doc "../doc/PB 采集小组设计案"
+    //  * 
+    //  * @param spawnName 出生点名称
+    //  * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
+    //  */
+    // pbTransfer: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
+    //     isNeed: () => {
+            
+    //     },
+    //     target: creep => {
+            
+    //     },
+    //     switch: creep => {
+            
+    //     },
+    //     spawn: spawnName,
+    //     bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
+    // }),
 
      /**
      * 移动测试单位
