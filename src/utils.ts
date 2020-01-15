@@ -145,4 +145,6 @@ export function stateScanner(): void {
     Memory.stats.cpu = Game.cpu.getUsed(),
     // bucket 当前剩余量
     Memory.stats.bucket = Game.cpu.bucket
+    // 统计剩余钱数
+    Memory.stats.credit = Game.market.credits
 }

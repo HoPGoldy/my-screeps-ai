@@ -1,5 +1,22 @@
+/**
+ * 将所有的房间基础服务挂载至 Room 原型上
+ * 
+ * 注意此处没有直接在 RoomBase 中定义 getter 然后签入 Room.prototype
+ * 是因为这样做编译后会错误的直接执行所有 getter 并且后续无法使用，暂时没有发现解决办法
+ * 老版本的挂载方式见 commit id: ea75cfa66eb16e86640fe1300c40e0313d35b4e5
+ */
 export default function () {
-    _.assign(Room.prototype, RoomBase.prototype)
+    // 遍历 RoomBase 所有属性，并将 Room 原型上不存在的属性挂载至其上
+    for (const key in RoomBase.prototype) {
+        if (key in Room.prototype) continue
+
+        // 挂载 get 访问器
+        Object.defineProperty(Room.prototype, key, {
+            get: RoomBase.prototype[key],
+            enumerable: false,
+            configurable: true
+        })
+    }
 }
 
 /**
@@ -21,8 +38,8 @@ class RoomBase extends Room {
      * 这么做是为了避免房间内没有工厂时每 tick 都 find 从而造成资源浪费。
      * factoryId 由 StructureFactory 写入
      */
-    get factory(): StructureFactory | undefined {
-        if (this._factory) return this.factory
+    public factory(): StructureFactory | undefined {
+        if (this._factory) return this._factory
 
         // 如果没有缓存就检查内存中是否存有 id
         if (this.memory.factoryId) {
@@ -49,7 +66,7 @@ class RoomBase extends Room {
      * 读取房间内存中的 mineralId 重建 Mineral 对象。
      * 如果没有该字段的话会自行搜索
      */
-    get mineral(): Mineral | undefined {
+    public mineral(): Mineral | undefined {
         if (this._mineral) return this._mineral
 
         // 如果内存中存有 id 的话就读取并返回

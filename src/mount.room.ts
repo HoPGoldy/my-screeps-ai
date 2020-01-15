@@ -5,7 +5,7 @@ import { ENERGY_SHARE_LIMIT, BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
 // 挂载拓展到 Room 原型
 export default function () {
     // 优先挂载 Room 基础服务
-    // mountRoomBase()
+    mountRoomBase()
 
     // 再挂载 Room 拓展
     _.assign(Room.prototype, RoomExtension.prototype)

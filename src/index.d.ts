@@ -491,6 +491,8 @@ interface Memory {
         cpu?: number
         // bucket 当前数值
         bucket?: number
+        // 当前还有多少钱
+        credit?: number
 
         // 已经完成的房间物流任务比例
         roomTaskNumber?: {

@@ -657,7 +657,6 @@ export default {
 
             // 如果旗帜的状态符合的话，就进行生成
             if (
-                targetFlag.memory.state == undefined ||
                 targetFlag.memory.state == PB_HARVESTE_STATE.PREPARE ||
                 targetFlag.memory.state == PB_HARVESTE_STATE.TRANSFE
             ) return true
@@ -684,7 +683,7 @@ export default {
             // 获取 powerBank 的废墟
             const powerbankRuin: Ruin = Game.getObjectById(targetFlag.memory.sourceId)
             if (!powerbankRuin) {
-                console.log(`[${creep.name}] 未找到 pb 废墟`)
+                // console.log(`[${creep.name}] 未找到 pb 废墟`)
                 creep.say('这波没了呀')
                 return false
             }

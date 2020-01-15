@@ -21,7 +21,7 @@ export default function () {
 function mountRoomToGlobal() {
     for (const roomName in Memory.rooms) {
         // console.log('挂载', roomName)
-        global[roomName] = Game.rooms[roomName]
+        if (Game.rooms[roomName]) global[roomName] = Game.rooms[roomName]
     }
 }
 
