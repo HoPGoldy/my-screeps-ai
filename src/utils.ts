@@ -17,7 +17,7 @@ const pathMap: IPathMap = {
  * @param pathName 路径的名称
  * @returns 包含可视化路径的对象
  */
-export function getPath (pathName: string='default'): MoveToOpts {
+export function getPath(pathName: string='default'): MoveToOpts {
     const pathColor: string = (pathName in pathMap) ? 
         pathMap[pathName] : 
         pathMap['default']
@@ -27,6 +27,15 @@ export function getPath (pathName: string='default'): MoveToOpts {
             stroke: pathColor
         }
     }
+}
+
+/**
+* 获取指定方向的相反方向
+* 
+* @param direction 目标方向
+*/
+export function getOppositeDirection(direction: DirectionConstant): DirectionConstant {
+   return <DirectionConstant>((direction + 3) % 8 + 1)
 }
 
 /**

@@ -1,4 +1,4 @@
-import { getPath } from './utils'
+import { getPath, getOppositeDirection } from './utils'
 import { creepConfigs } from './config'
 import { repairSetting } from './setting'
 
@@ -372,14 +372,14 @@ class CreepExtension extends Creep {
      */
     private mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
         // 获取前方位置上的 creep（fontCreep）
-        const fontPos = this.directionToPos(direction)
+        const fontPos = this.pos.directionToPos(direction)
         const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
 
         if (!fontCreep) return ERR_NOT_FOUND
 
         this.say(`👉`)
         // 如果前面的 creep 同意对穿了，自己就朝前移动
-        if (fontCreep.requireCross(this.getOppositeDirection(direction))) this._move(direction)
+        if (fontCreep.requireCross(getOppositeDirection(direction))) this._move(direction)
         else return 
 
         return OK
@@ -405,40 +405,6 @@ class CreepExtension extends Creep {
         this.say('👌')
         this._move(direction)
         return true
-    }
-
-    /**
-     * 获取当前位置目标房间的 pos 对象
-     * 
-     * @param direction 目标方向
-     */
-    private directionToPos(direction: DirectionConstant): RoomPosition | undefined {
-        let targetX = this.pos.x
-        let targetY = this.pos.y
-
-        // 纵轴移动，方向朝下就 y ++，否则就 y --
-        if (direction !== LEFT && direction !== RIGHT) {
-            if (direction > LEFT || direction < RIGHT) targetY --
-            else targetY ++
-        }
-        // 横轴移动，方向朝右就 x ++，否则就 x --
-        if (direction !== TOP && direction !== BOTTOM) {
-            if (direction < BOTTOM) targetX ++
-            else targetX --
-        }
-
-        // 如果要移动到另一个房间的话就返回空，否则返回目标 pos
-        if (targetX < 0 || targetY > 49 || targetX > 49 || targetY < 0) return undefined
-        else return new RoomPosition(targetX, targetY, this.room.name)
-    }
-
-    /**
-     * 获取指定方向的相反方向
-     * 
-     * @param direction 目标方向
-     */
-    private getOppositeDirection(direction: DirectionConstant): DirectionConstant {
-        return <DirectionConstant>((direction + 3) % 8 + 1)
     }
 
     /**

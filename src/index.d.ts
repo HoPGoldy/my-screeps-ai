@@ -228,6 +228,10 @@ interface Room {
     removeRestrictedPos(pos: RoomPosition): void
 }
 
+interface RoomPosition {
+    directionToPos(direction: DirectionConstant): RoomPosition | undefined
+}
+
 /**
  * 房间内存
  */
