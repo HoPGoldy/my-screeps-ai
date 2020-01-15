@@ -273,8 +273,12 @@ interface RoomMemory {
     // 当前终端要监听的资源索引
     terminalIndex: number
     
-    // 房间内的元素矿id
+    // 房间内的元素矿 id
     mineralId: string
+    // 房间内的 Factory id
+    factoryId: string
+    // 房间中的 Extractor id
+    extractorId: string
     
     // Link 的专用内存字段
     links?: {

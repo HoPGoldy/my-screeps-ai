@@ -536,6 +536,8 @@ const FACTORY_TARGET_LIMIT = 500
  */
 class FactoryExtension extends StructureFactory {
     public work(): void {
+        // 实时更新房间内存中 factoryId
+        if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) return
         // 获取不到目标资源就跳过
@@ -918,8 +920,10 @@ class TerminalExtension extends StructureTerminal {
  */
 class ExtractorExtension extends StructureExtractor {
     public work(): void {
-        if (this.room.memory.mineralId) return
-        
+        // 下面两行确保 work 只执行一次
+        if (this.room.memory.extractorId) return
+        this.room.memory.extractorId = this.id
+
         // 获取 mineral 并将其 id 保存至房间内存
         const targets = this.room.find(FIND_MINERALS)
         const mineral = targets[0]
