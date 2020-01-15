@@ -503,10 +503,10 @@ export default {
      * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
      */
     pbAttacker: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
-        isNeed: room => {
+        isNeed: () => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${room.name}] pbAttacker 未找到旗帜，待命中`)
+                console.log(`[pbAttacker] 未找到旗帜，待命中`)
                 return false
             }
 
@@ -523,7 +523,7 @@ export default {
         prepare: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] pbAttacker 未找到旗帜，待命中`)
+                console.log(`[${creep.name}] 未找到旗帜，待命中`)
                 return false
             }
 
@@ -542,18 +542,23 @@ export default {
         target: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] pbAttacker 未找到旗帜，待命中`)
+                console.log(`[${creep.name}] 未找到旗帜，待命中`)
                 return false
             }
 
+            // 获取 pb
             let powerbank: StructurePowerBank = undefined
             if (targetFlag.memory.sourceId) powerbank = Game.getObjectById(targetFlag.memory.sourceId)
             else {
+                // 没有缓存就进行查找
                 powerbank = targetFlag.pos.findInRange<StructurePowerBank>(FIND_STRUCTURES, 1, {
                     filter: s => s.structureType === STRUCTURE_POWER_BANK
                 })[0]
+                // 并写入缓存
+                if (powerbank) targetFlag.memory.sourceId = powerbank.id
             }
 
+            // 找不到 pb 了，找下废墟
             if (!powerbank) {
                 const powerbankRuin = targetFlag.pos.findInRange(FIND_RUINS, 1, {
                     filter: r => r.structure.structureType === STRUCTURE_POWER_BANK
@@ -575,57 +580,163 @@ export default {
                 return
             }
 
-            /**
-             * @todo 没写完
-             */
+            const attackResult = creep.attack(powerbank)
+
+            // 如果血量低于标准了，则通知运输单位进行生成
+            if (attackResult === OK) {
+                if (powerbank.hits <= (targetFlag.memory.travelTime + 150) * 600) {
+                    targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
+                }
+            }
         },
         spawn: spawnName,
         bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
     }),
 
-    // /**
-    //  * PowerBank 治疗单位
-    //  * 移动并治疗 pbAttacker, 请在 8 级时生成
-    //  * @see doc "../doc/PB 采集小组设计案"
-    //  * 
-    //  * @param spawnName 出生点名称
-    //  * @param targetCreepName 要治疗的 pbAttacker 的名字
-    //  */
-    // pbHealer: (spawnName: string, targetCreepName: string): ICreepConfig => ({
-    //     isNeed: () => {
-            
-    //     },
-    //     target: creep => {
-            
-    //     },
-    //     switch: creep => {
-            
-    //     },
-    //     spawn: spawnName,
-    //     bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
-    // }),
+    /**
+     * PowerBank 治疗单位
+     * 移动并治疗 pbAttacker, 请在 8 级时生成
+     * @see doc "../doc/PB 采集小组设计案"
+     * 
+     * @param spawnName 出生点名称
+     * @param targetCreepName 要治疗的 pbAttacker 的名字
+     */
+    pbHealer: (spawnName: string, targetCreepName: string): ICreepConfig => ({
+        isNeed: () => {
+            const targetCreep = Game.creeps[targetCreepName]
 
-    // /**
-    //  * PowerBank 运输单位
-    //  * 搬运 PowerBank Ruin 中的 power, 请在 8 级时生成
-    //  * @see doc "../doc/PB 采集小组设计案"
-    //  * 
-    //  * @param spawnName 出生点名称
-    //  * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
-    //  */
-    // pbTransfer: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
-    //     isNeed: () => {
+            // 攻击 creep 存在时才会生成
+            if (targetCreep) return true
+
+            // 默认不生成
+            console.log(`[pbHeal] 未找到存活的攻击单位，待命中`)
+            return false
+        },
+        prepare: creep => {
+            const targetCreep = Game.creeps[targetCreepName]
+            // 对象没了就殉情
+            if (!targetCreep) creep.suicide()
             
-    //     },
-    //     target: creep => {
+            creep.farMoveTo(targetCreep.pos)
+
+            if (!creep.pos.inRangeTo(targetCreep, 3)) return false
+            // 三格之内直接远程治疗
+            creep.rangedHeal(targetCreep)
+
+            // 移动到身边了就算准备完成
+            if (creep.pos.isNearTo(targetCreep)) return true
+            return false
+        },
+        target: creep => {
+            const targetCreep = Game.creeps[targetCreepName]
+            // 对象没了就殉情
+            if (!targetCreep) creep.suicide()
+
+            creep.heal(targetCreep)
+        },
+        spawn: spawnName,
+        bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
+    }),
+
+    /**
+     * PowerBank 运输单位
+     * 搬运 PowerBank Ruin 中的 power, 请在 8 级时生成
+     * @see doc "../doc/PB 采集小组设计案"
+     * 
+     * @param spawnName 出生点名称
+     * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
+     * @param targetId 要搬运到的建筑 id（默认为 terminal）
+     */
+    pbTransfer: (spawnName: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
+        isNeed: () => {
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[pbTransfer] 未找到旗帜，待命中`)
+                return false
+            }
+
+            // 如果旗帜的状态符合的话，就进行生成
+            if (
+                targetFlag.memory.state == undefined ||
+                targetFlag.memory.state == PB_HARVESTE_STATE.PREPARE ||
+                targetFlag.memory.state == PB_HARVESTE_STATE.TRANSFE
+            ) return true
             
-    //     },
-    //     switch: creep => {
-            
-    //     },
-    //     spawn: spawnName,
-    //     bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
-    // }),
+            // 默认不生成
+            return false
+        },
+        source: creep => {
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[${creep.name}] 未找到旗帜，待命中`)
+                creep.say('搬啥？')
+                return false
+            }
+
+            // 准备阶段就移动找到旗帜三格附近
+            if (targetFlag.memory.state == PB_HARVESTE_STATE.PREPARE) {
+                creep.farMoveTo(targetFlag.pos, [], 3)
+                return false
+            }
+            // 运输阶段再移动到旗帜位置上 
+            else if (targetFlag.memory.state === PB_HARVESTE_STATE.TRANSFE) creep.goTo(targetFlag.pos)
+
+            // 获取 powerBank 的废墟
+            const powerbankRuin: Ruin = Game.getObjectById(targetFlag.memory.sourceId)
+            if (!powerbankRuin) {
+                console.log(`[${creep.name}] 未找到 pb 废墟`)
+                creep.say('这波没了呀')
+                return false
+            }
+
+            // 获取 Power
+            const withdrawResult = creep.withdraw(powerbankRuin, RESOURCE_POWER)
+            // 如果废墟搬空了就移除旗帜
+            if (withdrawResult === OK && powerbankRuin.store[RESOURCE_POWER] <= 0) {
+                delete targetFlag.memory
+                targetFlag.remove()
+            }
+        },
+        target: creep => {
+            let target: AnyStoreStructure = undefined
+
+            // 获取存放到的建筑
+            if (targetId) target = Game.getObjectById(targetId)
+            else {
+                const spawn = Game.spawns[spawnName]
+                if (!spawn || spawn.room.terminal) {
+                    console.log(`[${creep.name}] 找不到存放建筑`)
+                    return false
+                }
+                
+                target = spawn.room.terminal
+            }
+
+            // 存放资源
+            const transferResult = creep.transfer(target, RESOURCE_POWER)
+            if (transferResult === OK) {
+                const targetFlag = Game.flags[sourceFlagName]
+                // 旗帜不存在或者自己已经来不及再搬一趟了，就自杀
+                if (
+                    !targetFlag ||
+                    creep.ticksToLive < (targetFlag.memory.travelTime * 2) + 10    
+                ) {
+                    creep.suicide()
+                    return true
+                }
+            }
+        },
+        switch: creep => {
+            // 有 power 就是 target 阶段
+            if (creep.store[RESOURCE_POWER] > 0 && creep.memory.working === false) creep.memory.working = true
+            // 一点没有就是 source 阶段
+            else if (creep.store[RESOURCE_POWER] <= 0 && creep.memory.working === true) creep.memory.working = false
+
+            return creep.memory.working
+        },
+        spawn: spawnName,
+        bodys: calcBodyPart({ [CARRY]: 25, [MOVE]: 25 })
+    }),
 
      /**
      * 移动测试单位

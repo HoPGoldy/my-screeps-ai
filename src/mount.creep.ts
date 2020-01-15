@@ -392,11 +392,16 @@ class CreepExtension extends Creep {
      * @param direction 请求该 creep 进行对穿
      */
     public requireCross(direction: DirectionConstant): Boolean {
+        // this 下没有 memory 说明 creep 已经凉了，直接移动即可
+        if (!this.memory) return true
+
+        // 拒绝对穿
         if (this.memory.standed) {
             this.say('👊')
             return false
         }
 
+        // 同意对穿
         this.say('👌')
         this._move(direction)
         return true
