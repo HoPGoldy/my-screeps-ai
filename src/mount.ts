@@ -16,7 +16,7 @@ export default function (): void {
         mountGlobal()
         mountRoom()
         mountCreep()
-        // mountPowerCreep()
+        mountPowerCreep()
         mountStructure()
     }
 }

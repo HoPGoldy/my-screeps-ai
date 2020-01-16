@@ -72,6 +72,7 @@ interface Creep {
     farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
+    mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND
     upgrade(): boolean
     buildStructure(): boolean
     fillDefenseStructure(expectHits?: number): boolean
@@ -91,7 +92,10 @@ interface Creep {
  * 来自于 mount.powerCreep.ts
  */
 interface PowerCreep {
+    _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
+    goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
+    enablePower(): void
 }
 
 /**
@@ -184,7 +188,7 @@ interface Room {
     _hasRunLab: boolean
 
     // 房间基础服务
-    factory: StructureFactory
+    factory?: StructureFactory
     powerSpawn: StructurePowerSpawn
     nuker: StructureNuker
     mineral: Mineral
@@ -684,6 +688,8 @@ interface IBoostConfig {
  * PowerCreep 内存拓展
  */
 interface PowerCreepMemory {
+    // 为 true 时执行 target，否则执行 source
+    working: boolean
     // 接下来要检查哪个 power
     powerIndex: number, 
     // 当前要处理的工作

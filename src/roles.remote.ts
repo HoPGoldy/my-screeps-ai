@@ -566,7 +566,7 @@ export default {
 
                 // 没找到 ruin 的话说明任务失败，释放旗帜并自杀
                 if (!powerbankRuin) {
-                    delete targetFlag.memory
+                    delete Memory.flags[sourceFlagName]
                     targetFlag.remove()
                     creep.suicide()
 
@@ -692,7 +692,7 @@ export default {
             const withdrawResult = creep.withdraw(powerbankRuin, RESOURCE_POWER)
             // 如果废墟搬空了就移除旗帜
             if (withdrawResult === OK && powerbankRuin.store[RESOURCE_POWER] <= 0) {
-                delete targetFlag.memory
+                delete Memory.flags[sourceFlagName]
                 targetFlag.remove()
             }
         },

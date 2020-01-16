@@ -13,6 +13,9 @@ module.exports.loop = function (): void {
     // 所有 creep 工作
     doing(Game.creeps)
 
+    // 所有 powerCreep 工作
+    doing(Game.powerCreeps)
+
     // 统计全局资源使用
     stateScanner()
 }

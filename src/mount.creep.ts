@@ -370,7 +370,7 @@ class CreepExtension extends Creep {
      * @returns ERR_BUSY 对方拒绝对穿
      * @returns ERR_NOT_FOUND 前方没有 creep
      */
-    private mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
+    public mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
         // 获取前方位置上的 creep（fontCreep）
         const fontPos = this.pos.directionToPos(direction)
         const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
