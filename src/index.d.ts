@@ -183,6 +183,13 @@ interface Room {
     // 在 Lab.work 中调用，一个房间只会执行一次
     _hasRunLab: boolean
 
+    // 房间基础服务
+    factory: StructureFactory
+    powerSpawn: StructurePowerSpawn
+    nuker: StructureNuker
+    mineral: Mineral
+    sources: Source[]
+
     // pos 处理 api
     serializePos(pos: RoomPosition): string
     unserializePos(posStr: string): RoomPosition | undefined

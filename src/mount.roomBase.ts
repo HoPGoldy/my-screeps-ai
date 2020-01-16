@@ -12,7 +12,9 @@ export default function () {
         if (key in Room.prototype) continue
 
         // 挂载属性的 get 访问器
-        Object.defineProperty(Room.prototype, key, {
+        // 这里通过处理 key 的名字，把 factoryGetter 挂载到 factory 属性的 get 方法上
+        // 这么做的原因是为了避免 factory 访问器的类型和 index.d.ts 中定义冲突从而导致 ts 报错
+        Object.defineProperty(Room.prototype, key.split('Getter')[0], {
             get: RoomBase.prototype[key],
             enumerable: false,
             configurable: true
@@ -42,7 +44,7 @@ class RoomBase extends Room {
      * 这么做是为了避免房间内没有工厂时每 tick 都 find 从而造成资源浪费。
      * factoryId 由 StructureFactory 写入
      */
-    public factory(): StructureFactory | undefined {
+    public factoryGetter(): StructureFactory | undefined {
         if (this._factory) return this._factory
 
         // 如果没有缓存就检查内存中是否存有 id
@@ -69,7 +71,7 @@ class RoomBase extends Room {
      * 
      * 工作机制同上 factory 访问器
      */
-    public powerSpawn(): StructurePowerSpawn | undefined {
+    public powerSpawnGetter(): StructurePowerSpawn | undefined {
         if (this._powerspawn) return this._powerspawn
 
         // 如果没有缓存就检查内存中是否存有 id
@@ -96,7 +98,7 @@ class RoomBase extends Room {
      * 
      * 工作机制同上 factory 访问器
      */
-    public nuker(): StructureNuker | undefined {
+    public nukerGetter(): StructureNuker | undefined {
         if (this._nuker) return this._nuker
 
         // 如果没有缓存就检查内存中是否存有 id
@@ -124,7 +126,7 @@ class RoomBase extends Room {
      * 读取房间内存中的 mineralId 重建 Mineral 对象。
      * 如果没有该字段的话会自行搜索并保存至房间内存
      */
-    public mineral(): Mineral | undefined {
+    public mineralGetter(): Mineral | undefined {
         if (this._mineral) return this._mineral
 
         // 如果内存中存有 id 的话就读取并返回
@@ -152,7 +154,7 @@ class RoomBase extends Room {
      * 
      * 工作机制同上 mineral 访问器
      */
-    public sources(): Source[] | undefined {
+    public sourcesGetter(): Source[] | undefined {
         if (this._sources) return this._sources
 
         // 如果内存中存有 id 的话就读取并返回

@@ -39,11 +39,23 @@ class PowerCreepExtension extends PowerCreep {
      * @param roomName 要生成的房间名
      * @returns OK 生成成功
      * @returns ERR_INVALID_ARGS 该房间没有视野
-     * @returns ERR_NOT_FOUND 该房间没有 PowerSpawn
+     * @returns ERR_NOT_FOUND 该房间不存在或者其中没有 PowerSpawn
      */
     private spawnAtRoom(roomName: string): OK | ERR_INVALID_ARGS | ERR_NOT_FOUND {
+        const targetRoom = Game.rooms[roomName]
+        if (!targetRoom || !targetRoom.powerSpawn) {
+            console.log(`[${this.name}] 找不到指定房间或者房间内没有 powerSpawn，请重新指定工作房间`)
+            return ERR_NOT_FOUND
+        }
+
         console.log(`[${this.name}] 进行生成！`)
-        return OK
+        const spawnResult = this.spawn(targetRoom.powerSpawn)
+        
+        if (spawnResult === OK) return OK
+        else {
+            console.log(`[${this.name}] 孵化异常! 错误码: ${spawnResult}`)
+            return ERR_INVALID_ARGS
+        }
     }
 
     /**
