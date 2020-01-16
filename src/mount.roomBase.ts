@@ -1,16 +1,17 @@
 /**
  * 将所有的房间基础服务挂载至 Room 原型上
+ * 详细信息见下文 RoomBase 注释
  * 
  * 注意此处没有直接在 RoomBase 中定义 getter 然后签入 Room.prototype
  * 是因为这样做编译后会错误的直接执行所有 getter 并且后续无法使用，暂时没有发现解决办法
  * 老版本的挂载方式见 commit id: ea75cfa66eb16e86640fe1300c40e0313d35b4e5
  */
 export default function () {
-    // 遍历 RoomBase 所有属性，并将 Room 原型上不存在的属性挂载至其上
+    // 遍历 RoomBase 所有属性，并挂载 Room 原型上不存在的属性
     for (const key in RoomBase.prototype) {
         if (key in Room.prototype) continue
 
-        // 挂载 get 访问器
+        // 挂载属性的 get 访问器
         Object.defineProperty(Room.prototype, key, {
             get: RoomBase.prototype[key],
             enumerable: false,
@@ -21,9 +22,10 @@ export default function () {
 
 /**
  * Room 基础服务
+ * 提供对房间内资源的快捷访问方式，如：W1N1.nuker、W1N1.sources 等
  * 
- * 包括唯一型建筑（Nuker、Factory ...）
- * 和无法修改型建筑（Source、Mineral ...）
+ * 本服务包括唯一型建筑（Nuker、Factory ...）
+ * 和自然资源（Source、Mineral ...）
  */
 class RoomBase extends Room {
     // 资源和建筑的非持久缓存
