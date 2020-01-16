@@ -1425,6 +1425,8 @@ class ControllerExtension extends StructureController {
 class NukerExtension extends StructureNuker {
     public work(): void {
         this.stateScanner()
+        // 注册自己的 id 来让房间基础服务可以发现自己
+        if (!this.room.memory.nukerId) this.room.memory.nukerId = this.id
 
         if (Game.time % 30) return
 
@@ -1473,6 +1475,9 @@ class NukerExtension extends StructureNuker {
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
         if (Game.time % 5) return
+        // 注册自己的 id 来让房间基础服务可以发现自己
+        if (!this.room.memory.powerSpawnId) this.room.memory.powerSpawnId = this.id
+        // 兜底
         if (!this.room.memory.powerSpawn) this.room.memory.powerSpawn = {}
         if (this.room.memory.powerSpawn.pause) return
 

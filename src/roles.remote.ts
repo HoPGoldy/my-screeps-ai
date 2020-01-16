@@ -418,7 +418,7 @@ export default {
             if (targetFlag.memory.sourceId) target = Game.getObjectById(targetFlag.memory.sourceId)
             else {
                 target = targetFlag.pos.lookFor(LOOK_DEPOSITS)[0]
-                console.log("TCL: target", target)
+                
                 // 找到了就赋值并缓存
                 if (target) targetFlag.memory.sourceId = target.id
                 // 找不到就失去了存在的意义
@@ -500,7 +500,7 @@ export default {
      * @see doc "../doc/PB 采集小组设计案"
      * 
      * @param spawnName 出生点名称
-     * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
+     * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      */
     pbAttacker: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
         isNeed: () => {
@@ -528,10 +528,10 @@ export default {
             }
 
             // 朝目标移动
-            creep.farMoveTo(targetFlag.pos)
+            creep.farMoveTo(targetFlag.pos, [], 1)
 
             // 如果到了就算准备完成
-            if (creep.pos.isEqualTo(targetFlag.pos)) {
+            if (creep.pos.isNearTo(targetFlag.pos)) {
                 // 检查下是否还没统计移动所需时间
                 if (!targetFlag.memory.travelTime) targetFlag.memory.travelTime = CREEP_LIFE_TIME - creep.ticksToLive
                 return true
@@ -644,7 +644,7 @@ export default {
      * @see doc "../doc/PB 采集小组设计案"
      * 
      * @param spawnName 出生点名称
-     * @param sourceFlagName 旗帜的名称 (插在攻击 PowerBank 的位置上)
+     * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      * @param targetId 要搬运到的建筑 id（默认为 terminal）
      */
     pbTransfer: (spawnName: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({

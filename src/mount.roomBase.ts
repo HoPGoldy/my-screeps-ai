@@ -26,10 +26,12 @@ export default function () {
  * 和无法修改型建筑（Source、Mineral ...）
  */
 class RoomBase extends Room {
-    // 工厂非持久缓存
+    // 资源和建筑的非持久缓存
     private _factory: StructureFactory
-    // 元素矿非持久缓存
     private _mineral: Mineral
+    private _powerspawn: StructurePowerSpawn
+    private _nuker: StructureNuker
+    private _sources: Source[]
 
     /**
      * factory 访问器
@@ -61,10 +63,64 @@ class RoomBase extends Room {
     }
 
     /**
-     * mineral 访问器
+     * powerSpawn 访问器
+     * 
+     * 工作机制同上 factory 访问器
+     */
+    public powerSpawn(): StructurePowerSpawn | undefined {
+        if (this._powerspawn) return this._powerspawn
+
+        // 如果没有缓存就检查内存中是否存有 id
+        if (this.memory.powerSpawnId) {
+            let powerSpawn: StructurePowerSpawn = Game.getObjectById(this.memory.powerSpawnId)
+
+            // 如果保存的 id 失效的话，就移除缓存
+            if (!powerSpawn) {
+                delete this.memory.powerSpawnId
+                return undefined
+            }
+
+            // 否则就暂存对象并返回
+            this._powerspawn = powerSpawn
+            return powerSpawn
+        }
+
+        // 内存中没有 id 就说明没有 powerSpawn
+        return undefined
+    }
+
+    /**
+     * nuker 访问器
+     * 
+     * 工作机制同上 factory 访问器
+     */
+    public nuker(): StructureNuker | undefined {
+        if (this._nuker) return this._nuker
+
+        // 如果没有缓存就检查内存中是否存有 id
+        if (this.memory.nukerId) {
+            let nuker: StructureNuker = Game.getObjectById(this.memory.nukerId)
+
+            // 如果保存的 id 失效的话，就移除缓存
+            if (!nuker) {
+                delete this.memory.nukerId
+                return undefined
+            }
+
+            // 否则就暂存对象并返回
+            this._nuker = nuker
+            return nuker
+        }
+
+        // 内存中没有 id 就说明没有 powerSpawn
+        return undefined
+    }
+
+    /**
+     * Mineral 访问器
      * 
      * 读取房间内存中的 mineralId 重建 Mineral 对象。
-     * 如果没有该字段的话会自行搜索
+     * 如果没有该字段的话会自行搜索并保存至房间内存
      */
     public mineral(): Mineral | undefined {
         if (this._mineral) return this._mineral
@@ -87,5 +143,33 @@ class RoomBase extends Room {
         this.memory.mineralId = mineral.id
         this._mineral = mineral
         return this._mineral
+    }
+
+    /**
+     * Source 访问器
+     * 
+     * 工作机制同上 mineral 访问器
+     */
+    public sources(): Source[] | undefined {
+        if (this._sources) return this._sources
+
+        // 如果内存中存有 id 的话就读取并返回
+        // source 不会过期，所以不需要进行处理
+        if (this.memory.sourceIds) {
+            this._sources = this.memory.sourceIds.map(id => Game.getObjectById(id))
+            return this._sources
+        }
+
+        // 没有 id 就进行搜索
+        const sources = this.find(FIND_SOURCES)
+        if (sources.length <= 0) {
+            console.log(`[${this.name} base] 异常访问，房间内没有找到 source`)
+            return undefined
+        }
+
+        // 缓存数据并返回
+        this.memory.sourceIds = sources.map(s => s.id)
+        this._sources = sources
+        return this._sources
     }
 }
