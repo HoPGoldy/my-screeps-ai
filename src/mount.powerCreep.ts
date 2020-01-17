@@ -11,8 +11,26 @@ export default function () {
  */
 class PowerCreepExtension extends PowerCreep {
     public work(): void {
-        // console.log(this.name, this.ticksToLive, this.spawnCooldownTime)
-        // 凉了就尝试生成
+        if (!this.keepAlive()) return
+
+        // 获取队列中的第一个任务并执行
+        const powerTask = this.room.getPowerTask() | PWR_GENERATE_OPS
+        // 没有任务的话就搓 ops
+        this.executeTask(powerTask as PowerConstant)
+    }
+
+    /**
+     * 保证自己一直活着
+     * 
+     * @returns 是否可以执行后面的工作
+     */
+    private keepAlive(): boolean {
+        // 快凉了就尝试重生
+        if (this.ticksToLive <= 100) {
+            this.say('插座在哪！')
+            if (this.renewSelf() === OK) return false
+        }
+        // 真凉了就尝试生成
         if (!this.ticksToLive) {
             // 还在冷却就等着
             if (!this.spawnCooldownTime) {
@@ -22,13 +40,10 @@ class PowerCreepExtension extends PowerCreep {
                 else this.spawnAtRoom(this.memory.workRoom)
             }
 
-            return
+            return false
         }
 
-        // 获取队列中的第一个任务并执行
-        const powerTask = this.room.getPowerTask() | PWR_GENERATE_OPS
-        // 没有任务的话就搓 ops
-        this.executeTask(powerTask as PowerConstant)
+        return true
     }
 
     /**
@@ -104,6 +119,21 @@ class PowerCreepExtension extends PowerCreep {
         if (this.enableRoom(this.room.controller) === ERR_NOT_IN_RANGE) {
             this.goTo(this.room.controller.pos)
         }
+    }
+
+    /**
+     * 找到房间中的 powerSpawn renew 自己
+     * 
+     * @returns OK 正在执行工作
+     * @returns ERR_NOT_FOUND 房间内没有 powerSpawn
+     */
+    private renewSelf(): OK | ERR_NOT_FOUND {
+        if (!this.room.powerSpawn) return ERR_NOT_FOUND
+
+        if (this.renew(this.room.powerSpawn) === ERR_NOT_IN_RANGE) {
+            this.goTo(this.room.powerSpawn.pos)
+        }
+        return OK
     }
 
     /**

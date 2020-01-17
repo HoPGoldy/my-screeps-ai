@@ -791,7 +791,7 @@ class TerminalExtension extends StructureTerminal {
             resourceType: resource.type
         })
         if (!targetOrder) {
-            console.log(`[${this.room.name} terminal] 没有为 ${resource.type} 找到合适的订单`)
+            // console.log(`[${this.room.name} terminal] 没有为 ${resource.type} 找到合适的订单`)
             this.setNextIndex()
             return
         }
