@@ -59,7 +59,10 @@ class SpawnExtension extends StructureSpawn {
              * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现：
              * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > 移除任务 > tick 末期开始孵化 > extension 扣除能量的错误逻辑
              */
-            if (this.spawning.needTime - this.spawning.remainingTime == 1) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION }, 1)
+            if (this.spawning.needTime - this.spawning.remainingTime == 1) {
+                this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION }, 1)
+                this.room.addPowerTask(PWR_OPERATE_EXTENSION, 1)
+            }
             return
         }
         // 内存里没有生成队列 / 生产队列为空 就啥都不干

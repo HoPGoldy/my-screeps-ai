@@ -25,67 +25,37 @@ class PowerCreepExtension extends PowerCreep {
             return
         }
 
-        // 有任务就处理任务
-        if (this.memory.task) this.executeCurrentTask()
-        // 没有任务就查找任务
-        else this.findTask()
+        // 获取队列中的第一个任务并执行
+        const powerTask = this.room.getPowerTask() | PWR_GENERATE_OPS
+        // 没有任务的话就搓 ops
+        this.executeTask(powerTask as PowerConstant)
     }
 
     /**
      * 处理当前的 power 任务
      */
-    private executeCurrentTask(): void {
-        const task = PowerTasks[this.memory.task]
+    private executeTask(task: PowerConstant): void {
+        const taskOptioon = PowerTasks[task]
+        if (!taskOptioon && task !== PWR_GENERATE_OPS) return this.room.deleteCurrentPowerTask()
 
         // 根据 working 字段觉得是执行 source 还是 target
         // working 的值由上个 tick 执行的 source 或者 target 的返回值决定
         if (this.memory.working) {
-            const result = task.target(this)
+            const result = taskOptioon.target(this)
 
             // target 返回 OK 才代表任务完成了
-            if (result === OK) this.finishCurrentTask()
+            if (result === OK && task !== PWR_GENERATE_OPS) this.room.deleteCurrentPowerTask()
             // target 资源不足了就去执行 source
             else if (result === ERR_NOT_ENOUGH_RESOURCES) this.memory.working = false
         }
         else {
-            const result = task.source(this)
+            const result = taskOptioon.source(this)
             
             // source OK 了代表资源获取完成，去执行 target
             if (result === OK) this.memory.working = true
             // 如果 source 还发现没资源的话就强制执行 ops 生成任务
             else if (result === ERR_NOT_ENOUGH_RESOURCES) this.memory.task = PWR_GENERATE_OPS
         }
-    }
-
-    /**
-     * 查找需要执行的 power 任务
-     */
-    private findTask(): void {
-        // 获取 PWR_* 常量及其对应的任务
-        const powerCode = Number(Object.keys(this.powers)[this.memory.powerIndex | 0])
-        const task = PowerTasks[powerCode]
-
-        // 如果任务不存在就下一个
-        if (!task) {
-            this.setNextIndex()
-            return console.log(`不存在 powerId 为 ${powerCode} 的任务`)
-        }
-        // 没冷却好也跳过
-        if (this.powers[powerCode].cooldown > 0) return this.setNextIndex()
-
-        // 任务存在的话就检查是否需要执行
-        if (task.needExecute(this)) this.memory.task = powerCode as PowerConstant
-        this.setNextIndex()
-    }
-
-    /**
-     * 前进至下一个 power 索引
-     */
-    private setNextIndex(): void {
-        let index = this.memory.powerIndex | 0
-        const tasksLength = Object.keys(this.powers).length
-        // 循环设置索引
-        this.memory.powerIndex = (index + 1 >= tasksLength) ? 0 : index + 1
     }
 
     /**
@@ -110,13 +80,6 @@ class PowerCreepExtension extends PowerCreep {
             console.log(`[${this.name}] 孵化异常! 错误码: ${spawnResult}`)
             return ERR_INVALID_ARGS
         }
-    }
-
-    /**
-     * 完成当前工作
-     */
-    private finishCurrentTask(): void {
-        delete this.memory.task
     }
 
     /**
@@ -168,18 +131,11 @@ class PowerCreepExtension extends PowerCreep {
  * @value power 任务的具体配置项
  */
 const PowerTasks: IPowerTaskConfigs = {
-    // 生成 ops 并存放至 terminal
+    /**
+     * 生成 ops 并存放至 terminal
+     * 注意，PWR_GENERATE_OPS 任务永远不会返回 OK，没有其他任务来打断它就会一直执行
+     */
     [PWR_GENERATE_OPS]: {
-        /**
-         * 确保 terminal 中的 ops 大于指定值
-         */
-        needExecute: creep => {
-            if (!creep.room.terminal) return true
-
-            // terminal 数量不够了
-            if (creep.room.terminal.store[RESOURCE_OPS] >= 100) return false
-            return true
-        },
         /**
          * 搓 ops，搓够指定数量就存一下
          */
@@ -213,19 +169,14 @@ const PowerTasks: IPowerTaskConfigs = {
 
             const transferResult = creep.transfer(creep.room.terminal, RESOURCE_OPS)
 
-            if (transferResult == OK) {
-                // 数量足够了就完成
-                if (creep.room.terminal.store[RESOURCE_OPS] >= 100) return OK
-                // 否则就继续搓
-                else return ERR_NOT_ENOUGH_RESOURCES
-            }
-            else if (transferResult == ERR_NOT_IN_RANGE) {
+            // 够不到就移动
+            if (transferResult == ERR_NOT_IN_RANGE) {
                 creep.goTo(creep.room.terminal.pos)
                 return ERR_BUSY
             }
-            else {
-                creep.say(`ops ${transferResult}`)
-                return ERR_BUSY
+            // ops 不足就继续生成
+            else if (transferResult == ERR_NOT_ENOUGH_RESOURCES){
+                return ERR_NOT_ENOUGH_RESOURCES
             }
         }
     }

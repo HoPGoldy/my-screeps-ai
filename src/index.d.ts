@@ -198,6 +198,11 @@ interface Room {
     serializePos(pos: RoomPosition): string
     unserializePos(posStr: string): RoomPosition | undefined
 
+    // power 任务 api
+    addPowerTask(task: PowerConstant, priority?: number): OK | ERR_NAME_EXISTS | ERR_INVALID_TARGET
+    deleteCurrentPowerTask(): void
+    getPowerTask(): PowerConstant | undefined
+
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
      */
@@ -267,6 +272,9 @@ interface RoomMemory {
     centerTransferTasks: ITransferTask[]
     // 房间物流任务队列
     transferTasks: RoomTransferTasks[]
+    // power 任务请求队列
+    // 由建筑物发布，powerCreep 查找任务时会优先读取该队列
+    powerTasks: PowerConstant[]
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
     
@@ -707,12 +715,6 @@ interface PowerCreepMemory {
  * @property {} run power 的具体工作内容
  */
 interface IPowerTaskConfig {
-    /**
-     * 该 power 是否需要执行工作的检查方法
-     * 
-     * @returns 为 true 代表需要执行该 power 工作，为 false 将检查后续 power
-     */
-    needExecute: (creep: PowerCreep) => boolean
     /**
      * power 的资源获取逻辑
      * 
