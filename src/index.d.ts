@@ -95,7 +95,7 @@ interface PowerCreep {
     _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
-    enablePower(): void
+    enablePower(): OK | ERR_BUSY
 }
 
 /**

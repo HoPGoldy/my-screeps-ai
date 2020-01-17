@@ -35,9 +35,9 @@ class PowerCreepExtension extends PowerCreep {
             // 还在冷却就等着
             if (!this.spawnCooldownTime) {
                 // 请求指定工作房间
-                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用下述命令为该 powerCreep 指定工作房间:\n  Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
+                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用下述命令为该 powerCreep 指定工作房间（指定房间名为"none"来关闭该提示）:\n  Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
                 // 或者直接出生在指定房间
-                else this.spawnAtRoom(this.memory.workRoom)
+                else if (this.memory.workRoom != 'none') this.spawnAtRoom(this.memory.workRoom)
             }
 
             return false
@@ -51,15 +51,19 @@ class PowerCreepExtension extends PowerCreep {
      */
     private executeTask(task: PowerConstant): void {
         const taskOptioon = PowerTasks[task]
-        if (!taskOptioon && task !== PWR_GENERATE_OPS) return this.room.deleteCurrentPowerTask()
+        if (!taskOptioon && task !== PWR_GENERATE_OPS) {
+            this.say(`不认识任务 ${task}`)
+            console.log(`[${this.room.name}][powerCreep ${this.name}] 没有和任务 [${task}] 对应的处理逻辑，任务已移除`)
+            return this.finishTask()
+        }
 
         // 根据 working 字段觉得是执行 source 还是 target
         // working 的值由上个 tick 执行的 source 或者 target 的返回值决定
-        if (this.memory.working) {
+        if (this.memory.working == undefined || this.memory.working) {
             const result = taskOptioon.target(this)
 
             // target 返回 OK 才代表任务完成了
-            if (result === OK && task !== PWR_GENERATE_OPS) this.room.deleteCurrentPowerTask()
+            if (result === OK && task !== PWR_GENERATE_OPS) this.finishTask()
             // target 资源不足了就去执行 source
             else if (result === ERR_NOT_ENOUGH_RESOURCES) this.memory.working = false
         }
@@ -114,11 +118,19 @@ class PowerCreepExtension extends PowerCreep {
 
     /**
      * 前往 controller 启用房间中的 power
+     * 
+     * @returns OK 激活完成
+     * @returns ERR_BUSY 正在激活中
      */
-    public enablePower(): void {
-        if (this.enableRoom(this.room.controller) === ERR_NOT_IN_RANGE) {
+    public enablePower(): OK | ERR_BUSY {
+        this.say('正在启用 Power')
+
+        const result = this.enableRoom(this.room.controller)
+        if (result === OK) return OK
+        else if (result === ERR_NOT_IN_RANGE) {
             this.goTo(this.room.controller.pos)
         }
+        return ERR_BUSY
     }
 
     /**
@@ -134,6 +146,15 @@ class PowerCreepExtension extends PowerCreep {
             this.goTo(this.room.powerSpawn.pos)
         }
         return OK
+    }
+
+    /**
+     * 完成当前任务
+     * 会确保下个任务开始时执行 target 阶段
+     */
+    private finishTask(): void {
+        this.memory.working = true
+        this.room.deleteCurrentPowerTask()
     }
 
     /**
@@ -161,6 +182,13 @@ class PowerCreepExtension extends PowerCreep {
  * @value power 任务的具体配置项
  */
 const PowerTasks: IPowerTaskConfigs = {
+    /**
+     * 房间初始化任务，会在房间 power 任务队列初始化时同时添加
+     * 该任务必定未房间的第一个 power 任务
+     */
+    [-1]: {
+        target: creep => creep.enablePower()
+    },
     /**
      * 生成 ops 并存放至 terminal
      * 注意，PWR_GENERATE_OPS 任务永远不会返回 OK，没有其他任务来打断它就会一直执行

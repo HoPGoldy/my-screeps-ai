@@ -39,7 +39,8 @@ class RoomExtension extends Room {
      */
     public addPowerTask(task: PowerConstant, priority: number = null): OK | ERR_NAME_EXISTS | ERR_INVALID_TARGET {
         if (!this.controller.isPowerEnabled) return ERR_INVALID_TARGET
-        if (!this.memory.powerTasks) this.memory.powerTasks = [ ]
+        // 初始化时添加房间初始化任务（编号 -1）
+        if (!this.memory.powerTasks) this.memory.powerTasks = [ -1 as PowerConstant ]
 
         // 有相同的就拒绝添加
         if (this.hasPowerTask(task)) return ERR_NAME_EXISTS
