@@ -14,8 +14,8 @@ class PowerCreepExtension extends PowerCreep {
         if (!this.keepAlive()) return
 
         // 获取队列中的第一个任务并执行
-        const powerTask = this.room.getPowerTask() | PWR_GENERATE_OPS
         // 没有任务的话就搓 ops
+        const powerTask = this.room.getPowerTask() || PWR_GENERATE_OPS
         this.executeTask(powerTask as PowerConstant)
     }
 
@@ -50,6 +50,16 @@ class PowerCreepExtension extends PowerCreep {
      * 处理当前的 power 任务
      */
     private executeTask(task: PowerConstant): void {
+        // 没有该 power 就直接移除任务
+        if (!this.powers[task]) return this.finishTask()
+        // 没冷却好就暂时挂起任务
+        if (this.powers[task].cooldown > 0) {
+            // 任务是搓 ops 的话就不用挂起
+            if (task !== PWR_GENERATE_OPS) this.room.hangPowerTask()
+            return
+        }
+
+        // 获取任务执行逻辑
         const taskOptioon = PowerTasks[task]
         if (!taskOptioon && task !== PWR_GENERATE_OPS) {
             this.say(`不认识任务 ${task}`)
@@ -136,7 +146,7 @@ class PowerCreepExtension extends PowerCreep {
     /**
      * 找到房间中的 powerSpawn renew 自己
      * 
-     * @returns OK 正在执行工作
+     * @returns OK 正在执行 renew
      * @returns ERR_NOT_FOUND 房间内没有 powerSpawn
      */
     private renewSelf(): OK | ERR_NOT_FOUND {
@@ -155,6 +165,35 @@ class PowerCreepExtension extends PowerCreep {
     private finishTask(): void {
         this.memory.working = true
         this.room.deleteCurrentPowerTask()
+    }
+
+    /**
+     * 从 terminal 中取出 ops
+     * 
+     * @param opsNumber 要拿取的数量
+     * @returns OK 拿取完成
+     * @returns ERR_NOT_ENOUGH_RESOURCES 资源不足
+     * @returns ERR_BUSY 正在执行任务
+     */
+    public getOps(opsNumber: number): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY {
+        let sourceStructure: StructureTerminal | StructureStorage = undefined
+        // 如果资源够的话就使用 terminal 作为目标
+        if (this.room.terminal && this.room.terminal.store[RESOURCE_OPS] >= opsNumber) sourceStructure = this.room.terminal
+        else return ERR_NOT_ENOUGH_RESOURCES
+
+        // 拿取指定数量的 ops
+        const actionResult = this.withdraw(sourceStructure, RESOURCE_OPS, opsNumber)
+
+        // 校验
+        if (actionResult === OK) return OK
+        else if (actionResult === ERR_NOT_IN_RANGE) {
+            this.goTo(sourceStructure.pos)
+            return ERR_BUSY
+        }
+        else {
+            console.log(`[${this.room.name} ${this.name}] 执行 getOps 时出错，错误码 ${actionResult}`)
+            return ERR_BUSY
+        }
     }
 
     /**
@@ -189,6 +228,7 @@ const PowerTasks: IPowerTaskConfigs = {
     [-1]: {
         target: creep => creep.enablePower()
     },
+
     /**
      * 生成 ops 并存放至 terminal
      * 注意，PWR_GENERATE_OPS 任务永远不会返回 OK，没有其他任务来打断它就会一直执行
@@ -198,22 +238,11 @@ const PowerTasks: IPowerTaskConfigs = {
          * 搓 ops，搓够指定数量就存一下
          */
         source: creep => {
-            // 如果没办法搓的话就把自己锁死在这个状态，等待玩家解决
-            if (!creep.powers[PWR_GENERATE_OPS]) {
-                creep.say('我搓不出来啊')
-                return ERR_BUSY
-            }
+            const actionResult = creep.usePower(PWR_GENERATE_OPS)
 
-            // 冷却好了就搓一下
-            if (creep.powers[PWR_GENERATE_OPS].cooldown === 0) {
-                const actionResult = creep.usePower(PWR_GENERATE_OPS)
-
-                // 如果
-                if (actionResult === ERR_INVALID_ARGS) creep.enablePower()
-                else if (actionResult !== OK) console.log(`[${creep.name}] ops 生成异常, 错误码: ${actionResult}`)
-                
-                return ERR_BUSY
-            }
+            // 如果
+            if (actionResult === ERR_INVALID_ARGS) creep.enablePower()
+            else if (actionResult !== OK) console.log(`[${creep.name}] ops 生成异常, 错误码: ${actionResult}`)
 
             // 数量够了就 target
             if (creep.store[RESOURCE_OPS] > 5) return OK
@@ -235,6 +264,41 @@ const PowerTasks: IPowerTaskConfigs = {
             // ops 不足就继续生成
             else if (transferResult == ERR_NOT_ENOUGH_RESOURCES){
                 return ERR_NOT_ENOUGH_RESOURCES
+            }
+        }
+    },
+
+    /**
+     * 填充 extension
+     */
+    [PWR_OPERATE_EXTENSION]: {
+        // 获取能量
+        source: creep => creep.getOps(POWER_INFO[PWR_OPERATE_EXTENSION].ops),
+        // 进行填充
+        target: creep => {
+            // 资源不足直接执行 source
+            if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_EXTENSION].ops) return ERR_NOT_ENOUGH_RESOURCES
+
+            // 获取能量来源
+            let sourceStructure = undefined
+            // 只有 storage 的话就用 storage
+            if (creep.room.storage && !creep.room.terminal) sourceStructure = creep.room.storage
+            // 两个都存在的话就比较那个能量多
+            else if (creep.room.storage && creep.room.terminal) {
+                sourceStructure = (creep.room.storage.store[RESOURCE_ENERGY] > creep.room.terminal.store[RESOURCE_ENERGY]) ? creep.room.storage : creep.room.terminal
+            }
+            // 只有 terminal 的话就用 terminal
+            else if (!creep.room.storage && creep.room.terminal) sourceStructure = creep.room.terminal
+            // 两个都不存在则直接完成任务
+            else return OK
+
+            const actionResult = creep.usePower(PWR_OPERATE_EXTENSION, sourceStructure)
+
+            if (actionResult === OK) return OK
+            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(sourceStructure.pos)
+            else {
+                console.log(`[${creep.room.name} ${creep.name}] 执行 getOps 时出错，错误码 ${actionResult}`)
+                return OK
             }
         }
     }

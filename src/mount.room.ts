@@ -38,9 +38,9 @@ class RoomExtension extends Room {
      * @returns ERR_INVALID_TARGET 房间控制器未启用 power
      */
     public addPowerTask(task: PowerConstant, priority: number = null): OK | ERR_NAME_EXISTS | ERR_INVALID_TARGET {
-        if (!this.controller.isPowerEnabled) return ERR_INVALID_TARGET
         // 初始化时添加房间初始化任务（编号 -1）
         if (!this.memory.powerTasks) this.memory.powerTasks = [ -1 as PowerConstant ]
+        if (!this.controller.isPowerEnabled) return ERR_INVALID_TARGET
 
         // 有相同的就拒绝添加
         if (this.hasPowerTask(task)) return ERR_NAME_EXISTS
@@ -68,6 +68,15 @@ class RoomExtension extends Room {
     public getPowerTask(): PowerConstant | undefined {
         if (!this.memory.powerTasks || this.memory.powerTasks.length <= 0) return undefined
         else return this.memory.powerTasks[0]
+    }
+
+    /**
+     * 挂起当前任务
+     * 将会把最前面的 power 任务移动到队列末尾
+     */
+    public hangPowerTask(): void {
+        const task = this.memory.powerTasks.shift()
+        this.memory.powerTasks.push(task)
     }
 
     /**

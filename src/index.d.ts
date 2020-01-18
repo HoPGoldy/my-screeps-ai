@@ -96,6 +96,7 @@ interface PowerCreep {
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
     enablePower(): OK | ERR_BUSY
+    getOps(opsNumber: number): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY
 }
 
 /**
@@ -202,6 +203,7 @@ interface Room {
     addPowerTask(task: PowerConstant, priority?: number): OK | ERR_NAME_EXISTS | ERR_INVALID_TARGET
     deleteCurrentPowerTask(): void
     getPowerTask(): PowerConstant | undefined
+    hangPowerTask(): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
