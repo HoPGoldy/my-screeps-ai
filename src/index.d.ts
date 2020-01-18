@@ -160,6 +160,10 @@ interface CreepMemory {
     // 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用pos.isEqualTo()
     isStanBy?: boolean
 
+    // 移动到某位置需要的时间
+    // 例如：miner 会用它来保存移动到 mineral 的时间
+    travelTime?: number
+
     // rangeSoldier 特有，是否启用 massAttack
     massMode?: boolean
 }

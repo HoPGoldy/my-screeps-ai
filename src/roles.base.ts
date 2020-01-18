@@ -109,33 +109,39 @@ export default {
     miner: (spawnName: string, targetId=''): ICreepConfig => ({
         // 检查矿床里是不是还有矿
         isNeed: room => {
-            let mineral: Mineral
-            if (!room.memory.mineralId) {
-                // 没有则返回警告，mineralId 由 ExtractorExtension 维护
-                console.log(`[miner 警告] ${room.name} 请先建造 Extractor`)
-                return false
-            }
-            else mineral = Game.getObjectById(room.memory.mineralId)
             // 房间中的矿床是否还有剩余产量
-            if (mineral.mineralAmount <= 0) return false
+            if (room.mineral.mineralAmount <= 0) return false
 
             // 再检查下 terminal 是否已经满了
             if (!room.terminal || room.terminal.store.getFreeCapacity() <= 0) return false
             else return true
         },
+        prepare: creep => {
+            creep.goTo(creep.room.mineral.pos)
+
+            // 如果移动到了就准备完成并保存移动时间
+            if (creep.pos.isNearTo(creep.room.mineral.pos)) {
+                creep.memory.travelTime = CREEP_LIFE_TIME - creep.ticksToLive
+                return true
+            }
+
+            return false
+        },
         source: creep => {
-            const mineral: Mineral = Game.getObjectById(creep.room.memory.mineralId)
-            if (!mineral) return creep.say('目标找不到!')
-            // 采集/移动
-            if (creep.harvest(mineral) == ERR_NOT_IN_RANGE) creep.moveTo(mineral, { reusePath: 20 })
+            // 采矿
+            const harvestResult = creep.harvest(creep.room.mineral)
+            if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
         },
         target: creep => {
             const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.terminal
-            if (!target) return creep.say('目标找不到!')
+            if (!target) return creep.say('放哪啊！')
             // 转移/移动
-            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
+            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.goTo(target.pos)
         },
-        switch: creep => creep.updateState('🍚 收获'),
+        switch: creep => {
+            if (creep.ticksToLive <= creep.memory.travelTime + 30) return true
+            else return creep.updateState('🍚 收获')
+        },
         spawn: spawnName,
         bodyType: 'worker'
     }),
