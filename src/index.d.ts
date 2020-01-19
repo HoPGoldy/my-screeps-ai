@@ -530,16 +530,18 @@ interface FlagMemory {
     roomName?: string
 }
 
+type CenterStructures = STRUCTURE_STORAGE | STRUCTURE_TERMINAL | STRUCTURE_FACTORY | 'centerLink'
+
 /**
  * 房间中央物流 - 资源转移任务
  */
 interface ITransferTask {
-    // 任务提交者 id
-    submitId: string
-    // 资源的提供建筑 id
-    sourceId: string
-    // 资源的接受建筑 id
-    targetId: string
+    // 任务提交者类型，肯定为如下四种
+    submit: CenterStructures
+    // 资源的提供建筑类型
+    source: CenterStructures
+    // 资源的接受建筑类型
+    target: CenterStructures
     // 资源类型
     resourceType:  ResourceConstant
     // 资源数量

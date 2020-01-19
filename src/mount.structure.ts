@@ -470,9 +470,9 @@ class LinkExtension extends StructureLink {
         if (this.room.hasCenterTask(this.id) || !this.room.storage) return 
 
         this.room.addCenterTask({
-            submitId: this.id,
-            sourceId: this.id,
-            targetId: this.room.storage.id,
+            submit: 'centerLink',
+            source: 'centerLink',
+            target: STRUCTURE_STORAGE,
             resourceType: RESOURCE_ENERGY,
             amount: this.store[RESOURCE_ENERGY]
         })
@@ -604,10 +604,10 @@ class FactoryExtension extends StructureFactory {
         if (this.room.hasCenterTask(this.id)) return 
 
         this.room.addCenterTask({
-            submitId: this.id,
+            submit: STRUCTURE_FACTORY,
             // 如果是能量就从 storage 里拿，是其他资源就从 terminal 里拿
-            sourceId: resourceType == RESOURCE_ENERGY ? this.room.storage.id : this.room.terminal.id,
-            targetId: this.id,
+            source: resourceType == RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL,
+            target: STRUCTURE_FACTORY,
             resourceType: resourceType,
             amount: amount
         })
@@ -624,9 +624,9 @@ class FactoryExtension extends StructureFactory {
         if (this.room.hasCenterTask(this.id)) return 
 
         this.room.addCenterTask({
-            submitId: this.id,
-            sourceId: this.id,
-            targetId: this.room.terminal.id,
+            submit: STRUCTURE_FACTORY,
+            source: STRUCTURE_FACTORY,
+            target: STRUCTURE_TERMINAL,
             resourceType: resourceType,
             amount: this.store.getUsedCapacity(resourceType)
         })
@@ -906,9 +906,9 @@ class TerminalExtension extends StructureTerminal {
         if (this.room.hasCenterTask(this.id)) return 
 
         this.room.addCenterTask({
-            submitId: this.id,
-            sourceId: this.room.storage.id,
-            targetId: this.id,
+            submit: STRUCTURE_TERMINAL,
+            source: STRUCTURE_STORAGE,
+            target: STRUCTURE_TERMINAL,
             resourceType: RESOURCE_ENERGY,
             amount
         })

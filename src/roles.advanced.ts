@@ -79,8 +79,8 @@ export default {
             const task = creep.room.getCenterTask()
             if (!task) return 
 
-            // 找到建筑
-            const structure: AnyStructure = Game.getObjectById(task.sourceId)
+            // 通过房间基础服务获取对应的建筑
+            const structure: AnyStructure = creep.room[task.source]
             if (!structure) {
                 creep.room.deleteCurrentCenterTask()
                 return
@@ -110,7 +110,8 @@ export default {
             // 提前获取携带量
             const amount: number = creep.store.getUsedCapacity(task.resourceType)
 
-            const structure: AnyStructure = Game.getObjectById(task.targetId)
+            // 通过房间基础服务获取对应的建筑
+            const structure: AnyStructure = creep.room[task.target]
             if (!structure) {
                 creep.room.deleteCurrentCenterTask()
                 return
