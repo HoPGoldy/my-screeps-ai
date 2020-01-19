@@ -85,5 +85,20 @@ export const globalExtension = {
      */
     get: function(id: string): any {
         return Game.getObjectById(id)
+    },
+    /**
+     * Game.market.extendOrder 的别名
+     * 
+     * @param orderId 订单的 id
+     * @param amount 要追加的数量
+     */
+    orderExtend: function(orderId: string, amount: number) {
+        const actionResult = Game.market.extendOrder(orderId, amount)
+
+        let returnString = ''
+        if (actionResult === OK) returnString = '订单追加成功'
+        else returnString = `订单追加失败，错误码 ${returnString}`
+
+        return returnString
     }
 }

@@ -1005,6 +1005,55 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 创建订单并返回创建信息
+     * 
+     * @param type 订单类型
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param totalAmount 总量
+     */
+    private createOrder(type: ORDER_BUY | ORDER_SELL, resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        const orderConfig = {
+            type: type,
+            resourceType,
+            price,
+            totalAmount,
+            roomName: this.name
+        }
+        const createResult = Game.market.createOrder(orderConfig)
+
+        let returnString: string = ''
+        // 新创建的订单下个 tick 才能看到，所以这里只能让玩家自行查看
+        if (createResult === OK) returnString = `[${this.name}] BUY 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
+        else if (createResult === ERR_NOT_ENOUGH_RESOURCES) returnString = `[${this.name}] 您没有足够的 credit 来缴纳费用，当前/需要 ${Game.market.credits}/${price * totalAmount * 0.05}`
+        else returnString = `[${this.name}] 创建失败，Game.market.createOrder 错误码: ${createResult}`
+
+        return returnString
+    }
+
+    /**
+     * 为该房间创建一个 ORDER_BUY 订单
+     * 
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param amount 总量
+     */
+    public tbuy(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        return this.createOrder(ORDER_BUY, resourceType, price, totalAmount)
+    }
+
+    /**
+     * 为该房间创建一个 ORDER_SELL 订单
+     * 
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param amount 总量
+     */
+    public tsell(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        return this.createOrder(ORDER_SELL, resourceType, price, totalAmount)
+    }
+
+    /**
      * 用户操作：房间操作帮助
      */
     public help(): string {
@@ -1074,6 +1123,24 @@ class RoomExtension extends Room {
                     { name: 'supplementAction', desc: '[可选] 补货来源，分为 share, market(默认)'}
                 ],
                 functionName: 'tadd'
+            },
+            {
+                title: '给该房间新增 BUY 单',
+                params: [
+                    { name: 'resourceType', desc: '要购买的资源类型' },
+                    { name: 'price', desc: '单价' },
+                    { name: 'totalAmount', desc: '总量' },
+                ],
+                functionName: 'tbuy'
+            },
+            {
+                title: '给该房间新增 SELL 单',
+                params: [
+                    { name: 'resourceType', desc: '要卖出的资源类型' },
+                    { name: 'price', desc: '单价' },
+                    { name: 'totalAmount', desc: '总量' },
+                ],
+                functionName: 'tsell'
             },
             {
                 title: '重设终端矿物监控',
