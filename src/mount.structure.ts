@@ -539,10 +539,12 @@ const FACTORY_TARGET_LIMIT = 500
  */
 class FactoryExtension extends StructureFactory {
     public work(): void {
-        // 实时更新房间内存中 factoryId
-        if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) return
+
+        // 实时更新房间内存中 factoryId
+        if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
+
         // 获取不到目标资源就跳过
         const targetResource: ResourceConstant = this.room.getFactoryTarget()
         if (!targetResource) return
