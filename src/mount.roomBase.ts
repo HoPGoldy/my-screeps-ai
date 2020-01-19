@@ -12,8 +12,8 @@ export default function () {
         if (key in Room.prototype) continue
 
         // 挂载属性的 get 访问器
-        // 这里通过处理 key 的名字，把 factoryGetter 挂载到 factory 属性的 get 方法上
-        // 这么做的原因是为了避免 factory 访问器的类型和 index.d.ts 中定义冲突从而导致 ts 报错
+        // 这里通过处理 key 的名字，把 factoryGetter 等访问器挂载到 factory 属性的 get 方法上
+        // 这么做的原因是为了避免访问器的类型和 index.d.ts 中定义冲突从而导致 ts 报错
         Object.defineProperty(Room.prototype, key.split('Getter')[0], {
             get: RoomBase.prototype[key],
             enumerable: false,
@@ -36,6 +36,7 @@ class RoomBase extends Room {
     private _powerspawn: StructurePowerSpawn
     private _nuker: StructureNuker
     private _sources: Source[]
+    private _centerLink: StructureLink
 
     /**
      * factory 访问器
@@ -49,7 +50,7 @@ class RoomBase extends Room {
 
         // 如果没有缓存就检查内存中是否存有 id
         if (this.memory.factoryId) {
-            let factory: StructureFactory = Game.getObjectById(this.memory.factoryId)
+            const factory: StructureFactory = Game.getObjectById(this.memory.factoryId)
 
             // 如果保存的 id 失效的话，就移除缓存
             if (!factory) {
@@ -76,7 +77,7 @@ class RoomBase extends Room {
 
         // 如果没有缓存就检查内存中是否存有 id
         if (this.memory.powerSpawnId) {
-            let powerSpawn: StructurePowerSpawn = Game.getObjectById(this.memory.powerSpawnId)
+            const powerSpawn: StructurePowerSpawn = Game.getObjectById(this.memory.powerSpawnId)
 
             // 如果保存的 id 失效的话，就移除缓存
             if (!powerSpawn) {
@@ -103,7 +104,7 @@ class RoomBase extends Room {
 
         // 如果没有缓存就检查内存中是否存有 id
         if (this.memory.nukerId) {
-            let nuker: StructureNuker = Game.getObjectById(this.memory.nukerId)
+            const nuker: StructureNuker = Game.getObjectById(this.memory.nukerId)
 
             // 如果保存的 id 失效的话，就移除缓存
             if (!nuker) {
@@ -116,7 +117,35 @@ class RoomBase extends Room {
             return nuker
         }
 
-        // 内存中没有 id 就说明没有 powerSpawn
+        // 内存中没有 id 就说明没有 nuker
+        return undefined
+    }
+
+    /**
+     * centerLink 访问器
+     * 
+     * 工作机制同上 factory 访问器
+     * centerLinkId 是玩家执行 Link.asCenter() 时添加的
+     */
+    public centerLinkGetter(): StructureLink | undefined {
+        if (this._centerLink) return this._centerLink
+
+        // 如果没有缓存就检查内存中是否存有 id
+        if (this.memory.centerLinkId) {
+            const centerLink: StructureLink = Game.getObjectById(this.memory.centerLinkId)
+
+            // 如果保存的 id 失效的话，就移除缓存
+            if (!centerLink) {
+                delete this.memory.centerLinkId
+                return undefined
+            }
+
+            // 否则就暂存对象并返回
+            this._centerLink = centerLink
+            return centerLink
+        }
+
+        // 内存中没有 id 就说明没有 centerLink
         return undefined
     }
 

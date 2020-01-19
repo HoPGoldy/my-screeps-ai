@@ -86,8 +86,11 @@ export default {
                 return
             }
 
+            // 获取取出数量
+            let withdrawAmount = creep.store.getFreeCapacity()
+            if (withdrawAmount > task.amount) withdrawAmount = task.amount
             // 尝试取出资源
-            const result = creep.withdraw(structure, task.resourceType)
+            const result = creep.withdraw(structure, task.resourceType, withdrawAmount)
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 creep.room.deleteCurrentCenterTask()
             }

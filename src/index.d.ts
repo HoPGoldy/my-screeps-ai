@@ -192,6 +192,7 @@ interface Room {
     factory?: StructureFactory
     powerSpawn: StructurePowerSpawn
     nuker: StructureNuker
+    centerLink: StructureLink
     mineral: Mineral
     sources: Source[]
 
@@ -473,18 +474,6 @@ interface transferTaskOperation {
     switch: (creep: Creep, task: RoomTransferTasks) => boolean
 }
 
-// 资源共享任务
-interface IShareTask {
-    // 资源的提供房间
-    source: string
-    // 资源的接受房间
-    target: string
-    // 共享的资源类型
-    resourceType: ResourceConstant,
-    // 期望数量
-    amount: number
-}
-
 // 房间要执行的资源共享任务
 // 和上面的资源共享任务的不同之处在于，该任务是发布在指定房间上的，所以不需要 source
 interface IRoomShareTask {
@@ -542,7 +531,7 @@ interface FlagMemory {
 }
 
 /**
- * 资源转移任务
+ * 房间中央物流 - 资源转移任务
  */
 interface ITransferTask {
     // 任务提交者 id
@@ -603,16 +592,6 @@ interface BodySet {
     [HEAL]?: number
 }
 
-// factory 配置项
-interface IFactoryConfig {
-    target: (factory: StructureFactory) => any
-}
-
-// factory 配置项列表
-interface IFactoryConfigs {
-    [factoryId: string]: IFactoryConfig
-}
-
 // Link 拓展
 interface StructureLink {
     work(): void
@@ -620,21 +599,6 @@ interface StructureLink {
     asCenter(): string
     asSource(): string
     asUpgrade(): string
-}
-
-/**
- * link 配置项
- * @property target link在准备好了的时候执行的方法
- */
-interface ILinkConfig {
-    target: (link: StructureLink) => any
-}
-
-/**
- * link 配置项列表
- */
-interface ILinkConfigs {
-    [linkId: string]: ILinkConfig
 }
 
 /**
