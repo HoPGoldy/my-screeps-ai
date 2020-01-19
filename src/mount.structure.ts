@@ -467,7 +467,7 @@ class LinkExtension extends StructureLink {
         // 能量为空则待机
         if (<number>this.store.getCapacity(RESOURCE_ENERGY) == 0) return
         // 之前发的转移任务没有处理好的话就先挂机
-        if (this.room.hasCenterTask(this.id) || !this.room.storage) return 
+        if (this.room.hasCenterTask('centerLink') || !this.room.storage) return 
 
         this.room.addCenterTask({
             submit: 'centerLink',
@@ -601,7 +601,7 @@ class FactoryExtension extends StructureFactory {
      */
     public addGetTask(resourceType: ResourceConstant, amount: number): void {
         // 发布前先检查下有没有任务
-        if (this.room.hasCenterTask(this.id)) return 
+        if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
 
         this.room.addCenterTask({
             submit: STRUCTURE_FACTORY,
@@ -621,7 +621,7 @@ class FactoryExtension extends StructureFactory {
      */
     public addPutTask(resourceType: ResourceConstant): void {
         // 发布前先检查下有没有任务
-        if (this.room.hasCenterTask(this.id)) return 
+        if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
 
         this.room.addCenterTask({
             submit: STRUCTURE_FACTORY,
@@ -903,7 +903,7 @@ class TerminalExtension extends StructureTerminal {
      */
     private getEnergy(amount: number): void {
         // 发布前先检查下有没有任务
-        if (this.room.hasCenterTask(this.id)) return 
+        if (this.room.hasCenterTask(STRUCTURE_TERMINAL)) return 
 
         this.room.addCenterTask({
             submit: STRUCTURE_TERMINAL,

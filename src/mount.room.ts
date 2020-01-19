@@ -16,12 +16,11 @@ class RoomExtension extends Room {
     /**
      * 添加任务
      * 
-     * @param submitId 提交者的 id 
      * @param task 要提交的任务
      * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
      */
     public addCenterTask(task: ITransferTask): number {
-        if (this.hasCenterTask(task.submitId)) return -1
+        if (this.hasCenterTask(task.submit)) return -1
 
         this.memory.centerTransferTasks.push(task)
         return this.memory.centerTransferTasks.length - 1
@@ -89,17 +88,17 @@ class RoomExtension extends Room {
     /**
      * 用户操作：addCenterTask - 添加中央运输任务
      * 
-     * @param targetId 资源存放建筑 id
-     * @param sourceId 资源来源建筑 id
+     * @param targetId 资源存放建筑类型
+     * @param sourceId 资源来源建筑类型
      * @param resourceType 要转移的资源类型
      * @param amount 资源数量
      */
-    public ctadd(targetId: string, sourceId: string, resourceType: ResourceConstant, amount: number): string {
+    public ctadd(target: CenterStructures, source: CenterStructures, resourceType: ResourceConstant, amount: number): string {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
         const addResult = this.addCenterTask({
-            submitId: this.memory.centerTransferTasks.length.toString(),
-            targetId,
-            sourceId,
+            submit: this.memory.centerTransferTasks.length,
+            target,
+            source,
             resourceType,
             amount
         })
@@ -113,9 +112,9 @@ class RoomExtension extends Room {
      */
     public pute(amount: number = 100000): string {
         const addResult = this.addCenterTask({
-            submitId: this.memory.centerTransferTasks.length.toString(),
-            targetId: this.terminal.id,
-            sourceId: this.storage.id,
+            submit: this.memory.centerTransferTasks.length,
+            target: STRUCTURE_TERMINAL,
+            source: STRUCTURE_STORAGE,
             resourceType: RESOURCE_ENERGY,
             amount
         })
@@ -129,9 +128,9 @@ class RoomExtension extends Room {
      */
     public gete(amount: number = 100000): string {
         const addResult = this.addCenterTask({
-            submitId: this.memory.centerTransferTasks.length.toString(),
-            targetId: this.storage.id,
-            sourceId: this.terminal.id,
+            submit: this.memory.centerTransferTasks.length,
+            target: STRUCTURE_STORAGE,
+            source: STRUCTURE_TERMINAL,
             resourceType: RESOURCE_ENERGY,
             amount
         })
@@ -284,13 +283,13 @@ class RoomExtension extends Room {
     /**
      * 每个建筑同时只能提交一个任务
      * 
-     * @param submitId 提交者的 id
+     * @param submit 提交者的身份
      * @returns 是否有该任务
      */
-    public hasCenterTask(submitId: string): boolean {
+    public hasCenterTask(submit: CenterStructures | number): boolean {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
         
-        const task = this.memory.centerTransferTasks.find(task => task.submitId === submitId)
+        const task = this.memory.centerTransferTasks.find(task => task.submit === submit)
         return task ? true : false
     }
 

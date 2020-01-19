@@ -215,7 +215,7 @@ interface Room {
      */
     // 中央物流 api
     addCenterTask(task: ITransferTask): number
-    hasCenterTask(submitId: string): boolean
+    hasCenterTask(submit: CenterStructures | number): boolean
     hangCenterTask(): number
     handleCenterTask(transferAmount: number): void
     getCenterTask(): ITransferTask | null
@@ -540,8 +540,9 @@ type CenterStructures = STRUCTURE_STORAGE | STRUCTURE_TERMINAL | STRUCTURE_FACTO
  * 房间中央物流 - 资源转移任务
  */
 interface ITransferTask {
-    // 任务提交者类型，肯定为如下四种
-    submit: CenterStructures
+    // 任务提交者类型
+    // number 类型是为了运行玩家自己推送中央任务
+    submit: CenterStructures | number
     // 资源的提供建筑类型
     source: CenterStructures
     // 资源的接受建筑类型
