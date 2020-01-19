@@ -1,12 +1,16 @@
-# powerCreep 设计案（开发阶段）
+# powerCreep 设计案（已实装）
 
 ## 设计思路
 
-建立一个配置项，其中包含了每种 power 对应的检查规则和工作内容。
+建立一个配置项，其中包含了每种 power 对应的工作逻辑。
 
-在房间中会有一个小型任务队列，powerCreep 会优先检查这个任务并执行。这个设置是因为有部分任务的时效性较高，例如 extension 填充之类的工作。
+在房间中会有一个小型任务队列，每个任务都只是一个 `PWR_*` 常量。powerCreep 会检查这个队列并执行其中的任务，队列在新建时会推入第一个任务：”激活房间控制器“（编号 `-1`）。
 
-如果任务队列中没有任务的话，powerCreep 会定期遍历自己的 `.powers` 属性，并执行上面配置项中的检查规则，一旦规则不满足，则执行对应的 power 强化工作。
+如果任务队列中没有任务的话，powerCreep 会一直制作 ops 并塞入 terminal。并没有添加 ops 制作上限。
+
+## keep alive
+
+powerCreep 在出生后会定期检查自己的 ttl，一旦低于指定值就会优先访问 powerSpawn 给自己 `renew`。
 
 ## power 任务队列
 
@@ -14,9 +18,8 @@
 
 ## 工作配置项
 
-工作配置项应分为三部分：检查条件、资源获取、工作。
+工作配置项应分为两个部分：资源获取、工作。
 
-- **检查条件(needExecute)**：该方法返回 true 时才会执行该项 power 工作
 - **资源获取(source)**：该方法一般都是去获取 ops，可选
 - **工作(target)**：进行工作，例如强化 Source，或者强化 Factory
 
@@ -30,13 +33,9 @@ powerCreep.memory
 
 ```js
 {
-    // 接下来要检查哪个 power
-    powerIndex: 0, 
-    // 当前要处理的工作
-    // 字段值均为 PWR_* 常量
-    // 在该字段不存在时将默认执行 PWR_GENERATE_OPS（如果 power 资源足够的话）
-    task: PWR_GENERATE_OPS
     // 工作的房间名，在第一次出生时由玩家指定，后面会根据该值自动出生到指定房间
     workRoom: 'W1N1'
+    // 本 tick 要执行 source 还是 target
+    working: true
 }
 ```
