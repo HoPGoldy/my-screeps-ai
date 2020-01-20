@@ -255,6 +255,8 @@ interface RoomPosition {
     directionToPos(direction: DirectionConstant): RoomPosition | undefined
 }
 
+type ObserverResource = 'powerBank' | 'deposit'
+
 /**
  * 房间内存
  */
@@ -263,17 +265,19 @@ interface RoomMemory {
     restrictedPos?: string[]
     // observer 内存
     observer: {
-        // 查房记录
-        checked: {
-            // 查房的房间名
-            room: string
-            // 是否已经查房
-            isChecked: boolean
+        // 上个 tick 已经 ob 过的房间名
+        checkRoomName?: string
+        // 遍历 watchRooms 所使用的索引
+        watchIndex: number
+        // 监听的房间列表
+        watchRooms: string[]
+        // 获取到的资源信息
+        resourceFlags: {
+            powerBank: string[]
+            deposit: string[]
         }
-        // 查房的索引
-        listNum: number
-        // 是否暂停
-        pause: boolean
+        // 是否暂停，为 true 时暂停
+        pause?: boolean
     }
     // 中央集群的资源转移任务队列
     centerTransferTasks: ITransferTask[]

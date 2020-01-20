@@ -1,4 +1,4 @@
-import { creepConfigs, observeRooms } from './config'
+import { creepConfigs } from './config'
 import { createHelp } from './utils'
 import { 
     // spawn 孵化相关
@@ -1511,14 +1511,18 @@ class PowerSpawnExtension extends StructurePowerSpawn {
     }
 }
 
+/**
+ * Observer 拓展
+ * 定期搜索给定列表中的房间并插旗
+ */
 class ObserverExtension extends StructureObserver {
     public work(): void {
         if (!this.room.memory.observer) return
         if (this.room.memory.observer.pause) return
 
         // 如果房间没有视野就获取视野，否则就执行搜索
-        if (this.room.memory.observer.checked.isChecked) this.searchRoom()
-        else this.checkRoom()
+        if (this.room.memory.observer.checkRoomName) this.searchRoom()
+        else this.obRoom()
     }
 
     /**
@@ -1527,54 +1531,95 @@ class ObserverExtension extends StructureObserver {
      */
     private searchRoom(): void {
         // 从内存中获取要搜索的房间
-        const room = Game.rooms[this.room.memory.observer.checked.room]
+        const room = Game.rooms[this.room.memory.observer.checkRoomName]
 
         const deposits = room.find(FIND_DEPOSITS)
-        // 查询deposit
-        if (deposits) {
-            for (const deposit of deposits) {
-                const flags = deposit.pos.findInRange(FIND_FLAGS,1)
-                if (flags.length == 0) {
-                    room.createFlag(deposit.pos)
-                    console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新deposit,已插旗`)
-                }
+        // 查询 deposit
+        deposits.forEach(deposit => {
+            const flags = deposit.pos.findInRange(FIND_FLAGS, 1)
+            if (flags.length == 0) {
+                room.createFlag(deposit.pos)
+                console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`)
             }
-        }
+        })
 
-        const pbs = room.find(FIND_STRUCTURES,{
+        const powerBanks = room.find(FIND_STRUCTURES, {
             filter:structure => structure.structureType == STRUCTURE_POWER_BANK
         })
-        // 查询pb
-        if (pbs) {
-            for (const powerBank of pbs) {
-                const flags = powerBank.pos.findInRange(FIND_FLAGS,1)
-                if (flags.length == 0) {
-                    room.createFlag(powerBank.pos)
-                    console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checked.room} 检测到新pb,已插旗`)
-                }
+        // 查询 pb
+        powerBanks.forEach(powerBank => {
+            const flags = powerBank.pos.findInRange(FIND_FLAGS, 1)
+            if (flags.length == 0) {
+                room.createFlag(powerBank.pos)
+                console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`)
             }
-        }
+        })
 
         // 确认该房间已被搜索
-        this.room.memory.observer.checked.isChecked = false
+        delete this.room.memory.observer.checkRoomName
     }
 
     /**
      * 获取指定房间视野
      */
-    private checkRoom(): void {
+    private obRoom(): void {
         if (Game.time % 5) return
 
         // 执行视野获取
-        this.observeRoom(observeRooms[this.room.memory.observer.listNum])
+        const roomName = this.room.memory.observer.watchRooms[this.room.memory.observer.watchIndex]
+        const obResult = this.observeRoom(roomName)
 
         // 标志该房间视野已经获取，可以进行检查
-        this.room.memory.observer.checked.isChecked = true
-        // 保存检查的名称
-        this.room.memory.observer.checked.room = observeRooms[this.room.memory.observer.listNum]
+        if (obResult === OK) this.room.memory.observer.checkRoomName = roomName
 
-        // 查询下一个房间
-        this.room.memory.observer.listNum = this.room.memory.observer.listNum < (observeRooms.length - 1) ?
-            this.room.memory.observer.listNum + 1 : 0
+        // 设置下一个要查找房间的索引
+        this.room.memory.observer.watchIndex = this.room.memory.observer.watchIndex < (this.room.memory.observer.watchRooms.length - 1) ?
+            this.room.memory.observer.watchIndex + 1 : 0
+    }
+
+    /**
+     * 初始化 observer
+     */
+    private init(): void {
+        this.room.memory.observer = {
+            watchIndex: 0,
+            watchRooms: [],
+            resourceFlags: { powerBank: [], deposit: [] }
+        }
+    }
+
+    /**
+     * 用户操作：新增监听房间
+     * 
+     * @param roomNames 要进行监听的房间名称
+     */
+    public add(...roomNames: string[]): string {
+        if (!this.room.memory.observer) this.init()
+
+        // 确保新增的房间名不会重复
+        this.room.memory.observer.watchRooms = _.uniq([ ...this.room.memory.observer.watchRooms, ...roomNames])
+
+        return `[${this.room.name} observer] 添加当前监听房间列表为: ${this.room.memory.observer.watchRooms}`
+    }
+
+    /**
+     * 用户操作：移除监听房间
+     * 
+     * @param roomNames 不在监听的房间名
+     */
+    public remove(...roomNames: string[]): string {
+        if (!this.room.memory.observer) this.init()
+
+        // 移除指定房间
+        this.room.memory.observer.watchRooms = _.difference(this.room.memory.observer.watchRooms, roomNames)
+        
+        return `[${this.room.name} observer] 已移除，当前监听房间列表为: ${this.room.memory.observer.watchRooms}`
+    }
+
+    /**
+     * 用户操作：暂停 observer
+     */
+    public pause(): string {
+
     }
 }
