@@ -52,6 +52,14 @@ interface StructureSpawn {
     clearTask(): void
 }
 
+/**
+ * Observer 资源访问接口
+ */
+interface StructureObserver {
+    getResource(resourceType: ObserverResource): string | undefined
+    clearResource(resourceType: ObserverResource, flagName: string): void
+}
+
 // Factory 拓展
 interface StructureFactory {
     make(resourceType: ResourceConstant): void
@@ -163,6 +171,8 @@ interface CreepMemory {
     // 移动到某位置需要的时间
     // 例如：miner 会用它来保存移动到 mineral 的时间
     travelTime?: number
+    // 目标旗帜的名称
+    targetFlagName?: string
 
     // rangeSoldier 特有，是否启用 massAttack
     massMode?: boolean
