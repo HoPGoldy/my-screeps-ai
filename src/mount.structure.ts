@@ -1544,7 +1544,7 @@ class ObserverExtension extends StructureObserver {
             // 对找到的 deposit 进行处置归档
             deposits.forEach(deposit => {
                 // 冷却过长或者已经插旗的忽略
-                if (deposit.cooldown >= DEPOSIT_MAX_COOLDOWN) return
+                if (deposit.lastCooldown >= DEPOSIT_MAX_COOLDOWN) return
                 const flags = deposit.pos.lookFor(LOOK_FLAGS)
                 if (flags.length > 0) return
                 
