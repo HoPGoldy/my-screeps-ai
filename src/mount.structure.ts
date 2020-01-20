@@ -16,7 +16,11 @@ import {
     // 房间物流任务
     ROOM_TRANSFER_TASK,
     // 统计间隔
-    stateScanInterval
+    stateScanInterval,
+    // observer 相关
+    observerInterval,
+    DEPOSIT_MAX_COOLDOWN,
+    OBSERVER_RESOURCE_LIMIT
 } from './setting'
 
 // 挂载拓展到建筑原型
@@ -1517,6 +1521,8 @@ class PowerSpawnExtension extends StructurePowerSpawn {
  */
 class ObserverExtension extends StructureObserver {
     public work(): void {
+        if (!this.room.memory.observerId) this.room.memory.observerId = this.id
+        // 没有初始化或者暂停了就不执行工作
         if (!this.room.memory.observer) return
         if (this.room.memory.observer.pause) return
 
@@ -1533,37 +1539,53 @@ class ObserverExtension extends StructureObserver {
         // 从内存中获取要搜索的房间
         const room = Game.rooms[this.room.memory.observer.checkRoomName]
 
-        const deposits = room.find(FIND_DEPOSITS)
-        // 查询 deposit
-        deposits.forEach(deposit => {
-            const flags = deposit.pos.findInRange(FIND_FLAGS, 1)
-            if (flags.length == 0) {
-                room.createFlag(deposit.pos)
+        if (this.room.memory.observer.resourceFlags['deposit'].length < OBSERVER_RESOURCE_LIMIT.DEPOSIT) {
+            const deposits = room.find(FIND_DEPOSITS)
+            // 对找到的 deposit 进行处置归档
+            deposits.forEach(deposit => {
+                // 冷却过长或者已经插旗的忽略
+                if (deposit.cooldown >= DEPOSIT_MAX_COOLDOWN) return
+                const flags = deposit.pos.lookFor(LOOK_FLAGS)
+                if (flags.length > 0) return
+                
+                // 获取旗帜名称并将其存档
+                const flagName = this.getFlagName('deposit')
+                room.createFlag(deposit.pos, flagName)
+                this.addResource('deposit', flagName)
                 console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`)
-            }
-        })
-
-        const powerBanks = room.find(FIND_STRUCTURES, {
-            filter:structure => structure.structureType == STRUCTURE_POWER_BANK
-        })
-        // 查询 pb
-        powerBanks.forEach(powerBank => {
-            const flags = powerBank.pos.findInRange(FIND_FLAGS, 1)
-            if (flags.length == 0) {
-                room.createFlag(powerBank.pos)
+            })
+        }
+        
+        if (this.room.memory.observer.resourceFlags['powerBank'].length < OBSERVER_RESOURCE_LIMIT.POWER_BANK) {
+            const powerBanks = room.find(FIND_STRUCTURES, {
+                filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3500
+            })
+            // 对找到的 pb 进行处置归档
+            powerBanks.forEach(powerBank => {
+                const flags = powerBank.pos.lookFor(LOOK_FLAGS)
+                if (flags.length > 0) return
+    
+                // 获取旗帜名称并将其存档
+                const flagName = this.getFlagName('powerBank')
+                room.createFlag(powerBank.pos, flagName)
+                this.addResource('powerBank', flagName)
                 console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`)
-            }
-        })
+            })
+        }
 
         // 确认该房间已被搜索
         delete this.room.memory.observer.checkRoomName
+    }
+
+    private getFlagName(resourceType: ObserverResource): string {
+        return `${resourceType} ${this.room.name} ${Game.time}`
     }
 
     /**
      * 获取指定房间视野
      */
     private obRoom(): void {
-        if (Game.time % 5) return
+        if (Game.time % observerInterval) return
 
         // 执行视野获取
         const roomName = this.room.memory.observer.watchRooms[this.room.memory.observer.watchIndex]
@@ -1575,6 +1597,42 @@ class ObserverExtension extends StructureObserver {
         // 设置下一个要查找房间的索引
         this.room.memory.observer.watchIndex = this.room.memory.observer.watchIndex < (this.room.memory.observer.watchRooms.length - 1) ?
             this.room.memory.observer.watchIndex + 1 : 0
+    }
+
+    /**
+     * 将新资源录入存档
+     * 
+     * @param resourceType 新发现的资源类型
+     * @param flagName 已经插好的旗帜名称
+     */
+    private addResource(resourceType: ObserverResource, flagName: string): void {
+        if (resourceType in this.room.memory.observer.resourceFlags) {
+            this.room.memory.observer.resourceFlags[resourceType].push(flagName)
+        }
+    }
+
+    /**
+     * 查询 observer 发现的资源
+     * 暂时只支持返回首个资源
+     * 
+     * @param resourceType 要查询的资源类型
+     */
+    public getResource(resourceType: ObserverResource): string | undefined {
+        if (!this.room.memory.observer) return undefined
+
+        return this.room.memory.observer.resourceFlags[resourceType][0]
+    }
+
+    /**
+     * 完成指定旗帜下的资源采集
+     * 
+     * @param resourceType 要移除的资源类型
+     * @param flagName 完成采集的旗帜名称
+     */
+    public clearResource(resourceType: ObserverResource, flagName: string): void {
+        if (!this.room.memory.observer) return 
+
+        this.room.memory.observer.resourceFlags[resourceType] = _.uniq(this.room.memory.observer.resourceFlags[resourceType], [ flagName ])
     }
 
     /**
@@ -1599,7 +1657,7 @@ class ObserverExtension extends StructureObserver {
         // 确保新增的房间名不会重复
         this.room.memory.observer.watchRooms = _.uniq([ ...this.room.memory.observer.watchRooms, ...roomNames])
 
-        return `[${this.room.name} observer] 添加当前监听房间列表为: ${this.room.memory.observer.watchRooms}`
+        return `[${this.room.name} observer] 已添加，${this.show(true)}`
     }
 
     /**

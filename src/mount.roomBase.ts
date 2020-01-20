@@ -37,6 +37,7 @@ class RoomBase extends Room {
     private _nuker: StructureNuker
     private _sources: Source[]
     private _centerLink: StructureLink
+    private _observer: StructureObserver
 
     /**
      * factory 访问器
@@ -115,6 +116,33 @@ class RoomBase extends Room {
             // 否则就暂存对象并返回
             this._nuker = nuker
             return nuker
+        }
+
+        // 内存中没有 id 就说明没有 nuker
+        return undefined
+    }
+
+    /**
+     * observer 访问器
+     * 
+     * 工作机制同上 factory 访问器
+     */
+    public observerGetter(): StructureObserver | undefined {
+        if (this._observer) return this._observer
+
+        // 如果没有缓存就检查内存中是否存有 id
+        if (this.memory.observerId) {
+            const observer: StructureObserver = Game.getObjectById(this.memory.observerId)
+
+            // 如果保存的 id 失效的话，就移除缓存
+            if (!observer) {
+                delete this.memory.observerId
+                return undefined
+            }
+
+            // 否则就暂存对象并返回
+            this._observer = observer
+            return observer
         }
 
         // 内存中没有 id 就说明没有 nuker

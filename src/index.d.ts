@@ -196,6 +196,7 @@ interface Room {
     factory?: StructureFactory
     powerSpawn: StructurePowerSpawn
     nuker: StructureNuker
+    observer: StructureObserver
     centerLink: StructureLink
     mineral: Mineral
     sources: Source[]
@@ -309,6 +310,7 @@ interface RoomMemory {
     extractorId: string
     powerSpawnId: string
     nukerId: string
+    observerId: string
     sourceIds: string[]
     
     // Link 的专用内存字段

@@ -1,4 +1,4 @@
-import { DEFAULT_FLAG_NAME, PB_HARVESTE_STATE } from './setting'
+import { DEFAULT_FLAG_NAME, PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from './setting'
 import { calcBodyPart } from './utils'
 
 /**
@@ -380,13 +380,10 @@ export default {
         isNeed: () => {
             // 旗帜效验, 没有旗帜则不生成
             const targetFlag = Game.flags[sourceFlagName]
-            if (!targetFlag) {
-                console.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
-                return false
-            }
+            if (!targetFlag) return false
 
             // 冷却时长过长则放弃该 deposit
-            if (Game.flags[sourceFlagName].memory.depositCooldown >= 100) {
+            if (Game.flags[sourceFlagName].memory.depositCooldown >= DEPOSIT_MAX_COOLDOWN) {
                 delete Memory.flags[targetFlag.name]
                 targetFlag.remove()
                 return false

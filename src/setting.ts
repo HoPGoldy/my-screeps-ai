@@ -308,6 +308,26 @@ export const labTarget = [
 ]
 
 /**
+ * deposit 最大的采集冷却时长
+ * 超过该时长则不会再进行挖掘
+ */
+export const DEPOSIT_MAX_COOLDOWN = 100
+
+/**
+ * observer 的资源查找数量上限
+ * 单个房间找到这么多数量的资源后就不会再进行查找
+ */
+export const OBSERVER_RESOURCE_LIMIT = {
+    POWER_BANK: 1,
+    DEPOSIT: 1
+}
+
+/**
+ * observer 房间扫描间隔
+ */
+export const observerInterval = 10
+
+/**
  * factory 会优先保证底物的数量超过下面的限制之后才会进行生产
  * 例如：factory 想要生产 oxidant，但是 O 的数量低于 FACTORY_LOCK_AMOUNT.RESOURCE_OXYGEN 所以 factory 就会暂时停工
  */

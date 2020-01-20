@@ -80,7 +80,7 @@ Observer.getResource(resourceType: 'powerBank' | 'deposit'): string
 其他模块（采集 creep）在完成任务后会通过 observer 移除该旗帜
 
 ```ts
-Observer.ResourceClear(flagName: string)
+Observer.resourceClear(flagName: string)
 ```
 
 ## 流程

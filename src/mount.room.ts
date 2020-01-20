@@ -811,43 +811,6 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 初始化 Observer 工作
-     */
-    private initObserver(): string {
-        this.memory.observer = {
-            checked: {
-                room: null,
-                isChecked: false,
-            },
-            listNum: 0,
-            pause: false
-        }
-        return `[${this.name} Observer] 已初始化`
-    }
-
-    /**
-     * 暂停 Observer 工作
-     */
-    private pauseObserver(): string {
-        if (!this.memory.observer) {
-            return `[${this.name} Observer] 暂停 observer 失败 请确认是否初始化 Observer`
-        }
-        this.memory.observer.pause = true
-        return `[${this.name} Observer] 已暂停 observer`
-    }
-
-    /**
-     * 重启 Observer 工作
-     */
-    private resumeObserver(): string {
-        if(!this.memory.observer) {
-            return `[${this.name} Observer] 恢复 observer 失败 请确认是否初始化 Observer`
-        }
-        this.memory.observer.pause = false
-        return `[${this.name} Observer] 已恢复 observer`
-    }
-
-    /**
      * 用户操作：初始化 lab 集群
      */
     public linit(): string { return this.initLab() }
@@ -871,21 +834,6 @@ class RoomExtension extends Room {
      * 用户操作：重启 PowerSpawn 工作
      */
     public presume(): string { return this.resumeProcessPower() }
-
-    /**
-     * 用户操作：初始化 Observer 工作
-     */
-    public oinit(): string { return this.initObserver() }
-
-    /**
-     * 用户操作：暂停 Observer 工作
-     */
-    public opause(): string { return this.pauseObserver() }
-
-    /**
-     * 用户操作：重启 Observer 工作
-     */
-    public oresume(): string { return this.resumeObserver() }
 
     /**
      * 启动 boost 进程
@@ -1024,7 +972,7 @@ class RoomExtension extends Room {
 
         let returnString: string = ''
         // 新创建的订单下个 tick 才能看到，所以这里只能让玩家自行查看
-        if (createResult === OK) returnString = `[${this.name}] BUY 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
+        if (createResult === OK) returnString = `[${this.name}] ${type} 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
         else if (createResult === ERR_NOT_ENOUGH_RESOURCES) returnString = `[${this.name}] 您没有足够的 credit 来缴纳费用，当前/需要 ${Game.market.credits}/${price * totalAmount * 0.05}`
         else returnString = `[${this.name}] 创建失败，Game.market.createOrder 错误码: ${createResult}`
 
