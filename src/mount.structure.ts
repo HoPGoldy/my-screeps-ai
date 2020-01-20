@@ -1613,13 +1613,54 @@ class ObserverExtension extends StructureObserver {
         // 移除指定房间
         this.room.memory.observer.watchRooms = _.difference(this.room.memory.observer.watchRooms, roomNames)
         
-        return `[${this.room.name} observer] 已移除，当前监听房间列表为: ${this.room.memory.observer.watchRooms}`
+        return `[${this.room.name} observer] 已移除，${this.show(true)}`
     }
 
     /**
      * 用户操作：暂停 observer
      */
-    public pause(): string {
+    public off(): string {
+        if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用`
 
+        this.room.memory.observer.pause = true
+
+        return `[${this.room.name} observer] 已暂停`
+    }
+
+    /**
+     * 用户操作：重启 observer
+     */
+    public on(): string {
+        if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用`
+
+        delete this.room.memory.observer.pause
+
+        return `[${this.room.name} observer] 已恢复, ${this.show(true)}`
+    }
+
+    /**
+     * 用户操作：清空房间列表
+     */
+    public clear(): string {
+        if (!this.room.memory.observer) this.init()
+
+        this.room.memory.observer.watchRooms = []
+
+        return `[${this.room.name} observer] 已清空监听房间`
+    }
+
+    /**
+     * 用户操作：显示当前监听的房间列表
+     * 
+     * @param noTitle 该参数为 true 则不显示前缀
+     */
+    public show(noTitle: boolean = false): string {
+        let result = noTitle ? '' : `[${this.room.name} observer] `
+
+        result += this.room.memory.observer ? 
+        `监听中的房间列表为: ${this.room.memory.observer.watchRooms}` :
+        `未启用`
+
+        return result
     }
 }
