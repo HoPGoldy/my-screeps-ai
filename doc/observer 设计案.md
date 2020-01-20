@@ -26,7 +26,13 @@ Observer.remove(roomName, ...)
 **暂停**
 
 ```ts
-Observer.stop()
+Observer.off()
+```
+
+**重启**
+
+```ts
+Observer.on()
 ```
 
 **清空监控房间**
