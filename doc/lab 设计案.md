@@ -105,11 +105,13 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
     - 移除 `targetAmount`, `targetIndex` + 1 或 = 0，将 `state` 置为 `getTarget`，return
 
 - `working` 阶段
-    - 当前底物是否用完？
-        - 已用尽，将 `state` 置为 `putResource`，return
-    - 获取 outLab 和两个 inLab 的实例
-    - 执行反应，`outLabIndex` + 1 或者 = 0
-
+    - outLab 是否冷却完成
+        - 否，return
+    - 遍历所有 outLab，与 inLab 一起进行反应
+        - 检查返回值
+            - 返回资源不足，将 `state` 置为 `putResource`，return
+            - 返回冷却中，将冷却时间保存至内存，return
+    
 - `putResource` 阶段
     - 物流队列中是否已经有任务？
         - 有任务，等待，return

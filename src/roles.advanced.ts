@@ -270,7 +270,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                         creep.room.handleRoomTransferTask()
                         return
                     }
-                    target = creep.pos.findClosestByPath(towers) as StructureTower
+                    target = creep.pos.findClosestByRange(towers) as StructureTower
                 }
 
                 // 写入缓存
@@ -414,7 +414,23 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 }
             }
 
-            // 找不到的话就说明任务完成
+            // 找不到的话就检查下 inLab 是否净空
+            if (!targetLab) {
+                for (const labId of labMemory.inLab) {
+                    // 获取 inLab
+                    const inLab = Game.getObjectById(labId) as StructureLab
+                    // transfer 并非 lab 集群内部成员，所以不会对 inLab 的缺失做出响应
+                    if (!inLab) continue
+
+                    // 如果有剩余资源的话就拿出来
+                    if (inLab.store.getUsedCapacity(inLab.mineralType) as Number > 0) {
+                        targetLab = inLab
+                        break
+                    }
+                }
+            }
+
+            // 还找不到的话就说明任务完成
             if (!targetLab) {
                 creep.room.deleteCurrentRoomTransferTask()
                 return
@@ -428,12 +444,12 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             if (creep.store[RESOURCE_ENERGY] > 0) return creep.transferTo(creep.room.terminal, RESOURCE_ENERGY)
 
             // 转移资源
-            const withdrawResult = creep.withdraw(targetLab, task.resourceType)
+            const withdrawResult = creep.withdraw(targetLab, targetLab.mineralType)
 
             if (withdrawResult === ERR_NOT_IN_RANGE) creep.goTo(targetLab.pos)
             // 正常转移资源则更新 memory 数量信息
             else if (withdrawResult == OK) {
-                creep.room.memory.lab.outLab[targetLab.id] = targetLab.mineralType ? targetLab.store[targetLab.mineralType] : 0
+                if (targetLab.id in labMemory.outLab) creep.room.memory.lab.outLab[targetLab.id] = targetLab.mineralType ? targetLab.store[targetLab.mineralType] : 0
             }
             else creep.say(`draw ${withdrawResult}`)
         },

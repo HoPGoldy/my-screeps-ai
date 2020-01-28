@@ -727,7 +727,6 @@ class RoomExtension extends Room {
                 targetIndex: 1,
                 inLab: [],
                 outLab: {},
-                outLabIndex: 0,
                 pause: false
             }
         }

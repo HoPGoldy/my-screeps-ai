@@ -369,8 +369,8 @@ interface RoomMemory {
         outLab: {
             [labId: string]: number
         }
-        // 要进行反应的 outLab 索引
-        outLabIndex: number
+        // 反应进行后下次反应进行的时间，值为 Game.time + cooldown
+        reactionRunTime?: number
         // lab 是否暂停运行
         pause: boolean
     }

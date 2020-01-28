@@ -1240,8 +1240,10 @@ class LabExtension extends StructureLab {
      */
     private labWorking(): void {
         // console.log(`[${this.room.name} lab] - 进行反应`)
-
         const labMemory = this.room.memory.lab
+
+        // 还没冷却好
+        if (labMemory.reactionRunTime && Game.time < labMemory.reactionRunTime) return
 
         // 获取 inLab
         let inLabs: StructureLab[] = []
@@ -1252,29 +1254,33 @@ class LabExtension extends StructureLab {
         })
         if (inLabs.length < 2) return
 
-        // 底物用光了就进入下一阶段        
-        const notRunOutResource = inLabs.find(lab => lab.store[lab.mineralType] >= 0)
-        if (!notRunOutResource) {
-            // console.log(`[${this.room.name} lab] - 反应完成，移出产物`)
-            this.room.memory.lab.state = LAB_STATE.PUT_RESOURCE
-            return
-        }
+        // 遍历 outLab 执行反应
+        for (const labId in labMemory.outLab) {
+            const outLab = Game.getObjectById(labId) as StructureLab
+            // 兜底
+            if (!outLab) {
+                console.log(`[${this.room.name} lab] 错误! 找不到 outLab ${labId}, 已将其移除`)
+                delete this.room.memory.lab.outLab[labId]
+                continue
+            }
 
-        // 获取本次要进行反应的 outLab
-        const outLabIds = Object.keys(labMemory.outLab)
-        const outLab: StructureLab = Game.getObjectById(outLabIds[labMemory.outLabIndex])
-        
-        // 兜底
-        if (!outLab) {
-            console.log(`[${this.room.name} lab] 错误! 找不到 outLab ${labMemory.outLabIndex}, 已移除`)
-            delete this.room.memory.lab.outLab[outLabIds[labMemory.outLabIndex]]
-            this.setNextOutLabIndex()
-            return
-        }
-        if (outLab.cooldown != 0) return
+            const runResult = outLab.runReaction(inLabs[0], inLabs[1])
 
-        outLab.runReaction(inLabs[0], inLabs[1])
-        this.setNextOutLabIndex()
+            // 由于 runReaction 之后要等到下个 tick 才能获取到 cooldown 信息
+            // 所以一旦发现有 lab 进入冷却后就说明其他的 outLab 也在冷却了
+            if (runResult === ERR_TIRED) {
+                this.room.memory.lab.reactionRunTime = Game.time + outLab.cooldown
+                return
+            }
+            // 底物不足的话就进入下个阶段
+            else if (runResult === ERR_NOT_ENOUGH_RESOURCES) {
+                this.room.memory.lab.state = LAB_STATE.PUT_RESOURCE
+                return
+            }
+            else if (runResult !== OK) {
+                console.log(`[${this.room.name} lab] runReaction 异常，错误码 ${runResult}`)
+            }
+        }
     }
 
     /**
@@ -1311,21 +1317,6 @@ class LabExtension extends StructureLab {
             0 : this.room.memory.lab.targetIndex + 1
         
         return this.room.memory.lab.targetIndex
-    }
-
-    /**
-     * 将 lab.outLabIndex 设置到下一个 outLab
-     * 
-     * @returns 当前的 outLab 索引
-     */
-    private setNextOutLabIndex(): number {
-        const outLabIds = Object.keys(this.room.memory.lab.outLab)
-        const index = this.room.memory.lab.outLabIndex
-
-        this.room.memory.lab.outLabIndex = index + 1 >= outLabIds.length ? 
-            0 : index + 1
-        
-        return this.room.memory.lab.outLabIndex
     }
 
     /**
