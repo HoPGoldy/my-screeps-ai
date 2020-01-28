@@ -258,7 +258,7 @@ interface Room {
 
     // 禁止通行点位 api
     addRestrictedPos(pos: RoomPosition): void
-    getRestrictedPos(): Set<string>
+    getRestrictedPos(): { [posStr: string]: true }
     removeRestrictedPos(pos: RoomPosition): void
 }
 
@@ -273,7 +273,9 @@ type ObserverResource = 'powerBank' | 'deposit'
  */
 interface RoomMemory {
     // 该房间禁止通行点的存储
-    restrictedPos?: string[]
+    restrictedPos?: {
+        [posStr: string]: true
+    }
     // observer 内存
     observer: {
         // 上个 tick 已经 ob 过的房间名

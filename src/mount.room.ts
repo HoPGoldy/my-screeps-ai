@@ -172,23 +172,16 @@ class RoomExtension extends Room {
      * @param pos 禁止通行的位置
      */
     public addRestrictedPos(pos: RoomPosition): void {
-        if (!this._restrictedPos) this.initRestrictedPos()
+        if (!this.memory.restrictedPos) this.memory.restrictedPos = {}
 
-        const posStr = this.serializePos(pos)
-
-        if (!this._restrictedPos.has(posStr)) {
-            this._restrictedPos.add(posStr)
-            this.memory.restrictedPos.push(posStr)
-        }
+        this.memory.restrictedPos[this.serializePos(pos)] = true
     }
 
     /**
      * 获取房间内的禁止通行点位
      */
-    public getRestrictedPos(): Set<string> {
-        if (!this._restrictedPos) this.initRestrictedPos()
-
-        return this._restrictedPos
+    public getRestrictedPos(): { [posStr: string]: true } {
+        return this.memory.restrictedPos
     }
 
     /**
@@ -197,29 +190,9 @@ class RoomExtension extends Room {
      * @param pos 要移除的位置
      */
     public removeRestrictedPos(pos: RoomPosition): void {
-        if (!this._restrictedPos) this.initRestrictedPos()
+        if (!this.memory.restrictedPos) this.memory.restrictedPos = {}
 
-        const posStr = this.serializePos(pos)
-
-        if (this._restrictedPos.delete(posStr)) {
-            let posIndex: number = null
-            this.memory.restrictedPos.find((pos, index) => {
-                if (pos === posStr) posIndex = index
-            })
-
-            this.memory.restrictedPos.splice(posIndex, 1)
-        }
-    }
-
-    /**
-     * 初始化禁止通行点位 Set
-     */
-    private initRestrictedPos(): void {
-        if (!this.memory.restrictedPos) {
-            this.memory.restrictedPos = []
-            this._restrictedPos = new Set()
-        }
-        else this._restrictedPos = new Set(this.memory.restrictedPos)
+        delete this.memory.restrictedPos[this.serializePos(pos)]
     }
 
     /**
@@ -234,7 +207,7 @@ class RoomExtension extends Room {
 
     /**
      * 将位置序列化字符串转换为位置
-     * 位置序列化字符串形如: 12/32E1N2
+     * 位置序列化字符串形如: 12/32/E1N2
      * 
      * @param posStr 要进行转换的字符串
      */
