@@ -79,8 +79,10 @@ class CreepExtension extends Creep {
             onStateChange(this, this.memory.working)
 
             // 停止工作后自己的位置就不再是禁止通行点了
-            this.room.removeRestrictedPos(this.pos)
-            delete this.memory.standed
+            if (this.memory.standed) {
+                this.room.removeRestrictedPos(this.pos)
+                delete this.memory.standed
+            }
         }
         // creep 身上能量满了 && creep 之前的状态为“不工作”
         if(resourceAmount >= this.store.getCapacity() && !this.memory.working) {
@@ -196,10 +198,10 @@ class CreepExtension extends Creep {
                 })
 
                 // 避开房间中的禁止通行点
-                room.getRestrictedPos().forEach(posStr => {
+                for (const posStr in room.getRestrictedPos()) {
                     const pos = this.room.unserializePos(posStr)
                     costs.set(pos.x, pos.y, 255)
-                })
+                }
 
                 return costs
             }
@@ -306,10 +308,10 @@ class CreepExtension extends Creep {
             costCallback: (roomName, costMatrix) => {
                 if (roomName === this.room.name) {
                     // 避开房间中的禁止通行点
-                    this.room.getRestrictedPos().forEach(posStr => {
+                    for (const posStr in this.room.getRestrictedPos()) {
                         const pos = this.room.unserializePos(posStr)
                         costMatrix.set(pos.x, pos.y, 255)
-                    })
+                    }
                 }
                 
                 return costMatrix
