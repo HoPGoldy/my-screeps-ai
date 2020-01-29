@@ -1516,6 +1516,8 @@ class ObserverExtension extends StructureObserver {
         // 没有初始化或者暂停了就不执行工作
         if (!this.room.memory.observer) return
         if (this.room.memory.observer.pause) return
+        // 都找到了就不继续工作了
+        if ((this.getFlagName('deposit') in Game.flags) && (this.getFlagName('powerBank') in Game.flags)) return
 
         // 如果房间没有视野就获取视野，否则就执行搜索
         if (this.room.memory.observer.checkRoomName) this.searchRoom()
@@ -1530,7 +1532,9 @@ class ObserverExtension extends StructureObserver {
         // 从内存中获取要搜索的房间
         const room = Game.rooms[this.room.memory.observer.checkRoomName]
 
-        if (this.room.memory.observer.resourceFlags['deposit'].length < OBSERVER_RESOURCE_LIMIT.DEPOSIT) {
+        // 还没插旗的话就继续查找 deposit
+        const depositFlagName = this.getFlagName('deposit')
+        if (!(depositFlagName in Game.flags)) {
             const deposits = room.find(FIND_DEPOSITS)
             // 对找到的 deposit 进行处置归档
             deposits.forEach(deposit => {
@@ -1539,28 +1543,27 @@ class ObserverExtension extends StructureObserver {
                 const flags = deposit.pos.lookFor(LOOK_FLAGS)
                 if (flags.length > 0) return
                 
-                // 获取旗帜名称并将其存档
-                const flagName = this.getFlagName('deposit')
-                room.createFlag(deposit.pos, flagName)
-                this.addResource('deposit', flagName)
+                // 确认完成，插旗
+                room.createFlag(deposit.pos, depositFlagName)
                 console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`)
             })
         }
         
-        if (this.room.memory.observer.resourceFlags['powerBank'].length < OBSERVER_RESOURCE_LIMIT.POWER_BANK) {
+        // 还没插旗的话就继续查找 pb
+        const powerBankFlagName = this.getFlagName('powerBank')
+        if (!(powerBankFlagName in Game.flags)) {
+            // pb 的存活时间大于 3000 的才去采集
             const powerBanks = room.find(FIND_STRUCTURES, {
-                filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3500
+                filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3000
             })
             // 对找到的 pb 进行处置归档
             powerBanks.forEach(powerBank => {
                 const flags = powerBank.pos.lookFor(LOOK_FLAGS)
                 if (flags.length > 0) return
     
-                // 获取旗帜名称并将其存档
-                const flagName = this.getFlagName('powerBank')
-                room.createFlag(powerBank.pos, flagName)
-                this.addResource('powerBank', flagName)
-                console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`)
+                // 确认完成，插旗
+                room.createFlag(powerBank.pos, powerBankFlagName)
+                console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`)    
             })
         }
 
@@ -1568,8 +1571,14 @@ class ObserverExtension extends StructureObserver {
         delete this.room.memory.observer.checkRoomName
     }
 
+    /**
+     * 获取旗帜名称
+     * 名字形如：powerbank W1N1
+     * 
+     * @param resourceType 资源类型
+     */
     private getFlagName(resourceType: ObserverResource): string {
-        return `${resourceType} ${this.room.name} ${Game.time}`
+        return `${resourceType} ${this.room.name}`
     }
 
     /**
@@ -1591,7 +1600,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 将新资源录入存档
+     * 【废弃】将新资源录入存档
      * 
      * @param resourceType 新发现的资源类型
      * @param flagName 已经插好的旗帜名称
@@ -1603,7 +1612,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 查询 observer 发现的资源
+     * 【废弃】查询 observer 发现的资源
      * 暂时只支持返回首个资源
      * 
      * @param resourceType 要查询的资源类型
@@ -1615,7 +1624,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 完成指定旗帜下的资源采集
+     * 【废弃】完成指定旗帜下的资源采集
      * 
      * @param resourceType 要移除的资源类型
      * @param flagName 完成采集的旗帜名称

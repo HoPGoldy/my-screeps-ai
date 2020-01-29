@@ -376,17 +376,14 @@ export default {
      * @param sourceFlagName 旗帜的名称 (插在 Deposit 上)
      * @param targetId 要存放到的目标建筑的 id（默认为 terminal）
      */
-    depositHarvester: (spawnName: string, sourceFlagName: string = '', targetId: string = ''): ICreepConfig => ({
+    depositHarvester: (spawnName: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
-            const targetFlag = sourceFlagName ? Game.flags[sourceFlagName] : getFlagNameByObserver(room, 'deposit')
+            const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) return false
 
             // 冷却时长过长则放弃该 deposit
             if (targetFlag.memory.depositCooldown >= DEPOSIT_MAX_COOLDOWN) {
-                // 通知 observer 移除资源
-                if (Game.spawns[spawnName] && Game.spawns[spawnName].room.observer) Game.spawns[spawnName].room.observer.clearResource('deposit', targetFlag.name)
-
                 delete Memory.flags[targetFlag.name]
                 targetFlag.remove()
                 return false
@@ -423,9 +420,6 @@ export default {
                 if (target) targetFlag.memory.sourceId = target.id
                 // 找不到就失去了存在的意义
                 else {
-                    // 通知 observer 移除资源
-                    if (Game.spawns[spawnName] && Game.spawns[spawnName].room.observer) Game.spawns[spawnName].room.observer.clearResource('deposit', targetFlag.name)
-
                     delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
                     creep.suicide()
@@ -505,14 +499,11 @@ export default {
      * @param spawnName 出生点名称
      * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      */
-    pbAttacker: (spawnName: string, sourceFlagName: string = ''): ICreepConfig => ({
+    pbAttacker: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
         isNeed: room => {
             // 旗帜校验
-            const targetFlag = sourceFlagName ? Game.flags[sourceFlagName] : getFlagNameByObserver(room, 'powerBank')
-            if (!targetFlag) {
-                console.log(`[pbAttacker] 未找到旗帜，待命中`)
-                return false
-            }
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) return false
 
             // 如果旗帜的状态符合的话，就进行生成
             if (
@@ -528,7 +519,7 @@ export default {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
                 console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                return false
+                
             }
 
             // 朝目标移动
@@ -570,9 +561,6 @@ export default {
 
                 // 没找到 ruin 的话说明任务失败，释放旗帜并自杀
                 if (!powerbankRuin) {
-                    // 通知 observer 移除资源
-                    if (Game.spawns[spawnName] && Game.spawns[spawnName].room.observer) Game.spawns[spawnName].room.observer.clearResource('powerBank', targetFlag.name)
-
                     delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
                     creep.suicide()
@@ -616,7 +604,6 @@ export default {
             if (targetCreep) return true
 
             // 默认不生成
-            console.log(`[pbHeal] 未找到存活的攻击单位，待命中`)
             return false
         },
         prepare: creep => {
@@ -654,14 +641,12 @@ export default {
      * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      * @param targetId 要搬运到的建筑 id（默认为 terminal）
      */
-    pbTransfer: (spawnName: string, sourceFlagName: string = '', targetId: string = ''): ICreepConfig => ({
+    pbTransfer: (spawnName: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
         isNeed: room => {
             // 旗帜校验
-            const targetFlag = sourceFlagName ? Game.flags[sourceFlagName] : getFlagNameByObserver(room, 'powerBank')
-            if (!targetFlag) {
-                console.log(`[pbTransfer] 未找到旗帜，待命中`)
-                return false
-            }
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) return false
+
             // 如果旗帜的状态符合的话，就进行生成
             if (
                 targetFlag.memory.state == PB_HARVESTE_STATE.PREPARE ||
@@ -699,9 +684,6 @@ export default {
             const withdrawResult = creep.withdraw(powerbankRuin, RESOURCE_POWER)
             // 如果废墟搬空了就移除旗帜
             if (withdrawResult === OK && powerbankRuin.store[RESOURCE_POWER] <= 0) {
-                // 通知 observer 移除资源
-                if (Game.spawns[spawnName] && Game.spawns[spawnName].room.observer) Game.spawns[spawnName].room.observer.clearResource('powerBank', targetFlag.name)
-
                 delete Memory.flags[targetFlag.name]
                 targetFlag.remove()
             }
@@ -768,19 +750,4 @@ export default {
         spawn: spawnName,
         bodyType: 'signer'
     }),
-}
-
-/**
- * 从 observer 获取资源旗帜
- * 
- * @param room observer 所在的房间
- * @param resourceType 要获取的资源类型
- */
-function getFlagNameByObserver(room: Room, resourceType: ObserverResource): Flag | undefined {
-    const observer = room.observer
-    if (!observer) {
-        console.log(`[${room.name}] 无法获取旗帜, 请指定旗帜名称或者启用 observer`)
-        return undefined
-    }
-    return Game.flags[observer.getResource(resourceType)]
 }
