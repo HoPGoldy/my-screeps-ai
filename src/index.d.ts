@@ -52,14 +52,6 @@ interface StructureSpawn {
     clearTask(): void
 }
 
-/**
- * Observer 资源访问接口
- */
-interface StructureObserver {
-    getResource(resourceType: ObserverResource): string | undefined
-    clearResource(resourceType: ObserverResource, flagName: string): void
-}
-
 // Factory 拓展
 interface StructureFactory {
     make(resourceType: ResourceConstant): void

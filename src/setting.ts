@@ -314,7 +314,7 @@ export const labTarget = [
 export const DEPOSIT_MAX_COOLDOWN = 100
 
 /**
- * observer 的资源查找数量上限
+ *【废弃】 observer 的资源查找数量上限
  * 单个房间找到这么多数量的资源后就不会再进行查找
  */
 export const OBSERVER_RESOURCE_LIMIT = {
