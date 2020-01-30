@@ -194,6 +194,10 @@ class SpawnExtension extends StructureSpawn {
 
         // 获取身体部件, 优先使用 bodys
         const bodys = creepConfig.bodys ? creepConfig.bodys : this.getBodys(creepConfig.bodyType)
+        if (bodys.length <= 0) {
+            this.hangTask()
+            return ERR_NOT_ENOUGH_ENERGY
+        }
         
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
@@ -1531,6 +1535,11 @@ class ObserverExtension extends StructureObserver {
     private searchRoom(): void {
         // 从内存中获取要搜索的房间
         const room = Game.rooms[this.room.memory.observer.checkRoomName]
+        // 兜底
+        if (!room) {
+            delete this.room.memory.observer.checkRoomName
+            return
+        }
 
         // 还没插旗的话就继续查找 deposit
         const depositFlagName = this.getFlagName('deposit')
