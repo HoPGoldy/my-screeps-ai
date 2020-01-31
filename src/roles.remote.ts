@@ -553,23 +553,9 @@ export default {
                 if (powerbank) targetFlag.memory.sourceId = powerbank.id
             }
 
-            // 找不到 pb 了，找下废墟
+            // 找不到 pb 了
+            // 进入下个阶段、自杀让地方
             if (!powerbank) {
-                const powerbankRuin = targetFlag.pos.findInRange(FIND_RUINS, 1, {
-                    filter: r => r.structure.structureType === STRUCTURE_POWER_BANK
-                })[0]
-
-                // 没找到 ruin 的话说明任务失败，释放旗帜并自杀
-                if (!powerbankRuin) {
-                    delete Memory.flags[targetFlag.name]
-                    targetFlag.remove()
-                    creep.suicide()
-
-                    return
-                }
-
-                // 找到了就进入下个阶段
-                targetFlag.memory.sourceId = powerbankRuin.id
                 targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFE
                 creep.suicide()
                 return
@@ -656,6 +642,20 @@ export default {
             // 默认不生成
             return false
         },
+        prepare: creep => {
+            const targetFlag = Game.flags[sourceFlagName]
+            if (!targetFlag) {
+                console.log(`[${creep.name}] 未找到旗帜，待命中`)
+                creep.say('搬啥？')
+                return false
+            }
+
+            // 准备阶段就移动到旗帜三格附近
+            if (creep.pos.inRangeTo(targetFlag.pos, 3)) return true
+            else creep.farMoveTo(targetFlag.pos, [], 3)
+
+            return false
+        },
         source: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
@@ -664,28 +664,27 @@ export default {
                 return false
             }
 
-            // 准备阶段就移动找到旗帜三格附近
-            if (targetFlag.memory.state == PB_HARVESTE_STATE.PREPARE) {
-                creep.farMoveTo(targetFlag.pos, [], 3)
-                return false
-            }
-            // 运输阶段再移动到旗帜位置上 
-            else if (targetFlag.memory.state === PB_HARVESTE_STATE.TRANSFE) creep.goTo(targetFlag.pos)
+            // 没有到转移阶段就待命
+            if (targetFlag.memory.state !== PB_HARVESTE_STATE.TRANSFE) return false
+            creep.goTo(targetFlag.pos)
+            
+            // 还没走到房间内就不进行搜索
+            if (creep.room.name !== targetFlag.pos.roomName) return false
 
             // 获取 powerBank 的废墟
-            const powerbankRuin: Ruin = Game.getObjectById(targetFlag.memory.sourceId)
-            if (!powerbankRuin) {
-                // console.log(`[${creep.name}] 未找到 pb 废墟`)
-                creep.say('这波没了呀')
-                return false
-            }
-
-            // 获取 Power
-            const withdrawResult = creep.withdraw(powerbankRuin, RESOURCE_POWER)
-            // 如果废墟搬空了就移除旗帜
-            if (withdrawResult === OK && powerbankRuin.store[RESOURCE_POWER] <= 0) {
-                delete Memory.flags[targetFlag.name]
-                targetFlag.remove()
+            const powerbankRuin: Ruin = _.find(targetFlag.pos.lookFor(LOOK_RUINS), ruin => ruin.structure.structureType === STRUCTURE_POWER_BANK)
+            // 如果存在废墟就从里拿
+            if (powerbankRuin) creep.withdraw(powerbankRuin, RESOURCE_POWER)
+            else {
+                // 否则就看看地上有没有 power 
+                const power = targetFlag.pos.lookFor(LOOK_RESOURCES)[0]
+                if (power) creep.pickup(power)
+                else {
+                    // 地上的 power 也没了就正式采集结束了
+                    delete Memory.flags[targetFlag.name]
+                    targetFlag.remove()
+                    creep.suicide()
+                }
             }
         },
         target: creep => {
@@ -695,7 +694,7 @@ export default {
             if (targetId) target = Game.getObjectById(targetId)
             else {
                 const spawn = Game.spawns[spawnName]
-                if (!spawn || spawn.room.terminal) {
+                if (!spawn || !spawn.room.terminal) {
                     console.log(`[${creep.name}] 找不到存放建筑`)
                     return false
                 }
