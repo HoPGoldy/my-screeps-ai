@@ -194,13 +194,13 @@ class CreepExtension extends Creep {
                     // 不能穿过无法行走的建筑
                     else if (struct.structureType !== STRUCTURE_CONTAINER &&
                         (struct.structureType !== STRUCTURE_RAMPART || !struct.my) 
-                    ) costs.set(struct.pos.x, struct.pos.y, 255)
+                    ) costs.set(struct.pos.x, struct.pos.y, 0xff)
                 })
 
                 // 避开房间中的禁止通行点
                 for (const posStr in room.getRestrictedPos()) {
                     const pos = this.room.unserializePos(posStr)
-                    costs.set(pos.x, pos.y, 255)
+                    costs.set(pos.x, pos.y, 0xff)
                 }
 
                 return costs
@@ -310,7 +310,7 @@ class CreepExtension extends Creep {
                     // 避开房间中的禁止通行点
                     for (const posStr in this.room.getRestrictedPos()) {
                         const pos = this.room.unserializePos(posStr)
-                        costMatrix.set(pos.x, pos.y, 255)
+                        costMatrix.set(pos.x, pos.y, 0xff)
                     }
                 }
                 
