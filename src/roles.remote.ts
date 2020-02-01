@@ -384,7 +384,7 @@ export default {
 
             // 冷却时长过长则放弃该 deposit
             if (targetFlag.memory.depositCooldown >= DEPOSIT_MAX_COOLDOWN) {
-                delete Memory.flags[targetFlag.name]
+                Memory.flags[targetFlag.name] = {}
                 targetFlag.remove()
                 return false
             }
@@ -420,7 +420,7 @@ export default {
                 if (target) targetFlag.memory.sourceId = target.id
                 // 找不到就失去了存在的意义
                 else {
-                    delete Memory.flags[targetFlag.name]
+                    Memory.flags[targetFlag.name] = {}
                     targetFlag.remove()
                     creep.suicide()
                 }
@@ -519,7 +519,7 @@ export default {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
                 console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                
+                return false
             }
 
             // 朝目标移动
@@ -527,6 +527,7 @@ export default {
 
             // 如果到了就算准备完成
             if (creep.pos.isNearTo(targetFlag.pos)) {
+                creep.room.addRestrictedPos(creep.pos)
                 // 检查下是否还没统计移动所需时间
                 if (!targetFlag.memory.travelTime) targetFlag.memory.travelTime = CREEP_LIFE_TIME - creep.ticksToLive
                 return true
@@ -540,35 +541,40 @@ export default {
                 console.log(`[${creep.name}] 未找到旗帜，待命中`)
                 return false
             }
+            if (creep.ticksToLive <= 1) creep.room.removeRestrictedPos(creep.pos)
 
             // 获取 pb
             let powerbank: StructurePowerBank = undefined
             if (targetFlag.memory.sourceId) powerbank = Game.getObjectById(targetFlag.memory.sourceId)
             else {
                 // 没有缓存就进行查找
-                powerbank = targetFlag.pos.findInRange<StructurePowerBank>(FIND_STRUCTURES, 1, {
-                    filter: s => s.structureType === STRUCTURE_POWER_BANK
-                })[0]
+                powerbank = _.find(targetFlag.pos.lookFor(LOOK_STRUCTURES), s => s.structureType === STRUCTURE_POWER_BANK) as StructurePowerBank
                 // 并写入缓存
                 if (powerbank) targetFlag.memory.sourceId = powerbank.id
             }
 
-            // 找不到 pb 了
-            // 进入下个阶段、自杀让地方
+            // 找不到 pb 了，进入下个阶段
             if (!powerbank) {
                 targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFE
                 creep.suicide()
+                creep.room.removeRestrictedPos(creep.pos)
                 return
             }
 
             const attackResult = creep.attack(powerbank)
 
-            // 如果血量低于标准了，则通知运输单位进行生成
+            // 如果血量低于标准了，则通知运输单位进行提前生成
             if (attackResult === OK) {
-                if (powerbank.hits <= (targetFlag.memory.travelTime + 150) * 600) {
+                /**
+                 * @danger 注意下面这行后面的 *2，代表有两组 attack 再同时拆 bp
+                 * 如果只配置了一组的话，那么 prepare 阶段的时间就会提前
+                 */
+                if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 150) * 600 * 2)) {
                     targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
+                    console.log('准备阶段！')
                 }
             }
+            else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
         },
         spawn: spawnName,
         bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
@@ -592,27 +598,14 @@ export default {
             // 默认不生成
             return false
         },
-        prepare: creep => {
-            const targetCreep = Game.creeps[targetCreepName]
-            // 对象没了就殉情
-            if (!targetCreep) creep.suicide()
-            
-            creep.farMoveTo(targetCreep.pos)
-
-            if (!creep.pos.inRangeTo(targetCreep, 3)) return false
-            // 三格之内直接远程治疗
-            creep.rangedHeal(targetCreep)
-
-            // 移动到身边了就算准备完成
-            if (creep.pos.isNearTo(targetCreep)) return true
-            return false
-        },
         target: creep => {
             const targetCreep = Game.creeps[targetCreepName]
             // 对象没了就殉情
-            if (!targetCreep) creep.suicide()
+            if (!targetCreep) return creep.suicide()
 
-            creep.heal(targetCreep)
+            // 移动到身边了就治疗
+            if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
+            else creep.farMoveTo(targetCreep.pos)
         },
         spawn: spawnName,
         bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
@@ -642,6 +635,7 @@ export default {
             // 默认不生成
             return false
         },
+        // 移动到目标三格之内就算准备完成
         prepare: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
@@ -650,11 +644,9 @@ export default {
                 return false
             }
 
-            // 准备阶段就移动到旗帜三格附近
-            if (creep.pos.inRangeTo(targetFlag.pos, 3)) return true
-            else creep.farMoveTo(targetFlag.pos, [], 3)
+            creep.farMoveTo(targetFlag.pos)
 
-            return false
+            return creep.pos.inRangeTo(targetFlag.pos, 3)
         },
         source: creep => {
             const targetFlag = Game.flags[sourceFlagName]
@@ -663,25 +655,23 @@ export default {
                 creep.say('搬啥？')
                 return false
             }
-
-            // 没有到转移阶段就待命
+            // 没到搬运的时候就先待命
             if (targetFlag.memory.state !== PB_HARVESTE_STATE.TRANSFE) return false
+            // 到行动阶段了就过去
             creep.goTo(targetFlag.pos)
-            
-            // 还没走到房间内就不进行搜索
-            if (creep.room.name !== targetFlag.pos.roomName) return false
 
             // 获取 powerBank 的废墟
-            const powerbankRuin: Ruin = _.find(targetFlag.pos.lookFor(LOOK_RUINS), ruin => ruin.structure.structureType === STRUCTURE_POWER_BANK)
-            // 如果存在废墟就从里拿
+            const powerbankRuin: Ruin = targetFlag.pos.lookFor(LOOK_RUINS)[0]
+
+            // 如果 pb 废墟还存在
             if (powerbankRuin) creep.withdraw(powerbankRuin, RESOURCE_POWER)
+            // 如果废墟没了就从地上捡
             else {
-                // 否则就看看地上有没有 power 
                 const power = targetFlag.pos.lookFor(LOOK_RESOURCES)[0]
                 if (power) creep.pickup(power)
                 else {
                     // 地上的 power 也没了就正式采集结束了
-                    delete Memory.flags[targetFlag.name]
+                    Memory.flags[targetFlag.name] = {}
                     targetFlag.remove()
                     creep.suicide()
                 }
@@ -715,6 +705,7 @@ export default {
                     return true
                 }
             }
+            else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos)
         },
         switch: creep => {
             // 有 power 就是 target 阶段
