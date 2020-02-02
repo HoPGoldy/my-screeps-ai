@@ -69,13 +69,14 @@ class SpawnExtension extends StructureSpawn {
             }
             return
         }
-        // 内存里没有生成队列 / 生产队列为空 就啥都不干
-        if (this.spawning || !this.memory.spawnList || this.memory.spawnList.length == 0) return 
+        if (!this.room.memory.spawnList) this.room.memory.spawnList = []
+        // 生成中共 / 生产队列为空 就啥都不干
+        if (this.spawning || this.room.memory.spawnList.length == 0) return 
         // 进行生成
-        const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.memory.spawnList[0])
+        const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.room.memory.spawnList[0])
 
         // 生成成功后移除任务
-        if (spawnResult == OK) this.memory.spawnList.shift()
+        if (spawnResult == OK) this.room.memory.spawnList.shift()
     }
 
     /**
@@ -97,70 +98,16 @@ class SpawnExtension extends StructureSpawn {
                     return
                 }
     
-                // 检查指定的 spawn 中有没有它的生成任务
-                const spawn = Game.spawns[creepConfig.spawn]
-                if (!spawn) {
-                    console.log(`死亡 ${name} 未找到 ${creepConfig.spawn}`)
+                // 检查指定的 room 中有没有它的生成任务
+                const spawnRoom = Game.rooms[creepConfig.spawnRoom]
+                if (!spawnRoom) {
+                    console.log(`死亡 ${name} 未找到 ${creepConfig.spawnRoom}`)
                     return
                 }
-                // 没有的话加入生成
-                if (!spawn.hasTask(role)) {
-                    spawn.addTask(role)
-                    // console.log(`将 ${role} 加入 ${creepConfig.spawn} 生成队列`)
-                }
-                // 有的话删除过期内存
-                else {
-                    delete Memory.creeps[name]
-                    // console.log('清除死去 creep 记忆', name)
-                }
+                // 加入生成，加入成功的话删除过期内存
+                if (spawnRoom.addSpawnTask(role) != ERR_NAME_EXISTS) delete Memory.creeps[name]
             }
         }
-    }
-    
-    /**
-     * 向生产队列里推送一个生产任务
-     * 
-     * @param taskName config.creep.ts 文件里 creepConfigs 中定义的任务名
-     * @returns 当前任务在队列中的排名
-     */
-    public addTask(taskName: string): number {
-        if (!this.memory.spawnList) this.memory.spawnList = []
-        // 先检查下任务是不是已经在队列里了
-        if (!this.hasTask(taskName)) {
-            // 任务加入队列
-            this.memory.spawnList.push(taskName)
-            return this.memory.spawnList.length - 1
-        }
-        // 如果已经有的话返回 -1
-        else return -1
-    }
-
-    /**
-     * 检查生产队列中是否包含指定任务
-     * 
-     * @param taskName 要检查的任务名
-     * @returns true/false 有/没有
-     */
-    public hasTask(taskName: string): boolean {
-        if (!this.memory.spawnList) this.memory.spawnList = []
-        return this.memory.spawnList.indexOf(taskName) > -1
-    }
-
-    /**
-     * 清空任务队列
-     * 非测试情况下不要调用！
-     */
-    public clearTask(): void {
-        this.memory.spawnList = []
-    }
-
-    /**
-     * 将当前任务挂起
-     * 任务会被移动至队列末尾
-     */
-    private hangTask(): void {
-        const task = this.memory.spawnList.shift()
-        this.memory.spawnList.push(task)
     }
 
     /**
@@ -178,12 +125,12 @@ class SpawnExtension extends StructureSpawn {
         if (creepConfig.isNeed) {
             // 每 5 tick 才会检查一次
             if (Game.time % 5) {
-                if (this.memory.spawnList.length > 1) this.hangTask()
+                if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
                 return <CREEP_DONT_NEED_SPAWN>-101
             }
             // 检查不通过依旧会挂起
             else if (!creepConfig.isNeed(this.room)) {
-                if (this.memory.spawnList.length > 1) this.hangTask()
+                if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
                 return <CREEP_DONT_NEED_SPAWN>-101
             }
         }
@@ -195,7 +142,7 @@ class SpawnExtension extends StructureSpawn {
         // 获取身体部件, 优先使用 bodys
         const bodys = creepConfig.bodys ? creepConfig.bodys : this.getBodys(creepConfig.bodyType)
         if (bodys.length <= 0) {
-            this.hangTask()
+            this.room.hangSpawnTask()
             return ERR_NOT_ENOUGH_ENERGY
         }
         
@@ -208,11 +155,11 @@ class SpawnExtension extends StructureSpawn {
             return <OK>0
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
-            console.log(`${configName} 已经存在 ${creepConfig.spawn} 将不再生成 ...`)
+            console.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成 ...`)
             return <OK>0
         }
         else {
-            console.log(`[生成失败] ${creepConfig.spawn} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
+            console.log(`[生成失败] ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return spawnResult
         }
     }

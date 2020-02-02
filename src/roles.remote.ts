@@ -11,10 +11,10 @@ export default {
      * source: 无
      * target: 占领指定房间
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param ignoreRoom 不让过的房间名数组
      */ 
-    claimer: (spawnName: string, ignoreRoom: string[] = []): ICreepConfig => ({
+    claimer: (spawnRoom: string, ignoreRoom: string[] = []): ICreepConfig => ({
         target: creep => {
             const claimFlag = creep.getFlag(DEFAULT_FLAG_NAME.CLAIM)
             if (!claimFlag) return
@@ -29,7 +29,7 @@ export default {
             // 如果房间已经被占领或者被预定了则攻击控制器
             if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
                 // 确保房间所有者不是自己
-                if (room.controller.owner.username != Game.spawns[spawnName].owner.username) {
+                if (room.controller.owner.username != Game.rooms[spawnRoom].controller.owner.username) {
                     if (creep.attackController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller)
                     return
                 }
@@ -39,7 +39,7 @@ export default {
                 creep.moveTo(room.controller)
             }
         },
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'claimer'
     }),
 
@@ -48,11 +48,11 @@ export default {
      * 准备阶段：向指定房间控制器移动
      * 阶段A：预定控制器
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param roomName 要预定的房间名
      * @param ignoreRoom 不让过的房间名数组
      */
-    reserver: (spawnName: string, roomName: string, ignoreRoom: string[] = []): ICreepConfig => ({
+    reserver: (spawnRoom: string, roomName: string, ignoreRoom: string[] = []): ICreepConfig => ({
         isNeed: (room) => {
             if (!room.memory.remote) room.memory.remote = {}
             // 存在该字段说明外矿有入侵者
@@ -95,7 +95,7 @@ export default {
         // 一直进行预定
         target: creep => {
             // 如果房间的预订者不是自己, 就攻击控制器
-            if (creep.room.controller.reservation && creep.room.controller.reservation.username !== Game.spawns[spawnName].owner.username) {
+            if (creep.room.controller.reservation && creep.room.controller.reservation.username !== Game.rooms[spawnRoom].controller.owner.username) {
                 if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom, 1)
             }
             // 房间没有预定满, 就继续预定
@@ -103,7 +103,7 @@ export default {
                 if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[roomName].controller.pos, ignoreRoom, 1)
             }
         },
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'reserver'
     }),
 
@@ -111,12 +111,12 @@ export default {
      * 签名者
      * 会先抵达指定房间, 然后执行签名
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
      * @param ignoreRoom 不让过的房间名数组
      */
-    signer: (spawnName: string, targetRoomName: string, signText: string, ignoreRoom: string[] = []): ICreepConfig => ({
+    signer: (spawnRoom: string, targetRoomName: string, signText: string, ignoreRoom: string[] = []): ICreepConfig => ({
         source: creep => {
             creep.farMoveTo(new RoomPosition(25, 25, targetRoomName), ignoreRoom)
         },
@@ -126,7 +126,7 @@ export default {
             }
         },
         switch: creep => creep.room.name === targetRoomName,
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'signer'
     }),
 
@@ -134,12 +134,12 @@ export default {
      * 支援者
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      *
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
      * @param ignoreRoom 不让过的房间名数组
      */
-    remoteBuilder: (spawnName: string, targetRoomName: string, sourceId: string, ignoreRoom: string[] = []): ICreepConfig => ({
+    remoteBuilder: (spawnRoom: string, targetRoomName: string, sourceId: string, ignoreRoom: string[] = []): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
@@ -159,7 +159,7 @@ export default {
             else if (creep.upgrade()) { }
         },
         switch: creep => creep.updateState('🚧 支援建造'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'worker'
     }),
 
@@ -167,12 +167,12 @@ export default {
      * 支援 - 采矿者
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param targetRoomName 要支援的目标房间名
      * @param sourceId 要采集的矿物 id
      * @param ignoreRoom 不让过的房间名数组
      */
-    remoteUpgrader: (spawnName: string, targetRoomName: string, sourceId: string, ignoreRoom: string[] = []): ICreepConfig => ({
+    remoteUpgrader: (spawnRoom: string, targetRoomName: string, sourceId: string, ignoreRoom: string[] = []): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
@@ -189,7 +189,7 @@ export default {
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 支援升级'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'worker'
     }),
 
@@ -197,12 +197,12 @@ export default {
      * 外矿采集者
      * 从指定矿中挖矿 > 将矿转移到建筑中
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceFlagName 外矿旗帜的名称 (要确保 source 就在该旗帜附件)
      * @param targetId 要移动到的建筑 id
      * @param ignoreRoom 不让过的房间名数组
      */
-    remoteHarvester: (spawnName: string, sourceFlagName: string, targetId: string, ignoreRoom: string[] = []): ICreepConfig => ({
+    remoteHarvester: (spawnRoom: string, sourceFlagName: string, targetId: string, ignoreRoom: string[] = []): ICreepConfig => ({
         // 如果外矿目前有入侵者就不生成
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
@@ -262,13 +262,13 @@ export default {
                 }
                 // 有的话向基地报告
                 if (sourceFlag.room._hasEnemy) {
-                    const spawn = Game.spawns[spawnName]
-                    if (!spawn) return console.log(`${creep.name} 在 source 阶段中找不到 ${spawnName}`)
-                    if (!spawn.room.memory.remote) spawn.room.memory.remote = {}
+                    const room = Game.rooms[spawnRoom]
+                    if (!room) return console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
+                    if (!room.memory.remote) room.memory.remote = {}
                     // 如果还没有设置重生时间的话
-                    if (!spawn.room.memory.remote[sourceFlag.room.name]) {
+                    if (!room.memory.remote[sourceFlag.room.name]) {
                         // 将重生时间设置为 1500 tick 之后
-                        spawn.room.memory.remote[sourceFlag.room.name] = Game.time + 1500
+                        room.memory.remote[sourceFlag.room.name] = Game.time + 1500
                     }
                 }
             }
@@ -282,11 +282,11 @@ export default {
 
                 // 发现入侵者 core
                 if (core.length > 0) {
-                    const spawn = Game.spawns[spawnName]
-                    if (!spawn) return console.log(`${creep.name} 在 source 阶段中找不到 ${spawnName}`)
-                    if (!spawn.room.memory.remote) spawn.room.memory.remote = {}
+                    const room = Game.rooms[spawnRoom]
+                    if (!room) return console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
+                    if (!room.memory.remote) room.memory.remote = {}
                     // 如果还没有设置重生时间的话
-                    if (!spawn.room.memory.remote[sourceFlag.room.name]) {
+                    if (!room.memory.remote[sourceFlag.room.name]) {
                         const collapseTimerEffect = core[0].effects.find(e => e.effect == EFFECT_COLLAPSE_TIMER)
 
                         if (collapseTimerEffect) {
@@ -296,7 +296,7 @@ export default {
                              * 所以在 core 消失之后依旧会直接生成 remoteHarvester 在 source 前傻站至多 4000 tick
                              */
                             // 将重生时间设置为 core 消失之后
-                            spawn.room.memory.remote[sourceFlag.room.name] = Game.time + collapseTimerEffect.ticksRemaining
+                            room.memory.remote[sourceFlag.room.name] = Game.time + collapseTimerEffect.ticksRemaining
                         }
                     }
                 }
@@ -336,7 +336,7 @@ export default {
             }
         },
         switch: creep => creep.updateState('🍚 收获'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'remoteHarvester'
     }),
 
@@ -345,10 +345,10 @@ export default {
      * 抵达指定房间 > 待命 > 攻击敌人
      * RCL < 3 时生成的防御者可能不足以消灭入侵者
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param roomName 要守卫的房间名称
      */
-    remoteDefender: (spawnName: string, roomName: string): ICreepConfig => ({
+    remoteDefender: (spawnRoom: string, roomName: string): ICreepConfig => ({
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
@@ -364,7 +364,7 @@ export default {
         source: creep => creep.standBy(),
         target: creep => creep.defense(),
         switch: creep => creep.checkEnemy(),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'remoteDefender'
     }),
 
@@ -372,11 +372,11 @@ export default {
      * deposit采集者
      * 从指定矿中挖 deposit > 将矿转移到建筑中
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceFlagName 旗帜的名称 (插在 Deposit 上)
      * @param targetId 要存放到的目标建筑的 id（默认为 terminal）
      */
-    depositHarvester: (spawnName: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
+    depositHarvester: (spawnRoom: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
             const targetFlag = Game.flags[sourceFlagName]
@@ -445,9 +445,9 @@ export default {
             }
             else {
                 // 获取目标终端
-                const spawn = Game.spawns[spawnName]
-                if (!spawn) return console.log(`[${creep.name}] target 阶段，找不到指定 spawn`)
-                target = spawn.room.terminal
+                const room = Game.rooms[spawnRoom]
+                if (!room) return console.log(`[${creep.name}] target 阶段，找不到指定 spawn`)
+                target = room.terminal
                 if (!target) return console.log(`[${creep.name}] target 阶段，找不到默认 terminal`)
             }
             
@@ -487,7 +487,7 @@ export default {
     
             return creep.memory.working
         },
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'remoteHarvester'
     }),
 
@@ -496,10 +496,10 @@ export default {
      * 移动并攻击 powerBank, 请在 8 级时生成
      * @see doc "../doc/PB 采集小组设计案"
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      */
-    pbAttacker: (spawnName: string, sourceFlagName: string): ICreepConfig => ({
+    pbAttacker: (spawnRoom: string, sourceFlagName: string): ICreepConfig => ({
         isNeed: room => {
             // 旗帜校验
             const targetFlag = Game.flags[sourceFlagName]
@@ -590,7 +590,7 @@ export default {
             }
             else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
         },
-        spawn: spawnName,
+        spawnRoom,
         bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
     }),
 
@@ -599,10 +599,10 @@ export default {
      * 移动并治疗 pbAttacker, 请在 8 级时生成
      * @see doc "../doc/PB 采集小组设计案"
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param targetCreepName 要治疗的 pbAttacker 的名字
      */
-    pbHealer: (spawnName: string, targetCreepName: string): ICreepConfig => ({
+    pbHealer: (spawnRoom: string, targetCreepName: string): ICreepConfig => ({
         isNeed: () => {
             const targetCreep = Game.creeps[targetCreepName]
 
@@ -621,7 +621,7 @@ export default {
             if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
             else creep.farMoveTo(targetCreep.pos)
         },
-        spawn: spawnName,
+        spawnRoom,
         bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
     }),
 
@@ -630,11 +630,11 @@ export default {
      * 搬运 PowerBank Ruin 中的 power, 请在 8 级时生成
      * @see doc "../doc/PB 采集小组设计案"
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      * @param targetId 要搬运到的建筑 id（默认为 terminal）
      */
-    pbTransfer: (spawnName: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
+    pbTransfer: (spawnRoom: string, sourceFlagName: string, targetId: string = ''): ICreepConfig => ({
         isNeed: room => {
             // 旗帜校验
             const targetFlag = Game.flags[sourceFlagName]
@@ -697,13 +697,13 @@ export default {
             // 获取存放到的建筑
             if (targetId) target = Game.getObjectById(targetId)
             else {
-                const spawn = Game.spawns[spawnName]
-                if (!spawn || !spawn.room.terminal) {
+                const room = Game.rooms[spawnRoom]
+                if (!room || !room.terminal) {
                     console.log(`[${creep.name}] 找不到存放建筑`)
                     return false
                 }
                 
-                target = spawn.room.terminal
+                target = room.terminal
             }
 
             // 存放资源
@@ -729,7 +729,7 @@ export default {
 
             return creep.memory.working
         },
-        spawn: spawnName,
+        spawnRoom,
         bodys: calcBodyPart({ [CARRY]: 25, [MOVE]: 25 })
     }),
 
@@ -737,10 +737,10 @@ export default {
      * 移动测试单位
      * 一直朝着旗帜移动
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param flagName 目标旗帜名称
      */
-    moveTester: (spawnName: string, flagName: string): ICreepConfig => ({
+    moveTester: (spawnRoom: string, flagName: string): ICreepConfig => ({
         target: creep => {
             const targetFlag = Game.flags[flagName]
             if (!targetFlag) {
@@ -751,7 +751,7 @@ export default {
             creep.farMoveTo(targetFlag.pos, [])
             console.log('移动消耗', Game.cpu.getUsed() - cost1)
         },
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'signer'
     }),
 }

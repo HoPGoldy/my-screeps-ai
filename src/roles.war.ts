@@ -11,13 +11,13 @@ export default {
      * 会一直向旗帜发起进攻,
      * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param flagName 要攻击的旗帜名称
      */
-    soldier: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
+    soldier: (spawnRoom: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
         ...battleBase(flagName),
         target: creep => creep.attackFlag(flagName),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'attacker'
     }),
 
@@ -25,15 +25,15 @@ export default {
      * 医生
      * 一直治疗给定的 creep
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param creepsName 要治疗的 creep 名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    doctor: (spawnName: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    doctor: (spawnRoom: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
         source: creep => creep.farMoveTo(Game.flags[standByFlagName].pos),
         target: creep => creep.healTo(Game.creeps[creepsName]),
         switch: () => standByFlagName in Game.flags,
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'healer'
     }),
 
@@ -42,10 +42,10 @@ export default {
      * 7 级以上可用, 25HEAL 25MOVE
      * 详情见 role.doctor
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param creepsName 要治疗的 creep 名称数组
      */
-    boostDoctor: (spawnName: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    boostDoctor: (spawnRoom: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
         ...boostPrepare(BOOST_TYPE.HEAL, {
             [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
             [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25,
@@ -57,7 +57,7 @@ export default {
         },
         target: creep => creep.healTo(Game.creeps[creepsName]),
         switch: () => !(standByFlagName in Game.flags),
-        spawn: spawnName,
+        spawnRoom,
         bodys: calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
     }),
 
@@ -65,13 +65,13 @@ export default {
      * 房间防御者
      * 到 "房间名 StandBy" 旗帜下待命 > 攻击出现的敌人
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      */
-    defender: (spawnName: string): ICreepConfig => ({
+    defender: (spawnRoom: string): ICreepConfig => ({
         source: creep => creep.standBy(),
         target: creep => creep.defense(),
         switch: creep => creep.checkEnemy(),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'attacker'
     }),
 
@@ -79,18 +79,18 @@ export default {
      * 拆除者
      * 会一直向旗帜发起进攻，拆除旗帜下的建筑
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param flagName 要攻击的旗帜名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    dismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    dismantler: (spawnRoom: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
         prepare: creep => {
             if (!(standByFlagName in Game.flags)) return true
             creep.moveTo(Game.flags[standByFlagName])
         },
         ...battleBase(flagName),
         target: creep => creep.dismantleFlag(flagName),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'dismantler'
     }),
 
@@ -99,11 +99,11 @@ export default {
      * 7 级以上可用, 12TOUGH 28WORK 10MOVE
      * 详情见 role.dismantler，请配合 boostDoctor 使用
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param flagName 要攻击的旗帜名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    boostDismantler: (spawnName: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    boostDismantler: (spawnRoom: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
         prepare: creep => {
             if (!(standByFlagName in Game.flags)) return true
             creep.moveTo(Game.flags[standByFlagName])
@@ -115,7 +115,7 @@ export default {
             [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10, 
         }),
         target: creep => creep.dismantleFlag(flagName),
-        spawn: spawnName,
+        spawnRoom,
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
     }),
 
@@ -124,11 +124,11 @@ export default {
      * 本角色仅能在 RCL >= 7 时生成
      * 扛塔数量为 0 时依旧会携带 3 个强化 HEAL (144/T 的回复)，但是不会有 TOUGH
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能量越强，默认为 6 (0~6)
      * @param flagName 要攻击的旗帜名称
      */
-    apocalypse: (spawnName: string, bearTowerNum: number = 6, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => {
+    apocalypse: (spawnRoom: string, bearTowerNum: number = 6, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => {
         // 越界就置为 6
         if (bearTowerNum < 0 || bearTowerNum > 6) bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
@@ -153,7 +153,7 @@ export default {
                 [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: bodyConfig[HEAL]
             }),
             target: creep => creep.rangedAttackFlag(flagName),
-            spawn: spawnName,
+            spawnRoom,
             bodys: calcBodyPart(bodyConfig)
         }
     },

@@ -7,11 +7,11 @@ export default {
      * 采集者
      * 从指定 source 中获取能量 > 将矿转移到 spawn 和 extension 中
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      * @param backupStorageId 填满后将能量转移到的建筑 (可选)
      */
-    harvester: (spawnName: string, sourceId: string, backupStorageId: string=''): ICreepConfig => ({
+    harvester: (spawnRoom: string, sourceId: string, backupStorageId: string=''): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => {
             let target: AnyStructure
@@ -60,7 +60,7 @@ export default {
             creep.transferTo(target, RESOURCE_ENERGY)
         },
         switch: creep => creep.updateState('🍚 收获'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'worker'
     }),
 
@@ -68,11 +68,11 @@ export default {
      * 收集者
      * 从指定 source 或 mineral 中获取资源 > 将资源转移到指定建筑中
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      * @param targetId 指定建筑 id (默认为 room.storage)
      */
-    collector: (spawnName: string, sourceId: string, targetId: string=''): ICreepConfig => ({
+    collector: (spawnRoom: string, sourceId: string, targetId: string=''): ICreepConfig => ({
         prepare: creep => {
             // 已经到附近了就准备完成
             if (creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos)) return true
@@ -95,7 +95,7 @@ export default {
             if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
         },
         switch: creep => creep.updateState('🍚 收获'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'worker'
     }),
 
@@ -103,10 +103,10 @@ export default {
      * 矿工
      * 从房间的 mineral 中获取资源 > 将资源转移到指定建筑中(默认为 terminal)
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param targetId 指定建筑 id (默认为 room.terminal)
      */
-    miner: (spawnName: string, targetId=''): ICreepConfig => ({
+    miner: (spawnRoom: string, targetId=''): ICreepConfig => ({
         // 检查矿床里是不是还有矿
         isNeed: room => {
             // 房间中的矿床是否还有剩余产量
@@ -142,7 +142,7 @@ export default {
             if (creep.ticksToLive <= creep.memory.travelTime + 30) return true
             else return creep.updateState('🍚 收获')
         },
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'worker'
     }),
 
@@ -153,9 +153,9 @@ export default {
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      * 
      * @param sourceId 能量来源 id
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      */
-    upgrader: (spawnName: string, sourceId: string): ICreepConfig => ({
+    upgrader: (spawnRoom: string, sourceId: string): ICreepConfig => ({
         isNeed: room => {
             const source = Game.getObjectById(sourceId)
             if (!source) {
@@ -184,7 +184,7 @@ export default {
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         target: creep => creep.upgrade(),
         switch: creep => creep.updateState('📈 升级'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'upgrader'
     }),
 
@@ -193,10 +193,10 @@ export default {
      * 只有在有工地时才会生成
      * 从指定结构中获取能量 > 查找建筑工地并建造
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
-    builder: (spawnName: string, sourceId: string): ICreepConfig => ({
+    builder: (spawnRoom: string, sourceId: string): ICreepConfig => ({
         isNeed: room => {
             const targets: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
             return targets.length > 0 ? true : false
@@ -207,7 +207,7 @@ export default {
             else if (creep.upgrade()) { }
         },
         switch: creep => creep.updateState('🚧 建造'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'worker'
     }),
 
@@ -216,15 +216,15 @@ export default {
      * 从指定结构中获取能量 > 维修房间内的建筑
      * 注：目前维修者更适合在能量爆仓或者敌人攻城时使用
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
-    repairer: (spawnName: string, sourceId: string): ICreepConfig => ({
+    repairer: (spawnRoom: string, sourceId: string): ICreepConfig => ({
         source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
         // 一直修墙就完事了
         target: creep => creep.fillDefenseStructure(),
         switch: creep => creep.updateState('📌 修复'),
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'smallWorker'
     })
 }
