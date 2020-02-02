@@ -407,7 +407,7 @@ export const BOOST_TYPE = {
 export const PB_HARVESTE_STATE = {
     ATTACK: 'attack',
     PREPARE: 'prepare',
-    TRANSFE: 'transfe'
+    TRANSFE: 'transfer'
 }
 
 /**
