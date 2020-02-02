@@ -518,12 +518,26 @@ export default {
         prepare: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] 未找到旗帜，待命中`)
+                creep.say('旗呢？')
                 return false
             }
 
             // 朝目标移动
             creep.farMoveTo(targetFlag.pos, [], 1)
+
+            // 进入房间后搜索 pb 并缓存
+            if (!targetFlag.memory.sourceId && creep.room.name === targetFlag.pos.roomName) {
+                const powerbank = _.find(targetFlag.pos.lookFor(LOOK_STRUCTURES), s => s.structureType === STRUCTURE_POWER_BANK) as StructurePowerBank
+                // 并写入缓存
+                if (powerbank) targetFlag.memory.sourceId = powerbank.id
+                else {
+                    // 没找到说明已经没了
+                    Memory.flags[targetFlag.name] = {}
+                    targetFlag.remove()
+                    creep.suicide()
+                    return false
+                }
+            }
 
             // 如果到了就算准备完成
             if (creep.pos.isNearTo(targetFlag.pos)) {
