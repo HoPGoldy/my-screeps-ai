@@ -206,6 +206,52 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 向生产队列里推送一个生产任务
+     * 
+     * @param taskName config.creep.ts 文件里 creepConfigs 中定义的任务名
+     * @returns 当前任务在队列中的排名
+     */
+    public addSpawnTask(taskName: string): number | ERR_NAME_EXISTS {
+        if (!this.memory.spawnList) this.memory.spawnList = []
+        // 先检查下任务是不是已经在队列里了
+        if (!this.hasSpawnTask(taskName)) {
+            // 任务加入队列
+            this.memory.spawnList.push(taskName)
+            return this.memory.spawnList.length - 1
+        }
+        // 如果已经有的话返回异常
+        else return ERR_NAME_EXISTS
+    }
+
+    /**
+     * 检查生产队列中是否包含指定任务
+     * 
+     * @param taskName 要检查的任务名
+     * @returns true/false 有/没有
+     */
+    public hasSpawnTask(taskName: string): boolean {
+        if (!this.memory.spawnList) this.memory.spawnList = []
+        return this.memory.spawnList.indexOf(taskName) > -1
+    }
+
+    /**
+     * 清空任务队列
+     * 非测试情况下不要调用！
+     */
+    public clearSpawnTask(): void {
+        this.memory.spawnList = []
+    }
+
+    /**
+     * 将当前任务挂起
+     * 任务会被移动至队列末尾
+     */
+    public hangSpawnTask(): void {
+        const task = this.memory.spawnList.shift()
+        this.memory.spawnList.push(task)
+    }
+
+    /**
      * 将位置序列化字符串转换为位置
      * 位置序列化字符串形如: 12/32/E1N2
      * 

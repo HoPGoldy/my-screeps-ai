@@ -15,10 +15,10 @@ export default {
      * 执行 ROOM_TRANSFER_TASK 中定义的任务
      * 任务处理逻辑定义在 transferTaskOperations 中
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param sourceId 从该建筑中获取能量 (可选, 默认 Storage)
      */
-    transfer: (spawnName: string, sourceId: string = null): ICreepConfig => ({
+    transfer: (spawnRoom: string, sourceId: string = null): ICreepConfig => ({
         source: creep => {
             if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, sourceId)
 
@@ -49,7 +49,7 @@ export default {
                 return false
             }
         },
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'transfer'
     }),
 
@@ -57,12 +57,12 @@ export default {
      * 中心搬运者
      * 从房间的中央任务队列 Room.memory.centerTransferTasks 中取出任务并执行
      * 
-     * @param spawnName 出生点名称
+     * @param spawnRoom 出生房间名称
      * @param x 要移动到的 x 坐标
      * @param y 要移动到的 y 坐标
      * @param centerLinkId 中央 link 的 id
      */
-    centerTransfer: (spawnName: string, x: number, y: number): ICreepConfig => ({
+    centerTransfer: (spawnRoom: string, x: number, y: number): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => {
             if (creep.pos.isEqualTo(x, y)) return true
@@ -130,7 +130,7 @@ export default {
             }
         },
         switch: creep => creep.store.getUsedCapacity() > 0,
-        spawn: spawnName,
+        spawnRoom,
         bodyType: 'centerTransfer'
     })
 }

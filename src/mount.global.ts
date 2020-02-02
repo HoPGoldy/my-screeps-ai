@@ -48,20 +48,20 @@ const funcAlias = [
             }
             // 遍历 creepConfigs 的 name 进行检查
             for (const configName in creepConfigs) {
-                // 获取 spawn
-                const spawn: StructureSpawn = Game.spawns[creepConfigs[configName].spawn]
-                if (!spawn) {
-                    console.log(`[reload 异常] ${configName} 配置项未找到指定的 ${creepConfigs[configName].spawn}`)
+                // 获取孵化房间
+                const room = Game.rooms[creepConfigs[configName].spawnRoom]
+                if (!room) {
+                    console.log(`[reload 异常] ${configName} 配置项未找到指定的 ${creepConfigs[configName].spawnRoom}`)
                     continue
                 }
 
                 // creep 存活
                 if (_.find(aliveCreepRoles, role => role === configName)) continue
                 // creep 没存活但是在待生成队列里
-                else if (_.find(spawn.memory.spawnList, role => role === configName)) continue
+                else if (_.find(room.memory.spawnList, role => role === configName)) continue
                 // 配置项缺失, 加入待生成队列
                 else {
-                    spawn.addTask(configName)
+                    room.addSpawnTask(configName)
                     missCreep.push(configName)
                 }
             }

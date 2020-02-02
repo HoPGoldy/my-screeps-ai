@@ -43,15 +43,6 @@ interface Structure {
     work?(): void
 }
 
-/**
- * Spawn 拓展
- */
-interface StructureSpawn {
-    addTask(taskName: string): number
-    hasTask(taskName: string): boolean
-    clearTask(): void
-}
-
 // Factory 拓展
 interface StructureFactory {
     make(resourceType: ResourceConstant): void
@@ -103,15 +94,6 @@ interface PowerCreep {
  * 包含 store 属性的建筑
  */
 type StructureWithStore = StructureStorage | StructureContainer | StructureExtension | StructureFactory | StructureSpawn | StructurePowerSpawn | StructureLink | StructureTerminal | StructureNuker
-
-/**
- * spawn 内存拓展
- * 
- * @property {string[]} spawnList 生产队列，元素为 creepConfig 的键名
- */
-interface SpawnMemory {
-    spawnList?: string[]
-}
 
 /**
  * creep 内存拓展
@@ -216,6 +198,12 @@ interface Room {
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
      */
+    // 孵化队列 api
+    addSpawnTask(taskName: string): number | ERR_NAME_EXISTS
+    hasSpawnTask(taskName: string): boolean
+    clearSpawnTask(): void
+    hangSpawnTask(): void
+
     // 中央物流 api
     addCenterTask(task: ITransferTask): number
     hasCenterTask(submit: CenterStructures | number): boolean
@@ -264,6 +252,8 @@ type ObserverResource = 'powerBank' | 'deposit'
  * 房间内存
  */
 interface RoomMemory {
+    // 该房间的生产队列，元素为 creepConfig 的键名
+    spawnList?: string[]
     // 该房间禁止通行点的存储
     restrictedPos?: {
         [posStr: string]: true
@@ -577,8 +567,8 @@ interface ICreepConfig {
     source?: (creep: Creep) => any
     // 更新状态时触发的方法，为 true 执行 target，为 false 执行 source
     switch?: (creep: Creep) => boolean
-    // 要进行生产的出生点
-    spawn: string
+    // 要进行孵化的房间
+    spawnRoom: string
     // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键，该属性和 bodys 必须指定一个
     bodyType?: string
     // 强制指定身体部件，如果指定的话将会忽略 bodyType
