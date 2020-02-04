@@ -1508,9 +1508,9 @@ class ObserverExtension extends StructureObserver {
         // 还没插旗的话就继续查找 pb
         const powerBankFlagName = this.getFlagName('powerBank')
         if (!(powerBankFlagName in Game.flags)) {
-            // pb 的存活时间大于 3000 的才去采集
+            // pb 的存活时间大于 3000 / power 足够大的才去采集
             const powerBanks = room.find(FIND_STRUCTURES, {
-                filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3000
+                filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3000 && (s as StructurePowerBank).power >= 2000
             })
             // 对找到的 pb 进行处置归档
             powerBanks.forEach(powerBank => {
