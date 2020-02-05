@@ -249,6 +249,16 @@ interface RoomPosition {
 type ObserverResource = 'powerBank' | 'deposit'
 
 /**
+ * 工厂的任务队列中的具体任务配置
+ */
+interface IFactoryTask {
+    // 任务目标
+    target: CommodityConstant,
+    // 该任务要生成的数量
+    amount: number
+}
+
+/**
  * 房间内存
  */
 interface RoomMemory {
@@ -294,12 +304,7 @@ interface RoomMemory {
         // 当前工厂所处的阶段
         state: string
         // 工厂生产队列
-        taskList: {
-            // 任务目标
-            target: CommodityConstant,
-            // 该任务要生成的数量
-            amount: number
-        }[]
+        taskList: IFactoryTask[]
     }
     
     // 终端监听矿物列表
