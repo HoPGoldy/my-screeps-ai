@@ -12,31 +12,164 @@ const FACTORY_TARGET_LIMIT = 500
  */
 export default class FactoryExtension extends StructureFactory {
     public work(): void {
+        // 没有启用则跳过
+        if (!this.room.memory.factory) return
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) return
 
         // 实时更新房间内存中 factoryId
         if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
 
-        // 获取不到目标资源就跳过
-        const targetResource: ResourceConstant = this.room.getFactoryTarget()
-        if (!targetResource) return
-        
-        // 优先把做好的资源转移出去, 默认为 500
-        if (this.store.getUsedCapacity(targetResource) >= FACTORY_TARGET_LIMIT) {
-            this.addPutTask(targetResource)
-            return
-        }
-        
-        // 收集需要的资源
-        if (!this.getNeedResource(targetResource)) return
+        // 执行 factory 工作
+        this.runFactory()
+    }
 
-        // 资源凑齐了就直接开始生成
-        this.produce(<CommodityConstant|MineralConstant|RESOURCE_GHODIUM>targetResource)
+    /**
+     * factory 的工作总入口
+     * 根据当前状态跳转到指定工作
+     */
+    private runFactory(): void {
+        switch (this.room.memory.factory.state) {
+            case FACTORY_STATE.PREPARE: 
+                if (Game.time % 5) return
+                this.prepare()
+            break
+            case FACTORY_STATE.GET_RESOURCE:
+                if (Game.time % 10) return
+                this.getResource()
+            break
+            case FACTORY_STATE.WORKING:
+                if (Game.time % 2) return
+                this.working()
+            break
+            case FACTORY_STATE.PUT_RESOURCE:
+                if (Game.time % 10) return
+                this.putResource()
+            break
+        }
+    }
+    
+    /**
+     * 准备阶段
+     * 该阶段会对队列中的任务进行新增（没有任务）或分解（任务无法完成）操作，一旦发现可以生成的任务，则进入下个阶段。
+     */
+    private prepare(): void {
+        console.log('准备阶段!')
+        if (!this.room.terminal) console.log(`[${this.room.name} factory] prepare 阶段未找到 terminal，已暂停`)
+
+        // 获取当前任务，没有任务就新增顶级合成任务
+        const task = this.getCurrentTask()
+        if (!task) this.addTask()
+
+        // 查看 terminal 中底物数量是否足够
+        const subResources = COMMODITIES[task.target].components
+        for (const resType in subResources) {
+            // 所需底物数量不足就拆分任务
+            if (this.room.terminal.store[resType] < subResources[resType] * task.amount) {
+                // 添加新任务，数量为需要数量 - 已存在数量
+                this.addTask({
+                    target: resType as CommodityConstant,
+                    amount: (subResources[resType] * task.amount) - this.room.terminal.store[resType]
+                })
+                // 挂起当前任务
+                return this.hangTask()
+            } 
+        }
+
+        // 通过了底物检查就说明可以合成，进入下个阶段
+        this.room.memory.factory.state = FACTORY_STATE.GET_RESOURCE
+    }
+
+    /**
+     * 获取资源
+     */
+    private getResource(): void {
+        console.log('获取资源!')
+    }
+
+    /**
+     * 执行合成
+     */
+    private working(): void {
+        console.log('执行合成!')
+    }
+
+    /**
+     * 移出资源
+     */
+    private putResource(): void {
+        console.log('移出资源!')
+    }
+
+    /**
+     * 获取当前合成任务
+     */
+    private getCurrentTask(): IFactoryTask | undefined {
+        if (this.room.memory.factory.taskList.length <= 0) return undefined
+        else return this.room.memory.factory.taskList[0]
+    }
+
+    /**
+     * 移除当前任务
+     * 任务完成或者出错时调用
+     */
+    private deleteCurrentTask(): void {
+        this.room.memory.factory.taskList.shift()
+    }
+
+    /**
+     * 添加新的合成任务
+     * 该方法会自行决策应该合成什么顶级产物
+     * 
+     * @param task 如果指定则将其添加为新任务，否则新增顶级产物合成任务
+     * @returns 新任务在队列中的位置，第一个为 1
+     */
+    private addTask(task: IFactoryTask = undefined): number {
+        if (task) return this.room.memory.factory.taskList.push(task)
+
+        /**
+         * @todo 新增顶级化合物
+         */
+    }
+
+    /**
+     * 挂起合成任务
+     * 在任务无法进行时调用，将会把任务移动至队列末尾
+     */
+    private hangTask(): void {
+        const task = this.room.memory.factory.taskList.shift()
+        this.room.memory.factory.taskList.push(task)
+    }
+
+    /**
+     * 处理任务
+     * 调用该方法来更新当前任务的未完成量
+     * 
+     * @param amount 完成合成的产物数量
+     * @returns OK 任务已完成
+     * @returns number 任务剩余的目标数量
+     */
+    private dealTask(amount: number): OK | number {
+        const task = this.getCurrentTask()
+        if (!task) return
+
+        const newAmount = task.amount - amount
+
+        // 剩余目标数量大于零就更新，否则就返回完成
+        if (newAmount > 0) {
+            this.room.memory.factory.taskList[0].amount = newAmount
+            return newAmount
+        }
+        else {
+            this.deleteCurrentTask()
+            return OK
+        }
     }
 
     /**
      * 设置工厂等级
+     * 
+     * @todo 如果已经有 power 的话就拒绝设置
      * 
      * @param depositType 生产线类型
      * @param level 等级
@@ -96,7 +229,7 @@ export default class FactoryExtension extends StructureFactory {
     }
 
     /**
-     * 输出当前工厂的状态
+     * 用户操作 - 输出当前工厂的状态
      */
     public state(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 工厂未启用`
