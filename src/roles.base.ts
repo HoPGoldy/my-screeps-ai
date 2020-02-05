@@ -66,7 +66,7 @@ export default {
 
     /**
      * 收集者
-     * 从指定 source 或 mineral 中获取资源 > 将资源转移到指定建筑中
+     * 从指定 source 中获取资源 > 将资源转移到指定建筑中
      * 
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
@@ -130,7 +130,13 @@ export default {
         source: creep => {
             // 采矿
             const harvestResult = creep.harvest(creep.room.mineral)
-            if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
+
+            // 开始采矿了就注册禁止对穿
+            if (harvestResult === OK && !creep.memory.standed) {
+                creep.memory.standed = true
+                creep.room.addRestrictedPos(creep.pos)
+            }
+            else if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
         },
         target: creep => {
             const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.terminal
