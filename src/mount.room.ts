@@ -675,18 +675,8 @@ class RoomExtension extends Room {
         // 没有该资源就直接停止
         if (!(resourceType in Memory.resourceSourceMap)) return 
 
-        let sourceIndex: number = null
         // 获取该房间在资源来源表中的索引
-        Memory.resourceSourceMap[resourceType].find((name, index) => {
-            if (name == this.name) {
-                sourceIndex = index 
-                return true
-            }
-            else return false
-        })
-
-        // 找到了就移除该房间
-        if (sourceIndex) Memory.resourceSourceMap[resourceType].splice(sourceIndex, 1)
+        _.pull(Memory.resourceSourceMap[resourceType], this.name)
     }
 
     /**
