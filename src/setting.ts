@@ -428,3 +428,19 @@ export const ENERGY_SHARE_LIMIT = 700000
 
 // 统计信息搜集模块的运行间隔，单位：tick
 export const stateScanInterval = 5
+
+/**
+ * 需要挂载内存的 structure
+ * 
+ * @property {} poto 要进行挂载的原型
+ * @property {} memoryKey 其在所在房间内存中的存储字段
+ */
+export const structureWithMemory: {
+    poto: StructureConstructor
+    memoryKey: string
+}[] = [ 
+    {
+        poto: StructureFactory,
+        memoryKey: STRUCTURE_FACTORY
+    }
+]
