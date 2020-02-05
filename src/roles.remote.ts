@@ -674,6 +674,9 @@ export default {
             // 到行动阶段了就过去
             creep.goTo(targetFlag.pos)
 
+            // 到房间里再进行下一步操作
+            if (creep.room.name !== targetFlag.pos.roomName) return false
+
             // 获取 powerBank 的废墟
             const powerbankRuin: Ruin = targetFlag.pos.lookFor(LOOK_RUINS)[0]
 

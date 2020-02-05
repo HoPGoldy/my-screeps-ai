@@ -343,11 +343,13 @@ export const FACTORY_LOCK_AMOUNT = {
 }
 
 /**
- * powerProcess 的设置
- * 当当前房间 storage 内存量低于limit时自动停止 process
+ * powerProcess 的设置 
  */
 export const powerSettings = {
+    // 当前房间 storage 内存量低于limit时自动停止 process
     processEnergyLimit: 500000,
+    // 处理 power 的间隔
+    processInterval: 3
 }
 /**
  * boost 强化的阶段
