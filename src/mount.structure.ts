@@ -535,11 +535,12 @@ class StorageExtension extends StructureStorage {
 
 /**
  * Controller 拓展
- * 只统计当前升级进度
+ * 统计当前升级进度、移除无效的禁止通行点位
  */
 class ControllerExtension extends StructureController {
     public work(): void {
         this.stateScanner()
+        this.checkRestrictedPos()
     }
 
     /**
@@ -559,6 +560,27 @@ class ControllerExtension extends StructureController {
             this.room.memory.stats.controllerLevel = this.level
             this.room.memory.stats.controllerRatio = (this.progress / this.progressTotal) * 100
         }
+    }
+
+    /**
+     * 检查本房间中的禁止通行点位
+     * 如果有的点位上没有 creep 的话则移除该点位
+     * 防止出现有的 creep 没有及时释放导致的永久性禁止通行
+     */
+    private checkRestrictedPos(): void {
+        if (Game.time % 10000) return
+
+        // 获取所有的禁止通行点位
+        const posList = Object.keys(this.room.getRestrictedPos())
+        // 筛除掉无效（没有 Creep）的点位
+        const currentPosList = posList.filter(posStr => {
+            const pos = this.room.unserializePos(posStr)
+            return pos.lookFor(LOOK_CREEPS).length > 0
+        })
+
+        // 回填禁止通行点位
+        this.room.memory.restrictedPos = {}
+        currentPosList.forEach(posStr => this.room.memory.restrictedPos[posStr] = true)
     }
 }
 
