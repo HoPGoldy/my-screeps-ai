@@ -281,8 +281,12 @@ interface RoomMemory {
     // power 任务请求队列
     // 由建筑物发布，powerCreep 查找任务时会优先读取该队列
     powerTasks: PowerConstant[]
+    
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
+    factory: {
+
+    }
     
     // 终端监听矿物列表
     // 键为资源名称，值为资源期望数量

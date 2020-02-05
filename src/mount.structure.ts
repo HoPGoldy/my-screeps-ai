@@ -15,7 +15,9 @@ import {
     stateScanInterval,
     // observer 相关
     observerInterval,
-    DEPOSIT_MAX_COOLDOWN
+    DEPOSIT_MAX_COOLDOWN,
+    // 挂载内存相关
+    structureWithMemory
 } from './setting'
 
 import LabExtension from './mount.lab'
@@ -24,6 +26,8 @@ import TerminalExtension from './mount.terminal'
 
 // 挂载拓展到建筑原型
 export default function () {
+    mountMemory()
+
     _.assign(StructureSpawn.prototype, SpawnExtension.prototype)
     _.assign(StructureTower.prototype, TowerExtension.prototype)
     _.assign(StructureLink.prototype, LinkExtension.prototype)
@@ -35,7 +39,34 @@ export default function () {
     _.assign(StructureNuker.prototype, NukerExtension.prototype)
     _.assign(StructurePowerSpawn.prototype, PowerSpawnExtension.prototype)
     _.assign(StructureObserver.prototype, ObserverExtension.prototype)   
-    _.assign(StructureController.prototype, ControllerExtension.prototype)   
+    _.assign(StructureController.prototype, ControllerExtension.prototype)
+}
+
+/**
+ * 给指定建筑挂载内存
+ * 要挂载内存的建筑定义在 setting.ts 中的 structureWithMemory 里
+ */
+function mountMemory(): void {
+    structureWithMemory.forEach(structureConfig => {
+        const memoryKey = structureConfig.memoryKey
+
+        // 给指定原型挂载属性 memory
+        Object.defineProperty(structureConfig.poto.prototype, 'memory', {
+            configurable: true,
+            // cpu 消耗：MAX 0.01 AVG 0.009 MIN 0.004
+            // structure.memory.a = 1 这种赋值实际上调用的是这里的 getter
+            get: function() {
+                if(!this.room.memory[memoryKey]) this.room.memory[memoryKey] = {}
+                return this.room.memory[memoryKey]
+            },
+            // cpu 消耗：AVG 0.02
+            set: function(value) {
+                if(!this.room.memory[memoryKey]) this.room.memory[memoryKey] = {}
+    
+                this.room.memory[memoryKey] = value
+            }
+        })
+    })
 }
 
 /**
