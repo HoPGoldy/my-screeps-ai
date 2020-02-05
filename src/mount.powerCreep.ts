@@ -27,6 +27,10 @@ class PowerCreepExtension extends PowerCreep {
     private keepAlive(): boolean {
         // 快凉了就尝试重生
         if (this.ticksToLive <= 100) {
+            // 如果工作房间被更改的话就不进行 renew
+            // 等到冷却完成后会自动复活到 workRoom 
+            if (this.memory.workRoom !== this.room.name) return true
+
             this.say('插座在哪！')
             if (this.renewSelf() === OK) return false
         }
@@ -83,7 +87,9 @@ class PowerCreepExtension extends PowerCreep {
             // source OK 了代表资源获取完成，去执行 target
             if (result === OK) this.memory.working = true
             // 如果 source 还发现没资源的话就强制执行 ops 生成任务
-            else if (result === ERR_NOT_ENOUGH_RESOURCES) this.memory.task = PWR_GENERATE_OPS
+            // 这里调用了自己，但是由于 PWR_GENERATE_OPS 的 source 阶段永远不会返回 ERR_NOT_ENOUGH_RESOURCES
+            // 所以不会产生循环调用
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) this.executeTask(PWR_GENERATE_OPS)
         }
     }
 
@@ -118,7 +124,7 @@ class PowerCreepExtension extends PowerCreep {
      */
     public setWorkRoom(roomName: string): string {
         let result: string = this.memory.workRoom ? 
-            `[${this.name}] 已将工作房间从 ${this.memory.workRoom} 重置为 ${roomName}` : 
+            `[${this.name}] 已将工作房间从 ${this.memory.workRoom} 重置为 ${roomName}, 将会在老死后复活在目标房间` : 
             `[${this.name}] 已将工作房间设置为 ${roomName}`
         
         this.memory.workRoom = roomName
@@ -176,6 +182,9 @@ class PowerCreepExtension extends PowerCreep {
      * @returns ERR_BUSY 正在执行任务
      */
     public getOps(opsNumber: number): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY {
+        // 身上的够用就不去 terminal 拿了
+        if (this.store[RESOURCE_OPS] > opsNumber) return OK
+
         let sourceStructure: StructureTerminal | StructureStorage = undefined
         // 如果资源够的话就使用 terminal 作为目标
         if (this.room.terminal && this.room.terminal.store[RESOURCE_OPS] >= opsNumber) sourceStructure = this.room.terminal
