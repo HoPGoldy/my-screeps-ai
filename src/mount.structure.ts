@@ -668,7 +668,7 @@ class NukerExtension extends StructureNuker {
  */
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
-        if (Game.time % 5) return
+        if (Game.time % powerSettings.processInterval) return
         // 注册自己的 id 来让房间基础服务可以发现自己
         if (!this.room.memory.powerSpawnId) this.room.memory.powerSpawnId = this.id
         // 兜底

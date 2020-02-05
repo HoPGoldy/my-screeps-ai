@@ -1,3 +1,5 @@
+import { stateScanInterval } from './setting'
+
 /**
  * Terminal 原型拓展
  * 
@@ -7,6 +9,8 @@
  */
 export default class TerminalExtension extends StructureTerminal {
     public work(): void {
+        this.stateScanner()
+
         // 没有冷却好或者不到 10 tick 就跳过
         if (this.cooldown !== 0 || Game.time % 10) return
 
@@ -20,6 +24,17 @@ export default class TerminalExtension extends StructureTerminal {
 
         // 只有 dealOrder 下命令了才能继续执行 ResourceListener
         if (this.dealOrder(resource)) this.ResourceListener(resource)
+    }
+
+    /**
+     * 统计自己存储中的资源数量
+     * 目前将统计 power 数量和战斗化合物数量
+     */
+    private stateScanner(): void {
+        if (Game.time % stateScanInterval) return
+        if (!this.room.memory.stats) this.room.memory.stats = {}
+
+        this.room.memory.stats.power = this.store[RESOURCE_POWER]
     }
 
     public execShareTask(): void {
