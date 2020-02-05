@@ -1,4 +1,5 @@
-import { FACTORY_LOCK_AMOUNT } from './setting'
+import { FACTORY_LOCK_AMOUNT, FACTORY_STATE, factoryTopTargets } from './setting'
+import { createHelp } from './utils'
 
 /**
  * 当工厂中的目标商品数量超过该值时
@@ -32,6 +33,115 @@ export default class FactoryExtension extends StructureFactory {
 
         // 资源凑齐了就直接开始生成
         this.produce(<CommodityConstant|MineralConstant|RESOURCE_GHODIUM>targetResource)
+    }
+
+    /**
+     * 设置工厂等级
+     * 
+     * @param depositType 生产线类型
+     * @param level 等级
+     * @returns ERR_INVALID_ARGS 生产线类型异常或者等级小于 1 或者大于 5
+     */
+    private setLevel(depositType: DepositConstant, level: number): OK | ERR_INVALID_ARGS {
+        if (!this.room.memory.factory) this.initMemory()
+        const memory = this.room.memory.factory
+
+        // 类型不对返回异常
+        if (!(depositType in factoryTopTargets)) return ERR_INVALID_ARGS
+        // 等级异常夜蛾返回错误
+        if (level > 5 || level < 1) return ERR_INVALID_ARGS
+
+        // 如果之前注册过的话
+        if (!_.isUndefined(memory.level) && memory.depositType) {
+            // 移除过期的全局 comm 注册
+            if (memory.depositType in Memory.commodities) {
+                _.pull(Memory.commodities[memory.depositType].node[memory.level], this.room.name)
+            }
+            // 移除过期共享协议注册
+            factoryTopTargets[memory.depositType][memory.level].forEach(resType => {
+                this.room.shareRemoveSource(resType)
+            })
+        }
+
+        // 注册新的共享协议
+        factoryTopTargets[depositType][level].forEach(resType => {
+            this.room.shareAddSource(resType)
+        })
+        // 注册新的全局 comm
+        if (!Memory.commodities) Memory.commodities = {}
+        if (!Memory.commodities[depositType]) Memory.commodities[depositType] = {
+            node: {
+                1: [], 2: [], 3: [], 4: [], 5: []
+            }
+        }
+        Memory.commodities[depositType].node[level].push(this.room.name)
+
+        // 更新内存属性
+        this.room.memory.factory.level = level
+        this.room.memory.factory.depositType = depositType
+        return OK
+    }
+
+    /**
+     * 用户操作：设置工厂等级
+     * 
+     * @param depositType 生产线类型
+     * @param level 等级
+     */
+    public setlevel(depositType: DepositConstant, level: number): string {
+        const result = this.setLevel(depositType, level)
+
+        if (result === OK) return `[${this.room.name} factory] 设置成功，${depositType} 生产线 ${level} 级`
+        else if (result === ERR_INVALID_ARGS) return `[${this.room.name} factory] 设置失败，请检查参数是否正确`
+    }
+
+    /**
+     * 输出当前工厂的状态
+     */
+    public state(): string {
+        if (!this.room.memory.factory) return `[${this.room.name} factory] 工厂未启用`
+        const memory = this.room.memory.factory
+
+        // 工厂基本信息
+        let states = [
+            `生产线类型: ${memory.depositType} 工厂等级: ${memory.level}`,
+            `当前工作状态: ${memory.state}`,
+            `现存任务数量: ${memory.taskList.length} 任务队列详情:`
+        ]
+
+        // 工厂任务队列详情
+        if (memory.taskList.length <= 0) states.push('无任务')
+        else states.push(...memory.taskList.map((task, index) => `[任务 ${index}] 任务目标: ${task.target} 任务数量: ${task.amount}`))
+        
+        // 组装返回
+        return states.join('\n')
+    }
+
+    public help(): string {
+        return createHelp([
+            {
+                title: '设置工厂生产线及等级',
+                params: [
+                    { name: 'depositType', desc: '生产线类型，必须为 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON 之一' },
+                    { name: 'level', desc: '该工厂的生产等级， 1~5 之一'}
+                ],
+                functionName: 'setlevel'
+            },
+            {
+                title: '显示工厂详情',
+                functionName: 'state'
+            }
+        ])
+    }
+
+    /**
+     * 初始化工厂内存 
+     */
+    private initMemory(): void {
+        this.room.memory.factory = {
+            state: FACTORY_STATE.PREPARE,
+            taskList: []
+        }
     }
 
     /**

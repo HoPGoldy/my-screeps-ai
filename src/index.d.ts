@@ -285,7 +285,21 @@ interface RoomMemory {
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
     factory: {
-
+        // 当前房间的等级，由用户指定
+        level?: number
+        // 本工厂参与的生产线类型
+        depositType?: DepositConstant
+        // 当前正在制作的顶级产品
+        topTarget?: CommodityConstant
+        // 当前工厂所处的阶段
+        state: string
+        // 工厂生产队列
+        taskList: {
+            // 任务目标
+            target: CommodityConstant,
+            // 该任务要生成的数量
+            amount: number
+        }[]
     }
     
     // 终端监听矿物列表
@@ -499,6 +513,21 @@ interface Memory {
         // 资源类型为键，房间名列表为值
         [resourceType: string]: string[]
     },
+    // 商品生产线配置
+    commodities: {
+        // 不同的生产线有不同的配置项
+        [depositType: string]: {
+            // 生成线中的所有参与房间
+            // 以下键为等级，值为房间名称数组
+            node: {
+                1: string[]
+                2: string[]
+                3: string[]
+                4: string[]
+                5: string[]
+            }
+        }
+    }
     // 全局统计信息
     stats: {
         // GCl/GPL 升级百分比
@@ -715,4 +744,15 @@ interface IPowerTaskConfig {
  */
 interface IPowerTaskConfigs {
     [powerType: string]: IPowerTaskConfig
+}
+
+/**
+ * 工厂 1-5 级能生产的顶级商品
+ */
+interface ITopTargetConfig {
+    1: CommodityConstant[]
+    2: CommodityConstant[]
+    3: CommodityConstant[]
+    4: CommodityConstant[]
+    5: CommodityConstant[]
 }
