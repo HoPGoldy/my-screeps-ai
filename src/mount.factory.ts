@@ -59,7 +59,10 @@ export default class FactoryExtension extends StructureFactory {
 
         // 获取当前任务，没有任务就新增顶级合成任务
         const task = this.getCurrentTask()
-        if (!task) this.addTask()
+        if (!task) {
+            this.addTask()
+            return
+        }
 
         // 查看 terminal 中底物数量是否足够
         const subResources = COMMODITIES[task.target].components
