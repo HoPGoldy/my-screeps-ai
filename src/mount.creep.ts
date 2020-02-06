@@ -90,6 +90,12 @@ class CreepExtension extends Creep {
             this.memory.working = true
             this.say(workingMsg)
             onStateChange(this, this.memory.working)
+
+            // 停止工作后自己的位置就不再是禁止通行点了
+            if (this.memory.standed) {
+                this.room.removeRestrictedPos(this.pos)
+                delete this.memory.standed
+            }
         }
 
         return this.memory.working
@@ -388,8 +394,9 @@ class CreepExtension extends Creep {
     public mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
         // 获取前方位置上的 creep（fontCreep）
         const fontPos = this.pos.directionToPos(direction)
-        const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
+        if (!fontPos) return ERR_NOT_FOUND
 
+        const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
         if (!fontCreep) return ERR_NOT_FOUND
 
         this.say(`👉`)
@@ -560,10 +567,14 @@ class CreepExtension extends Creep {
         // 不是的话就用 harvest
         else result = this.harvest(target as Source)
 
-        if (result == ERR_NOT_IN_RANGE) this.goTo(target.pos)
-        // else if (result !== OK) {
-        //     this.say(`能量获取${result}`)
-        // }
+        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos)
+        else if (result === OK) {
+            // 开始采集能量了就拒绝对穿
+            if (!this.memory.standed) {
+                this.room.addRestrictedPos(this.pos)
+                this.memory.standed = true
+            }
+        }
 
         return result
     }
