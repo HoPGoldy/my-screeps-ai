@@ -179,11 +179,12 @@ class CreepExtension extends Creep {
             plainCost: 2,
             swampCost: 10,
             roomCallback: roomName => {
+                // 强调了不许走就不走
+                if (ignoreRoom.includes(roomName)) return false
+
                 const room = Game.rooms[roomName]
                 // 房间没有视野
                 if (!room) return
-                // 强调了不许走就不走
-                if (ignoreRoom.includes(roomName)) return false
 
                 let costs = new PathFinder.CostMatrix
 
@@ -199,13 +200,25 @@ class CreepExtension extends Creep {
 
                 // 避开房间中的禁止通行点
                 for (const posStr in room.getRestrictedPos()) {
-                    const pos = this.room.unserializePos(posStr)
+                    const pos = room.unserializePos(posStr)
                     costs.set(pos.x, pos.y, 0xff)
                 }
 
                 return costs
             }
         })
+
+        // 寻路失败就通知玩家
+        if (result.incomplete) {
+            const states = [
+                `[${this.name} 未完成寻路] [游戏时间] ${Game.time} [所在房间] ${this.room.name}`,
+                `[寻路结果]`,
+                JSON.stringify(result, null, 4),
+                `[creep 内存]`,
+                JSON.stringify(this.memory, null, 4)
+            ]
+            Game.notify(states.join('\n'))
+        }
 
         // 没找到就返回 null
         if (result.path.length <= 0) return null

@@ -922,4 +922,42 @@ class ObserverExtension extends StructureObserver {
 
         return result
     }
+
+    /**
+     * 用户操作- 帮助
+     */
+    public help(): string {
+        return createHelp([
+            {
+                title: '新增监听房间',
+                params: [
+                    { name: '...roomNames', desc: '要监听的房间名列表' }
+                ],
+                functionName: 'add'
+            },
+            {
+                title: '移除监听房间',
+                params: [
+                    { name: '...roomNames', desc: '要移除的房间名列表' }
+                ],
+                functionName: 'remove'
+            },
+            {
+                title: '显示所有监听房间',
+                functionName: 'show'
+            },
+            {
+                title: '移除所有监听房间',
+                functionName: 'clear'
+            },
+            {
+                title: '暂停工作',
+                functionName: 'off'
+            },
+            {
+                title: '重启工作',
+                functionName: 'on'
+            }
+        ])
+    }
 }
