@@ -42,6 +42,7 @@ module.exports = function(grunt) {
                 options: {
                     sourceMap: false,
                     target: 'es5',
+                    comments: true,
                     rootDir: "src/"
                 },
                 src: [ "src/*.ts", "screeps.d.ts", "!src/*.template.ts"],
