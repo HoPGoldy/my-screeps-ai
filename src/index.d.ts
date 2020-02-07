@@ -157,9 +157,6 @@ interface CreepMemory {
  * 来自于 mount.structure.ts
  */
 interface Room {
-    // 该房间的禁止通行点
-    _restrictedPos: Set<string>
-    
     // 已拥有的房间特有，tower 负责维护
     _enemys: Creep[]
     // 需要维修的建筑，tower 负责维护，为 1 说明建筑均良好
@@ -297,6 +294,8 @@ interface RoomMemory {
     factory: {
         // 当前房间的等级，由用户指定
         level?: number
+        // 下个顶级产物索引
+        targetIndex: number
         // 本工厂参与的生产线类型
         depositType?: DepositConstant
         // 当前正在制作的顶级产品
