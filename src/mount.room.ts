@@ -1017,10 +1017,10 @@ class RoomExtension extends Room {
             {
                 title: '添加中央运输任务',
                 params: [
-                    { name: 'targetId', desc: '资源存放建筑 id' },
-                    { name: 'sourceId', desc: '资源来源建筑 id' },
-                    { name: 'resourceType', desc: '工厂要生产的资源类型' },
-                    { name: 'amount', desc: '工厂要生产的资源类型' },
+                    { name: 'targetType', desc: '资源存放建筑类型，STRUCTURE_FACTORY STRUCTURE_STORAGE STRUCTURE_TERMINAL 之一' },
+                    { name: 'sourceType', desc: '资源来源建筑类型，同上' },
+                    { name: 'resourceType', desc: '要转移的资源类型' },
+                    { name: 'amount', desc: '要转移的数量' },
                 ],
                 functionName: 'ctadd'
             },
@@ -1143,19 +1143,7 @@ class RoomExtension extends Room {
             {
                 title: '恢复 powerSpawn 工作',
                 functionName: 'presume'
-            },
-            {
-                title: '初始化 observer 工作',
-                functionName: 'oinit'
-            },
-            {
-                title: '暂停 observer 工作',
-                functionName: 'opause'
-            },
-            {
-                title: '恢复 observer 工作',
-                functionName: 'oresume'
-            },
+            }
         ])
     }
 }

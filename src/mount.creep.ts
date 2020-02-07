@@ -29,6 +29,12 @@ class CreepExtension extends Creep {
             return
         }
 
+        // 快死时的处理
+        if (this.ticksToLive <= 3) {
+            // 如果还在工作，就释放掉自己的工作位置
+            if (this.memory.standed) this.room.removeRestrictedPos(this.pos)
+        } 
+
         // 获取对应配置项
         const creepConfig: ICreepConfig = creepConfigs[this.memory.role]
 
@@ -64,12 +70,6 @@ class CreepExtension extends Creep {
     public updateState(workingMsg: string='🧰 工作', onStateChange: Function=this.updateStateDefaultCallback): boolean {
         const resourceType: ResourceConstant = (Object.keys(this.store).length > 0) ? <ResourceConstant>Object.keys(this.store)[0] : RESOURCE_ENERGY
         const resourceAmount = this.store.getUsedCapacity(resourceType)
-
-        // 快死时的处理
-        if (this.ticksToLive <= 1) {
-            // 如果还在工作，就释放掉自己的工作位置
-            if (this.memory.standed) this.room.removeRestrictedPos(this.pos)
-        } 
 
         // creep 身上没有能量 && creep 之前的状态为“工作”
         if (resourceAmount <= 0 && this.memory.working) {
@@ -565,16 +565,21 @@ class CreepExtension extends Creep {
         // 是建筑就用 withdraw
         if (target instanceof Structure) result = this.withdraw(target as Structure, RESOURCE_ENERGY)
         // 不是的话就用 harvest
-        else result = this.harvest(target as Source)
+        else {
+            result = this.harvest(target as Source)
 
-        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos)
-        else if (result === OK) {
-            // 开始采集能量了就拒绝对穿
-            if (!this.memory.standed) {
-                this.room.addRestrictedPos(this.pos)
-                this.memory.standed = true
+            // harvest 需要长时间占用该位置，所以需要禁止对穿
+            // withdraw 则不需要
+            if (result === OK) {
+                // 开始采集能量了就拒绝对穿
+                if (!this.memory.standed) {
+                    this.room.addRestrictedPos(this.pos)
+                    this.memory.standed = true
+                }
             }
         }
+
+        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos)
 
         return result
     }

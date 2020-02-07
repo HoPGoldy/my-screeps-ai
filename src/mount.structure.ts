@@ -571,7 +571,7 @@ class StorageExtension extends StructureStorage {
 class ControllerExtension extends StructureController {
     public work(): void {
         this.stateScanner()
-        this.checkRestrictedPos()
+        if (!(Game.time % 10000)) this.checkRestrictedPos()
     }
 
     /**
@@ -599,8 +599,6 @@ class ControllerExtension extends StructureController {
      * 防止出现有的 creep 没有及时释放导致的永久性禁止通行
      */
     private checkRestrictedPos(): void {
-        if (Game.time % 10000) return
-
         // 获取所有的禁止通行点位
         const posList = Object.keys(this.room.getRestrictedPos())
         // 筛除掉无效（没有 Creep）的点位

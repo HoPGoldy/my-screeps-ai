@@ -466,15 +466,15 @@ export const factoryTopTargets: {
     // 机械产业
     [RESOURCE_METAL]: {
         1: [ RESOURCE_COMPOSITE, RESOURCE_TUBE ],
-        2: [ RESOURCE_CRYSTAL, RESOURCE_FIXTURES ],
+        2: [ RESOURCE_FIXTURES ],
         3: [ RESOURCE_LIQUID, RESOURCE_FRAME ],
         4: [ RESOURCE_HYDRAULICS ],
         5: [ RESOURCE_MACHINE ]
     },
     // 生物产业
     [RESOURCE_BIOMASS]: {
-        1: [ RESOURCE_COMPOSITE, RESOURCE_PHLEGM ],
-        2: [ RESOURCE_CRYSTAL, RESOURCE_TISSUE ],
+        1: [ RESOURCE_PHLEGM ],
+        2: [ RESOURCE_TISSUE ],
         3: [ RESOURCE_LIQUID, RESOURCE_MUSCLE ],
         4: [ RESOURCE_ORGANOID ],
         5: [ RESOURCE_ORGANISM ]
@@ -483,15 +483,15 @@ export const factoryTopTargets: {
     [RESOURCE_SILICON]: {
         1: [ RESOURCE_COMPOSITE, RESOURCE_SWITCH ],
         2: [ RESOURCE_CRYSTAL, RESOURCE_TRANSISTOR ],
-        3: [ RESOURCE_LIQUID, RESOURCE_MICROCHIP ],
+        3: [ RESOURCE_MICROCHIP ],
         4: [ RESOURCE_CIRCUIT ],
         5: [ RESOURCE_DEVICE ]
     },
     // 奥秘产业
     [RESOURCE_MIST]: {
-        1: [ RESOURCE_COMPOSITE, RESOURCE_CONCENTRATE ],
+        1: [ RESOURCE_CONCENTRATE ],
         2: [ RESOURCE_CRYSTAL, RESOURCE_EXTRACT ],
-        3: [ RESOURCE_LIQUID, RESOURCE_SPIRIT ],
+        3: [ RESOURCE_SPIRIT ],
         4: [ RESOURCE_EMANATION ],
         5: [ RESOURCE_ESSENCE ]
     }

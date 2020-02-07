@@ -67,13 +67,26 @@ export default class FactoryExtension extends StructureFactory {
         // 查看 terminal 中底物数量是否足够
         const subResources = COMMODITIES[task.target].components
         for (const resType in subResources) {
+            // 底物所需的数量
+            // 由于反应可能会生成不止一个产物，所以需要除一下并向上取整
+            const subResAmount = subResources[resType] * Math.ceil(task.amount / COMMODITIES[task.target].amount)
+
             // 所需底物数量不足就拆分任务
-            if (this.room.terminal.store[resType] < subResources[resType] * task.amount) {
-                // 添加新任务，数量为需要数量 - 已存在数量
-                this.addTask({
+            if (this.room.terminal.store[resType] < subResAmount) {
+                // 如果自己的等级无法合成该产品
+                if ('level' in COMMODITIES[resType] && COMMODITIES[resType].level !== this.room.memory.factory.level) {
+                    // 请求其他房间共享
+                    this.room.shareRequest(
+                        resType as CommodityConstant, 
+                        subResAmount - this.room.terminal.store[resType]
+                    )
+                }
+                // 能合成的话就添加新任务，数量为需要数量 - 已存在数量
+                else this.addTask({
                     target: resType as CommodityConstant,
-                    amount: (subResources[resType] * task.amount) - this.room.terminal.store[resType]
+                    amount: subResAmount - this.room.terminal.store[resType]
                 })
+
                 // 挂起当前任务
                 return this.hangTask()
             } 
@@ -130,9 +143,32 @@ export default class FactoryExtension extends StructureFactory {
     private addTask(task: IFactoryTask = undefined): number {
         if (task) return this.room.memory.factory.taskList.push(task)
 
-        /**
-         * @todo 新增顶级化合物
-         */
+        const shareTask = this.room.memory.shareTask
+        let memory = this.room.memory.factory
+        const topTargets: CommodityConstant[] = factoryTopTargets[memory.depositType][memory.level]
+        
+        // 如果房间有共享任务并且任务目标需要自己生产的话
+        if (shareTask && topTargets.includes(shareTask.resourceType as CommodityConstant)) {
+            // 将其添加为新任务
+            return this.room.memory.factory.taskList.push({
+                target: shareTask.resourceType as CommodityConstant,
+                amount: shareTask.amount
+            })
+        }
+
+        // 没有共享任务的话就按顺序挑选
+        // 索引兜底
+        if (!memory.targetIndex || memory.targetIndex >= topTargets.length) memory.targetIndex = 0
+        // 添加任务，一次只合成一个顶级产物
+        const taskIndex = this.room.memory.factory.taskList.push({
+            target: topTargets[memory.targetIndex] as CommodityConstant,
+            amount: 1
+        })
+        // 更新索引
+        this.room.memory.factory.targetIndex = (memory.targetIndex + 1 >= topTargets.length) ?
+        0 : memory.targetIndex + 1
+
+        return taskIndex
     }
 
     /**
@@ -275,6 +311,7 @@ export default class FactoryExtension extends StructureFactory {
      */
     private initMemory(): void {
         this.room.memory.factory = {
+            targetIndex: 0,
             state: FACTORY_STATE.PREPARE,
             taskList: []
         }
