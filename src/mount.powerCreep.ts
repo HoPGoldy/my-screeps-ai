@@ -306,7 +306,33 @@ const PowerTasks: IPowerTaskConfigs = {
             if (actionResult === OK) return OK
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(sourceStructure.pos)
             else {
-                console.log(`[${creep.room.name} ${creep.name}] 执行 getOps 时出错，错误码 ${actionResult}`)
+                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`)
+                return OK
+            }
+        }
+    },
+
+    /**
+     * 强化 factory
+     */
+    [PWR_OPERATE_FACTORY]: {
+        source: creep => creep.getOps(POWER_INFO[PWR_OPERATE_FACTORY].ops),
+        target: creep => {
+            // 资源不足直接执行 source
+            if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_EXTENSION].ops) return ERR_NOT_ENOUGH_RESOURCES
+
+            // 如果自己的 power 等级和工厂等级对不上
+            if (creep.powers[PWR_OPERATE_FACTORY].level !== creep.room.memory.factory.level) {
+                console.log(`[${creep.room.name} ${creep.name}] 自身 PWR_OPERATE_FACTORY 等级(${creep.powers[PWR_OPERATE_FACTORY].level})与工厂设置等级(${creep.room.memory.factory.level})不符，拒绝强化，任务已移除`)
+                return OK
+            }
+
+            const actionResult = creep.usePower(PWR_OPERATE_FACTORY, creep.room.factory)
+
+            if (actionResult === OK) return OK
+            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
+            else {
+                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`)
                 return OK
             }
         }
