@@ -1,11 +1,5 @@
-import { FACTORY_LOCK_AMOUNT, FACTORY_STATE, factoryTopTargets } from './setting'
+import { FACTORY_STATE, factoryTopTargets } from './setting'
 import { createHelp } from './utils'
-
-/**
- * 当工厂中的目标商品数量超过该值时
- * 所有的目标商品都将转移至 termial 
- */
-const FACTORY_TARGET_LIMIT = 500
 
 /**
  * Factory 原型拓展
@@ -14,8 +8,6 @@ export default class FactoryExtension extends StructureFactory {
     public work(): void {
         // 没有启用则跳过
         if (!this.room.memory.factory) return
-        // 没有冷却好就直接跳过
-        if (this.cooldown !== 0) return
 
         // 实时更新房间内存中 factoryId
         if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
@@ -75,7 +67,8 @@ export default class FactoryExtension extends StructureFactory {
         for (const resType in subResources) {
             // 底物所需的数量
             // 由于反应可能会生成不止一个产物，所以需要除一下并向上取整
-            const subResAmount = subResources[resType] * Math.ceil(task.amount / COMMODITIES[task.target].amount)
+            const subResAmount = this.clacSubResourceAmount(task.target, task.amount, resType as ResourceConstant)
+            console.log("TCL: FactoryExtension -> subResAmount", resType, subResAmount)
 
             // 所需底物数量不足就拆分任务
             if (this.room.terminal.store[resType] < subResAmount) {
@@ -123,21 +116,22 @@ export default class FactoryExtension extends StructureFactory {
             // 资源不足，发布任务
             if (this.store[resType] < subResources[resType]) {
                 const source = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
-
+                // 合成任务需要的该材料数量
+                const needAmount = this.clacSubResourceAmount(task.target, task.amount, resType as ResourceConstant)
                 // 这里如果 terminal 中的资源也不足的话会把 factory 卡在这个位置
                 // 这里不能挂起任务，因为它之后有更高级的任务以他为原料，如果它没有合成的话
                 // 准备阶段会重新拆出来一个低级任务，如果底物缺失很久的话，会导致循环拆分从而堆积很多相同任务
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
-                    if (this.room.terminal.store[resType] < subResources[resType]) return 
+                    if (this.room.terminal.store[resType] < needAmount) return console.log(`[${this.room.name} factory] 合成暂停，需要 ${resType}*${needAmount}`)
                 }
-
+                console.log('发布物流任务', resType, needAmount)
                 // 发布中央物流任务
                 this.room.addCenterTask({
                     submit: STRUCTURE_FACTORY,
                     target: STRUCTURE_FACTORY,
                     source,
                     resourceType: resType as ResourceConstant,
-                    amount: subResources[resType]
+                    amount: needAmount
                 })
                 return
             }
@@ -152,6 +146,9 @@ export default class FactoryExtension extends StructureFactory {
      */
     private working(): void {
         console.log('执行合成!')
+        
+        // 没有冷却好就直接跳过
+        if (this.cooldown !== 0) return
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
@@ -163,6 +160,7 @@ export default class FactoryExtension extends StructureFactory {
         const actionResult = this.produce(task.target)
         
         // 底物不足了说明合成完毕
+        // 这里会导致要等到冷却完成之后才会进入下个阶段，是个优化点
         if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
         else if (actionResult === ERR_INVALID_TARGET) this.requirePower()
         else if (actionResult !== OK) console.log(`[${this.room.name} factory] working 阶段出现异常，错误码: ${actionResult}`)
@@ -202,6 +200,20 @@ export default class FactoryExtension extends StructureFactory {
         // 所以没必要在这里增加代码复杂度
         this.deleteCurrentTask()
         this.room.memory.factory.state = FACTORY_STATE.PREPARE
+    }
+
+    /**
+     * 计算合成指定目标产物需要多少材料
+     * 没有对对应关系进行验证，请保证产物和材料之间存在合成关系
+     * 
+     * @param targetResource 要合成的目标产物类型
+     * @param targetAmount 要合成的目标产物数量
+     * @param subResource 要查询的合成材料类型
+     */
+    private clacSubResourceAmount(targetResource: CommodityConstant, targetAmount: number, subResource: ResourceConstant): number {
+        const subResources = COMMODITIES[targetResource].components
+        // 目标数量除于单次合成数量，向上取整后乘以单次合成所需的材料数量
+        return subResources[subResource] * Math.ceil(targetAmount / COMMODITIES[targetResource].amount)
     }
 
     /**
@@ -380,7 +392,7 @@ export default class FactoryExtension extends StructureFactory {
         // 工厂基本信息
         let states = [
             `生产线类型: ${memory.depositType} 工厂等级: ${memory.level}`,
-            `当前工作状态: ${memory.state}`,
+            `当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
 

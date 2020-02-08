@@ -28,7 +28,7 @@ export default class TerminalExtension extends StructureTerminal {
 
     /**
      * 统计自己存储中的资源数量
-     * 目前将统计 power 数量和战斗化合物数量
+     * 目前只统计 power 数量
      */
     private stateScanner(): void {
         if (Game.time % stateScanInterval) return
