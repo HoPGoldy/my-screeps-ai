@@ -423,6 +423,7 @@ export default {
                     Memory.flags[targetFlag.name] = {}
                     targetFlag.remove()
                     creep.suicide()
+                    return
                 }
             }
 

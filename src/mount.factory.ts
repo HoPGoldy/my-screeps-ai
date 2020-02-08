@@ -8,9 +8,10 @@ export default class FactoryExtension extends StructureFactory {
     public work(): void {
         // 没有启用则跳过
         if (!this.room.memory.factory) return
-
         // 实时更新房间内存中 factoryId
         if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
+
+        if (this.room.memory.factory.pause) return
 
         // 执行 factory 工作
         this.runFactory()
@@ -391,17 +392,39 @@ export default class FactoryExtension extends StructureFactory {
 
         // 工厂基本信息
         let states = [
-            `生产线类型: ${memory.depositType} 工厂等级: ${memory.level}`,
+            `生产线类型: ${memory.depositType} 工厂等级: ${memory.level} ${memory.pause ? '已暂停' : ''}`,
             `当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
 
         // 工厂任务队列详情
         if (memory.taskList.length <= 0) states.push('无任务')
-        else states.push(...memory.taskList.map((task, index) => `[任务 ${index}] 任务目标: ${task.target} 任务数量: ${task.amount}`))
+        else states.push(...memory.taskList.map((task, index) => `  - [任务 ${index}] 任务目标: ${task.target} 任务数量: ${task.amount}`))
         
         // 组装返回
         return states.join('\n')
+    }
+
+    /**
+     * 用户操作：暂停 factory
+     */
+    public off(): string {
+        if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
+
+        this.room.memory.factory.pause = true
+
+        return `[${this.room.name} factory] 已暂停`
+    }
+
+    /**
+     * 用户操作：重启 factory
+     */
+    public on(): string {
+        if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
+
+        delete this.room.memory.factory.pause
+
+        return `[${this.room.name} factory] 已恢复, 当前状态：${this.state()}`
     }
 
     public help(): string {
@@ -417,6 +440,14 @@ export default class FactoryExtension extends StructureFactory {
             {
                 title: '显示工厂详情',
                 functionName: 'state'
+            },
+            {
+                title: '暂停工厂',
+                functionName: 'off'
+            },
+            {
+                title: '重启工厂',
+                functionName: 'on'
             },
             {
                 title: '移除工厂配置，将会把工厂还原为初始状态',
