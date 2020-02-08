@@ -218,10 +218,10 @@ class CreepExtension extends Creep {
         if (result.incomplete) {
             const states = [
                 `[${this.name} 未完成寻路] [游戏时间] ${Game.time} [所在房间] ${this.room.name}`,
-                `[寻路结果]`,
-                JSON.stringify(result, null, 4),
                 `[creep 内存]`,
-                JSON.stringify(this.memory, null, 4)
+                JSON.stringify(this.memory, null, 4),
+                `[寻路结果]`,
+                JSON.stringify(result)
             ]
             Game.notify(states.join('\n'))
         }
