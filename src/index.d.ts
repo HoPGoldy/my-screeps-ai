@@ -305,6 +305,10 @@ interface RoomMemory {
         state: string
         // 工厂生产队列
         taskList: IFactoryTask[]
+        // 工厂是否即将移除
+        // 在该字段存在时，工厂会搬出所有材料，并在净空后移除 room.factory 内存
+        // 在净空前手动删除该字段可以终止移除进程
+        remove?: true
     }
     
     // 终端监听矿物列表
