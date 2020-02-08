@@ -101,6 +101,44 @@ export default class FactoryExtension extends StructureFactory {
      */
     private getResource(): void {
         console.log('获取资源!')
+        if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
+
+        const task = this.getCurrentTask()
+        // 一般到这一步是不会产生没有任务的问题
+        if (!task) {
+            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            return
+        }
+
+        // 遍历所有的底物，检查存放的是否充足
+        // 自己存放的不足就发布转移任务
+        const subResources = COMMODITIES[task.target].components
+        for (const resType in subResources) {
+            // 资源不足，发布任务
+            if (this.store[resType] < subResources[resType]) {
+                const source = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
+
+                // 这里如果 terminal 中的资源也不足的话会把 factory 卡在这个位置
+                // 这里不能挂起任务，因为它之后有更高级的任务以他为原料，如果它没有合成的话
+                // 准备阶段会重新拆出来一个低级任务，如果底物缺失很久的话，会导致循环拆分从而堆积很多相同任务
+                if (source === STRUCTURE_TERMINAL && this.room.terminal) {
+                    if (this.room.terminal.store[resType] < subResources[resType]) return 
+                }
+
+                // 发布中央物流任务
+                this.room.addCenterTask({
+                    submit: STRUCTURE_FACTORY,
+                    target: STRUCTURE_FACTORY,
+                    source,
+                    resourceType: resType as ResourceConstant,
+                    amount: subResources[resType]
+                })
+                return
+            }
+        }
+
+        // 能到这里说明底物都已转移完毕
+        this.room.memory.factory.state = FACTORY_STATE.WORKING
     }
 
     /**
@@ -108,6 +146,20 @@ export default class FactoryExtension extends StructureFactory {
      */
     private working(): void {
         console.log('执行合成!')
+
+        const task = this.getCurrentTask()
+        // 一般到这一步是不会产生没有任务的问题
+        if (!task) {
+            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            return
+        }
+
+        const actionResult = this.produce(task.target)
+        
+        // 底物不足了说明合成完毕
+        if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
+        else if (actionResult === ERR_INVALID_TARGET) this.requirePower()
+        else if (actionResult !== OK) console.log(`[${this.room.name} factory] working 阶段出现异常，错误码: ${actionResult}`)
     }
 
     /**
@@ -115,6 +167,40 @@ export default class FactoryExtension extends StructureFactory {
      */
     private putResource(): void {
         console.log('移出资源!')
+        if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
+
+        const task = this.getCurrentTask()
+        // 一般到这一步是不会产生没有任务的问题
+        if (!task) {
+            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            return
+        }
+
+        // 把所有东西都搬出去，保持工厂存储净空
+        for (const resType in this.store) {
+            // 资源不足，发布任务
+            const target = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
+            this.room.addCenterTask({
+                submit: STRUCTURE_FACTORY,
+                target,
+                source: STRUCTURE_FACTORY,
+                resourceType: resType as ResourceConstant,
+                amount: this.store[resType]
+            })
+            return
+        }
+
+        // 能到这里说明产物都转移完成，移除已完成任务并重新开始准备阶段
+        this.deleteCurrentTask()
+        this.room.memory.factory.state = FACTORY_STATE.PREPARE
+    }
+
+    /**
+     * 请求 power factory
+     */
+    private requirePower(): void {
+        if (this.room.controller.isPowerEnabled) this.room.addPowerTask(PWR_OPERATE_FACTORY)
+        else console.log(`[${this.room.name} factory] 请求 ${this.room.memory.factory.level} 级 PWR_OPERATE_FACTORY, 但房间并未激活 power`)
     }
 
     /**
@@ -213,8 +299,9 @@ export default class FactoryExtension extends StructureFactory {
      * @param depositType 生产线类型
      * @param level 等级
      * @returns ERR_INVALID_ARGS 生产线类型异常或者等级小于 1 或者大于 5
+     * @returns ERR_NAME_EXISTS 工厂已经被 Power 强化，无法修改等级
      */
-    private setLevel(depositType: DepositConstant, level: number): OK | ERR_INVALID_ARGS {
+    private setLevel(depositType: DepositConstant, level: number): OK | ERR_INVALID_ARGS | ERR_NAME_EXISTS {
         if (!this.room.memory.factory) this.initMemory()
         const memory = this.room.memory.factory
 
@@ -222,6 +309,9 @@ export default class FactoryExtension extends StructureFactory {
         if (!(depositType in factoryTopTargets)) return ERR_INVALID_ARGS
         // 等级异常夜蛾返回错误
         if (level > 5 || level < 1) return ERR_INVALID_ARGS
+
+        // 已经被 power 强化，无法设置等级
+        if (this.effects[PWR_OPERATE_FACTORY]) return ERR_NAME_EXISTS
 
         // 如果之前注册过的话
         if (!_.isUndefined(memory.level) && memory.depositType) {
@@ -265,6 +355,7 @@ export default class FactoryExtension extends StructureFactory {
 
         if (result === OK) return `[${this.room.name} factory] 设置成功，${depositType} 生产线 ${level} 级`
         else if (result === ERR_INVALID_ARGS) return `[${this.room.name} factory] 设置失败，请检查参数是否正确`
+        else if (result === ERR_NAME_EXISTS) return `[${this.room.name} factory] 等级已锁定，请重建工厂后再次指定`
     }
 
     /**
