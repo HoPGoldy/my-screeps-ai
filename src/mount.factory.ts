@@ -55,6 +55,12 @@ export default class FactoryExtension extends StructureFactory {
      */
     private prepare(): void {
         console.log('准备阶段!')
+        // 如果存在废弃进程，则移除所有配置
+        if (this.room.memory.factory.remove) {
+            delete this.room.memory.factory
+            return
+        }
+
         if (!this.room.terminal) console.log(`[${this.room.name} factory] prepare 阶段未找到 terminal，已暂停`)
 
         // 获取当前任务，没有任务就新增顶级合成任务
@@ -288,8 +294,8 @@ export default class FactoryExtension extends StructureFactory {
         // 等级异常夜蛾返回错误
         if (level > 5 || level < 1) return ERR_INVALID_ARGS
 
-        // 已经被 power 强化，无法设置等级
-        if (this.effects[PWR_OPERATE_FACTORY]) return ERR_NAME_EXISTS
+        // 已经被 power 强化并且等级不符，无法设置等级
+        if (this.effects && this.effects[PWR_OPERATE_FACTORY] && (this.effects[PWR_OPERATE_FACTORY] as PowerEffect).level !== level) return ERR_NAME_EXISTS
 
         // 如果之前注册过的话
         if (!_.isUndefined(memory.level) && memory.depositType) {
@@ -328,12 +334,40 @@ export default class FactoryExtension extends StructureFactory {
      * @param depositType 生产线类型
      * @param level 等级
      */
-    public setlevel(depositType: DepositConstant, level: number): string {
+    public set(depositType: DepositConstant, level: number): string {
         const result = this.setLevel(depositType, level)
 
         if (result === OK) return `[${this.room.name} factory] 设置成功，${depositType} 生产线 ${level} 级`
         else if (result === ERR_INVALID_ARGS) return `[${this.room.name} factory] 设置失败，请检查参数是否正确`
-        else if (result === ERR_NAME_EXISTS) return `[${this.room.name} factory] 等级已锁定，请重建工厂后再次指定`
+        else if (result === ERR_NAME_EXISTS) return `[${this.room.name} factory] 等级已锁定，请指定正确等级或重建工厂后再次指定`
+    }
+
+    /**
+     * 移除当前工厂配置
+     * 工厂将进入闲置状态并净空存储
+     */
+    private execRemove(): OK | ERR_NOT_FOUND {
+        if (!this.room.memory.factory) return ERR_NOT_FOUND
+
+        // 进入废弃进程
+        this.room.memory.factory.remove = true
+        // 置为移出资源阶段
+        this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
+        // 移除队列中的后续任务
+        const task = this.getCurrentTask()
+        this.room.memory.factory.taskList = [ task ]
+        
+        return OK 
+    }
+
+    /**
+     * 用户操作 - 移除当前工厂配置
+     */
+    public remove(): string {
+        const actionResult = this.execRemove()
+
+        if (actionResult === ERR_NOT_FOUND) return `[${this.room.name} factory] 尚未启用`
+        if (actionResult === OK) return `[${this.room.name} factory] 已启动废弃进程，正在搬出所有资源，手动移除 Room.memory.factory.remove 字段可以终止该进程`
     }
 
     /**
@@ -366,11 +400,15 @@ export default class FactoryExtension extends StructureFactory {
                     { name: 'depositType', desc: '生产线类型，必须为 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON 之一' },
                     { name: 'level', desc: '该工厂的生产等级， 1~5 之一'}
                 ],
-                functionName: 'setlevel'
+                functionName: 'set'
             },
             {
                 title: '显示工厂详情',
                 functionName: 'state'
+            },
+            {
+                title: '移除工厂配置，将会把工厂还原为初始状态',
+                functionName: 'remove'
             }
         ])
     }
