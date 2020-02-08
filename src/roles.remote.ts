@@ -541,7 +541,7 @@ export default {
 
             // 如果到了就算准备完成
             if (creep.pos.isNearTo(targetFlag.pos)) {
-                creep.room.addRestrictedPos(creep.pos)
+                creep.room.addRestrictedPos(creep.name, creep.pos)
                 // 检查下是否还没统计移动所需时间
                 if (!targetFlag.memory.travelTime) targetFlag.memory.travelTime = CREEP_LIFE_TIME - creep.ticksToLive
                 return true
@@ -555,7 +555,7 @@ export default {
                 console.log(`[${creep.name}] 未找到旗帜，待命中`)
                 return false
             }
-            if (creep.ticksToLive <= 1) creep.room.removeRestrictedPos(creep.pos)
+            if (creep.ticksToLive <= 1) creep.room.removeRestrictedPos(creep.name)
 
             // 获取 pb
             let powerbank: StructurePowerBank = undefined
@@ -571,7 +571,7 @@ export default {
             if (!powerbank) {
                 targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFE
                 creep.suicide()
-                creep.room.removeRestrictedPos(creep.pos)
+                creep.room.removeRestrictedPos(creep.name)
                 return
             }
 

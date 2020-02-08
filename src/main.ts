@@ -18,8 +18,4 @@ module.exports.loop = function (): void {
 
     // 统计全局资源使用
     stateScanner()
-
-    // Object.values(Game.rooms).map(room => {
-    //     if (room.memory.restrictedPos) room.memory.restrictedPos = {}
-    // })
 }

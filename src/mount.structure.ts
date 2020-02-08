@@ -599,17 +599,14 @@ class ControllerExtension extends StructureController {
      * 防止出现有的 creep 没有及时释放导致的永久性禁止通行
      */
     private checkRestrictedPos(): void {
-        // 获取所有的禁止通行点位
-        const posList = Object.keys(this.room.getRestrictedPos())
-        // 筛除掉无效（没有 Creep）的点位
-        const currentPosList = posList.filter(posStr => {
-            const pos = this.room.unserializePos(posStr)
-            return pos.lookFor(LOOK_CREEPS).length > 0
-        })
+        const restrictedPos = this.room.getRestrictedPos()
 
-        // 回填禁止通行点位
-        this.room.memory.restrictedPos = {}
-        currentPosList.forEach(posStr => this.room.memory.restrictedPos[posStr] = true)
+        // 遍历本房间所有的禁止通行点位
+        for (const creepName in restrictedPos) {
+            const pos = this.room.unserializePos(restrictedPos[creepName])
+            // 如果位置上没有 creep 就说明是无效点位，直接移除
+            if (pos.lookFor(LOOK_CREEPS).length > 0) delete this.room.memory.restrictedPos[creepName]
+        }
     }
 }
 

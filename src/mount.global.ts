@@ -76,6 +76,15 @@ const funcAlias = [
         }
     },
     {
+        alias: 'clearpos',
+        exec: function(): string {
+            Object.values(Game.rooms).map(room => {
+                if (room.memory.restrictedPos) room.memory.restrictedPos = {}
+            })
+            return '禁止通行点位已释放'
+        }
+    },
+    {
         /**
          * 显示当前商品生产状态
          */

@@ -169,30 +169,31 @@ class RoomExtension extends Room {
     /**
      * 添加禁止通行位置
      * 
+     * @param creepName 禁止通行点位的注册者
      * @param pos 禁止通行的位置
      */
-    public addRestrictedPos(pos: RoomPosition): void {
+    public addRestrictedPos(creepName: string, pos: RoomPosition): void {
         if (!this.memory.restrictedPos) this.memory.restrictedPos = {}
 
-        this.memory.restrictedPos[this.serializePos(pos)] = true
+        this.memory.restrictedPos[creepName] = this.serializePos(pos)
     }
 
     /**
      * 获取房间内的禁止通行点位
      */
-    public getRestrictedPos(): { [posStr: string]: true } {
+    public getRestrictedPos(): { [creepName: string]: string } {
         return this.memory.restrictedPos
     }
 
     /**
      * 将指定位置从禁止通行点位中移除
      * 
-     * @param pos 要移除的位置
+     * @param creepName 要是否点位的注册者名称
      */
-    public removeRestrictedPos(pos: RoomPosition): void {
+    public removeRestrictedPos(creepName: string): void {
         if (!this.memory.restrictedPos) this.memory.restrictedPos = {}
 
-        delete this.memory.restrictedPos[this.serializePos(pos)]
+        delete this.memory.restrictedPos[creepName]
     }
 
     /**
