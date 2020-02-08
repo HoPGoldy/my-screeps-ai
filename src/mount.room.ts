@@ -572,7 +572,7 @@ class RoomExtension extends Room {
      */
     public tremove(resourceType: ResourceConstant): string { 
         this.removeTerminalTask(resourceType) 
-        return `已移除，当前监听任务如下:\n ${this.showTerminalTask()}`
+        return `已移除，当前监听任务如下:\n${this.showTerminalTask()}`
     }
 
     /**
@@ -625,7 +625,7 @@ class RoomExtension extends Room {
 
         return resources.map(res => {
             const task = this.memory.terminalTasks[res]
-            let result = `${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod}`
+            let result = `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod}`
             if (task.mod == 'min') result += ` 资源来源: ${task.supplementAction}`
             return result
         }).join('\n')
