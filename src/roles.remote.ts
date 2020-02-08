@@ -653,8 +653,9 @@ export default {
         prepare: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                creep.say('搬啥？')
+                // console.log(`[${creep.name}] 未找到旗帜，待命中`)
+                // creep.say('搬啥？')
+                creep.suicide()
                 return false
             }
 
@@ -665,8 +666,9 @@ export default {
         source: creep => {
             const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                creep.say('搬啥？')
+                // console.log(`[${creep.name}] 未找到旗帜，待命中`)
+                // creep.say('搬啥？')
+                creep.suicide()
                 return false
             }
             // 没到搬运的时候就先待命
