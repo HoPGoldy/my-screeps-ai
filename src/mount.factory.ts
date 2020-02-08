@@ -69,7 +69,7 @@ export default class FactoryExtension extends StructureFactory {
             // 底物所需的数量
             // 由于反应可能会生成不止一个产物，所以需要除一下并向上取整
             const subResAmount = this.clacSubResourceAmount(task.target, task.amount, resType as ResourceConstant)
-            console.log("TCL: FactoryExtension -> subResAmount", resType, subResAmount)
+            // console.log("TCL: FactoryExtension -> subResAmount", resType, subResAmount)
 
             // 所需底物数量不足就拆分任务
             if (this.room.terminal.store[resType] < subResAmount) {
@@ -125,7 +125,8 @@ export default class FactoryExtension extends StructureFactory {
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
                     if (this.room.terminal.store[resType] < needAmount) return console.log(`[${this.room.name} factory] 合成暂停，需要 ${resType}*${needAmount}`)
                 }
-                console.log('发布物流任务', resType, needAmount)
+
+                // console.log('发布物流任务', resType, needAmount)
                 // 发布中央物流任务
                 this.room.addCenterTask({
                     submit: STRUCTURE_FACTORY,
@@ -163,7 +164,7 @@ export default class FactoryExtension extends StructureFactory {
         // 底物不足了说明合成完毕
         // 这里会导致要等到冷却完成之后才会进入下个阶段，是个优化点
         if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
-        else if (actionResult === ERR_INVALID_TARGET) this.requirePower()
+        else if (actionResult === ERR_INVALID_TARGET || actionResult === ERR_BUSY) this.requirePower()
         else if (actionResult !== OK) console.log(`[${this.room.name} factory] working 阶段出现异常，错误码: ${actionResult}`)
     }
 
@@ -251,8 +252,15 @@ export default class FactoryExtension extends StructureFactory {
     private addTask(task: IFactoryTask = undefined): number {
         if (task) return this.room.memory.factory.taskList.push(task)
 
-        const shareTask = this.room.memory.shareTask
         let memory = this.room.memory.factory
+
+        // 如果有用户指定的目标的话就直接生成
+        if (memory.specialTraget) return this.room.memory.factory.taskList.push({
+            target: memory.specialTraget,
+            amount: 1
+        })
+
+        const shareTask = this.room.memory.shareTask
         const topTargets: CommodityConstant[] = factoryTopTargets[memory.depositType][memory.level]
         
         // 如果房间有共享任务并且任务目标需要自己生产的话
@@ -347,7 +355,7 @@ export default class FactoryExtension extends StructureFactory {
      * @param depositType 生产线类型
      * @param level 等级
      */
-    public set(depositType: DepositConstant, level: number): string {
+    public setlevel(depositType: DepositConstant, level: number): string {
         const result = this.setLevel(depositType, level)
 
         if (result === OK) return `[${this.room.name} factory] 设置成功，${depositType} 生产线 ${level} 级`
@@ -410,9 +418,7 @@ export default class FactoryExtension extends StructureFactory {
      */
     public off(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
-
         this.room.memory.factory.pause = true
-
         return `[${this.room.name} factory] 已暂停`
     }
 
@@ -421,10 +427,29 @@ export default class FactoryExtension extends StructureFactory {
      */
     public on(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
-
         delete this.room.memory.factory.pause
-
         return `[${this.room.name} factory] 已恢复, 当前状态：${this.state()}`
+    }
+
+    /**
+     * 用户操作：手动指定生产目标
+     * 
+     * @param target 要生产的目标
+     */
+    public set(target: CommodityConstant): string {
+        if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
+        this.room.memory.factory.specialTraget = target
+        return `[${this.room.name} factory] 目标已锁定为 ${target}，将会持续生成`
+    }
+
+    /**
+     * 用户操作 - 清除上面设置的特定目标
+     */
+    public clear(): string {
+        if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
+        const result = `[${this.room.name} factory] 已移除目标 ${this.room.memory.factory.specialTraget}，开始托管生产。当前生产状态：\n${this.state()}`
+        delete this.room.memory.factory.specialTraget
+        return result
     }
 
     public help(): string {
@@ -435,11 +460,22 @@ export default class FactoryExtension extends StructureFactory {
                     { name: 'depositType', desc: '生产线类型，必须为 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON 之一' },
                     { name: 'level', desc: '该工厂的生产等级， 1~5 之一'}
                 ],
-                functionName: 'set'
+                functionName: 'setlevel'
             },
             {
                 title: '显示工厂详情',
                 functionName: 'state'
+            },
+            {
+                title: '指定生产目标（工厂将无视 setLevel 的配置，一直生产该目标）',
+                params: [
+                    { name: 'target', desc: '要生产的目标产物'}
+                ],
+                functionName: 'set'
+            },
+            {
+                title: '移除生产目标（工厂将恢复自动规划）',
+                functionName: 'clear'
             },
             {
                 title: '暂停工厂',

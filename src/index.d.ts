@@ -311,6 +311,8 @@ interface RoomMemory {
         remove?: true
         // 工厂是否暂停
         pause?: true
+        // 玩家手动指定的目标，工厂将一直合成该目标
+        specialTraget?: CommodityConstant
     }
     
     // 终端监听矿物列表
