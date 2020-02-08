@@ -191,6 +191,9 @@ export default class FactoryExtension extends StructureFactory {
         }
 
         // 能到这里说明产物都转移完成，移除已完成任务并重新开始准备阶段
+        // 这里没有检查目标产物数量是否足够就直接移除任务
+        // 原因是后面合成高级任务的时候如果发现材料不足就会自动发布数量合适的新任务
+        // 所以没必要在这里增加代码复杂度
         this.deleteCurrentTask()
         this.room.memory.factory.state = FACTORY_STATE.PREPARE
     }
@@ -264,31 +267,6 @@ export default class FactoryExtension extends StructureFactory {
     private hangTask(): void {
         const task = this.room.memory.factory.taskList.shift()
         this.room.memory.factory.taskList.push(task)
-    }
-
-    /**
-     * 处理任务
-     * 调用该方法来更新当前任务的未完成量
-     * 
-     * @param amount 完成合成的产物数量
-     * @returns OK 任务已完成
-     * @returns number 任务剩余的目标数量
-     */
-    private dealTask(amount: number): OK | number {
-        const task = this.getCurrentTask()
-        if (!task) return
-
-        const newAmount = task.amount - amount
-
-        // 剩余目标数量大于零就更新，否则就返回完成
-        if (newAmount > 0) {
-            this.room.memory.factory.taskList[0].amount = newAmount
-            return newAmount
-        }
-        else {
-            this.deleteCurrentTask()
-            return OK
-        }
     }
 
     /**
