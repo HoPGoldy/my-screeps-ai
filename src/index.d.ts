@@ -234,9 +234,9 @@ interface Room {
     boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
 
     // 禁止通行点位 api
-    addRestrictedPos(pos: RoomPosition): void
-    getRestrictedPos(): { [posStr: string]: true }
-    removeRestrictedPos(pos: RoomPosition): void
+    addRestrictedPos(creepName: string, pos: RoomPosition): void
+    getRestrictedPos(): { [creepName: string]: string }
+    removeRestrictedPos(creepName: string): void
 }
 
 interface RoomPosition {
@@ -262,8 +262,9 @@ interface RoomMemory {
     // 该房间的生产队列，元素为 creepConfig 的键名
     spawnList?: string[]
     // 该房间禁止通行点的存储
+    // 键为注册禁止通行点位的 creep 名称，值为禁止通行点位 RoomPosition 对象的序列字符串
     restrictedPos?: {
-        [posStr: string]: true
+        [creepName: string]: string
     }
     // observer 内存
     observer: {

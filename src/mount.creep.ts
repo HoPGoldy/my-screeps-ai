@@ -32,7 +32,7 @@ class CreepExtension extends Creep {
         // 快死时的处理
         if (this.ticksToLive <= 3) {
             // 如果还在工作，就释放掉自己的工作位置
-            if (this.memory.standed) this.room.removeRestrictedPos(this.pos)
+            if (this.memory.standed) this.room.removeRestrictedPos(this.name)
         } 
 
         // 获取对应配置项
@@ -80,7 +80,7 @@ class CreepExtension extends Creep {
 
             // 停止工作后自己的位置就不再是禁止通行点了
             if (this.memory.standed) {
-                this.room.removeRestrictedPos(this.pos)
+                this.room.removeRestrictedPos(this.name)
                 delete this.memory.standed
             }
         }
@@ -93,7 +93,7 @@ class CreepExtension extends Creep {
 
             // 停止工作后自己的位置就不再是禁止通行点了
             if (this.memory.standed) {
-                this.room.removeRestrictedPos(this.pos)
+                this.room.removeRestrictedPos(this.name)
                 delete this.memory.standed
             }
         }
@@ -205,8 +205,9 @@ class CreepExtension extends Creep {
                 })
 
                 // 避开房间中的禁止通行点
-                for (const posStr in room.getRestrictedPos()) {
-                    const pos = room.unserializePos(posStr)
+                const restrictedPos = room.getRestrictedPos()
+                for (const creepName in restrictedPos) {
+                    const pos = room.unserializePos(restrictedPos[creepName])
                     costs.set(pos.x, pos.y, 0xff)
                 }
 
@@ -327,8 +328,9 @@ class CreepExtension extends Creep {
             costCallback: (roomName, costMatrix) => {
                 if (roomName === this.room.name) {
                     // 避开房间中的禁止通行点
-                    for (const posStr in this.room.getRestrictedPos()) {
-                        const pos = this.room.unserializePos(posStr)
+                    const restrictedPos = this.room.getRestrictedPos()
+                    for (const creepName in restrictedPos) {
+                        const pos = this.room.unserializePos(restrictedPos[creepName])
                         costMatrix.set(pos.x, pos.y, 0xff)
                     }
                 }
@@ -438,7 +440,7 @@ class CreepExtension extends Creep {
         // 如果刚开始站定工作，就把自己的位置设置为禁止通行点
         if (actionResult === OK && !this.memory.standed) {
             this.memory.standed = true
-            this.room.addRestrictedPos(this.pos)
+            this.room.addRestrictedPos(this.name, this.pos)
         }
         else if (actionResult == ERR_NOT_IN_RANGE) {
             this.goTo(this.room.controller.pos)
@@ -573,7 +575,7 @@ class CreepExtension extends Creep {
             if (result === OK) {
                 // 开始采集能量了就拒绝对穿
                 if (!this.memory.standed) {
-                    this.room.addRestrictedPos(this.pos)
+                    this.room.addRestrictedPos(this.name, this.pos)
                     this.memory.standed = true
                 }
             }

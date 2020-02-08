@@ -134,7 +134,7 @@ export default {
             // 开始采矿了就注册禁止对穿
             if (harvestResult === OK && !creep.memory.standed) {
                 creep.memory.standed = true
-                creep.room.addRestrictedPos(creep.pos)
+                creep.room.addRestrictedPos(creep.name, creep.pos)
             }
             else if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
         },
