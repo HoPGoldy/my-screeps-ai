@@ -39,7 +39,7 @@ class PowerCreepExtension extends PowerCreep {
             // 还在冷却就等着
             if (!this.spawnCooldownTime) {
                 // 请求指定工作房间
-                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用下述命令为该 powerCreep 指定工作房间（指定房间名为"none"来关闭该提示）:\n  Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
+                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用该命令来指定工作房间（房间名置空以关闭提示）:    Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
                 // 或者直接出生在指定房间
                 else if (this.memory.workRoom != 'none') this.spawnAtRoom(this.memory.workRoom)
             }
@@ -122,10 +122,12 @@ class PowerCreepExtension extends PowerCreep {
      * 
      * @param roomName 要进行生成的房间名
      */
-    public setWorkRoom(roomName: string): string {
+    public setWorkRoom(roomName: string = null): string {
         let result: string = this.memory.workRoom ? 
             `[${this.name}] 已将工作房间从 ${this.memory.workRoom} 重置为 ${roomName}, 将会在老死后复活在目标房间` : 
             `[${this.name}] 已将工作房间设置为 ${roomName}`
+        
+        if (_.isUndefined(roomName)) result = `[${this.name}] 已关闭提示，重新执行该命令来孵化该 power crep`
         
         this.memory.workRoom = roomName
 
@@ -319,7 +321,7 @@ const PowerTasks: IPowerTaskConfigs = {
         source: creep => creep.getOps(POWER_INFO[PWR_OPERATE_FACTORY].ops),
         target: creep => {
             // 资源不足直接执行 source
-            if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_EXTENSION].ops) return ERR_NOT_ENOUGH_RESOURCES
+            if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_FACTORY].ops) return ERR_NOT_ENOUGH_RESOURCES
 
             // 如果自己的 power 等级和工厂等级对不上
             if (creep.powers[PWR_OPERATE_FACTORY].level !== creep.room.memory.factory.level) {
@@ -332,7 +334,7 @@ const PowerTasks: IPowerTaskConfigs = {
             if (actionResult === OK) return OK
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
             else {
-                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`)
+                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`)
                 return OK
             }
         }
