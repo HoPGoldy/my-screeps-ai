@@ -207,6 +207,8 @@ class CreepExtension extends Creep {
                 // 避开房间中的禁止通行点
                 const restrictedPos = room.getRestrictedPos()
                 for (const creepName in restrictedPos) {
+                    // 自己注册的禁止通行点位自己可以走
+                    if (creepName === this.name) continue
                     const pos = room.unserializePos(restrictedPos[creepName])
                     costs.set(pos.x, pos.y, 0xff)
                 }
@@ -216,16 +218,16 @@ class CreepExtension extends Creep {
         })
 
         // 寻路失败就通知玩家
-        if (result.incomplete) {
-            const states = [
-                `[${this.name} 未完成寻路] [游戏时间] ${Game.time} [所在房间] ${this.room.name}`,
-                `[creep 内存]`,
-                JSON.stringify(this.memory, null, 4),
-                `[寻路结果]`,
-                JSON.stringify(result)
-            ]
-            Game.notify(states.join('\n'))
-        }
+        // if (result.incomplete) {
+        //     const states = [
+        //         `[${this.name} 未完成寻路] [游戏时间] ${Game.time} [所在房间] ${this.room.name}`,
+        //         `[creep 内存]`,
+        //         JSON.stringify(this.memory, null, 4),
+        //         `[寻路结果]`,
+        //         JSON.stringify(result)
+        //     ]
+        //     Game.notify(states.join('\n'))
+        // }
 
         // 没找到就返回 null
         if (result.path.length <= 0) return null
@@ -330,6 +332,9 @@ class CreepExtension extends Creep {
                     // 避开房间中的禁止通行点
                     const restrictedPos = this.room.getRestrictedPos()
                     for (const creepName in restrictedPos) {
+                        // 自己注册的禁止通行点位自己可以走
+                        if (creepName === this.name) continue
+                        
                         const pos = this.room.unserializePos(restrictedPos[creepName])
                         costMatrix.set(pos.x, pos.y, 0xff)
                     }

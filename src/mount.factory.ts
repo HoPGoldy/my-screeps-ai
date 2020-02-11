@@ -28,15 +28,15 @@ export default class FactoryExtension extends StructureFactory {
                 this.prepare()
             break
             case FACTORY_STATE.GET_RESOURCE:
-                if (Game.time % 10) return
+                if (Game.time % 5) return
                 this.getResource()
             break
             case FACTORY_STATE.WORKING:
-                if (Game.time % 2) return
+                if (Game.time % 3) return
                 this.working()
             break
             case FACTORY_STATE.PUT_RESOURCE:
-                if (Game.time % 10) return
+                if (Game.time % 5) return
                 this.putResource()
             break
         }
@@ -47,7 +47,7 @@ export default class FactoryExtension extends StructureFactory {
      * 该阶段会对队列中的任务进行新增（没有任务）或分解（任务无法完成）操作，一旦发现可以生成的任务，则进入下个阶段。
      */
     private prepare(): void {
-        console.log('准备阶段!')
+        // console.log('准备阶段!')
         // 如果存在废弃进程，则移除所有配置
         if (this.room.memory.factory.remove) {
             delete this.room.memory.factory
@@ -63,9 +63,21 @@ export default class FactoryExtension extends StructureFactory {
             return
         }
 
-        // 查看 terminal 中底物数量是否足够
+        // 遍历查看 terminal 中底物数量是否足够
         const subResources = COMMODITIES[task.target].components
         for (const resType in subResources) {
+            // 首先得保证这个东西是能合成的，不然推进去一个 energy 或者原矿的合成任务就尴尬了
+            if ([ 
+                RESOURCE_HYDROGEN,
+                RESOURCE_OXYGEN,
+                RESOURCE_UTRIUM,
+                RESOURCE_KEANIUM,
+                RESOURCE_LEMERGIUM,
+                RESOURCE_ZYNTHIUM,
+                RESOURCE_CATALYST,
+                RESOURCE_GHODIUM,
+            ].includes(resType as MineralConstant) || !(resType in COMMODITIES)) continue
+
             // 底物所需的数量
             // 由于反应可能会生成不止一个产物，所以需要除一下并向上取整
             const subResAmount = this.clacSubResourceAmount(task.target, task.amount, resType as ResourceConstant)
@@ -100,7 +112,7 @@ export default class FactoryExtension extends StructureFactory {
      * 获取资源
      */
     private getResource(): void {
-        console.log('获取资源!')
+        // console.log('获取资源!')
         if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
 
         const task = this.getCurrentTask()
@@ -147,7 +159,7 @@ export default class FactoryExtension extends StructureFactory {
      * 执行合成
      */
     private working(): void {
-        console.log('执行合成!')
+        // console.log('执行合成!')
         
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) return
@@ -172,7 +184,7 @@ export default class FactoryExtension extends StructureFactory {
      * 移出资源
      */
     private putResource(): void {
-        console.log('移出资源!')
+        // console.log('移出资源!')
         if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
 
         const task = this.getCurrentTask()
@@ -400,7 +412,7 @@ export default class FactoryExtension extends StructureFactory {
 
         // 工厂基本信息
         let states = [
-            `生产线类型: ${memory.depositType} 工厂等级: ${memory.level} ${memory.pause ? '已暂停' : ''}`,
+            `生产线类型: ${memory.depositType} 工厂等级: ${memory.level} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''} ${memory.pause ? '已暂停' : ''}`,
             `当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
