@@ -35,6 +35,74 @@ interface Game {
     _hasRunCreepNumberController: boolean
 }
 
+// 所有的 creep 角色
+type CreepRoleConstant = 
+    // 房间基础运营
+    'harvester' |
+    'collector' |
+    'miner' |
+    'upgrader' |
+    'builder' |
+    'repairer' |
+    // 房间高级运营
+    'transfer' |
+    'centerTransfer' |
+    // 远程单位
+    'claimer' |
+    'reserver' |
+    'signer' |
+    'remoteBuilder' |
+    'remoteUpgrader' |
+    'remoteHarvester' |
+    'remoteDefender' |
+    'depositHarvester' |
+    'pbAttacker' |
+    'pbHealer' |
+    'pbTransfer' |
+    'moveTester' |
+    // 战斗单位
+    'soldier' |
+    'doctor' |
+    'boostDoctor' |
+    'defender' |
+    'dismantler' |
+    'boostDismantler' |
+    'apocalypse'
+
+/**
+ * creep 工作逻辑集合
+ * 包含了每个角色应该做的工作
+ */
+type CreepWork = {
+    [role in CreepRoleConstant]: {
+        // 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
+        isNeed?: (room: Room) => boolean
+        // 准备阶段执行的方法, 返回 true 时代表准备完成
+        prepare?: (creep: Creep) => boolean
+        // creep 获取工作所需资源时执行的方法
+        // 返回 true 则执行 target 阶段，返回其他将继续执行该方法
+        source?: (creep: Creep) => boolean
+        // creep 工作时执行的方法,
+        // 返回 true 则执行 source 阶段，返回其他将继续执行该方法
+        target: (creep: Creep) => boolean
+    }
+}
+
+/**
+ * creep 的自动规划身体类型，以下类型的详细规划定义在 setting.ts 中
+ */
+type BodyAutoConfigConstant = 
+    'worker' |
+    'upgrader' |
+    'transfer' |
+    'centerTransfer' |
+    'reserver' |
+    'attacker' |
+    'healer' |
+    'remoteDefender' |
+    'dismantler' |
+    'remoteHarvester'
+
 /**
  * 建筑拓展
  * 有可能有自定义的 work 方法
@@ -544,11 +612,15 @@ interface Memory {
     // 所有 creep 的配置项，每次 creep 死亡或者新增时都会通过这个表来完成初始化
     creepConfigs: {
         [creepName: string]: {
-            role: string,
+            // creep 的角色名
+            role: CreepRoleConstant,
             // creep 的具体配置项，每个角色的配置都不相同
             data: object,
             // 执行 creep 孵化的房间名
-            room: string
+            spawnRoom: string,
+            // creep 孵化时使用的身体部件
+            // 为 string 时则自动规划身体部件，为 BodyPartConstant[] 时则强制生成该身体配置
+            bodys: BodyAutoConfigConstant | BodyPartConstant[]
         }
     }
     // 全局统计信息
@@ -692,8 +764,8 @@ interface BodyConfig {
  * 身体配置项类别
  * 包含了所有角色类型的身体配置
  */
-interface IBodyConfigs {
-    [roleType: string]: BodyConfig
+type IBodyConfigs = {
+    [type in BodyAutoConfigConstant]: BodyConfig
 }
 
 // 终端监听任务

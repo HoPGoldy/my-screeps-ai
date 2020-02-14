@@ -40,23 +40,9 @@ export const bodyConfigs: IBodyConfigs = {
         5600: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
     }, 
-    
-    /**
-     * 小型 worker
-     */
-    smallWorker: {
-        300: [ WORK, CARRY, MOVE ], 
-        550: [ WORK, CARRY, MOVE ], 
-        800: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
-        1300: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
-        1800: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
-        2300: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
-        5600: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ], 
-        12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE ]
-    }, 
 
     /**
-     * 转移单位
+     * 房间物流管理单位
      * 负责转移基地资源的 creep
      */
     transfer: {
@@ -71,7 +57,7 @@ export const bodyConfigs: IBodyConfigs = {
     }, 
 
     /**
-     * 转移单位
+     * 中央物流管理单位
      * 负责转移中央物流的 creep
      */
     centerTransfer: {
@@ -85,22 +71,9 @@ export const bodyConfigs: IBodyConfigs = {
         12900: [ CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, CARRY, MOVE ]
     }, 
 
-
     /**
-     * 声明单位
-     * 包含 CLAIM 的 creep
+     * 外矿预定单位
      */
-    claimer: {
-        300: [ MOVE, CLAIM ], 
-        550: [ MOVE, CLAIM ], 
-        800: [ MOVE, CLAIM ], 
-        1300: [ MOVE, CLAIM ], 
-        1800: [ MOVE, CLAIM ], 
-        2300: [ MOVE, CLAIM ], 
-        5600: [ MOVE, CLAIM ], 
-        12900: [ MOVE, CLAIM ], 
-    }, 
-
     reserver: {
         300: [ MOVE, CLAIM ], 
         550: [ MOVE, CLAIM ], 
@@ -139,7 +112,6 @@ export const bodyConfigs: IBodyConfigs = {
         2300: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL ], 
         5600: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL ], 
         12900: [ MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, MOVE, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL, HEAL ]
-        // 12900: [ MOVE, HEAL ]
     }, 
 
     /**
@@ -183,21 +155,6 @@ export const bodyConfigs: IBodyConfigs = {
         2300: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ], 
         5600: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ], 
         12900: [ WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, WORK, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE, CARRY, CARRY, MOVE ]
-    }, 
-
-    /**
-     * 签名者
-     * 没啥用
-     */
-    signer: {
-        300: [ MOVE ], 
-        550: [ MOVE ], 
-        800: [ MOVE ], 
-        1300: [ MOVE ], 
-        1800: [ MOVE ], 
-        2300: [ MOVE ], 
-        5600: [ MOVE ], 
-        12900: [ MOVE ], 
     }
 }
 

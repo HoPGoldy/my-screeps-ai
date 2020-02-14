@@ -231,6 +231,6 @@ export default {
         target: creep => creep.fillDefenseStructure(),
         switch: creep => creep.updateState('📌 修复'),
         spawnRoom,
-        bodyType: 'smallWorker'
+        bodyType: 'worker'
     })
 }

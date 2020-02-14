@@ -24,9 +24,9 @@ export default function creepNumberListener(): void {
         }
 
         // 检查指定的 room 中有没有它的生成任务
-        const spawnRoom = Game.rooms[creepConfig.room]
+        const spawnRoom = Game.rooms[creepConfig.spawnRoom]
         if (!spawnRoom) {
-            console.log(`死亡 ${name} 未找到 ${creepConfig.room}`)
+            console.log(`死亡 ${name} 未找到 ${creepConfig.spawnRoom}`)
             return
         }
         // 加入生成，加入成功的话删除过期内存
@@ -43,18 +43,15 @@ export const creepApi = {
      * @param creepName 新增的 creep 名称，如果已存在则会覆盖其配置
      * @param role creep 的角色名称
      * @param data creep 的配置项
+     * @param bodys creep 的身体配置项
      * @param spawnRoom 要孵化到的房间
      * @returns ERR_NOT_OWNER 孵化房间不是自己的或者无法进行孵化
      */
-    add(creepName: string, role: string, data: object, spawnRoom: string): OK | ERR_NOT_OWNER {
+    add(creepName: string, role: CreepRoleConstant, data: object, bodys: BodyAutoConfigConstant | BodyPartConstant[], spawnRoom: string): OK | ERR_NOT_OWNER {
         if (!Memory.creepConfigs) Memory.creepConfigs = {}
 
         // 不管有没有直接覆盖掉
-        Memory.creepConfigs[creepName] = {
-            role,
-            data,
-            room: spawnRoom
-        }
+        Memory.creepConfigs[creepName] = { role, data, bodys, spawnRoom }
         
         // 如果已经存在的话就不推送孵化任务了
         if (creepName in Game.creeps) return OK
