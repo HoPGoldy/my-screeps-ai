@@ -541,6 +541,16 @@ interface Memory {
             }
         }
     }
+    // 所有 creep 的配置项，每次 creep 死亡或者新增时都会通过这个表来完成初始化
+    creepConfigs: {
+        [creepName: string]: {
+            role: string,
+            // creep 的具体配置项，每个角色的配置都不相同
+            data: object,
+            // 执行 creep 孵化的房间名
+            room: string
+        }
+    }
     // 全局统计信息
     stats: {
         // GCl/GPL 升级百分比
