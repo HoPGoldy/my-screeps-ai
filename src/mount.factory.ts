@@ -449,7 +449,7 @@ export default class FactoryExtension extends StructureFactory {
      * @param target 要生产的目标
      */
     public set(target: CommodityConstant): string {
-        if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
+        if (!this.room.memory.factory) this.initMemory()
         this.room.memory.factory.specialTraget = target
         return `[${this.room.name} factory] 目标已锁定为 ${target}，将会持续生成`
     }
