@@ -40,7 +40,7 @@ export default {
             }
         },
         spawnRoom,
-        bodyType: 'claimer'
+        bodys: [ MOVE, CLAIM ]
     }),
 
     /**
@@ -127,7 +127,7 @@ export default {
         },
         switch: creep => creep.room.name === targetRoomName,
         spawnRoom,
-        bodyType: 'signer'
+        bodys: [ MOVE ]
     }),
 
     /**
@@ -758,6 +758,6 @@ export default {
             console.log('移动消耗', Game.cpu.getUsed() - cost1)
         },
         spawnRoom,
-        bodyType: 'signer'
+        bodys: [ MOVE ]
     }),
 }
