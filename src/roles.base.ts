@@ -172,8 +172,9 @@ const roles: {
             }
 
             // 八级时只有降级倒计时低于 100000 时才会生成
-            if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
-            else return true
+            if (room.controller.level === 8 && room.controller.ticksToDowngrade > 100000) return false
+
+            return true
         },
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true

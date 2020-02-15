@@ -386,7 +386,7 @@ export const DEFAULT_FLAG_NAME = {
 export const ENERGY_SHARE_LIMIT = 700000
 
 // 统计信息搜集模块的运行间隔，单位：tick
-export const stateScanInterval = 5
+export const stateScanInterval = 20
 
 /**
  * 需要挂载内存的 structure
