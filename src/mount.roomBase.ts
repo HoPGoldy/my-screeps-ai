@@ -1,3 +1,5 @@
+import { creepApi } from './creepController'
+
 /**
  * 将所有的房间基础服务挂载至 Room 原型上
  * 详细信息见下文 RoomBase 注释
@@ -20,6 +22,8 @@ export default function () {
             configurable: true
         })
     }
+
+    _.assign(ConstructionSite.prototype, ConstructionSiteExtension.prototype)
 }
 
 /**
@@ -232,5 +236,20 @@ class RoomBase extends Room {
         this.memory.sourceIds = sources.map(s => s.id)
         this._sources = sources
         return this._sources
+    }
+}
+
+class ConstructionSiteExtension extends ConstructionSite {
+    public work(): void {
+        if (Game.time % 100) return
+        if (this.room._hasRunConstructionSite) return
+        this.room._hasRunConstructionSite = true
+
+        const builderName = `${this.room.name} builder`
+        if (creepApi.has(builderName)) return
+
+        creepApi.add(builderName, 'builder', {
+            sourceId: this.room.sources[0].id
+        }, this.room.name)
     }
 }

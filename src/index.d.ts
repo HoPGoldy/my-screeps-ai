@@ -363,6 +363,8 @@ interface Room {
     // 该房间是否已经执行过 lab 集群作业了
     // 在 Lab.work 中调用，一个房间只会执行一次
     _hasRunLab: boolean
+    // 该房间是否已经运行过工地作业了
+    _hasRunConstructionSite: boolean
 
     // 房间基础服务
     factory?: StructureFactory

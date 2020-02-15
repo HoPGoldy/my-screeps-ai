@@ -1,4 +1,5 @@
 import roles from './role'
+import { creepApi } from './creepController'
 import { createHelp } from './utils'
 import { 
     // spawn 孵化相关
@@ -110,6 +111,8 @@ class SpawnExtension extends StructureSpawn {
      * @returns Spawn.spawnCreep 的返回值
      */
     private mySpawnCreep(configName): MySpawnReturnCode {
+        console.log("TCL: SpawnExtension -> configName", configName)
+        
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
         if (!creepConfig) return OK
@@ -133,7 +136,7 @@ class SpawnExtension extends StructureSpawn {
 
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
-        creepMemory.role = configName
+        creepMemory.role = creepConfig.role
         creepMemory.data = creepConfig.data
 
         // 获取身体部件, 优先使用 bodys
@@ -537,26 +540,49 @@ class StorageExtension extends StructureStorage {
  */
 class ControllerExtension extends StructureController {
     public work(): void {
-        this.stateScanner()
+        if (Game.time % stateScanInterval) return
+        // 是否无效的禁止通行点位
         if (!(Game.time % 10000)) this.checkRestrictedPos()
+
+        // 如果等级发生变化了就运行 creep 规划
+        if (this.stateScanner()) this.creepPlan()
     }
 
     /**
-     * 统计自己存储中的资源数量
+     * 统计自己的等级信息
+     * 
+     * @returns 为 true 时说明自己等级发生了变化
      */
-    private stateScanner(): void {
-        if (Game.time % stateScanInterval) return
+    private stateScanner(): boolean {
+        let hasLevelChange = false
         if (!this.room.memory.stats) this.room.memory.stats = {}
 
-        // 满级了就移除统计信息
-        if (this.level === 8) {
-            delete this.room.memory.stats.controllerLevel
-            delete this.room.memory.stats.controllerRatio
-        }
-        // 没有满级就更新统计信息
-        else {
-            this.room.memory.stats.controllerLevel = this.level
-            this.room.memory.stats.controllerRatio = (this.progress / this.progressTotal) * 100
+        // 统计升级进度
+        this.room.memory.stats.controllerRatio = (this.progress / this.progressTotal) * 100
+
+        // 统计房间等级
+        if (this.room.memory.stats.controllerLevel !== this.level) hasLevelChange = true
+        this.room.memory.stats.controllerLevel = this.level
+
+        return hasLevelChange
+    }
+
+    /**
+     * 维持房间运营的 creep 规划
+     * 包括能量采集、物流运输和升级
+     */
+    private creepPlan(): void {
+        console.log('creep 规划运行！等级', this.level)
+        switch (this.level) {
+            case 1:
+            case 2:
+                creepApi.add(`${this.room.name} harvester1`, 'harvester', {
+                    sourceId: this.room.sources.length === 2 ? this.room.sources[1].id : this.room.sources[0].id
+                }, this.room.name)
+                creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
+                    sourceId: this.room.sources[0].id
+                }, this.room.name)
+            break
         }
     }
 
