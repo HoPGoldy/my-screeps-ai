@@ -36,35 +36,41 @@ interface Game {
 }
 
 // 所有的 creep 角色
-type CreepRoleConstant = 
-    // 房间基础运营
+type CreepRoleConstant = BaseRoleConstant | AdvancedRoleConstant | RemoteRoleConstant | WarRoleConstant
+
+// 房间基础运营
+type BaseRoleConstant = 
     'harvester' |
     'collector' |
     'miner' |
     'upgrader' |
     'builder' |
-    'repairer' |
-    // 房间高级运营
+    'repairer'
+
+// 房间高级运营
+type AdvancedRoleConstant = 
     'transfer' |
-    'centerTransfer' |
-    // 远程单位
+    'centerTransfer'
+
+// 远程单位
+type RemoteRoleConstant = 
     'claimer' |
     'reserver' |
     'signer' |
     'remoteBuilder' |
     'remoteUpgrader' |
     'remoteHarvester' |
-    'remoteDefender' |
     'depositHarvester' |
     'pbAttacker' |
     'pbHealer' |
     'pbTransfer' |
-    'moveTester' |
-    // 战斗单位
+    'moveTester'
+
+// 战斗单位
+type WarRoleConstant =
     'soldier' |
     'doctor' |
     'boostDoctor' |
-    'defender' |
     'dismantler' |
     'boostDismantler' |
     'apocalypse'
@@ -74,18 +80,133 @@ type CreepRoleConstant =
  * 包含了每个角色应该做的工作
  */
 type CreepWork = {
-    [role in CreepRoleConstant]: {
-        // 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
-        isNeed?: (room: Room) => boolean
-        // 准备阶段执行的方法, 返回 true 时代表准备完成
-        prepare?: (creep: Creep) => boolean
-        // creep 获取工作所需资源时执行的方法
-        // 返回 true 则执行 target 阶段，返回其他将继续执行该方法
-        source?: (creep: Creep) => boolean
-        // creep 工作时执行的方法,
-        // 返回 true 则执行 source 阶段，返回其他将继续执行该方法
-        target: (creep: Creep) => boolean
-    }
+    [role in CreepRoleConstant]: (data: CreepData) => ICreepConfig
+}
+
+interface ICreepConfig {
+    // 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
+    isNeed?: (room: Room) => boolean
+    // 准备阶段执行的方法, 返回 true 时代表准备完成
+    prepare?: (creep: Creep) => boolean
+    // creep 获取工作所需资源时执行的方法
+    // 返回 true 则执行 target 阶段，返回其他将继续执行该方法
+    source?: (creep: Creep) => boolean
+    // creep 工作时执行的方法,
+    // 返回 true 则执行 source 阶段，返回其他将继续执行该方法
+    target: (creep: Creep) => boolean
+    // 每个角色默认的身体组成部分
+    bodys: BodyAutoConfigConstant | BodyPartConstant[]
+}
+
+/**
+ * 所有 creep 角色的 data
+ */
+type CreepData = 
+    HarvesterData | 
+    WorkerData | 
+    CenterTransferData | 
+    RemoteHelperData | 
+    RemoteDeclarerData |
+    RemoteHarvesterData |
+    WarUnitData |
+    ApocalypseData |
+    HealUnitData
+
+/**
+ * 采集单位的 data
+ * 执行从 sourceId 处采集东西，并转移至 targetId 处（不一定使用，每个角色都有自己固定的目标例如 storage 或者 terminal）
+ */
+interface HarvesterData {
+    // 要采集的 source id
+    sourceId: string
+    // 把采集到的资源存到哪里存在哪里
+    targetId: string
+}
+
+/**
+ * 工作单位的 data
+ * 由于由确定的工作目标所以不需要 targetId
+ */
+interface WorkerData {
+    // 要使用的资源存放建筑 id
+    sourceId: string
+}
+
+/**
+ * 中央运输者的 data 
+ * x y 为其在房间中的固定位置
+ */
+interface CenterTransferData {
+    x: number
+    y: number
+}
+
+/**
+ * 远程协助单位的 data
+ */
+interface RemoteHelperData {
+    // 要支援的房间名
+    targetRoomName: string
+    // 该房间中的能量来源
+    sourceId: string
+    // 路上忽视的房间名列表
+    ignoreRoom: string[]
+}
+
+/**
+ * 远程声明单位的 data
+ * 这些单位都会和目标房间的 controller 打交道
+ */
+interface RemoteDeclarerData {
+    // 要声明控制的房间名
+    targetRoomName: string
+    // 给控制器的签名
+    signText: string
+    // 路上忽视的房间名列表
+    ignoreRoom: string[]
+}
+
+/**
+ * 远程采集单位的 data
+ * 包括外矿采集和公路房资源采集单位
+ */
+interface RemoteHarvesterData {
+    // 要采集的资源旗帜名称
+    sourceFlagName: string
+    // 出生房名称，资源会被运输到该房间中
+    spawnRoom: string
+    // 路上忽视的房间名列表
+    ignoreRoom: string[]
+}
+
+/**
+ * 战斗单位的 data
+ */
+interface WarUnitData {
+    // 要攻击的旗帜名
+    targetFlagName: string
+    // 待命位置旗帜名
+    standByFlagName: string
+}
+
+/**
+ * 一体机战斗单位的 data
+ */
+interface ApocalypseData {
+    // 要攻击的旗帜名
+    targetFlagName: string
+    // 抗几个塔的伤害，由这个参数决定其身体部件组成
+    bearTowerNum: 0 | 1 | 2 | 3 | 4 | 5 | 6
+}
+
+/**
+ * 治疗单位的 data
+ */
+interface HealUnitData {
+    // 要治疗的旗帜名
+    creepName: string
+    // 待命位置旗帜名
+    standByFlagName: string
 }
 
 /**
@@ -169,12 +290,14 @@ type StructureWithStore = StructureStorage | StructureContainer | StructureExten
 interface CreepMemory {
     // 内置移动缓存
     _move?: Object
-    // creep是否已经准备好可以工作了
+    // creep 是否已经准备好可以工作了
     ready: boolean
-    // creep的角色
-    role: string
+    // creep 的角色
+    role: CreepRoleConstant
     // 是否在工作
     working: boolean
+    // creep 在工作时需要的自定义配置，在孵化时由 spawn 复制
+    data?: CreepData
     // 该 Creep 是否在站着不动进行工作
     // 该字段用于减少 creep 向 Room.restrictedPos 里添加自己位置的次数
     standed?: boolean
@@ -570,11 +693,9 @@ interface IBoostClear {
 
 interface transferTaskOperation {
     // creep 工作时执行的方法
-    target: (creep: Creep, task: RoomTransferTasks) => any
+    target: (creep: Creep, task: RoomTransferTasks) => boolean
     // creep 非工作(收集资源时)执行的方法
-    source: (creep: Creep, task: RoomTransferTasks, sourceId: string) => any
-    // 更新状态时触发的方法
-    switch: (creep: Creep, task: RoomTransferTasks) => boolean
+    source: (creep: Creep, task: RoomTransferTasks, sourceId: string) => boolean
 }
 
 // 房间要执行的资源共享任务
@@ -589,6 +710,8 @@ interface IRoomShareTask {
 }
 
 interface Memory {
+    // 自己的玩家名称，由同名全局变量控制
+    MY_NAME: string
     // 资源来源表
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
@@ -615,7 +738,7 @@ interface Memory {
             // creep 的角色名
             role: CreepRoleConstant,
             // creep 的具体配置项，每个角色的配置都不相同
-            data: object,
+            data: CreepData,
             // 执行 creep 孵化的房间名
             spawnRoom: string,
             // creep 孵化时使用的身体部件
@@ -679,28 +802,6 @@ interface ITransferTask {
     resourceType:  ResourceConstant
     // 资源数量
     amount: number
-}
-
-/**
- * creep 的角色配置项
- */
-interface ICreepConfig {
-    //在孵化前进行的判断，只有返回 true 时才会进行生成
-    isNeed?: (room: Room) => boolean
-    // 准备阶段执行的方法, 返回 true 时代表准备完成
-    prepare?: (creep: Creep) => boolean
-    // creep 工作时执行的方法
-    target?: (creep: Creep) => any
-    // creep 非工作(收集能量时)执行的方法
-    source?: (creep: Creep) => any
-    // 更新状态时触发的方法，为 true 执行 target，为 false 执行 source
-    switch?: (creep: Creep) => boolean
-    // 要进行孵化的房间
-    spawnRoom: string
-    // 身体部件类型, 必须是 setting.ts 中 bodyConfigs 中的键，该属性和 bodys 必须指定一个
-    bodyType?: string
-    // 强制指定身体部件，如果指定的话将会忽略 bodyType
-    bodys?: BodyPartConstant[]
 }
 
 /**

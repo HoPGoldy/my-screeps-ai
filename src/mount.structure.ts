@@ -1,4 +1,4 @@
-import { creepConfigs } from './config'
+import roles from './role'
 import { createHelp } from './utils'
 import { 
     // spawn 孵化相关
@@ -78,12 +78,6 @@ class SpawnExtension extends StructureSpawn {
      * @todo 能量不足时挂起任务
      */
     public work(): void {
-        // [重要] 执行 creep 数量控制器
-        if (!Game._hasRunCreepNumberController) {
-            this.creepNumberController()
-            Game._hasRunCreepNumberController = true
-        }
-
         if (this.spawning) {
             /**
              * 如果孵化已经开始了，就向物流队列推送任务
@@ -110,67 +104,40 @@ class SpawnExtension extends StructureSpawn {
     }
 
     /**
-     * creep 数量控制器
-     * 
-     * 每 tick 执行一次, 通过检查死亡 creep 的记忆来确定哪些 creep 需要重生
-     * 此函数可以同时清除死去 creep 的内存
-     */
-    private creepNumberController(): void {
-        for (const name in Memory.creeps) {
-            // 如果 creep 已经凉了
-            if (!Game.creeps[name]) {
-                const role: string = Memory.creeps[name].role
-                // 获取配置项
-                const creepConfig: ICreepConfig = creepConfigs[role]
-                if (!creepConfig) {
-                    console.log(`死亡 ${name} 未找到对应 creepConfig, 已删除`)
-                    delete Memory.creeps[name]
-                    return
-                }
-    
-                // 检查指定的 room 中有没有它的生成任务
-                const spawnRoom = Game.rooms[creepConfig.spawnRoom]
-                if (!spawnRoom) {
-                    console.log(`死亡 ${name} 未找到 ${creepConfig.spawnRoom}`)
-                    return
-                }
-                // 加入生成，加入成功的话删除过期内存
-                if (spawnRoom.addSpawnTask(role) != ERR_NAME_EXISTS) delete Memory.creeps[name]
-            }
-        }
-    }
-
-    /**
      * 从 spawn 生产 creep
      * 
      * @param configName 对应的配置名称
-     * @returns 无需生成 creep 时返回 CREEP_DONT_NEED_SPAWN，其他情况返回 Spawn.spawnCreep 的返回值
+     * @returns Spawn.spawnCreep 的返回值
      */
     private mySpawnCreep(configName): MySpawnReturnCode {
-        const creepConfig = creepConfigs[configName]
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
-        if (!creepConfig) return <OK>0
-
+        const creepConfig = Memory.creepConfigs[configName]
+        if (!creepConfig) return OK
+        // 找不到他的工作逻辑的话也直接移除任务
+        const creepWork = roles[creepConfig.role](creepConfig.data)
+        if (!creepWork) return OK
+        
         // 检查是否需要生成
-        if (creepConfig.isNeed) {
-            // 每 5 tick 才会检查一次
-            if (Game.time % 5) {
-                if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
-                return <CREEP_DONT_NEED_SPAWN>-101
-            }
-            // 检查不通过依旧会挂起
-            else if (!creepConfig.isNeed(this.room)) {
-                if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
-                return <CREEP_DONT_NEED_SPAWN>-101
-            }
-        }
+        // if (creepConfig.isNeed) {
+        //     // 每 5 tick 才会检查一次
+        //     if (Game.time % 5) {
+        //         if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
+        //         return <CREEP_DONT_NEED_SPAWN>-101
+        //     }
+        //     // 检查不通过依旧会挂起
+        //     else if (!creepConfig.isNeed(this.room)) {
+        //         if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
+        //         return <CREEP_DONT_NEED_SPAWN>-101
+        //     }
+        // }
 
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
         creepMemory.role = configName
+        creepMemory.data = creepConfig.data
 
         // 获取身体部件, 优先使用 bodys
-        const bodys = creepConfig.bodys ? creepConfig.bodys : this.getBodys(creepConfig.bodyType)
+        const bodys = (typeof creepWork.bodys === 'string') ? this.getBodys(creepConfig.bodys as string) : creepConfig.bodys as BodyPartConstant[]
         if (bodys.length <= 0) {
             this.room.hangSpawnTask()
             return ERR_NOT_ENOUGH_ENERGY
@@ -182,11 +149,11 @@ class SpawnExtension extends StructureSpawn {
         // 检查是否生成成功
         if (spawnResult == OK) {
             // console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
-            return <OK>0
+            return OK
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
             console.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成 ...`)
-            return <OK>0
+            return OK
         }
         else {
             console.log(`[生成失败] ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)

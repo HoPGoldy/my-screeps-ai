@@ -1,3 +1,4 @@
+import roles from './role'
 /**
  * creep 控制模块
  * 
@@ -29,6 +30,15 @@ export default function creepNumberListener(): void {
             console.log(`死亡 ${name} 未找到 ${creepConfig.spawnRoom}`)
             return
         }
+
+        const creepWork = roles[creepConfig.role](creepConfig.data)
+
+        // 如果有 isNeed 阶段并且该阶段返回 false 则遗弃该 creep
+        if (creepWork.isNeed && !creepWork.isNeed(Game.rooms[creepConfig.spawnRoom])) {
+            creepApi.remove(name)
+            return
+        }
+        
         // 加入生成，加入成功的话删除过期内存
         if (spawnRoom.addSpawnTask(name) != ERR_NAME_EXISTS) delete Memory.creeps[name]
     }
@@ -47,7 +57,7 @@ export const creepApi = {
      * @param spawnRoom 要孵化到的房间
      * @returns ERR_NOT_OWNER 孵化房间不是自己的或者无法进行孵化
      */
-    add(creepName: string, role: CreepRoleConstant, data: object, bodys: BodyAutoConfigConstant | BodyPartConstant[], spawnRoom: string): OK | ERR_NOT_OWNER {
+    add(creepName: string, role: CreepRoleConstant, data: CreepData, bodys: BodyAutoConfigConstant | BodyPartConstant[], spawnRoom: string): OK | ERR_NOT_OWNER {
         if (!Memory.creepConfigs) Memory.creepConfigs = {}
 
         // 不管有没有直接覆盖掉
