@@ -239,9 +239,11 @@ class RoomBase extends Room {
     }
 }
 
+/**
+ * 建筑工地拓展，主要作用就是发布 builder 来建造自己
+ */
 class ConstructionSiteExtension extends ConstructionSite {
     public work(): void {
-        if (Game.time % 100) return
         if (this.room._hasRunConstructionSite) return
         this.room._hasRunConstructionSite = true
 
