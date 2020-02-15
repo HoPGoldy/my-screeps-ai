@@ -495,8 +495,8 @@ class CreepExtension extends Creep {
         // 新建目标建筑工地
         let target: ConstructionSite = undefined
         // 检查是否有缓存
-        if (this.memory.constructionSiteId) {
-            target = Game.getObjectById(this.memory.constructionSiteId)
+        if (this.room.memory.constructionSiteId) {
+            target = Game.getObjectById(this.room.memory.constructionSiteId)
             // 如果缓存中的工地不存在则获取下一个
             if (!target) target = this._updateConstructionSite()
         }
@@ -524,10 +524,13 @@ class CreepExtension extends Creep {
     private _updateConstructionSite(): ConstructionSite | undefined {
         const targets: ConstructionSite[] = this.room.find(FIND_MY_CONSTRUCTION_SITES)
         if (targets.length > 0) {
-            this.memory.constructionSiteId = targets[0].id
+            this.room.memory.constructionSiteId = targets[0].id
             return targets[0]
         }
-        else return undefined
+        else {
+            delete this.room.memory.constructionSiteId
+            return undefined
+        }
     }
 
     /**

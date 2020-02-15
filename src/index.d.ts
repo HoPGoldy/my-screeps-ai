@@ -322,7 +322,7 @@ interface CreepMemory {
     fillWallId?: string
     // transfer 特有 要填充能量的建筑 id
     fillStructureId?: string
-    // 建筑工特有 当前缓存的建筑工地
+    // 建筑工特有 当前缓存的建筑工地（目前只有外矿采集者在用）
     constructionSiteId?: string
     // 外矿采集者特有, 该字段为 true 时, 每 tick 都会尝试检查工地并建造
     dontBuild?: boolean
@@ -482,6 +482,9 @@ interface RoomMemory {
     // power 任务请求队列
     // 由建筑物发布，powerCreep 查找任务时会优先读取该队列
     powerTasks: PowerConstant[]
+
+    // 建筑工的当前工地目标，用于保证多个建筑工的工作统一以及建筑工死后不会寻找新的工地
+    constructionSiteId: string
     
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant
