@@ -52,13 +52,23 @@ class CreepExtension extends Creep {
         // 获取是否工作，没有 source 的话直接执行 target
         const working = creepConfig.source ? this.memory.working : true
 
+        let stateChange = false
         // 执行对应阶段
         // 阶段执行结果返回 true 就说明需要更换 working 状态
         if (working) {
-            if (creepConfig.target && creepConfig.target(this)) this.memory.working = !this.memory.working 
+            if (creepConfig.target && creepConfig.target(this)) stateChange = true
         }
         else {
-            if (creepConfig.source && creepConfig.source(this)) this.memory.working = !this.memory.working 
+            if (creepConfig.source && creepConfig.source(this)) stateChange = true
+        }
+
+        // 状态变化了就释放工作位置
+        if (stateChange) {
+            this.memory.working = !this.memory.working
+            if (this.memory.standed) {
+                this.room.removeRestrictedPos(this.name)
+                delete this.memory.standed
+            }
         }
         // let cost2 = Game.cpu.getUsed()
         // if ((cost2 - cost1) > 0.5) console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
@@ -483,7 +493,7 @@ class CreepExtension extends Creep {
      */
     public buildStructure(): boolean {
         // 新建目标建筑工地
-        let target: ConstructionSite | null = null
+        let target: ConstructionSite = undefined
         // 检查是否有缓存
         if (this.memory.constructionSiteId) {
             target = Game.getObjectById(this.memory.constructionSiteId)
@@ -511,13 +521,13 @@ class CreepExtension extends Creep {
      * 
      * @returns 下一个建筑工地，或者 null
      */
-    private _updateConstructionSite(): ConstructionSite|null {
+    private _updateConstructionSite(): ConstructionSite | undefined {
         const targets: ConstructionSite[] = this.room.find(FIND_MY_CONSTRUCTION_SITES)
         if (targets.length > 0) {
             this.memory.constructionSiteId = targets[0].id
             return targets[0]
         }
-        else return null
+        else return undefined
     }
 
     /**
