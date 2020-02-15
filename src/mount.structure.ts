@@ -111,8 +111,6 @@ class SpawnExtension extends StructureSpawn {
      * @returns Spawn.spawnCreep 的返回值
      */
     private mySpawnCreep(configName): MySpawnReturnCode {
-        console.log("TCL: SpawnExtension -> configName", configName)
-        
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
         if (!creepConfig) return OK
