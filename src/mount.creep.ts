@@ -1,6 +1,6 @@
 import { getPath, getOppositeDirection } from './utils'
-import { creepConfigs } from './config'
 import { repairSetting } from './setting'
+import roles from './role'
 
 // 挂载拓展到 Creep 原型
 export default function () {
@@ -17,7 +17,7 @@ class CreepExtension extends Creep {
     public work(): void {
         // let cost1 = Game.cpu.getUsed()
         // 检查 creep 内存中的角色是否存在
-        if (!(this.memory.role in creepConfigs)) {
+        if (!(this.memory.role in roles)) {
             console.log(`${this.name} 找不到对应的 creepConfig`)
             this.say('我凉了！')
             return 
@@ -36,7 +36,7 @@ class CreepExtension extends Creep {
         } 
 
         // 获取对应配置项
-        const creepConfig: ICreepConfig = creepConfigs[this.memory.role]
+        const creepConfig: ICreepConfig = roles[this.memory.role]
 
         // 没准备的时候就执行准备阶段
         if (!this.memory.ready) {
@@ -46,17 +46,19 @@ class CreepExtension extends Creep {
             else this.memory.ready = true
         }
 
+        //　如果执行了 prepare 还没有 ready，就返回等下个 tick 再执行
         if (!this.memory.ready) return 
 
-        // 获取是否工作，没有 switch 的话直接执行 target
-        const working = creepConfig.switch ? creepConfig.switch(this) : true
+        // 获取是否工作，没有 source 的话直接执行 target
+        const working = creepConfig.source ? this.memory.working : true
 
-        // 执行对应操作
+        // 执行对应阶段
+        // 阶段执行结果返回 true 就说明需要更换 working 状态
         if (working) {
-            if (creepConfig.target) creepConfig.target(this)
+            if (creepConfig.target && creepConfig.target(this)) this.memory.working = !this.memory.working 
         }
         else {
-            if (creepConfig.source) creepConfig.source(this)
+            if (creepConfig.source && creepConfig.source(this)) this.memory.working = !this.memory.working 
         }
         // let cost2 = Game.cpu.getUsed()
         // if ((cost2 - cost1) > 0.5) console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)

@@ -5,20 +5,32 @@ import { calcBodyPart } from './utils'
  * 战斗角色组
  * 本角色组包括了对外战斗和房间防御所需要的角色
  */
-export default {
+const roles: {
+    [role in WarRoleConstant]: (data: CreepData) => ICreepConfig
+} = {
     /**
      * 士兵
      * 会一直向旗帜发起进攻,
      * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
-     * 
-     * @param spawnRoom 出生房间名称
-     * @param flagName 要攻击的旗帜名称
      */
-    soldier: (spawnRoom: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => ({
-        ...battleBase(flagName),
-        target: creep => creep.attackFlag(flagName),
-        spawnRoom,
-        bodyType: 'attacker'
+    soldier: (data: WarUnitData): ICreepConfig => ({
+        ...battleBase(data.targetFlagName),
+        target: creep => {
+            const targetFlag = creep.getFlag(data.targetFlagName)
+            if (!targetFlag) {
+                creep.say('旗呢?')
+                return false
+            }
+
+            if (creep.room.name !== targetFlag.pos.roomName) {
+                console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
+                return true
+            }
+
+            creep.attackFlag(data.targetFlagName)
+            return false
+        },
+        bodys: 'attacker'
     }),
 
     /**
@@ -27,14 +39,19 @@ export default {
      * 
      * @param spawnRoom 出生房间名称
      * @param creepsName 要治疗的 creep 名称
-     * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
+     * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到目标 creep 出现
      */
-    doctor: (spawnRoom: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
-        source: creep => creep.farMoveTo(Game.flags[standByFlagName].pos),
-        target: creep => creep.healTo(Game.creeps[creepsName]),
-        switch: () => standByFlagName in Game.flags,
-        spawnRoom,
-        bodyType: 'healer'
+    doctor: (data: HealUnitData): ICreepConfig => ({
+        source: creep => {
+            // 如果 creep 存在就优先去找 creep
+            if (data.creepName in Game.creeps) return true
+            creep.farMoveTo(Game.flags[data.standByFlagName].pos)
+        },
+        target: creep => {
+            creep.healTo(Game.creeps[data.creepName])
+            return false
+        },
+        bodys: 'healer'
     }),
 
     /**
@@ -45,34 +62,24 @@ export default {
      * @param spawnRoom 出生房间名称
      * @param creepsName 要治疗的 creep 名称
      */
-    boostDoctor: (spawnRoom: string, creepsName: string, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    boostDoctor: (data: HealUnitData): ICreepConfig => ({
         ...boostPrepare(BOOST_TYPE.HEAL, {
             [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
             [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25,
             [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10,
         }),
         source: creep => {
-            creep.healTo(creep)
-            creep.farMoveTo(Game.flags[standByFlagName].pos)
-        },
-        target: creep => creep.healTo(Game.creeps[creepsName]),
-        switch: () => !(standByFlagName in Game.flags),
-        spawnRoom,
-        bodys: calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
-    }),
+            // 如果 creep 存在就优先去找 creep
+            if (data.creepName in Game.creeps) return true
 
-    /**
-     * 房间防御者
-     * 到 "房间名 StandBy" 旗帜下待命 > 攻击出现的敌人
-     * 
-     * @param spawnRoom 出生房间名称
-     */
-    defender: (spawnRoom: string): ICreepConfig => ({
-        source: creep => creep.standBy(),
-        target: creep => creep.defense(),
-        switch: creep => creep.checkEnemy(),
-        spawnRoom,
-        bodyType: 'attacker'
+            creep.healTo(creep)
+            creep.farMoveTo(Game.flags[data.standByFlagName].pos)
+        },
+        target: creep => {
+            creep.healTo(Game.creeps[data.creepName])
+            return false
+        },
+        bodys: calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
     }),
 
     /**
@@ -83,15 +90,14 @@ export default {
      * @param flagName 要攻击的旗帜名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    dismantler: (spawnRoom: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    dismantler: (data: WarUnitData): ICreepConfig => ({
         prepare: creep => {
-            if (!(standByFlagName in Game.flags)) return true
-            creep.moveTo(Game.flags[standByFlagName])
+            if (!(data.standByFlagName in Game.flags)) return true
+            creep.moveTo(Game.flags[data.standByFlagName])
         },
-        ...battleBase(flagName),
-        target: creep => creep.dismantleFlag(flagName),
-        spawnRoom,
-        bodyType: 'dismantler'
+        ...battleBase(data.targetFlagName),
+        target: creep => creep.dismantleFlag(data.targetFlagName),
+        bodys: 'dismantler'
     }),
 
     /**
@@ -103,19 +109,18 @@ export default {
      * @param flagName 要攻击的旗帜名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    boostDismantler: (spawnRoom: string, flagName: string = DEFAULT_FLAG_NAME.ATTACK, standByFlagName: string = DEFAULT_FLAG_NAME.STANDBY): ICreepConfig => ({
+    boostDismantler: (data: WarUnitData): ICreepConfig => ({
         prepare: creep => {
-            if (!(standByFlagName in Game.flags)) return true
-            creep.moveTo(Game.flags[standByFlagName])
+            if (!(data.standByFlagName in Game.flags)) return true
+            creep.moveTo(Game.flags[data.standByFlagName])
         },
-        ...battleBase(flagName),
+        ...battleBase(data.targetFlagName),
         ...boostPrepare(BOOST_TYPE.DISMANTLE, {
             [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
             [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: 28,
             [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10, 
         }),
-        target: creep => creep.dismantleFlag(flagName),
-        spawnRoom,
+        target: creep => creep.dismantleFlag(data.targetFlagName),
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
     }),
 
@@ -128,9 +133,9 @@ export default {
      * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能量越强，默认为 6 (0~6)
      * @param flagName 要攻击的旗帜名称
      */
-    apocalypse: (spawnRoom: string, bearTowerNum: number = 6, flagName: string = DEFAULT_FLAG_NAME.ATTACK): ICreepConfig => {
+    apocalypse: (data: ApocalypseData): ICreepConfig => {
         // 越界就置为 6
-        if (bearTowerNum < 0 || bearTowerNum > 6) bearTowerNum = 6
+        if (data.bearTowerNum < 0 || data.bearTowerNum > 6) data.bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
         const bodyMap = {
             0: { [TOUGH]: 0, [RANGED_ATTACK]: 15, [MOVE]: 6, [HEAL]: 3 },
@@ -141,19 +146,18 @@ export default {
             5: { [TOUGH]: 10, [RANGED_ATTACK]: 9, [MOVE]: 10, [HEAL]: 21 },
             6: { [TOUGH]: 12, [RANGED_ATTACK]: 5, [MOVE]: 10, [HEAL]: 23 }
         }
-        const bodyConfig: BodySet = bodyMap[bearTowerNum]
+        const bodyConfig: BodySet = bodyMap[data.bearTowerNum]
 
         // 组装 CreepConfig
         return {
-            ...battleBase(flagName),
+            ...battleBase(data.targetFlagName),
             ...boostPrepare(BOOST_TYPE.RANGED_ATTACK, {
                 [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: bodyConfig[TOUGH], 
                 [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: bodyConfig[RANGED_ATTACK], 
                 [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: bodyConfig[MOVE], 
                 [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: bodyConfig[HEAL]
             }),
-            target: creep => creep.rangedAttackFlag(flagName),
-            spawnRoom,
+            target: creep => creep.rangedAttackFlag(data.targetFlagName),
             bodys: calcBodyPart(bodyConfig)
         }
     },
@@ -247,7 +251,15 @@ const battleBase = (flagName: string) => ({
      */
     source: (creep: Creep) => {
         const targetFlag = creep.getFlag(flagName)
-        if (!targetFlag) return creep.say('旗呢?')
+        if (!targetFlag) {
+            creep.say('旗呢?')
+            return false
+        }
+
+        if (creep.room.name == targetFlag.pos.roomName) {
+            console.log(`[${creep.name}] 抵达指定房间，切入作战模式`)
+            return true
+        }
 
         // 远程移动
         creep.farMoveTo(targetFlag.pos)
@@ -258,32 +270,9 @@ const battleBase = (flagName: string) => ({
             creep.heal(creep)
             creep.say('💔')
         }
-    },
-    /**
-     * 战斗单位的通用 switch 阶段
-     * 如果在旗帜房间内则 target
-     * 如果不在则 source
-     * 
-     * @param flagName 目标旗帜名称
-     */
-    switch: (creep: Creep) => {
-        const targetFlag = creep.getFlag(flagName)
-
-        // 没有旗帜就为战斗模式
-        if (!targetFlag) {
-            creep.say('旗呢?')
-            return (creep.memory.working = true)
-        }
-
-        if (creep.room.name == targetFlag.pos.roomName && !creep.memory.working) {
-            console.log(`[${creep.name}] 抵达指定房间，切入作战模式`)
-            creep.memory.working = true
-        }
-        else if (creep.room.name != targetFlag.pos.roomName && creep.memory.working) {
-            console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
-            creep.memory.working = false
-        }
-
-        return creep.memory.working
-    },
+        
+        return false
+    }
 })
+
+export default roles

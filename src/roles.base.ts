@@ -2,17 +2,18 @@
  * 初级房间运维角色组
  * 本角色组包括了在没有 Storage 和 Link 的房间内运维所需的角色
  */
-export default {
+const roles: {
+    [role in BaseRoleConstant]: (data: CreepData) => ICreepConfig
+} = {
     /**
      * 采集者
      * 从指定 source 中获取能量 > 将矿转移到 spawn 和 extension 中
-     * 
-     * @param spawnRoom 出生房间名称
-     * @param sourceId 要挖的矿 id
-     * @param backupStorageId 填满后将能量转移到的建筑 (可选)
      */
-    harvester: (spawnRoom: string, sourceId: string, backupStorageId: string=''): ICreepConfig => ({
-        source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
+    harvester: (data: HarvesterData): ICreepConfig => ({
+        source: creep => {
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+        },
         target: creep => {
             let target: AnyStructure
 
@@ -50,63 +51,64 @@ export default {
                 }
                 // 能量都已经填满就尝试获取冗余存储
                 else {
-                    if (backupStorageId === '') return 
-                    target = Game.getObjectById(backupStorageId)
+                    if (data.targetId === '') return 
+                    target = Game.getObjectById(data.targetId)
                     if (!target) return 
                 }
             }
             
             // 将能量移送至目标建筑
             creep.transferTo(target, RESOURCE_ENERGY)
+
+            if (creep.store.getUsedCapacity() === 0) return true
         },
-        switch: creep => creep.updateState('🍚 收获'),
-        spawnRoom,
-        bodyType: 'worker'
+        bodys: 'worker'
     }),
 
     /**
      * 收集者
      * 从指定 source 中获取资源 > 将资源转移到指定建筑中
-     * 
-     * @param spawnRoom 出生房间名称
-     * @param sourceId 要挖的矿 id
-     * @param targetId 指定建筑 id (默认为 room.storage)
      */
-    collector: (spawnRoom: string, sourceId: string, targetId: string=''): ICreepConfig => ({
+    collector: (data: HarvesterData): ICreepConfig => ({
         prepare: creep => {
             // 已经到附近了就准备完成
-            if (creep.pos.isNearTo((<Structure>Game.getObjectById(sourceId)).pos)) return true
+            if (creep.pos.isNearTo((<Structure>Game.getObjectById(data.sourceId)).pos)) return true
             // 否则就继续移动
             else {
-                creep.moveTo(<Source | Mineral>Game.getObjectById(sourceId), { reusePath: 20 })
+                creep.moveTo(Game.getObjectById<Source>(data.sourceId), { reusePath: 20 })
                 return false
             }
         },
         source: creep => {
-            const source: Source|Mineral = Game.getObjectById(sourceId)
-            if (!source) return creep.say('目标找不到!')
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+
+            const source = Game.getObjectById<Source>(data.sourceId)
+            if (!source) {
+                creep.say('目标找不到!')
+                return false
+            }
 
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source, { reusePath: 20 })
         },
         target: creep => {
-            const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.storage
-            if (!target) return creep.say('目标找不到!')
+            const target: Structure = data.targetId ? Game.getObjectById(data.targetId) : creep.room.storage
+            if (!target) {
+                creep.say('目标找不到!')
+                return false
+            }
 
             if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
+
+            if (creep.store.getUsedCapacity() === 0) return true
         },
-        switch: creep => creep.updateState('🍚 收获'),
-        spawnRoom,
-        bodyType: 'worker'
+        bodys: 'worker'
     }),
 
     /**
      * 矿工
      * 从房间的 mineral 中获取资源 > 将资源转移到指定建筑中(默认为 terminal)
-     * 
-     * @param spawnRoom 出生房间名称
-     * @param targetId 指定建筑 id (默认为 room.terminal)
      */
-    miner: (spawnRoom: string, targetId=''): ICreepConfig => ({
+    miner: (data: HarvesterData): ICreepConfig => ({
         // 检查矿床里是不是还有矿
         isNeed: room => {
             // 房间中的矿床是否还有剩余产量
@@ -128,6 +130,9 @@ export default {
             return false
         },
         source: creep => {
+            if (creep.ticksToLive <= creep.memory.travelTime + 30) return true
+            else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+
             // 采矿
             const harvestResult = creep.harvest(creep.room.mineral)
 
@@ -139,17 +144,17 @@ export default {
             else if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
         },
         target: creep => {
-            const target: Structure = targetId ? Game.getObjectById(targetId) : creep.room.terminal
-            if (!target) return creep.say('放哪啊！')
+            const target: Structure = data.targetId ? Game.getObjectById(data.targetId) : creep.room.terminal
+            if (!target) {
+                creep.say('放哪啊！')
+                return false
+            }
             // 转移/移动
             if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.goTo(target.pos)
+
+            if (creep.store.getUsedCapacity() === 0) return true
         },
-        switch: creep => {
-            if (creep.ticksToLive <= creep.memory.travelTime + 30) return true
-            else return creep.updateState('🍚 收获')
-        },
-        spawnRoom,
-        bodyType: 'worker'
+        bodys: 'worker'
     }),
 
     /**
@@ -157,41 +162,28 @@ export default {
      * 只有在 sourceId 是 storage 并且其能量足够多时才会生成
      * 从 Source 中采集能量一定会生成
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
-     * 
-     * @param sourceId 能量来源 id
-     * @param spawnRoom 出生房间名称
      */
-    upgrader: (spawnRoom: string, sourceId: string): ICreepConfig => ({
+    upgrader: (data: WorkerData): ICreepConfig => ({
         isNeed: room => {
-            const source = Game.getObjectById(sourceId)
+            const source = Game.getObjectById(data.sourceId)
             if (!source) {
-                console.log(`[生成挂起] ${room.name} upgrader 中的 ${sourceId} 不是一个有效的能量来源`)
+                console.log(`[生成挂起] ${room.name} upgrader 中的 ${data.sourceId} 不是一个有效的能量来源`)
                 return false
             }
 
-            // Storage 能量快满了一定会生成
-            if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 950000) return true
-            // 如果是 link 的话同样会检查 Room.storage 的能量
-            else if (source instanceof StructureLink && room.storage && room.storage.store[RESOURCE_ENERGY] > 950000) return true
-
             // 八级时只有降级倒计时低于 100000 时才会生成
             if (room.controller.level == 8 && room.controller.ticksToDowngrade > 100000) return false
-            
-            // Storage 能量快满了一定会生成
-            if (source instanceof StructureStorage && source.store[RESOURCE_ENERGY] > 950000) return true
-
-            // 只有在 storage 中能量大于 10000 时才会生成，其他建筑没有限制
-            if (source instanceof StructureStorage) {
-                if (source.store[RESOURCE_ENERGY] > 10000)  return true
-                else return false
-            }
             else return true
         },
-        source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
-        target: creep => creep.upgrade(),
-        switch: creep => creep.updateState('📈 升级'),
-        spawnRoom,
-        bodyType: 'upgrader'
+        source: creep => {
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+        },
+        target: creep => {
+            creep.upgrade()
+            if (creep.store.getUsedCapacity() === 0) return true
+        },
+        bodys: 'upgrader'
     }),
 
     /**
@@ -202,19 +194,22 @@ export default {
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
-    builder: (spawnRoom: string, sourceId: string): ICreepConfig => ({
+    builder: (data: WorkerData): ICreepConfig => ({
         isNeed: room => {
             const targets: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
             return targets.length > 0 ? true : false
         },
-        source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
+        source: creep => {
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+        },
         target: creep => {
             if (creep.buildStructure()) { }
             else if (creep.upgrade()) { }
+
+            if (creep.store.getUsedCapacity() === 0) return true
         },
-        switch: creep => creep.updateState('🚧 建造'),
-        spawnRoom,
-        bodyType: 'worker'
+        bodys: 'worker'
     }),
 
     /**
@@ -225,12 +220,19 @@ export default {
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
-    repairer: (spawnRoom: string, sourceId: string): ICreepConfig => ({
-        source: creep => creep.getEngryFrom(Game.getObjectById(sourceId)),
+    repairer: (data: WorkerData): ICreepConfig => ({
+        source: creep => {
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+        },
         // 一直修墙就完事了
-        target: creep => creep.fillDefenseStructure(),
-        switch: creep => creep.updateState('📌 修复'),
-        spawnRoom,
-        bodyType: 'worker'
+        target: creep => {
+            creep.fillDefenseStructure()
+
+            if (creep.store.getUsedCapacity() === 0) return true
+        },
+        bodys: 'worker'
     })
 }
+
+export default roles
