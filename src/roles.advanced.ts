@@ -185,7 +185,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
      */
     [ROOM_TRANSFER_TASK.FILL_EXTENSION]: {
         source: (creep, task, sourceId) => {
-            if (creep => creep.store[RESOURCE_ENERGY] > 0) return true
+            if (creep.store[RESOURCE_ENERGY] > 0) return true
             creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
         },
         target: creep => {
@@ -223,7 +223,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 有的话就填充能量
             const transferResult = creep.transfer(target, RESOURCE_ENERGY)
             if (transferResult === ERR_NOT_IN_RANGE) creep.goTo(target.pos)
-            else if (transferResult != OK) creep.say(`错误! ${transferResult}`)
+            else if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
+            else if (transferResult != OK) creep.say(`拓展填充错误! ${transferResult}`)
 
             if (creep => creep.store[RESOURCE_ENERGY] === 0) return true
         }
@@ -235,7 +236,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
      */
     [ROOM_TRANSFER_TASK.FILL_TOWER]: {
         source: (creep, task, sourceId) => {
-            if (creep => creep.store[RESOURCE_ENERGY] > 0) return true
+            if (creep.store[RESOURCE_ENERGY] > 0) return true
             creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
         },
         target: (creep, task: IFillTower) => {

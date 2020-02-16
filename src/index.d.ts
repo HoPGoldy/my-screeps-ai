@@ -226,10 +226,12 @@ type BodyAutoConfigConstant =
 
 /**
  * 建筑拓展
- * 有可能有自定义的 work 方法
  */
 interface Structure {
+    // 建筑的工作方法
     work?(): void
+    // 建筑在完成建造时触发的回调
+    onBuildComplete?(): void
 }
 
 // Factory 拓展
@@ -322,7 +324,7 @@ interface CreepMemory {
     fillWallId?: string
     // transfer 特有 要填充能量的建筑 id
     fillStructureId?: string
-    // 建筑工特有 当前缓存的建筑工地（目前只有外矿采集者在用）
+    // 建筑工特有，当前缓存的建筑工地（目前只有外矿采集者在用）
     constructionSiteId?: string
     // 外矿采集者特有, 该字段为 true 时, 每 tick 都会尝试检查工地并建造
     dontBuild?: boolean
@@ -384,6 +386,10 @@ interface Room {
     deleteCurrentPowerTask(): void
     getPowerTask(): PowerConstant | undefined
     hangPowerTask(): void
+
+    // creep 发布 api
+    addBaseGroup(): void
+    addAdvancedGroup(): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -485,6 +491,10 @@ interface RoomMemory {
 
     // 建筑工的当前工地目标，用于保证多个建筑工的工作统一以及建筑工死后不会寻找新的工地
     constructionSiteId: string
+    // 建筑工特有，当前正在修建的建筑类型，用于在修建完成后触发对应的事件
+    constructionSiteType?: StructureConstant
+    // 建筑工地的坐标，用于在建造完成后进行 lookFor 来确认其是否成功修建了建筑
+    constructionSitePos: number[]
     
     // 房间内工厂生产的目标
     factoryTarget: ResourceConstant

@@ -70,3 +70,26 @@ numberListener(): void
 # target 阶段
 
 creep 执行的工作逻辑，在需要的资源不足时返回 true。返回 false 将在下个 tick 继续执行该阶段。
+
+# creep 发布
+
+- controller 1 级：
+    - [W1N1 harvester1]: harvester 采0矿
+    - [W1N1 upgrader1]: upgrader 采1矿
+- controller 8 级：
+    - 出现 Downgrade 时发布 upgrader
+- 建筑工地：
+    - [W1N1 builder1]：builder 采0矿
+- storage：
+    - [W1N1 harvester1]: collector 采0矿 目标建筑为storage
+    - [W1N1 harvester2]: collector 采1矿 目标建筑为storage
+    - [W1N1 upgrader1]: upgrader 从storage里拿
+    - [W1N1 transfer]: transfer 从storage里拿
+- centerLink 上线：
+    - [W1N1 centerTransfer]: centerTransfer 需要玩家插旗指定站桩位置
+- sourceLink 上线：
+    - 修改最近 source 对应 collector 的目标建筑为sourceLink
+- observer 发现 pb：
+    - 根据周边墙体数量发布 [W1N1 pbAttack] 和 [W1N1 pbHealer]
+- pbAttack 估摸着快拆完了：
+    - 根据指定数量发布 [W1N1 pbTransfer]
