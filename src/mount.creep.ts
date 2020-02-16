@@ -497,8 +497,17 @@ class CreepExtension extends Creep {
         // 检查是否有缓存
         if (this.room.memory.constructionSiteId) {
             target = Game.getObjectById(this.room.memory.constructionSiteId)
-            // 如果缓存中的工地不存在则获取下一个
-            if (!target) target = this._updateConstructionSite()
+            // 如果缓存中的工地不存在则说明建筑完成
+            if (!target) {
+                // 获取曾经工地的位置
+                const constructionSitePos = new RoomPosition(this.room.memory.constructionSitePos[0], this.room.memory.constructionSitePos[1], this.room.name)
+                // 检查上面是否有已经造好的同类型建筑，如果有的话就执行回调
+                const structure = _.find(constructionSitePos.lookFor(LOOK_STRUCTURES), s => s.structureType === this.room.memory.constructionSiteType)
+                if (structure && structure.onBuildComplete) structure.onBuildComplete()
+
+                // 获取下个建筑目标
+                target = this._updateConstructionSite()
+            }
         }
         // 没缓存就直接获取
         else target = this._updateConstructionSite()
@@ -524,11 +533,16 @@ class CreepExtension extends Creep {
     private _updateConstructionSite(): ConstructionSite | undefined {
         const targets: ConstructionSite[] = this.room.find(FIND_MY_CONSTRUCTION_SITES)
         if (targets.length > 0) {
-            this.room.memory.constructionSiteId = targets[0].id
-            return targets[0]
+            const target = targets[0]
+            // 缓存工地信息，用于统一建造并在之后验证是否完成建造
+            this.room.memory.constructionSiteId = target.id
+            this.room.memory.constructionSiteType = target.structureType
+            this.room.memory.constructionSitePos = [ target.pos.x, target.pos.y ]
+            return target
         }
         else {
             delete this.room.memory.constructionSiteId
+            delete this.room.memory.constructionSiteType
             return undefined
         }
     }

@@ -530,6 +530,13 @@ class StorageExtension extends StructureStorage {
 
         this.room.memory.stats.energy = this.store[RESOURCE_ENERGY]
     }
+
+    /**
+     * 建筑完成时以自己为中心发布新的 creep 运维组
+     */
+    public onBuildComplete(): void {
+        this.room.addAdvancedGroup()
+    }
 }
 
 /**

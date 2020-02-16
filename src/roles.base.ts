@@ -75,7 +75,7 @@ const roles: {
             if (creep.pos.isNearTo((<Structure>Game.getObjectById(data.sourceId)).pos)) return true
             // 否则就继续移动
             else {
-                creep.moveTo(Game.getObjectById<Source>(data.sourceId), { reusePath: 20 })
+                creep.goTo(Game.getObjectById<Source>(data.sourceId).pos)
                 return false
             }
         },
@@ -88,7 +88,7 @@ const roles: {
                 return false
             }
 
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.moveTo(source, { reusePath: 20 })
+            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.goTo(source.pos)
         },
         target: creep => {
             const target: Structure = data.targetId ? Game.getObjectById(data.targetId) : creep.room.storage
@@ -97,7 +97,7 @@ const roles: {
                 return false
             }
 
-            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.moveTo(target, { reusePath: 20 })
+            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.goTo(target.pos)
 
             if (creep.store.getUsedCapacity() === 0) return true
         },

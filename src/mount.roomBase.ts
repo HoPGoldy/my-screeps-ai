@@ -24,6 +24,7 @@ export default function () {
     }
 
     _.assign(ConstructionSite.prototype, ConstructionSiteExtension.prototype)
+    _.assign(Room.prototype, CreepGroup.prototype)
 }
 
 /**
@@ -236,6 +237,36 @@ class RoomBase extends Room {
         this.memory.sourceIds = sources.map(s => s.id)
         this._sources = sources
         return this._sources
+    }
+}
+
+/**
+ * 本房间可以发布的角色组
+ * 拓展在 Room 原型上，不直接由对应建筑发布的原因是集中到这里方便玩家万一出现问题时可以手动更新
+ */
+class CreepGroup extends Room {
+    public addBaseGroup(): void {
+        creepApi.add(`${this.name} harvester1`, 'harvester', {
+            sourceId: this.sources[0].id
+        }, this.name)
+        creepApi.add(`${this.name} upgrader1`, 'upgrader', {
+            sourceId: this.sources.length === 2 ? this.sources[1].id : this.sources[0].id
+        }, this.name)
+    }
+
+    public addAdvancedGroup(): void {
+        creepApi.add(`${this.name} harvester1`, 'collector', {
+            sourceId: this.sources[0].id
+        }, this.name)
+        if (this.sources.length >= 2) creepApi.add(`${this.name} harvester2`, 'collector', {
+            sourceId: this.sources[1].id
+        }, this.name)
+        creepApi.add(`${this.name} upgrader1`, 'upgrader', {
+            sourceId: this.storage.id
+        }, this.name)
+        creepApi.add(`${this.name} transfer`, 'transfer', {
+            sourceId: this.storage.id
+        }, this.name)
     }
 }
 
