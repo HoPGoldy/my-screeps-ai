@@ -388,8 +388,8 @@ interface Room {
     hangPowerTask(): void
 
     // creep 发布 api
-    addBaseGroup(): void
-    addAdvancedGroup(): void
+    planCreep(): string
+    addCenterTransfer(): string
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
