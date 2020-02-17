@@ -554,6 +554,10 @@ interface RoomMemory {
     // 升级 link 的 id，source / center Link 会通过这个字段进行查找
     upgradeLinkId?: string
 
+    // 一个游戏时间，标注了 mineral 什么时候会回满
+    // 由 miner 发布，Extractor 会监听这个字段，并在适当的时间重新发布 mineral
+    mineralCooldown: number
+
     // 外矿专用内存字段
     remote: {
         // 对应名称的 creep 在指定的 tick 之后才能生成
