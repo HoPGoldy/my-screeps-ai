@@ -207,7 +207,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 // 获取有需求的建筑
                 target = <StructureExtension>creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
                     // extension 中的能量没填满
-                    filter: s => (s.structureType == STRUCTURE_EXTENSION && (s.store.getFreeCapacity(RESOURCE_ENERGY) > 0))
+                    filter: s => ((s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_SPAWN) && (s.store.getFreeCapacity(RESOURCE_ENERGY) > 0))
                 })
                 if (!target) {
                     // 都填满了，任务完成

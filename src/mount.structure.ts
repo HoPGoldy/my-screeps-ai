@@ -351,17 +351,18 @@ class LinkExtension extends StructureLink {
 
         this.room.memory.links[this.id] = 'sourceWork'
 
+        // 两格之内的 source 都可以用自己来传递能量
         const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
         inRangeSources.forEach(source => {
             const index = this.room.memory.sourceIds.indexOf(source.id)
-            console.log("TCL: LinkExtension -> index", index, source.id)
 
+            // 根据对应的索引修改对应采集单位的目标建筑
             creepApi.add(`${this.room.name} harvester${index}`, 'collector', {
                 sourceId: this.room.sources[index].id,
                 targetId: this.id
             }, this.room.name)
-            
-            console.log(`${this.room.name} harvester${index} 已将目标修改为该 sourceLink`)
+
+            // console.log(`${this.room.name} harvester${index} 已将目标修改为该 sourceLink`)
         })
 
         return `${this} 已注册为源 link`
@@ -504,8 +505,22 @@ class LinkExtension extends StructureLink {
  */
 class ExtractorExtension extends StructureExtractor {
     public work(): void {
-        // 下面两行确保 work 只执行一次
-        if (this.room.memory.extractorId) return
+        // 如果 mineral 冷却好了就重新发布 miner
+        if (Game.time > this.room.memory.mineralCooldown) {
+            delete this.room.memory.mineralCooldown
+
+            creepApi.add(`${this.room.name} miner`, 'miner', {
+                sourceId: this.room.mineral.id,
+                targetId: this.room.terminal ? this.room.terminal.id : this.room.storage.id
+            }, this.room.name)
+        }
+    }
+    /**
+     * 更新 mineral id
+     * 在共享协议中注册自己
+     * 发布 miner
+     */
+    public onBuildComplete(): void {
         this.room.memory.extractorId = this.id
 
         // 获取 mineral 并将其 id 保存至房间内存
@@ -519,6 +534,13 @@ class ExtractorExtension extends StructureExtractor {
         
         // 在资源来源表里进行注册
         this.room.shareAddSource(mineral.mineralType)
+
+        // 添加 miner，如果这时候 terminal 还没造起来的话，元素矿会被先放在 storage 里
+        // terminal 造好时会检查是否有该角色，有的话会自动修改 targetId
+        creepApi.add(`${this.room.name} miner`, 'miner', {
+            sourceId: mineral.id,
+            targetId: this.room.terminal ? this.room.terminal.id : this.room.storage.id
+        }, this.room.name)
     }
 }
 
@@ -562,11 +584,14 @@ class StorageExtension extends StructureStorage {
 class ControllerExtension extends StructureController {
     public work(): void {
         if (Game.time % stateScanInterval) return
-        // 是否无效的禁止通行点位
-        if (!(Game.time % 10000)) this.checkRestrictedPos()
 
         // 如果等级发生变化了就运行 creep 规划
         if (this.stateScanner()) this.planCreep()
+
+        // 8 级并且快掉级了就孵化 upgrader
+        if (this.level === 8 && this.ticksToDowngrade <= 100000) creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
+            sourceId: this.room.storage.id
+        }, this.room.name)
     }
 
     /**

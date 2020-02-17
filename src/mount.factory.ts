@@ -8,13 +8,17 @@ export default class FactoryExtension extends StructureFactory {
     public work(): void {
         // 没有启用则跳过
         if (!this.room.memory.factory) return
-        // 实时更新房间内存中 factoryId
-        if (!this.room.memory.factoryId) this.room.memory.factoryId = this.id
 
         if (this.room.memory.factory.pause) return
 
         // 执行 factory 工作
         this.runFactory()
+    }
+
+    // 建筑完成
+    // 注册自己的 id 到房间
+    public onBuildComplete(): void {
+        this.room.memory.factoryId = this.id
     }
 
     /**

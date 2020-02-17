@@ -112,11 +112,20 @@ const roles: {
         // 检查矿床里是不是还有矿
         isNeed: room => {
             // 房间中的矿床是否还有剩余产量
-            if (room.mineral.mineralAmount <= 0) return false
+            if (room.mineral.mineralAmount <= 0) {
+                room.memory.mineralCooldown = Game.time + MINERAL_REGEN_TIME
+                return false
+            }
 
-            // 再检查下 terminal 是否已经满了
-            if (!room.terminal || room.terminal.store.getFreeCapacity() <= 0) return false
-            else return true
+            // 再检查下目标存储是否已经满了，检查个吉尔，存储满了那是存储的事，我就专心采矿
+            // if (data.targetId) {
+            //     const target: StructureWithStore = Game.getObjectById(data.targetId)
+            //     if (!target) return false
+            //     if (target && target.store.getFreeCapacity() <= 0) return false
+            // }
+            // else if (!room.terminal || room.terminal.store.getFreeCapacity() <= 0) return false
+            
+            return true
         },
         prepare: creep => {
             creep.goTo(creep.room.mineral.pos)
@@ -131,7 +140,7 @@ const roles: {
         },
         source: creep => {
             if (creep.ticksToLive <= creep.memory.travelTime + 30) return true
-            else if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+            else if (creep.store.getFreeCapacity() === 0) return true
 
             // 采矿
             const harvestResult = creep.harvest(creep.room.mineral)

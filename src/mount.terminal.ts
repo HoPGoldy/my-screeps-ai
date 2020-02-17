@@ -1,4 +1,5 @@
 import { stateScanInterval } from './setting'
+import { creepApi } from './creepController'
 
 /**
  * Terminal 原型拓展
@@ -24,6 +25,18 @@ export default class TerminalExtension extends StructureTerminal {
 
         // 只有 dealOrder 下命令了才能继续执行 ResourceListener
         if (this.dealOrder(resource)) this.ResourceListener(resource)
+    }
+
+    /**
+     * 建造完成回调
+     * 修改 miner 的存放位置
+     */
+    public onBuildComplete(): void {
+        // 调整 miner 的目标存放建筑为 terminal
+        creepApi.add(`${this.room.name} miner`, 'miner', {
+            sourceId: this.room.mineral.id,
+            targetId: this.id
+        }, this.room.name)
     }
 
     /**
