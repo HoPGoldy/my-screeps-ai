@@ -350,6 +350,20 @@ class LinkExtension extends StructureLink {
         if (!this.room.memory.links) this.room.memory.links = {}
 
         this.room.memory.links[this.id] = 'sourceWork'
+
+        const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
+        inRangeSources.forEach(source => {
+            const index = this.room.memory.sourceIds.indexOf(source.id)
+            console.log("TCL: LinkExtension -> index", index, source.id)
+
+            creepApi.add(`${this.room.name} harvester${index}`, 'collector', {
+                sourceId: this.room.sources[index].id,
+                targetId: this.id
+            }, this.room.name)
+            
+            console.log(`${this.room.name} harvester${index} 已将目标修改为该 sourceLink`)
+        })
+
         return `${this} 已注册为源 link`
     }
 
@@ -362,7 +376,9 @@ class LinkExtension extends StructureLink {
 
         this.room.memory.links[this.id] = 'centerWork'
         this.room.memory.centerLinkId = this.id
-        return `${this} 已注册为中央 link`
+
+        // 注册中央 link 的同时发布 centerTransfer
+        return `${this} 已注册为中央 link\n` + this.room.addCenterTransfer()
     }
 
     /**
@@ -535,7 +551,7 @@ class StorageExtension extends StructureStorage {
      * 建筑完成时以自己为中心发布新的 creep 运维组
      */
     public onBuildComplete(): void {
-        this.room.addAdvancedGroup()
+        this.room.planCreep()
     }
 }
 
@@ -550,7 +566,7 @@ class ControllerExtension extends StructureController {
         if (!(Game.time % 10000)) this.checkRestrictedPos()
 
         // 如果等级发生变化了就运行 creep 规划
-        if (this.stateScanner()) this.creepPlan()
+        if (this.stateScanner()) this.planCreep()
     }
 
     /**
@@ -574,19 +590,14 @@ class ControllerExtension extends StructureController {
 
     /**
      * 维持房间运营的 creep 规划
-     * 包括能量采集、物流运输和升级
      */
-    private creepPlan(): void {
-        console.log('creep 规划运行！等级', this.level)
+    private planCreep(): void {
+        // console.log('creep 规划运行！等级', this.level)
+
         switch (this.level) {
+            // 添加最基本的 creep
             case 1:
-            case 2:
-                creepApi.add(`${this.room.name} harvester1`, 'harvester', {
-                    sourceId: this.room.sources.length === 2 ? this.room.sources[1].id : this.room.sources[0].id
-                }, this.room.name)
-                creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
-                    sourceId: this.room.sources[0].id
-                }, this.room.name)
+                this.room.planCreep()
             break
         }
     }

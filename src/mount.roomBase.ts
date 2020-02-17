@@ -24,7 +24,7 @@ export default function () {
     }
 
     _.assign(ConstructionSite.prototype, ConstructionSiteExtension.prototype)
-    _.assign(Room.prototype, CreepGroup.prototype)
+    _.assign(Room.prototype, CreepControl.prototype)
 }
 
 /**
@@ -241,24 +241,37 @@ class RoomBase extends Room {
 }
 
 /**
- * 本房间可以发布的角色组
- * 拓展在 Room 原型上，不直接由对应建筑发布的原因是集中到这里方便玩家万一出现问题时可以手动更新
+ * 用于对房间内的运营 creep 进行管理
  */
-class CreepGroup extends Room {
-    public addBaseGroup(): void {
-        creepApi.add(`${this.name} harvester1`, 'harvester', {
-            sourceId: this.sources[0].id
-        }, this.name)
-        creepApi.add(`${this.name} upgrader1`, 'upgrader', {
-            sourceId: this.sources.length === 2 ? this.sources[1].id : this.sources[0].id
-        }, this.name)
-    }
+class CreepControl extends Room {
+    /**
+     * 重新根据房间情况规划 creep 角色
+     * 一般不需要调用，房间会自动发布需要的角色
+     * 该方法在房间运营角色因某种故障不健全时手动调用来恢复正常的角色
+     * 
+     * @returns 规划详情
+     */
+    public planCreep(): string {
+        let stats = [ `[${this.name}] 正在执行 creep 角色规划` ]
+        // 如果没有 storage 的话说明房间还在初级阶段，发布几个小 creep
+        if (!this.storage) {
+            stats.push('未发现 storage，发布基础角色：harvester，upgrader')
+            creepApi.add(`${this.name} harvester0`, 'harvester', {
+                sourceId: this.sources[0].id
+            }, this.name)
+            creepApi.add(`${this.name} upgrader1`, 'upgrader', {
+                sourceId: this.sources.length === 2 ? this.sources[1].id : this.sources[0].id
+            }, this.name)
 
-    public addAdvancedGroup(): void {
-        creepApi.add(`${this.name} harvester1`, 'collector', {
+            return stats.join('\n')
+        }
+        
+        // 有 storage 了，修改 harvester 和 upgrader 的目标建筑，发布 transfer
+        stats.push('发现 storage，发布 collector，upgrader，transfer')
+        creepApi.add(`${this.name} harvester0`, 'collector', {
             sourceId: this.sources[0].id
         }, this.name)
-        if (this.sources.length >= 2) creepApi.add(`${this.name} harvester2`, 'collector', {
+        if (this.sources.length >= 2) creepApi.add(`${this.name} harvester1`, 'collector', {
             sourceId: this.sources[1].id
         }, this.name)
         creepApi.add(`${this.name} upgrader1`, 'upgrader', {
@@ -267,6 +280,30 @@ class CreepGroup extends Room {
         creepApi.add(`${this.name} transfer`, 'transfer', {
             sourceId: this.storage.id
         }, this.name)
+
+        // 如果有 centerLink 或者工厂或者终端，就说明中央集群已经出现，发布 centerTransfer
+        if (!creepApi.has(`${this.name} centerTransfer`) && (this.memory.centerLinkId || this.factory || this.terminal)) stats.push(this.addCenterTransfer())
+
+        return stats.join('\n')
+    }
+
+    /**
+     * 发布中央物流管理员
+     * 因为发布这个需要手动指定站桩位置，所以特地抽取出来方便手动执行
+     */
+    public addCenterTransfer(): string {
+        const flagName = `${this.name} ct`
+        const flag = Game.flags[flagName]
+        if (!flag) return `[${this.name}] centerTransfer 发布失败，未找到名称为 [${flagName}] 的旗帜，请将其插在 centerTransfer 要站立的位置并重新执行 ${this.name}.addCenterTransfer()`
+
+        // 发布 creep
+        creepApi.add(`${this.name} centerTransfer`, 'centerTransfer', {
+            x: flag.pos.x,
+            y: flag.pos.y
+        }, this.name)
+
+        flag.remove()
+        return `centerTransfer 添加成功，旗帜已移除`
     }
 }
 
@@ -281,8 +318,9 @@ class ConstructionSiteExtension extends ConstructionSite {
         const builderName = `${this.room.name} builder`
         if (creepApi.has(builderName)) return
 
+        // 发布建筑工，有 storage 就优先用
         creepApi.add(builderName, 'builder', {
-            sourceId: this.room.sources[0].id
+            sourceId: this.room.storage ? this.room.storage.id : this.room.sources[0].id
         }, this.room.name)
     }
 }
