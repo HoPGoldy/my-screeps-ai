@@ -10,33 +10,51 @@ const roles: {
 } = {
     /**
      * 占领者
-     * source: 无
      * target: 占领指定房间
+     * 
+     * data:
+     * @param targetRoomName 要占领的目标房间
+     * @param ignoreRoom 要绕路的房间
      */ 
     claimer: (data: RemoteDeclarerData): ICreepConfig => ({
+        // 该 creep 死了就不会再次孵化
+        isNeed: () => false,
+        // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
+        prepare: creep => {
+            // 只要进入房间则准备结束
+            if (creep.room.name !== data.targetRoomName) {
+                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName), data.ignoreRoom)
+                return false
+            }
+            else return true
+        },
         target: creep => {
-            const claimFlag = creep.getFlag(DEFAULT_FLAG_NAME.CLAIM)
-            if (!claimFlag) return false
-
-            // 如果 creep 不在房间里 则一直向旗帜移动
-            if (!claimFlag.room || (claimFlag.room && creep.room.name !== claimFlag.room.name)) {
-                creep.farMoveTo(claimFlag.pos, data.ignoreRoom)
+            // 获取控制器
+            const controller = creep.room.controller
+            if (!controller) {
+                creep.say('控制器呢？')
+                return false
             }
 
-            // 已经抵达了该房间
-            const room = claimFlag.room
-            // 如果房间已经被占领或者被预定了则攻击控制器
-            if (room && (room.controller.owner !== undefined || room.controller.reservation !== undefined)) {
-                // 确保房间所有者不是自己
-                if (room.controller.owner.username != creep.owner.username) {
-                    if (creep.attackController(room.controller) == ERR_NOT_IN_RANGE) creep.moveTo(room.controller)
-                    return false
-                }
+            // 如果控制器不是自己或者被人预定的话就进行攻击
+            if ((controller.owner && controller.owner.username !== creep.owner.username) || controller.reservation !== undefined) {
+                if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.moveTo(controller)
+                return false
             }
-            // 如果房间无主则占领
-            if (room && creep.claimController(room.controller) == ERR_NOT_IN_RANGE) {
-                creep.moveTo(room.controller)
+            
+            // 是中立控制器，进行占领
+            const claimResult = creep.claimController(controller)
+            if (claimResult === ERR_NOT_IN_RANGE) creep.goTo(controller.pos)
+            else if (claimResult === OK) {
+                console.log(`[${creep.name}] 新房间 ${data.targetRoomName} 占领成功！已向源房间 ${data.spawnRoom} 请求支援单位`)
+                // 占领成功，发布支援组
+                const spawnRoom = Game.rooms[data.spawnRoom]
+                if (spawnRoom) spawnRoom.addRemoteHelper(data.targetRoomName, data.ignoreRoom)
+                if (data.signText) creep.signController(controller, data.signText)
+                creep.suicide()
             }
+            else if (claimResult === ERR_INVALID_TARGET) { }
+            else creep.say(`占领 ${claimResult}`)
         },
         bodys: [ MOVE, CLAIM ]
     }),

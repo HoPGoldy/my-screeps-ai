@@ -160,6 +160,8 @@ interface RemoteHelperData {
 interface RemoteDeclarerData {
     // 要声明控制的房间名
     targetRoomName: string
+    // 自己出生的房间，claim 需要这个字段来向老家发布支援 creep
+    spawnRoom?: string
     // 给控制器的签名
     signText?: string
     // 路上忽视的房间名列表
@@ -394,6 +396,7 @@ interface Room {
     addCenterTransfer(): string
     addRemoteCreepGroup(remoteRoomName: string)
     addRemoteReserver(remoteRoomName): void
+    addRemoteHelper(remoteRoomName, ignoreRoom?: string[]): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
