@@ -214,7 +214,7 @@ const roles: {
             creep.getEngryFrom(Game.getObjectById(data.sourceId))
         },
         target: creep => {
-            if (creep.buildStructure()) { }
+            if (creep.buildStructure() !== ERR_NOT_FOUND) { }
             else if (creep.upgrade()) { }
 
             if (creep.store.getUsedCapacity() === 0) return true

@@ -312,7 +312,7 @@ class CreepControl extends Room {
  */
 class ConstructionSiteExtension extends ConstructionSite {
     public work(): void {
-        if (this.room._hasRunConstructionSite) return
+        if (!this.room || this.room._hasRunConstructionSite) return
         this.room._hasRunConstructionSite = true
 
         const builderName = `${this.room.name} builder`

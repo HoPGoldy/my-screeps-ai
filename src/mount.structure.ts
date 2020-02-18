@@ -592,6 +592,17 @@ class ControllerExtension extends StructureController {
         if (this.level === 8 && this.ticksToDowngrade <= 100000) creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
             sourceId: this.room.storage.id
         }, this.room.name)
+
+        // 检查外矿有没有被入侵的，有的话是不是可以重新发布 creep 了
+        if (this.room.memory.remote) {
+            for (const remoteRoomName in this.room.memory.remote) {
+                // 如果发现入侵者已经老死了，就移除对应属性并重新发布外矿角色组
+                if (this.room.memory.remote[remoteRoomName].disableTill <= Game.time) {
+                    delete this.room.memory.remote[remoteRoomName].disableTill
+                    this.room.addRemoteCreepGroup(remoteRoomName)
+                }
+            }
+        }
     }
 
     /**

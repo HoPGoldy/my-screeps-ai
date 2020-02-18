@@ -1,6 +1,7 @@
 import mountRoomBase from './mount.roomBase'
 import { createHelp } from './utils'
 import { ENERGY_SHARE_LIMIT, BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
+import { creepApi } from './creepController'
 
 // 挂载拓展到 Room 原型
 export default function () {
@@ -962,6 +963,124 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 拓展新的外矿
+     * 
+     * @param remoteRoomName 要拓展的外矿房间名
+     * @param targetId 能量搬到哪个建筑里
+     * @returns ERR_INVALID_TARGET targetId 找不到对应的建筑
+     * @returns ERR_NOT_FOUND 没有找到足够的 source 旗帜
+     */
+    public addRemote(remoteRoomName: string, targetId: string): OK | ERR_INVALID_TARGET | ERR_NOT_FOUND {
+        // target 建筑一定要有
+        if (!Game.getObjectById(targetId)) return ERR_INVALID_TARGET
+        // 目标 source 也至少要有一个
+        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
+        if (!(sourceFlagsName[0] in Game.flags)) return ERR_NOT_FOUND
+        // 兜底
+        if (!this.memory.remote) this.memory.remote = {}
+
+        // 添加对应的键值对
+        this.memory.remote[remoteRoomName] = { targetId }
+
+        this.addRemoteCreepGroup(remoteRoomName)
+        return OK
+    }
+
+    /**
+     * 用户操作 - 拓展新外矿
+     * 
+     * @param 同上 addRemote()
+     */
+    public radd(remoteRoomName: string, targetId: string): string {
+        let stats = `[${this.name} 外矿] `
+
+        const actionResult = this.addRemote(remoteRoomName, targetId)
+        if (actionResult === OK) stats += '拓展完成，已发布 remoteHarvester 及 reserver'
+        else if (actionResult === ERR_INVALID_TARGET) stats += '拓展失败，无效的 targetId'
+        else if (actionResult === ERR_NOT_FOUND) stats += `拓展失败，未找到 source 旗帜，请在外矿房间的 source 上放置名为 [${remoteRoomName} source0] 的旗帜（有多个 source 请依次增加旗帜名最后一位的编号）`
+        
+        return stats
+    }
+
+    /**
+     * 发布外矿角色组
+     * 
+     * @param remoteRoomName 要发布 creep 的外矿房间
+     */
+    public addRemoteCreepGroup(remoteRoomName: string): void {
+        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
+
+        // 添加对应数量的外矿采集者
+        sourceFlagsName.forEach((flagName, index) => {
+            if (!(flagName in Game.flags)) return
+
+            creepApi.add(`${remoteRoomName} remoteHarvester${index}`, 'remoteHarvester', {
+                sourceFlagName: flagName,
+                spawnRoom: this.name,
+                targetId: this.memory.remote[remoteRoomName].targetId
+            }, this.name)
+        })
+
+        this.addRemoteReserver(remoteRoomName)
+    }
+
+    /**
+     * 发布房间预定者
+     * 
+     * @param remoteRoomName 要预定的外矿房间名
+     */
+    public addRemoteReserver(remoteRoomName): void {
+        // 添加外矿预定者
+        const reserverName = `${remoteRoomName} reserver`
+        if (!creepApi.has(reserverName)) creepApi.add(reserverName, 'reserver', {
+            targetRoomName: remoteRoomName
+        }, this.name)
+    }
+
+    /**
+     * 移除外矿
+     * 
+     * @param remoteRoomName 要移除的外矿
+     * @param removeFlag 是否移除外矿的 source 旗帜
+     */
+    public removeRemote(remoteRoomName: string, removeFlag: boolean = false): OK | ERR_NOT_FOUND {
+        // 兜底
+        if (!this.memory.remote) return ERR_NOT_FOUND
+        if (!(remoteRoomName in this.memory.remote)) return ERR_NOT_FOUND
+        
+        delete this.memory.remote[remoteRoomName]
+
+        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
+        // 移除对应的旗帜和外矿采集单位
+        sourceFlagsName.forEach((flagName, index) => {
+            if (!(flagName in Game.flags)) return
+
+            if (removeFlag) Game.flags[flagName].remove()
+            creepApi.remove(`${remoteRoomName} remoteHarvester${index}`)
+        })
+
+        // 移除预定者
+        creepApi.remove(`${remoteRoomName} reserver`)
+
+        return OK
+    }
+
+    /**
+     * 用户操作 - 移除外矿
+     * 
+     * @param 同上 removeRemote()
+     */
+    public rremove(remoteRoomName: string, removeFlag: boolean = false): string {
+        let stats = `[${this.name} 外矿] `
+
+        const actionResult = this.removeRemote(remoteRoomName, removeFlag)
+        if (actionResult === OK) stats += '外矿及对应角色组已移除，' + (removeFlag ? 'source 旗帜也被移除' : 'source 旗帜未移除')
+        else if (actionResult === ERR_NOT_FOUND) stats += '未找到对应外矿'
+        
+        return stats
+    }
+
+    /**
      * 创建订单并返回创建信息
      * 
      * @param type 订单类型
@@ -1100,11 +1219,20 @@ class RoomExtension extends Room {
                 functionName: 'tsell'
             },
             {
-                title: '重设终端矿物监控',
+                title: '拓展新外矿',
                 params: [
-                    { name: 'hard', desc: '[可选] 设为 true 来移除其默认值中不包含的监听资源, 默认为 false' }
+                    { name: 'remoteRoomName', desc: '要拓展的外矿房间名' },
+                    { name: 'targetId', desc: '能量应搬运到哪个建筑的 id' }
                 ],
-                functionName: 'treset'
+                functionName: 'radd'
+            },
+            {
+                title: '移除外矿',
+                params: [
+                    { name: 'remoteRoomName', desc: '要移除的外矿房间名' },
+                    { name: 'removeFlag', desc: '是否顺便把外矿 source 上的旗帜也移除了' }
+                ],
+                functionName: 'rremove'
             },
             {
                 title: '移除终端矿物监控',
