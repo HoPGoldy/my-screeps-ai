@@ -1003,41 +1003,6 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 发布外矿角色组
-     * 
-     * @param remoteRoomName 要发布 creep 的外矿房间
-     */
-    public addRemoteCreepGroup(remoteRoomName: string): void {
-        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
-
-        // 添加对应数量的外矿采集者
-        sourceFlagsName.forEach((flagName, index) => {
-            if (!(flagName in Game.flags)) return
-
-            creepApi.add(`${remoteRoomName} remoteHarvester${index}`, 'remoteHarvester', {
-                sourceFlagName: flagName,
-                spawnRoom: this.name,
-                targetId: this.memory.remote[remoteRoomName].targetId
-            }, this.name)
-        })
-
-        this.addRemoteReserver(remoteRoomName)
-    }
-
-    /**
-     * 发布房间预定者
-     * 
-     * @param remoteRoomName 要预定的外矿房间名
-     */
-    public addRemoteReserver(remoteRoomName): void {
-        // 添加外矿预定者
-        const reserverName = `${remoteRoomName} reserver`
-        if (!creepApi.has(reserverName)) creepApi.add(reserverName, 'reserver', {
-            targetRoomName: remoteRoomName
-        }, this.name)
-    }
-
-    /**
      * 移除外矿
      * 
      * @param remoteRoomName 要移除的外矿
@@ -1049,6 +1014,7 @@ class RoomExtension extends Room {
         if (!(remoteRoomName in this.memory.remote)) return ERR_NOT_FOUND
         
         delete this.memory.remote[remoteRoomName]
+        if (Object.keys(this.memory.remote).length <= 0) delete this.memory.remote
 
         const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
         // 移除对应的旗帜和外矿采集单位
@@ -1078,6 +1044,36 @@ class RoomExtension extends Room {
         else if (actionResult === ERR_NOT_FOUND) stats += '未找到对应外矿'
         
         return stats
+    }
+
+    /**
+     * 占领新房间
+     * 本方法只会发布占领单位，等到占领成功后 claimer 会自己发布支援单位
+     * 
+     * @param targetRoomName 要占领的目标房间
+     * @param ignoreRoom 途中绕过的房间列表
+     * @param signText 新房间的签名
+     */
+    public claimRoom(targetRoomName: string, ignoreRoom: string[] = [], signText: string = ''): OK {
+        creepApi.add(`${targetRoomName} Claimer`, 'claimer', {
+            targetRoomName,
+            ignoreRoom,
+            spawnRoom: this.name,
+            signText
+        }, this.name)
+
+        return OK
+    }
+
+    /**
+     * 用户操作 - 占领新房间
+     * 
+     * @param 同上 claimRoom()
+     */
+    public claim(targetRoomName: string, ignoreRoom: string[] = [], signText: string = ''): string {
+        this.claimRoom(targetRoomName, ignoreRoom, signText)
+
+        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布`
     }
 
     /**
@@ -1233,6 +1229,15 @@ class RoomExtension extends Room {
                     { name: 'removeFlag', desc: '是否顺便把外矿 source 上的旗帜也移除了' }
                 ],
                 functionName: 'rremove'
+            },
+            {
+                title: '占领新房间',
+                params: [
+                    { name: 'targetRoomName', desc: '要占领的房间名' },
+                    { name: 'ignoreRoom', desc: '[可选] 要绕路的房间数组，默认为空' },
+                    { name: 'signText', desc: '[可选] 新房间的签名，默认为空' },
+                ],
+                functionName: 'claim'
             },
             {
                 title: '移除终端矿物监控',

@@ -635,6 +635,14 @@ class ControllerExtension extends StructureController {
             case 1:
                 this.room.planCreep()
             break
+            // 到 7 级了就不再需要支援单位
+            case 7:
+                if (creepApi.has(`${this.room.name} RemoteUpgrader0`)) {
+                    creepApi.remove(`${this.room.name} RemoteUpgrader0`)
+                    creepApi.remove(`${this.room.name} RemoteUpgrader1`)
+                    creepApi.remove(`${this.room.name} RemoteBuilder0`)
+                }
+            break
         }
     }
 

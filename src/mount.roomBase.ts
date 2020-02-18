@@ -305,6 +305,72 @@ class CreepControl extends Room {
         flag.remove()
         return `centerTransfer 添加成功，旗帜已移除`
     }
+
+    /**
+     * 发布外矿角色组
+     * 
+     * @param remoteRoomName 要发布 creep 的外矿房间
+     */
+    public addRemoteCreepGroup(remoteRoomName: string): void {
+        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
+
+        // 添加对应数量的外矿采集者
+        sourceFlagsName.forEach((flagName, index) => {
+            if (!(flagName in Game.flags)) return
+
+            creepApi.add(`${remoteRoomName} remoteHarvester${index}`, 'remoteHarvester', {
+                sourceFlagName: flagName,
+                spawnRoom: this.name,
+                targetId: this.memory.remote[remoteRoomName].targetId
+            }, this.name)
+        })
+
+        this.addRemoteReserver(remoteRoomName)
+    }
+
+    /**
+     * 发布房间预定者
+     * 
+     * @param remoteRoomName 要预定的外矿房间名
+     */
+    public addRemoteReserver(remoteRoomName): void {
+        // 添加外矿预定者
+        const reserverName = `${remoteRoomName} reserver`
+        if (!creepApi.has(reserverName)) creepApi.add(reserverName, 'reserver', {
+            targetRoomName: remoteRoomName
+        }, this.name)
+    }
+
+    /**
+     * 发布支援角色组
+     * 
+     * @param remoteRoomName 要支援的房间名
+     * @param ignoreRoom 要绕路的房间名数组
+     */
+    public addRemoteHelper(remoteRoomName, ignoreRoom: string[] = []): void {
+        const room = Game.rooms[remoteRoomName]
+
+        if (!room) return console.log(`[${this.name} 拓展] 目标房间没有视野，无法发布支援单位`)
+
+        // 发布两个 upgrader
+        creepApi.add(`${remoteRoomName} RemoteUpgrader0`, 'remoteUpgrader', {
+            targetRoomName: remoteRoomName,
+            sourceId: room.sources[0].id,
+            ignoreRoom
+        }, this.name)
+        if (room.sources.length >= 2) creepApi.add(`${remoteRoomName} RemoteUpgrader1`, 'remoteUpgrader', {
+            targetRoomName: remoteRoomName,
+            sourceId: room.sources[0].id,
+            ignoreRoom
+        }, this.name)
+
+        // 和一个 builder
+        creepApi.add(`${remoteRoomName} RemoteBuilder1`, 'remoteBuilder', {
+            targetRoomName: remoteRoomName,
+            sourceId: room.sources.length >= 2 ? room.sources[1].id : room.sources[0].id,
+            ignoreRoom
+        }, this.name)
+    }
 }
 
 /**
