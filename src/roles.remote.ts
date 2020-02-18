@@ -43,40 +43,14 @@ const roles: {
 
     /**
      * 预定者
+     * 这个角色并不会想太多，出生了就去预定，一辈子走完了就不再出生，外矿采集单位采集的时候会检查预定剩余时间，如果不够了会自己发布该角色
+     * 
      * 准备阶段：向指定房间控制器移动
      * 阶段A：预定控制器
      */
     reserver: (data: RemoteDeclarerData): ICreepConfig => ({
-        isNeed: (room) => {
-            if (!room.memory.remote) room.memory.remote = {}
-            // 存在该字段说明外矿有入侵者
-            if (room.memory.remote[data.targetRoomName]) {
-                // 有该字段并且当前时间没有到其标注的时间
-                // 说明外矿还有活着的入侵者
-                if (Game.time < room.memory.remote[data.targetRoomName]) return false
-                // 否则就说明入侵者已经死了
-                delete room.memory.remote[data.targetRoomName]
-            }
-
-            // 如果房间没有视野则默认进行孵化
-            if (!Game.rooms[data.targetRoomName]) {
-                // console.log('[reserver] 房间没有视野 默认孵化')
-                return true
-            }
-            
-            const controller: StructureController = Game.rooms[data.targetRoomName].controller
-            
-            // 房间没有预定也孵化
-            if (!controller.reservation) {
-                // console.log('[reserver] 房间没有预定 默认孵化')
-                return true
-            }
-            // 房间还剩 2500 ticks 预定就到期了则进行孵化
-            if (controller.reservation.ticksToEnd <= 2500) return true
-            // console.log(`[reserver] 房间的预定时长为 ${controller.reservation.ticksToEnd} 不予孵化`)
-            // 不然不孵化
-            return false
-        },
+        // 该 creep 死了就不会再次孵化
+        isNeed: () => false,
         // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
         prepare: creep => {
             // 只要进入房间则准备结束
@@ -148,7 +122,7 @@ const roles: {
             creep.getEngryFrom(Game.getObjectById(data.sourceId))
         },
         target: creep => {
-            if (creep.buildStructure()) { }
+            if (creep.buildStructure() !== ERR_NOT_FOUND) { }
             else if (creep.upgrade()) { }
 
             if (creep.store.getUsedCapacity() === 0) return true
@@ -193,41 +167,41 @@ const roles: {
         // 如果外矿目前有入侵者就不生成
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
-            if (!Game.flags[data.sourceFlagName]) {
+            const sourceFlag = Game.flags[data.sourceFlagName]
+            if (!sourceFlag) {
                 console.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
                 return false
             }
-            // 从旗帜内存中获取房间名
-            // 内存中没有房间名就说明外矿刚刚建立，默认进行生成
-            const remoteRoomName = Game.flags[data.sourceFlagName].memory.roomName
-            if (!remoteRoomName) return true
 
-            if (!room.memory.remote) room.memory.remote = {}
-            // 不存在该字段说明外矿状态良好
-            if (!room.memory.remote[remoteRoomName]) return true
-            // 有该字段并且当前时间没有到其标注的时间
-            // 说明外矿还有活着的入侵者
-            if (Game.time < room.memory.remote[remoteRoomName]) return false
-            // 否则就说明入侵者已经死了
-            delete room.memory.remote[remoteRoomName]
+            /**
+             * 如果有入侵者的话就不再孵化
+             * @danger 注意这里并没有 disableTill 和当前进行对比，如果该值释放不及时可能会导致该角色无法正常持续孵化
+             */
+            if (room.memory.remote && room.memory.remote[sourceFlag.pos.roomName] && room.memory.remote[sourceFlag.pos.roomName].disableTill) return false
+
             return true
         },
         // 获取旗帜附近的 source
         prepare: creep => {
             if (!creep.memory.sourceId) {
                 const sourceFlag = Game.flags[data.sourceFlagName]
+                if (!sourceFlag) {
+                    console.log(`[${creep.name}] 找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                    return false
+                }
+
                 // 旗帜所在房间没视野, 就进行移动
                 if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos, data.ignoreRoom)
                 else {
                     // 缓存外矿房间名
                     sourceFlag.memory.roomName = sourceFlag.room.name
-                    const source = sourceFlag.pos.findClosestByRange(FIND_SOURCES)
-                    if (!source) {
-                        console.log(`${data.sourceFlagName} 附近没有找到 source`)
+                    const sources = sourceFlag.pos.lookFor(LOOK_SOURCES)
+                    if (sources.length <= 0) {
+                        console.log(`[${creep.name}] ${data.sourceFlagName} 附近没有找到 source`)
                         return false
                     }
                     // 找到 source 后就写入内存
-                    creep.memory.sourceId = source.id
+                    creep.memory.sourceId = sources[0].id
 
                     // 再检查下有没有工地, 没有则以后再也不检查
                     const constructionSites = sourceFlag.room.find(FIND_CONSTRUCTION_SITES)
@@ -240,32 +214,38 @@ const roles: {
         },
         // 向旗帜出发
         source: creep => {
-            const sourceFlag = Game.flags[data.sourceFlagName]
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) return true
 
-            // 检查房间内有没有敌人，10 tick 检查一次
-            if (!(Game.time % 10) && sourceFlag.room) {
-                if (!sourceFlag.room._hasEnemy) {
-                    sourceFlag.room._hasEnemy = sourceFlag.room.find(FIND_HOSTILE_CREEPS).length > 0
+            const sourceFlag = Game.flags[data.sourceFlagName]
+            if (!sourceFlag) {
+                console.log(`[${creep.name}] 找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                return false
+            }
+
+            // 掉血了就说明被攻击了，直接投降，告诉基地 1500 之后再孵化我
+            if (creep.hits < creep.hitsMax) {
+                const room = Game.rooms[data.spawnRoom]
+                if (!room) {
+                    console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
+                    return false
                 }
-                // 有的话向基地报告
-                if (sourceFlag.room._hasEnemy) {
-                    const room = Game.rooms[data.spawnRoom]
-                    if (!room) {
-                        console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
-                        return false
-                    }
-                    if (!room.memory.remote) room.memory.remote = {}
-                    // 如果还没有设置重生时间的话
-                    if (!room.memory.remote[sourceFlag.room.name]) {
-                        // 将重生时间设置为 1500 tick 之后
-                        room.memory.remote[sourceFlag.room.name] = Game.time + 1500
-                    }
+                // 如果还没有设置重生时间的话
+                if (room.memory.remote[sourceFlag.pos.roomName] && !room.memory.remote[sourceFlag.pos.roomName].disableTill) {
+                    // 将重生时间设置为 1500 tick 之后
+                    room.memory.remote[sourceFlag.pos.roomName].disableTill = Game.time + 1500
                 }
             }
             
-            const harvestResult = creep.harvest(Game.getObjectById(creep.memory.sourceId))
+            const source = Game.getObjectById<Source>(creep.memory.sourceId)
+            const harvestResult = creep.harvest(source)
+            if (harvestResult === OK) {
+                // 如果发现 source 上限掉回 1500 了，就发布 reserver
+                if (source.energyCapacity === SOURCE_ENERGY_NEUTRAL_CAPACITY) {
+                    Game.rooms[data.spawnRoom].addRemoteReserver(creep.room.name)
+                }
+            }
             // 一旦被 core 占领就不再生成
-            if (harvestResult == ERR_NOT_OWNER && !(Game.time % 20)) {
+            else if (harvestResult === ERR_NOT_OWNER && !(Game.time % 20)) {
                 const core = creep.room.find(FIND_STRUCTURES, {
                     filter: s => s.structureType == STRUCTURE_INVADER_CORE
                 })
@@ -277,26 +257,23 @@ const roles: {
                         console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
                         return false
                     }
-                    if (!room.memory.remote) room.memory.remote = {}
+
                     // 如果还没有设置重生时间的话
-                    if (!room.memory.remote[sourceFlag.room.name]) {
+                    if (room.memory.remote[sourceFlag.pos.roomName] && !room.memory.remote[sourceFlag.pos.roomName].disableTill) {
                         const collapseTimerEffect = core[0].effects.find(e => e.effect == EFFECT_COLLAPSE_TIMER)
 
                         if (collapseTimerEffect) {
                             /**
                              * 将重生时间设置为 core 消失之后
-                             * 
-                             * @danger core 消失之后还有 4000 tick 无法采集
-                             * 但是由于 remoteHarvester 和 reserver 生成用的是同一个计时器
-                             * 所以在 core 消失之后依旧会直接生成 remoteHarvester 在 source 前傻站至多 4000 tick
+                             * 再加 5000 是因为 core 消失之后控制器还会有 5000 tick 的被预定时间 
                              */
-                            room.memory.remote[sourceFlag.room.name] = Game.time + collapseTimerEffect.ticksRemaining
+                            room.memory.remote[sourceFlag.pos.roomName].disableTill = Game.time + collapseTimerEffect.ticksRemaining + 5000
                         }
                     }
                 }
             }
-            // 这里的移动判断条件是 !== OK, 因为外矿有可能没视野, 下同
-            else if (harvestResult !== OK) {
+            // 这里只要有异常就直接向外矿移动, 因为外矿有可能没视野, 下同
+            else {
                 creep.farMoveTo(sourceFlag.pos, data.ignoreRoom)
             }
         },
@@ -304,10 +281,22 @@ const roles: {
             // dontBuild 为 false 时表明还在建造阶段
             if (!creep.memory.dontBuild) {
                 // 没有可建造的工地后就再也不建造
-                if (!creep.buildStructure()) {
-                    creep.memory.dontBuild = true
-                    delete creep.memory.constructionSiteId
+                const buildResult = creep.buildStructure()
+                // 正在建造就禁止对穿
+                if (buildResult === OK) {
+                    if (!creep.memory.standed) {
+                        creep.room.addRestrictedPos(creep.name, creep.pos)
+                        creep.memory.standed = true
+                    }
                 }
+                if (buildResult === ERR_NOT_FOUND)  creep.memory.dontBuild = true
+                // 能量不足了就去 source 阶段，同时释放掉禁止通行点位
+                else if (buildResult === ERR_NOT_ENOUGH_ENERGY) {
+                    creep.room.removeRestrictedPos(creep.name)
+                    delete creep.memory.standed
+                    return true
+                }
+                
                 return false
             }
 
@@ -318,15 +307,19 @@ const roles: {
                 if (road.hits < road.hitsMax) creep.repair(road)
             }
 
-            const room = Game.rooms[data.spawnRoom]
-            if (!room || !room.terminal) {
-                console.log(`[${creep.name}] 找不到存放建筑`)
+            const target = Game.getObjectById<Structure>(data.targetId)
+            if (!target) {
+                console.log(`[${creep.name}] 找不到存放建筑 ${data.targetId}`)
                 return false
             }
             
             // 再把剩余能量运回去
-            if (creep.transfer(room.storage, RESOURCE_ENERGY)) return true
-            else creep.farMoveTo(room.storage.pos, data.ignoreRoom, 1)
+            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
+            if (transferResult === OK) return true
+            else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, data.ignoreRoom, 1)
+            else console.log(`[${creep.name}] target 阶段 transfer 出现异常，错误码 ${transferResult}`)
+
+            return false
         },
         bodys: 'remoteHarvester'
     }),

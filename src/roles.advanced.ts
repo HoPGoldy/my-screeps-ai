@@ -24,13 +24,19 @@ const roles: {
             const task = getRoomTransferTask(creep.room)
 
             // 有任务就执行
-            if (task) return transferTaskOperations[task.type].source(creep, task, data.sourceId)
+            if (task) {
+                delete creep.memory.standed
+                return transferTaskOperations[task.type].source(creep, task, data.sourceId)
+            }
         },
         target: creep => {
             const task = getRoomTransferTask(creep.room)
 
             // 有任务就执行
-            if (task) return transferTaskOperations[task.type].target(creep, task)
+            if (task) {
+                creep.memory.standed = true
+                return transferTaskOperations[task.type].target(creep, task)
+            }
         },
         bodys: 'transfer'
     }),

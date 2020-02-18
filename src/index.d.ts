@@ -150,7 +150,7 @@ interface RemoteHelperData {
     // 该房间中的能量来源
     sourceId: string
     // 路上忽视的房间名列表
-    ignoreRoom: string[]
+    ignoreRoom?: string[]
 }
 
 /**
@@ -161,9 +161,9 @@ interface RemoteDeclarerData {
     // 要声明控制的房间名
     targetRoomName: string
     // 给控制器的签名
-    signText: string
+    signText?: string
     // 路上忽视的房间名列表
-    ignoreRoom: string[]
+    ignoreRoom?: string[]
 }
 
 /**
@@ -173,10 +173,12 @@ interface RemoteDeclarerData {
 interface RemoteHarvesterData {
     // 要采集的资源旗帜名称
     sourceFlagName: string
+    // 资源要存放到哪个建筑里，外矿采集者必须指定该参数
+    targetId?: string
     // 出生房名称，资源会被运输到该房间中
     spawnRoom: string
     // 路上忽视的房间名列表
-    ignoreRoom: string[]
+    ignoreRoom?: string[]
 }
 
 /**
@@ -256,7 +258,7 @@ interface Creep {
     requireCross(direction: DirectionConstant): Boolean
     mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND
     upgrade(): boolean
-    buildStructure(): boolean
+    buildStructure(): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
     transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
@@ -390,6 +392,8 @@ interface Room {
     // creep 发布 api
     planCreep(): string
     addCenterTransfer(): string
+    addRemoteCreepGroup(remoteRoomName: string)
+    addRemoteReserver(remoteRoomName): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -560,10 +564,13 @@ interface RoomMemory {
 
     // 外矿专用内存字段
     remote: {
-        // 对应名称的 creep 在指定的 tick 之后才能生成
-        // 该属性一般由外矿 creep 在发现有入侵者之后设置
-        // spawn 在发现到达指定 tick 后会移除对应的属性
-        [creepName: string]: number
+        // 外矿房间名
+        [roomName: string]: {
+            // 该外矿什么时候可以恢复采集，在被入侵时触发
+            disableTill?: number
+            // 该外矿要把能量运到哪个建筑里，保存下来是为了后面方便自动恢复外矿采集
+            targetId: string
+        }
     }
 
     // 当前被 repairer 或 tower 关注的墙

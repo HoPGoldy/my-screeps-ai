@@ -1,4 +1,3 @@
-import { colorful } from './utils'
 
 /**
  * 设置项
