@@ -315,9 +315,11 @@ const roles: {
             
             // 再把剩余能量运回去
             const transferResult = creep.transfer(target, RESOURCE_ENERGY)
-            if (transferResult === OK) return true
+            // 报自己身上资源不足了就说明能量放完了
+            if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
             else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, data.ignoreRoom, 1)
-            else console.log(`[${creep.name}] target 阶段 transfer 出现异常，错误码 ${transferResult}`)
+            else if (transferResult === ERR_FULL) creep.say('满了啊')
+            else if (transferResult !== OK) console.log(`[${creep.name}] target 阶段 transfer 出现异常，错误码 ${transferResult}`)
 
             return false
         },
