@@ -435,7 +435,7 @@ class LinkExtension extends StructureLink {
      */
     private centerWork(): void {
         // 能量为空则待机
-        if (<number>this.store.getCapacity(RESOURCE_ENERGY) == 0) return
+        if (<number>this.store.getUsedCapacity(RESOURCE_ENERGY) == 0) return
         // 之前发的转移任务没有处理好的话就先挂机
         if (this.room.hasCenterTask('centerLink') || !this.room.storage) return 
 
@@ -457,7 +457,7 @@ class LinkExtension extends StructureLink {
      */
     private sourceWork(): void {
         // 能量填满再发送
-        if (<number>this.store.getCapacity(RESOURCE_ENERGY) != LINK_CAPACITY) return
+        if (<number>this.store.getUsedCapacity(RESOURCE_ENERGY) < 700) return
         // 优先响应 upgrade
         if (this.room.memory.upgradeLinkId) {
             const upgradeLink = this.getLinkByMemoryKey('upgradeLinkId')

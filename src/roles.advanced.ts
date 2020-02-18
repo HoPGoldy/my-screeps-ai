@@ -24,19 +24,14 @@ const roles: {
             const task = getRoomTransferTask(creep.room)
 
             // 有任务就执行
-            if (task) {
-                delete creep.memory.standed
-                return transferTaskOperations[task.type].source(creep, task, data.sourceId)
-            }
+            if (task) return transferTaskOperations[task.type].source(creep, task, data.sourceId)
         },
         target: creep => {
             const task = getRoomTransferTask(creep.room)
 
             // 有任务就执行
-            if (task) {
-                creep.memory.standed = true
-                return transferTaskOperations[task.type].target(creep, task)
-            }
+            
+            if (task) return transferTaskOperations[task.type].target(creep, task)
         },
         bodys: 'transfer'
     }),
@@ -85,7 +80,7 @@ const roles: {
             // 够不到就移动过去
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(new RoomPosition(data.x, data.y, creep.room.name))
             else {
-                creep.say(`取出 ${result}`)
+                creep.say(`[${creep.name}] source 阶段取出异常，错误码 ${result}`)
                 creep.room.hangCenterTask()
             }
 
@@ -115,6 +110,7 @@ const roles: {
             }
             // 如果目标建筑物太远了，就移动过去
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(new RoomPosition(data.x, data.y, creep.room.name))
+            else if (result === ERR_FULL) creep.say(`${task.target} 满了`)
             else {
                 creep.say(`存入 ${result}`)
                 creep.room.hangCenterTask()
