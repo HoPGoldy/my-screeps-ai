@@ -14,7 +14,7 @@ const roles: {
      * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
      */
     soldier: (data: WarUnitData): ICreepConfig => ({
-        ...battleBase(data.targetFlagName),
+        ...battleBase(data.targetFlagName, data.keepSpawn),
         target: creep => {
             creep.attackFlag(data.targetFlagName)
 
@@ -63,7 +63,7 @@ const roles: {
      * @param creepsName 要治疗的 creep 名称
      */
     boostDoctor: (data: HealUnitData): ICreepConfig => ({
-        ...boostPrepare(data),
+        ...boostPrepare(),
         target: creep => {
             const target = Game.creeps[data.creepName]
             if (!target) {
@@ -85,7 +85,7 @@ const roles: {
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
     dismantler: (data: WarUnitData): ICreepConfig => ({
-        ...battleBase(data.targetFlagName),
+        ...battleBase(data.targetFlagName, data.keepSpawn),
         target: creep => creep.dismantleFlag(data.targetFlagName),
         bodys: 'dismantler'
     }),
@@ -100,8 +100,8 @@ const roles: {
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
     boostDismantler: (data: WarUnitData): ICreepConfig => ({
-        ...battleBase(data.targetFlagName),
-        ...boostPrepare(data),
+        ...battleBase(data.targetFlagName, data.keepSpawn),
+        ...boostPrepare(),
         target: creep => creep.dismantleFlag(data.targetFlagName),
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
     }),
@@ -132,8 +132,8 @@ const roles: {
 
         // 组装 CreepConfig
         return {
-            ...battleBase(data.targetFlagName),
-            ...boostPrepare(data),
+            ...battleBase(data.targetFlagName, data.keepSpawn),
+            ...boostPrepare(),
             target: creep => {
                 // 获取旗帜
                 const targetFlag = creep.getFlag(data.targetFlagName)
@@ -172,11 +172,7 @@ const roles: {
  * 
  * @param boostType BOOST.TYPE 类型之一
  */
-const boostPrepare = (data: WarUnitData | HealUnitData | ApocalypseData) => ({
-    /**
-     * 自主调起强化进程并等待 lab 准备就绪
-     */
-    isNeed: () => data.keepSpawn,
+const boostPrepare = () => ({
     /**
      * 移动至强化位置并执行强化
      * @danger 该位置是 Room.memory.boost.pos 中定义的，并不是旗帜的实时位置，该逻辑有可能会导致迷惑
@@ -215,7 +211,11 @@ const boostPrepare = (data: WarUnitData | HealUnitData | ApocalypseData) => ({
  * 
  * @param flagName 目标旗帜名称
  */
-const battleBase = (flagName: string) => ({
+const battleBase = (flagName: string, keepSpawn: boolean) => ({
+    /**
+     * 自主调起强化进程并等待 lab 准备就绪
+     */
+    isNeed: () => keepSpawn,
     /**
      * 获取旗帜，然后向指定房间移动
      * 同时保证自己的健康状态
