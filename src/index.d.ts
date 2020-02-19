@@ -190,7 +190,9 @@ interface WarUnitData {
     // 要攻击的旗帜名
     targetFlagName: string
     // 待命位置旗帜名
-    standByFlagName: string
+    // standByFlagName: string/
+    // 是否持续孵化
+    keepSpawn: boolean
 }
 
 /**
@@ -201,6 +203,8 @@ interface ApocalypseData {
     targetFlagName: string
     // 抗几个塔的伤害，由这个参数决定其身体部件组成
     bearTowerNum: 0 | 1 | 2 | 3 | 4 | 5 | 6
+    // 是否持续孵化
+    keepSpawn: boolean
 }
 
 /**
@@ -210,7 +214,9 @@ interface HealUnitData {
     // 要治疗的旗帜名
     creepName: string
     // 待命位置旗帜名
-    standByFlagName: string
+    // standByFlagName: string
+    // 是否持续孵化
+    keepSpawn?: boolean
 }
 
 /**
@@ -332,6 +338,8 @@ interface CreepMemory {
     constructionSiteId?: string
     // 外矿采集者特有, 该字段为 true 时, 每 tick 都会尝试检查工地并建造
     dontBuild?: boolean
+    // transfer 特有，当前任务正在转移的资源类型
+    taskResource?: ResourceConstant
     // 城墙填充特有，当前期望的城墙生命值
     expectHits?: number
     // 攻击者的小队编号 暂时未使用
@@ -421,7 +429,6 @@ interface Room {
     getRoomTransferTask(): RoomTransferTasks | null
     handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
     handleRoomTransferTask(): void
-    handleBoostGetResourceTask(resourceIndex: number, number: number): void
     deleteCurrentRoomTransferTask(): void
 
     // 工厂 api
@@ -609,22 +616,25 @@ interface RoomMemory {
     }
 
     /**
+     * 战争状态
+     */
+    war?: {
+
+    }
+
+    /**
      * boost 强化任务
      * @see doc/boost设计案
      */
     boost?: {
         // 当前任务的所处状态
         state: string
-        // 当前任务的种类
-        type: string
         // 进行 boost 强化的位置
         pos: number[]
         // 要进行强化的材料以及执行强化的 lab
         lab: {
             [resourceType: string]: string
-        },
-        // 进行强化的具体配置项
-        config: IBoostConfig
+        }
     }
     /**
      * 是否还有 boost 任务在排队
@@ -703,11 +713,6 @@ interface ILabOut {
 // 房间物流任务 - boost 资源填充
 interface IBoostGetResource {
     type: string
-    resource: {
-        type: ResourceConstant
-        labId: string
-        number: number
-    }[]
 }
 
 // 房间物流任务 - boost 能量填充

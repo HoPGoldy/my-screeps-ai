@@ -39,7 +39,7 @@ class PowerCreepExtension extends PowerCreep {
             // 还在冷却就等着
             if (!this.spawnCooldownTime) {
                 // 请求指定工作房间
-                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用该命令来指定工作房间（房间名置空以关闭提示）:    Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
+                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用该命令来指定工作房间（房间名置空以关闭提示）：Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
                 // 或者直接出生在指定房间
                 else if (this.memory.workRoom != 'none') this.spawnAtRoom(this.memory.workRoom)
             }

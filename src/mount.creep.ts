@@ -642,6 +642,7 @@ class CreepExtension extends Creep {
      * @param flagName 要进攻的旗帜名称
      */
     public attackFlag(flagName: string): boolean {
+        this.say('💢')
         // 获取旗帜
         const attackFlag = this.getFlag(flagName)
         if (!attackFlag) return false
@@ -654,22 +655,21 @@ class CreepExtension extends Creep {
         
         // 如果到旗帜所在房间了
         // 优先攻击 creep
-        let target: Creep | PowerCreep | Structure
+        let target: Creep | PowerCreep | Structure | Flag
         const enemys = attackFlag.pos.findInRange(FIND_HOSTILE_CREEPS, 2)
         if (enemys.length > 0) target = enemys[0]
         else {
             // 没有的话再攻击 structure
             const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
-            if (structures.length == 0) {
-                console.log(`${this.name} 找不到目标！`)
-                return false
+            if (structures.length === 0) {
+                this.say('干谁？')
+                target = attackFlag
             }
-            target = structures[0]
+            else target = structures[0]
         }
         
         this.moveTo(target)
-        const attackResult = this.attack(target)
-        this.say(`冲! ${attackResult}`)
+        this.attack(target as Creep)
 
         return true
     }
@@ -761,7 +761,7 @@ class CreepExtension extends Creep {
         if (healResult == ERR_NOT_IN_RANGE) this.rangedHeal(target)
 
         // 一直朝着目标移动
-        this.moveTo(creep)
+        if (!this.pos.isNearTo(creep.pos)) this.moveTo(creep)
     }
 
     /**
@@ -771,7 +771,7 @@ class CreepExtension extends Creep {
      * @param flagName 要检查的 flag 名称
      * @returns 有旗帜就返回旗帜, 否则返回 null
      */
-    public getFlag(flagName: string): Flag|null {
+    public getFlag(flagName: string): Flag | null {
         const flag = Game.flags[flagName]
         if (!flag) {
             console.log(`场上不存在名称为 [${flagName}] 的旗帜，请新建`)

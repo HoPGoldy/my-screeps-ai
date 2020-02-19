@@ -1,4 +1,4 @@
-import { ROOM_TRANSFER_TASK } from "./setting"
+import { ROOM_TRANSFER_TASK, boostResourceReloadLimit } from "./setting"
 
 /**
  * tranfser 触发后事处理的最小生命
@@ -25,6 +25,7 @@ const roles: {
 
             // 有任务就执行
             if (task) return transferTaskOperations[task.type].source(creep, task, data.sourceId)
+            else creep.say('💤')
         },
         target: creep => {
             const task = getRoomTransferTask(creep.room)
@@ -32,6 +33,7 @@ const roles: {
             // 有任务就执行
             
             if (task) return transferTaskOperations[task.type].target(creep, task)
+            else return true
         },
         bodys: 'transfer'
     }),
@@ -215,7 +217,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                     // 都填满了，任务完成
                     // console.log(`[物流任务] ${creep.room.name} 关闭了 fillExtension 任务`)
                     creep.room.handleRoomTransferTask()
-                    return
+                    return true
                 }
 
                 // 写入缓存
@@ -267,7 +269,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                     // 如果还没找到的话就算完成任务了
                     if (towers.length <= 0) {
                         creep.room.handleRoomTransferTask()
-                        return
+                        return true
                     }
                     target = creep.pos.findClosestByRange(towers) as StructureTower
                 }
@@ -537,7 +539,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 creep.room.handleRoomTransferTask()
                 return true
             }
-            else creep.say(`错误! ${transferResult}`)
+            else if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
+            else creep.say(`ps 填充错误 ${transferResult}`)
         }
     },
     
@@ -549,7 +552,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
      * @todo 一次搬运多种资源
      */
     [ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE]: {
-        source: (creep, task: IBoostGetResource, sourceId) => {
+        source: (creep, task: IBoostGetResource) => {
             // 获取 terminal
             const terminal = creep.room.terminal
             if (!terminal) {
@@ -564,61 +567,59 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return false
             }
 
-            // 找到第一个需要的强化材料，然后从终端拿出
-            const resource = task.resource.find((res, index) => {
-                // 如果这个材料已经用完了，就直接将任务中对应资源的待搬运量置为 0
-                if (terminal.store[res.type] == 0) {
-                    creep.room.handleBoostGetResourceTask(index, res.number)
+            const boostConfig = creep.room.memory.boost
+
+            // 从缓存中读取要拿取的资源
+            let resource = creep.memory.taskResource
+            // 没有缓存的话就找到第一个需要的强化材料，然后从终端拿出
+            if (!resource) {
+                resource = Object.keys(boostConfig.lab).find((res, index) => {
+                    // 如果这个材料已经用完了就检查下一个
+                    if (!terminal.store[res] || terminal.store[res] == 0) return false
+                    const lab = Game.getObjectById<StructureLab>(boostConfig.lab[res])
+                    // lab 里的资源不达标就进行运输
+                    if (lab && lab.store[res] < boostResourceReloadLimit) return true
+    
+                    return false
+                }) as ResourceConstant
+
+                if (resource) creep.memory.taskResource = resource
+                // 找不到了就说明都成功转移了
+                else {
+                    creep.room.deleteCurrentRoomTransferTask()
                     return false
                 }
-                return res.number > 0
-            })
-            
-            // 找不到了就说明都成功转移了
-            if (!resource) {
-                creep.room.deleteCurrentRoomTransferTask()
-                return false
             }
-
+        
             // 获取转移数量
-            let getAmount = [ resource.number, creep.store.getFreeCapacity(), terminal.store[resource.type]].reduce((x, y) => x > y ? y : x)
+            let getAmount = [ creep.store.getFreeCapacity(), terminal.store[resource]].reduce((x, y) => x > y ? y : x)
 
             // 拿出来
-            const withdrawResult = creep.withdraw(terminal, resource.type, getAmount) 
-            if (withdrawResult === OK) return true
+            const withdrawResult = creep.withdraw(terminal, resource as ResourceConstant, getAmount) 
+
+            if (withdrawResult === OK || withdrawResult === ERR_FULL) return true
             if (withdrawResult == ERR_NOT_IN_RANGE) creep.goTo(terminal.pos)
             else creep.say(`boostIn ${withdrawResult}`)
         },
         target: (creep, task: IBoostGetResource) => {
             // 当前要转移的资源在 task.resource 中的索引值
             let targetIndex: number
-            // 找到要转移的资源
-            const targetResource = task.resource.find((res, index) => {
-                if (res.number > 0) {
-                    targetIndex = index
-                    return true
-                }
-                else return false
-            })
-
-            // 找不到了就说明都成功转移了
-            if (!targetResource) {
-                creep.room.deleteCurrentRoomTransferTask()
-                return true
-            }
-            
-            const targetLab: StructureLab = Game.getObjectById(targetResource.labId)
+            // 找到要转移的资源以及目标 lab
+            const targetResource = creep.memory.taskResource
+            const targetLab: StructureLab = Game.getObjectById(creep.room.memory.boost.lab[targetResource])
 
             // 转移资源
-            const transferResult = creep.transfer(targetLab, targetResource.type)
+            const transferResult = creep.transfer(targetLab, targetResource)
             if (transferResult === ERR_NOT_IN_RANGE) creep.goTo(targetLab.pos)
             // 正常转移资源则更新任务
             else if (transferResult === OK) {
-                // 更新任务信息
-                creep.room.handleBoostGetResourceTask(targetIndex, creep.store[targetResource.type])
+                // 移除缓存，在 source 阶段重新查找
+                delete creep.memory.taskResource
                 return true
             }
-            else creep.say(`错误! ${transferResult}`)
+            // resource 有问题的话就再返回 source 阶段处理
+            else if (transferResult === ERR_INVALID_ARGS) return true
+            else creep.say(`boostTarget 错误! ${transferResult}`)
         }
     },
 

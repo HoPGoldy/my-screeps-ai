@@ -1,4 +1,5 @@
 import { creepApi } from './creepController'
+import { DEFAULT_FLAG_NAME, BOOST_STATE } from './setting'
 
 /**
  * 将所有的房间基础服务挂载至 Room 原型上
@@ -370,6 +371,69 @@ class CreepControl extends Room {
             sourceId: room.sources.length >= 2 ? room.sources[1].id : room.sources[0].id,
             ignoreRoom
         }, this.name)
+    }
+
+    /**
+     * 孵化 boost 进攻一体机
+     * 
+     * @param bearTowerNum 抗塔等级 0-6，等级越高扛伤能力越强，伤害越低
+     * @param targetFlagName 目标旗帜名称
+     * @param keepSpawn 是否持续生成
+     */
+    public spawnRangedAttacker(bearTowerNum: 0 | 1 | 3 | 5 | 2 | 4 | 6 = 6, targetFlagName: string = DEFAULT_FLAG_NAME.ATTACK, keepSpawn: boolean = false): string {
+        if (!this.memory.boost) return `发布失败，未启动 Boost 进程，执行 ${this.name}.war() 来启动战争状态`
+        if (this.memory.boost.state !== BOOST_STATE.WAIT_BOOST) return `无法发布，Boost 材料未准备就绪`
+
+        const creepName = `${this.name} apocalypse ${Game.time}`
+        creepApi.add(creepName, 'apocalypse', {
+            targetFlagName: targetFlagName ? targetFlagName : DEFAULT_FLAG_NAME.ATTACK,
+            bearTowerNum,
+            keepSpawn
+        }, this.name)
+
+        return `已发布进攻一体机 [${creepName}] [扛塔等级] ${bearTowerNum} [进攻旗帜名称] ${targetFlagName} ${keepSpawn ? '' : '不'}持续生成`
+    }
+
+    /**
+     * 孵化 boost 拆墙小组
+     * 
+     * @param targetFlagName 进攻旗帜名称
+     * @param keepSpawn 是否持续生成
+     */
+    public spawnDismantleGroup(targetFlagName: string = '', keepSpawn: boolean = false): string {
+        if (!this.memory.boost) return `发布失败，未启动 Boost 进程，执行 ${this.name}.war() 来启动战争状态`
+        if (this.memory.boost.state !== BOOST_STATE.WAIT_BOOST) return `无法发布，Boost 材料未准备就绪`
+
+        const dismantlerName = `${this.name} dismantler ${Game.time}`
+        creepApi.add(dismantlerName, 'boostDismantler', {
+            targetFlagName: targetFlagName ? targetFlagName : DEFAULT_FLAG_NAME.ATTACK,
+            keepSpawn
+        }, this.name)
+        creepApi.add(`${this.name} doctor ${Game.time}`, 'boostDoctor', {
+            creepName: dismantlerName,
+            keepSpawn
+        }, this.name)
+
+        return `已发布拆墙小组，正在孵化`
+    }
+
+    /**
+     * 孵化基础进攻单位
+     * 
+     * @param targetFlagName 进攻旗帜名称
+     * @param num 要孵化的数量
+     */
+    public spwanSoldier(targetFlagName: string = '', num: number = 1) {
+        if (num <=0 || num > 10) num = 1
+
+        for (let i = 0; i < num; i++) {
+            creepApi.add(`${this.name} dismantler ${Game.time}-${i}`, 'soldier', {
+                targetFlagName: targetFlagName ? targetFlagName : DEFAULT_FLAG_NAME.ATTACK,
+                keepSpawn: false
+            }, this.name)
+        }
+
+        return `已发布 soldier*${num}，正在孵化`
     }
 }
 
