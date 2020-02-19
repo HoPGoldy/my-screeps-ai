@@ -1,6 +1,6 @@
 import mountRoomBase from './mount.roomBase'
 import { createHelp } from './utils'
-import { ENERGY_SHARE_LIMIT, BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
+import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, BOOST_STATE, boostResourceReloadLimit, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
 
 // 挂载拓展到 Room 原型
@@ -449,25 +449,6 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 更新 boostGetResource 任务信息
-     * @param resourceIndex 要更新的资源索引
-     * @param number 完成搬运的数量
-     */
-    public handleBoostGetResourceTask(resourceIndex: number, number: number): boolean {
-        const currentTask = <IBoostGetResource>this.getRoomTransferTask()
-        // 判断当前任务为 labin
-        if (currentTask.type == ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE) {
-            // 更新数量
-            currentTask.resource[resourceIndex].number -= number
-            
-            // 更新对应的任务
-            this.memory.transferTasks.splice(0, 1, currentTask)
-            return true
-        }
-        else return false
-    }
-
-    /**
      * 移除当前处理的房间物流任务
      * 并统计至 Memory.stats
      */
@@ -846,20 +827,16 @@ class RoomExtension extends Room {
     public presume(): string { return this.resumeProcessPower() }
 
     /**
-     * 启动 boost 进程
-     * 该方法主要由 boost creep 在 isNeed 阶段调用，当然也可以手动调用
+     * 切换为战争状态
+     * 需要提前插好名为 [房间名 + Boost] 的旗帜，并保证其周围有足够数量的 lab
      * 
-     * @param boostType 要启动的 boost 任务类型，在 setting.ts 的 BOOST_TYPE 中定义
-     * @param boostConfig 强化的配置对象，键为强化化合物，值为要强化的身体部件
-     * @returns ERR_NAME_EXISTS 已经存在强化任务了
+     * @returns ERR_NAME_EXISTS 已经处于战争状态
      * @returns ERR_NOT_FOUND 未找到强化旗帜
-     * @returns ERR_INVALID_ARGS 错误的boostType
-     * @returns ERR_NOT_ENOUGH_RESOURCES 强化旗帜附近的lab数量不足
+     * @returns ERR_INVALID_TARGET 强化旗帜附近的lab数量不足
      */
-    public boost(boostType: string, boostConfig: IBoostConfig): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES {
-        // 检查是否存在 boost 任务
-        if (this.memory.boost) return ERR_NAME_EXISTS
-        
+    public startWar(): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET {
+        if (this.memory.war) return ERR_NAME_EXISTS
+
         // 获取 boost 旗帜
         const boostFlagName = this.name + 'Boost'
         const boostFlag = Game.flags[boostFlagName]
@@ -869,26 +846,38 @@ class RoomExtension extends Room {
         const labs = boostFlag.pos.findInRange<StructureLab>(FIND_STRUCTURES, 1, {
             filter: s => s.structureType == STRUCTURE_LAB
         })
-        // 如果数量不够
-        if (labs.length < Object.keys(boostConfig).length) return ERR_NOT_ENOUGH_RESOURCES
+        // 如果 lab 数量不够
+        if (labs.length < BOOST_RESOURCE.length) return ERR_INVALID_TARGET
 
         // 初始化 boost 任务
         let boostTask = {
             state: BOOST_STATE.GET_RESOURCE,
-            type: boostType,
             pos: [ boostFlag.pos.x, boostFlag.pos.y ],
-            lab: {},
-            config: boostConfig
+            lab: {}
         }
 
-        // 填充需要执行的 lab
-        for (const resourceType in boostConfig) {
-            boostTask.lab[resourceType] = labs.pop().id
-        }
+        // 统计需要执行强化工作的 lab 并保持到内存
+        BOOST_RESOURCE.forEach(res => boostTask.lab[res] = labs.pop().id)
 
         // 发布 boost 任务
         this.memory.boost = boostTask
+        this.memory.war = {}
         return OK
+    }
+
+    /**
+     * 用户操作 - 启动战争状态
+     */
+    public war(): string {
+        let stats = `[${this.name}] `
+        const result = this.startWar()
+
+        if (result === OK) stats += `已启动战争状态，正在准备 boost 材料，请在准备完成后再发布角色组`
+        else if (result === ERR_NAME_EXISTS) stats += '已处于战争状态'
+        else if (result === ERR_NOT_FOUND) stats += `未找到名为 [${this.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`
+        else if (result === ERR_INVALID_TARGET) stats += '旗帜周围的 lab 数量不足，请移动旗帜位置'
+
+        return stats
     }
 
     /**
@@ -909,57 +898,55 @@ class RoomExtension extends Room {
         let executiveLab: StructureLab[] = []
         for (const resourceType in this.memory.boost.lab) {
             const lab = Game.getObjectById<StructureLab>(this.memory.boost.lab[resourceType])
-            // 这里没有直接 return 是为了避免 lab 集群已经部分被摧毁而导致整个 boost 进程无法执行
+            // 这里没有直接终止进程是为了避免 lab 集群已经部分被摧毁而导致整个 boost 进程无法执行
             if (lab) executiveLab.push(lab)
         }
 
         // 执行强化
         const boostResults = executiveLab.map(lab => lab.boostCreep(creep))
-
+        
         // 有一个强化成功了就算强化成功
-        if (boostResults.filter(res => res == OK)) {
-            this.memory.boost.state = BOOST_STATE.CLEAR
+        if (boostResults.includes(OK)) {
+            // 强化成功了就发布资源填充任务是因为
+            // 在方法返回 OK 时，还没有进行 boost（将在 tick 末进行），所以这里检查资源并不会发现有资源减少
+            // 为了提高存储量，这里直接发布任务，交给 transfer 在处理任务时检查是否有资源不足的情况
+            this.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE
+            })
+            this.addRoomTransferTask({
+                type: ROOM_TRANSFER_TASK.BOOST_GET_ENERGY
+            })
+        
             return OK
         }
         else return ERR_NOT_IN_RANGE
     }
 
     /**
-     * 取消 boost 进程
+     * 解除战争状态
+     * 会同步取消 boost 进程
      */
-    public boostCancel(): OK | ERR_NOT_FOUND {
-        if (!this.memory.boost) return ERR_NOT_FOUND
+    public stopWar(): OK | ERR_NOT_FOUND {
+        if (!this.memory.war) return ERR_NOT_FOUND
 
         // 将 boost 状态置为 clear，labExtension 会自动发布清理任务并移除 boostTask
-        this.memory.boost.state = BOOST_STATE.CLEAR
-        delete this.memory.hasMoreBoost
+        if (this.memory.boost) this.memory.boost.state = BOOST_STATE.CLEAR
+        delete this.memory.war
 
         return OK
     }
 
     /**
-     * 用户操作：取消 boost 任务
+     * 用户操作 - 取消战争状态
      */
-    public bcancel(): string {
-        const cancelResult = this.boostCancel()
-        if (cancelResult == OK) return `[${this.name} boost] 任务取消成功，正在执行清理`
-        else if (cancelResult == ERR_NOT_FOUND) return `[${this.name} boost] 未找到任务`
-    }
+    public nowar(): string {
+        let stats = `[${this.name}] `
+        const result = this.stopWar()
 
-    /**
-     * 用户操作：显示当前正在执行的 boost 任务
-     */
-    public bshow(): string {
-        if (!this.memory.boost) return `[${this.name} boost] 未找到任务`
+        if (result === OK) stats += `已解除战争状态，boost 强化材料会依次运回`
+        else if (result === ERR_NOT_FOUND) stats += `未启动战争状态`
 
-        // 主体信息
-        let reports = [ `[${this.name} boost] 正在执行强化任务: ${this.memory.boost.type} | 当前阶段: ${this.memory.boost.state}` ]
-        // 后续几行的信息，包括这里的资源类型和对应的填充数量
-        reports.push(...Object.keys(this.memory.boost.config).map(res => `${res} > ${this.memory.boost.config[res] * LAB_BOOST_MINERAL}`))
-        // 以及这里的是否有后续任务
-        if (this.memory.hasMoreBoost) reports.push(`当前房间还有后续强化任务`)
-
-        return reports.join('\n  ─ ')
+        return stats
     }
 
     /**
@@ -1126,6 +1113,47 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作 - 查看如何孵化进攻型单位
+     */
+    public whelp(): string {
+        return createHelp([
+            {
+                title: '进入战争状态，会同步启动 boost 进程',
+                functionName: 'war'
+            },
+            {
+                title: '解除战争状态并回收 boost 材料',
+                functionName: 'nowar'
+            },
+            {
+                title: '孵化基础进攻单位',
+                params: [
+                    { name: 'targetFlagName', desc: '进攻旗帜名称' },
+                    { name: 'num', desc: '要孵化的数量，1 - 10，默认为 1' }
+                ],
+                functionName: 'spwanSoldier'
+            },
+            {
+                title: '<需要战争状态> 孵化 boost 进攻一体机',
+                params: [
+                    { name: 'bearTowerNum', desc: '抗塔等级 0-6，等级越高扛伤能力越强，伤害越低' },
+                    { name: 'targetFlagName', desc: '目标旗帜名称' },
+                    { name: 'keepSpawn', desc: '是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成' },
+                ],
+                functionName: 'spawnRangedAttacker'
+            },
+            {
+                title: '<需要战争状态> 孵化 boost 拆墙小组',
+                params: [
+                    { name: 'targetFlagName', desc: '进攻旗帜名称' },
+                    { name: 'keepSpawn', desc: '是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成' }
+                ],
+                functionName: 'spawnDismantleGroup'
+            }
+        ])
+    }
+
+    /**
      * 用户操作：房间操作帮助
      */
     public help(): string {
@@ -1263,12 +1291,8 @@ class RoomExtension extends Room {
                 functionName: 'lresume'
             },
             {
-                title: '显示当前正在进行的 boost 任务',
-                functionName: 'bshow'
-            },
-            {
-                title: '终止当前正在进行的 boost 任务',
-                functionName: 'bcancel'
+                title: '查看战争帮助',
+                functionName: 'whelp'
             },
             {
                 title: '暂停 powerSpawn 工作',

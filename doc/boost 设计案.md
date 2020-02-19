@@ -8,6 +8,14 @@
 - 强化不应影响 lab 集群的正常化合反应。
 - 控制强化的模块应独立于每个房间，保证可以多个房间同时进行强化。
 
+# 战争状态
+
+通过指定 api 将房间设置为战争状态后，boost 进程会同步启动并暂停 lab 化合反应，transfer 会将**所有**需要的化合物依次搬入 lab（配置在 setting.ts 中），并且在战争期间保持 lab 中的强化化合物数量。
+
+在准备就绪后 boost 进程切入等待强化阶段，此时 creep 可直接前往进行强化。
+
+在战争结束后需要手动执行取消战争状态的 api。此时 transfer 会清空 lab 中的强化材料，并恢复 lab 化合反应工作。
+
 # 如何添加新的 boost 配置
 
 1. 新增 `BOOST_TYPE`
@@ -17,10 +25,10 @@
 
 # Room 原型拓展
 
-启动 boost 进程：为指定的强化类别准备对应的化合物
+启动战争状态，boost 进程会同步启动
 
 ```js
-Room.boost(boostType)
+Room.war()
 ```
 
 强化指定 creep，由该 creep 在 prepare 阶段抵达指定位置后自动调用。
@@ -29,10 +37,10 @@ Room.boost(boostType)
 Room.boostCreep(creep)
 ```
 
-取消当前 boost 进程：将已经填进 lab 的化合物移会 terminal
+解除战争状态，当前 boost 进程会被取消，将已经填进 lab 的化合物移会 terminal
 
 ```js
-Room.bcancel()
+Room.endwar()
 ```
 
 # 模块化

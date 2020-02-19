@@ -89,6 +89,9 @@ const roles: {
             }
 
             if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.goTo(source.pos)
+
+            // 快死了就把能量移出去
+            if (creep.ticksToLive <= 3) return true
         },
         target: creep => {
             const target: Structure = data.targetId ? Game.getObjectById(data.targetId) : creep.room.storage

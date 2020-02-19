@@ -328,7 +328,7 @@ export default class FactoryExtension extends StructureFactory {
 
         // 类型不对返回异常
         if (!(depositType in factoryTopTargets)) return ERR_INVALID_ARGS
-        // 等级异常夜蛾返回错误
+        // 等级异常就返回错误
         if (level > 5 || level < 1) return ERR_INVALID_ARGS
 
         // 已经被 power 强化并且等级不符，无法设置等级

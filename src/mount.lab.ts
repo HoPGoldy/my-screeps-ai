@@ -1,4 +1,4 @@
-import { reactionSource, LAB_STATE, labTarget, BOOST_STATE, ROOM_TRANSFER_TASK } from './setting'
+import { reactionSource, LAB_STATE, labTarget, BOOST_STATE, BOOST_RESOURCE, ROOM_TRANSFER_TASK, DEFAULT_FLAG_NAME } from './setting'
 
 /**
  * Lab 原型拓展
@@ -10,8 +10,17 @@ import { reactionSource, LAB_STATE, labTarget, BOOST_STATE, ROOM_TRANSFER_TASK }
  */
 export default class LabExtension extends StructureLab {
     public work(): void {
-        // 房间没有初始化 lab 集群则直接退出
-        if (!this.room.memory.lab) return
+        // 房间没有初始化 lab 集群则检查下有没有 boost 后退出
+        if (!this.room.memory.lab) {
+            if (this.room.memory.boost && !this.room._hasRunLab) {
+                this.room._hasRunLab = true
+
+                if (Game.time % 10) return
+                this.boostController()
+            }
+            return
+        }
+
         // lab 集群已被暂停 同样退出
         if (this.room.memory.lab.pause) return
 
@@ -91,12 +100,12 @@ export default class LabExtension extends StructureLab {
 
         // 遍历检查资源是否到位
         let allResourceReady = true
-        for (const resourceType in boostTask.lab) {
-            const lab = Game.getObjectById<StructureLab>(boostTask.lab[resourceType])
+        for (const res of BOOST_RESOURCE) {
+            const lab = Game.getObjectById<StructureLab>(boostTask.lab[res])
             if (!lab) continue
 
-            // 只要有 lab 里的资源没填好就算没有就绪
-            if (lab.store[resourceType] < (boostTask.config[resourceType] * LAB_BOOST_MINERAL)) allResourceReady = false
+            // 有的资源还没到位
+            if (lab.store[res] <= 0) allResourceReady = false
         }
 
         // 都就位了就进入下一个阶段
@@ -106,20 +115,8 @@ export default class LabExtension extends StructureLab {
         }
         // 否则就发布任务
         else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) {
-            // 遍历整理所有要转移的资源、目标 labId 及数量
-            let resources = []
-            for (const resourceType in boostTask.lab) {
-                resources.push({
-                    type: resourceType,
-                    labId: boostTask.lab[resourceType],
-                    number: boostTask.config[resourceType] * LAB_BOOST_MINERAL
-                })
-            }
-
-            // 发布任务
             this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE,
-                resource: resources
+                type: ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE
             })
         }
     }
@@ -134,13 +131,10 @@ export default class LabExtension extends StructureLab {
 
         // 遍历所有执行强化的 lab
         for (const resourceType in boostTask.lab) {
-            const lab: StructureLab = Game.getObjectById(boostTask.lab[resourceType])
-
-            // 获取强化该部件需要的最大能量
-            const needEnergy = boostTask.config[resourceType] * LAB_BOOST_ENERGY
+            const lab = Game.getObjectById<StructureLab>(boostTask.lab[resourceType])
 
             // 有 lab 能量不达标的话就发布能量填充任务
-            if (lab && lab.store[RESOURCE_ENERGY] < needEnergy) {
+            if (lab && lab.store[RESOURCE_ENERGY] < 1000) {
                 // 有 lab 能量不满的话就发布任务
                 this.room.addRoomTransferTask({
                     type: ROOM_TRANSFER_TASK.BOOST_GET_ENERGY
@@ -151,7 +145,11 @@ export default class LabExtension extends StructureLab {
 
         // 能循环完说明能量都填好了
         this.room.memory.boost.state = BOOST_STATE.WAIT_BOOST
-        console.log(`[${this.room.name} boost] 能量填充完成，等待强化`)
+        console.log(
+            `[${this.room.name} boost] 能量填充完成，boost 准备就绪，等待强化，键入 ${this.room.name}.whelp() 来查看如何孵化战斗单位`,
+            `${this.room.name}.spawnRangedAttacker(bearTowerNum=6, targetFlagName='${DEFAULT_FLAG_NAME.ATTACK}', keepSpawn=false) - 孵化一体机，[bearTowerNum] 抗塔等级 0-6 [targetFlagName] 目标旗帜 [keepSpawn] 是否持续生成`,
+            `${this.room.name}.spawnDismantleGroup(targetFlagName='${DEFAULT_FLAG_NAME.ATTACK}', keepSpawn=false) - 孵化拆墙小组 [targetFlagName] 目标旗帜 [keepSpawn] 是否持续生成`
+        )
     }
 
     /**
@@ -166,7 +164,7 @@ export default class LabExtension extends StructureLab {
 
         // 检查是否存在没搬空的 lab
         for (const labId of boostLabs) {
-            const lab: StructureLab = Game.getObjectById(labId)
+            const lab = Game.getObjectById<StructureLab>(labId)
             // mineralType 不为空就说明还有资源没拿出来
             if (lab && lab.mineralType) {
                 // 发布任务
@@ -185,7 +183,7 @@ export default class LabExtension extends StructureLab {
         else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
             console.log(`[${this.room.name} boost] 材料回收完成`)
             delete this.room.memory.boost
-            this.room.memory.lab.state = LAB_STATE.GET_TARGET
+            if (this.room.memory.lab) this.room.memory.lab.state = LAB_STATE.GET_TARGET
         }
     }
 

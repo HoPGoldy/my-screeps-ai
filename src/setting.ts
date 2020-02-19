@@ -347,14 +347,23 @@ export const ROOM_TRANSFER_TASK = {
  * boost 强化的类型，用于提供给 `Room.boost` 来启动 boost 进程
  * 每个一 BOOST_TYPE 都应对应一个 boostConfig
  */
-export const BOOST_TYPE = {
-    // 拆除专用 12T 28W 10M
-    DISMANTLE: 'dismantle', 
-    // 单体范围攻击 12T 5RA 10M 23H
-    RANGED_ATTACK: 'rangeAttack', 
-    // 治疗 25M 25H
-    HEAL: 'heal'
-}
+export const BOOST_RESOURCE = [
+    // DISMANTLE
+    RESOURCE_CATALYZED_ZYNTHIUM_ACID,
+    // RANGED_ATTACK
+    RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
+    // HEAL
+    RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
+    // MOVE
+    RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+    // TOUGH
+    RESOURCE_CATALYZED_GHODIUM_ALKALIDE
+]
+
+/**
+ * 当 lab 强化过 creep 之后会检查资源的剩余容量，如果低于下面这个值就会重新装填
+ */
+export const boostResourceReloadLimit = 900
 
 /**
  * powerbank 的采集阶段

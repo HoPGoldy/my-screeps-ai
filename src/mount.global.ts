@@ -1,5 +1,6 @@
 import { resourcesHelp } from './utils'
 import { factoryTopTargets } from './setting'
+import { creepApi } from './creepController'
 
 // 挂载全局拓展
 export default function () {
@@ -116,7 +117,10 @@ export const globalExtension = {
         else returnString = `订单追加失败，错误码 ${returnString}`
 
         return returnString
-    }
+    },
+
+    // 将 creepApi 挂载到全局方便手动发布或取消 creep
+    creepApi
 }
 
 /**

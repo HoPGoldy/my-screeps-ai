@@ -1,4 +1,4 @@
-import { BOOST_TYPE, BOOST_STATE, DEFAULT_FLAG_NAME } from './setting'
+import { BOOST_STATE } from './setting'
 import { calcBodyPart } from './utils'
 
 /**
@@ -16,6 +16,8 @@ const roles: {
     soldier: (data: WarUnitData): ICreepConfig => ({
         ...battleBase(data.targetFlagName),
         target: creep => {
+            creep.attackFlag(data.targetFlagName)
+
             const targetFlag = creep.getFlag(data.targetFlagName)
             if (!targetFlag) {
                 creep.say('旗呢?')
@@ -26,8 +28,6 @@ const roles: {
                 console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
                 return true
             }
-
-            creep.attackFlag(data.targetFlagName)
             return false
         },
         bodys: 'attacker'
@@ -42,13 +42,13 @@ const roles: {
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到目标 creep 出现
      */
     doctor: (data: HealUnitData): ICreepConfig => ({
-        source: creep => {
-            // 如果 creep 存在就优先去找 creep
-            if (data.creepName in Game.creeps) return true
-            creep.farMoveTo(Game.flags[data.standByFlagName].pos)
-        },
         target: creep => {
-            creep.healTo(Game.creeps[data.creepName])
+            const target = Game.creeps[data.creepName]
+            if (!target) {
+                creep.say('💤')
+                return false
+            }
+            creep.healTo(target)
             return false
         },
         bodys: 'healer'
@@ -63,20 +63,14 @@ const roles: {
      * @param creepsName 要治疗的 creep 名称
      */
     boostDoctor: (data: HealUnitData): ICreepConfig => ({
-        ...boostPrepare(BOOST_TYPE.HEAL, {
-            [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
-            [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: 25,
-            [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10,
-        }),
-        source: creep => {
-            // 如果 creep 存在就优先去找 creep
-            if (data.creepName in Game.creeps) return true
-
-            creep.healTo(creep)
-            creep.farMoveTo(Game.flags[data.standByFlagName].pos)
-        },
+        ...boostPrepare(data),
         target: creep => {
-            creep.healTo(Game.creeps[data.creepName])
+            const target = Game.creeps[data.creepName]
+            if (!target) {
+                creep.say('💤')
+                return false
+            }
+            creep.healTo(target)
             return false
         },
         bodys: calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
@@ -91,10 +85,6 @@ const roles: {
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
     dismantler: (data: WarUnitData): ICreepConfig => ({
-        prepare: creep => {
-            if (!(data.standByFlagName in Game.flags)) return true
-            creep.moveTo(Game.flags[data.standByFlagName])
-        },
         ...battleBase(data.targetFlagName),
         target: creep => creep.dismantleFlag(data.targetFlagName),
         bodys: 'dismantler'
@@ -110,16 +100,8 @@ const roles: {
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
     boostDismantler: (data: WarUnitData): ICreepConfig => ({
-        prepare: creep => {
-            if (!(data.standByFlagName in Game.flags)) return true
-            creep.moveTo(Game.flags[data.standByFlagName])
-        },
         ...battleBase(data.targetFlagName),
-        ...boostPrepare(BOOST_TYPE.DISMANTLE, {
-            [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: 12, 
-            [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: 28,
-            [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: 10, 
-        }),
+        ...boostPrepare(data),
         target: creep => creep.dismantleFlag(data.targetFlagName),
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
     }),
@@ -151,13 +133,34 @@ const roles: {
         // 组装 CreepConfig
         return {
             ...battleBase(data.targetFlagName),
-            ...boostPrepare(BOOST_TYPE.RANGED_ATTACK, {
-                [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: bodyConfig[TOUGH], 
-                [RESOURCE_CATALYZED_KEANIUM_ALKALIDE]: bodyConfig[RANGED_ATTACK], 
-                [RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE]: bodyConfig[MOVE], 
-                [RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE]: bodyConfig[HEAL]
-            }),
-            target: creep => creep.rangedAttackFlag(data.targetFlagName),
+            ...boostPrepare(data),
+            target: creep => {
+                // 获取旗帜
+                const targetFlag = creep.getFlag(data.targetFlagName)
+                if (!targetFlag) {
+                    creep.say('旗呢?')
+                    return false
+                }
+
+                // 根据 massMode 选择不同给攻击模式
+                if (creep.memory.massMode) creep.rangedMassAttack()
+                else {
+                    const structures = targetFlag.pos.lookFor(LOOK_STRUCTURES)
+                    if (structures.length > 0) creep.rangedAttack(structures[0])
+                }
+
+                // 治疗自己，不会检查自己生命值，一直治疗
+                // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害足以击穿 tough。
+                if (creep.getActiveBodyparts(HEAL)) creep.heal(creep)
+        
+                // 无脑移动
+                creep.moveTo(targetFlag)
+
+                if (creep.room.name !== targetFlag.pos.roomName) {
+                    console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
+                    return true
+                }
+            },
             bodys: calcBodyPart(bodyConfig)
         }
     },
@@ -169,46 +172,11 @@ const roles: {
  * 
  * @param boostType BOOST.TYPE 类型之一
  */
-const boostPrepare = (boostType: string, boostConfig: IBoostConfig) => ({
+const boostPrepare = (data: WarUnitData | HealUnitData | ApocalypseData) => ({
     /**
      * 自主调起强化进程并等待 lab 准备就绪
      */
-    isNeed: (room: Room) => {
-        // 获取强化旗帜
-        const boostFlagName = room.name + 'Boost'
-        const boostFlag = Game.flags[boostFlagName]
-        if (!boostFlag) {
-            console.log(`[${room.name}] 未找到 ${boostFlagName} 旗帜，请新建`)
-            return false
-        }
-
-        // 没有强化任务就新建任务
-        if (!room.memory.boost) {
-            // 启动强化任务
-            const startResult = room.boost(boostType, boostConfig)
-            // 启动成功就移除之前的排队标志位
-            if (startResult == OK) {
-                console.log(`[${room.name} boost] 已发布任务，等待强化材料准备就绪`)
-                delete room.memory.hasMoreBoost
-            }
-            else console.log(`[${room.name}] 暂时无法生成，Room.boost 返回值:${startResult}`)
-
-            return false
-        }
-
-        // 有任务但是不是强化自己的就跳过
-        if (room.memory.boost.type != boostType) {
-            // console.log(`[${room.name}] 等待其他强化完成`)
-            room.memory.hasMoreBoost = true
-            return false
-        }
-
-        // 是自己的强化任务但是还没准备好就跳过
-        if (room.memory.boost.state != BOOST_STATE.WAIT_BOOST) return false
-        
-        console.log(`[${room.name} boost] 准备就绪，开始生成`)
-        return true
-    },
+    isNeed: () => data.keepSpawn,
     /**
      * 移动至强化位置并执行强化
      * @danger 该位置是 Room.memory.boost.pos 中定义的，并不是旗帜的实时位置，该逻辑有可能会导致迷惑
@@ -216,15 +184,18 @@ const boostPrepare = (boostType: string, boostConfig: IBoostConfig) => ({
     prepare: (creep: Creep) => {
         // 获取强化位置
         const boostTask = creep.room.memory.boost
+        if (boostTask.state !== BOOST_STATE.WAIT_BOOST) {
+            creep.say('boost 未准备就绪')
+            return false
+        }
         const boostPos = new RoomPosition(boostTask.pos[0], boostTask.pos[1], creep.room.name)
 
         // 抵达了强化位置就开始强化
         if (creep.pos.isEqualTo(boostPos)) {
             const boostResult = creep.room.boostCreep(creep)
 
-            if (boostResult == OK) {
+            if (boostResult === OK) {
                 creep.say('💥 强化完成')
-                creep.room.memory.boost.state = BOOST_STATE.CLEAR
                 return true
             }
             else {
@@ -233,7 +204,7 @@ const boostPrepare = (boostType: string, boostConfig: IBoostConfig) => ({
             }
         }
         // 否则就继续移动
-        else creep.moveTo(boostPos, { reusePath: 10 })
+        else creep.goTo(boostPos)
         return false
     }
 })
@@ -256,11 +227,6 @@ const battleBase = (flagName: string) => ({
             return false
         }
 
-        if (creep.room.name == targetFlag.pos.roomName) {
-            console.log(`[${creep.name}] 抵达指定房间，切入作战模式`)
-            return true
-        }
-
         // 远程移动
         creep.farMoveTo(targetFlag.pos)
         creep.say('🛴')
@@ -269,6 +235,11 @@ const battleBase = (flagName: string) => ({
         if ((creep.hits < creep.hitsMax) && creep.getActiveBodyparts(HEAL)) {
             creep.heal(creep)
             creep.say('💔')
+        }
+
+        if (creep.room.name == targetFlag.pos.roomName) {
+            console.log(`[${creep.name}] 抵达指定房间，切入作战模式`)
+            return true
         }
         
         return false
