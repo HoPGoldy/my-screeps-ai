@@ -41,7 +41,7 @@ class PowerCreepExtension extends PowerCreep {
                 // 请求指定工作房间
                 if (!this.memory.workRoom) console.log(`[${this.name}] 请使用该命令来指定工作房间（房间名置空以关闭提示）：Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
                 // 或者直接出生在指定房间
-                else if (this.memory.workRoom != 'none') this.spawnAtRoom(this.memory.workRoom)
+                else if (this.memory.workRoom != 'hideTip') this.spawnAtRoom(this.memory.workRoom)
             }
 
             return false
@@ -122,12 +122,12 @@ class PowerCreepExtension extends PowerCreep {
      * 
      * @param roomName 要进行生成的房间名
      */
-    public setWorkRoom(roomName: string = null): string {
+    public setWorkRoom(roomName: string = 'hideTip'): string {
         let result: string = this.memory.workRoom ? 
             `[${this.name}] 已将工作房间从 ${this.memory.workRoom} 重置为 ${roomName}, 将会在老死后复活在目标房间` : 
             `[${this.name}] 已将工作房间设置为 ${roomName}`
         
-        if (_.isUndefined(roomName)) result = `[${this.name}] 已关闭提示，重新执行该命令来孵化该 power crep`
+        if (roomName === 'hideTip') result = `[${this.name}] 已关闭提示，重新执行该命令来孵化此 powerCrep`
         
         this.memory.workRoom = roomName
 
