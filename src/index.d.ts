@@ -178,7 +178,7 @@ interface RemoteHarvesterData {
     // 资源要存放到哪个建筑里，外矿采集者必须指定该参数
     targetId?: string
     // 出生房名称，资源会被运输到该房间中
-    spawnRoom: string
+    spawnRoom?: string
     // 路上忽视的房间名列表
     ignoreRoom?: string[]
 }
@@ -405,6 +405,8 @@ interface Room {
     addRemoteCreepGroup(remoteRoomName: string)
     addRemoteReserver(remoteRoomName): void
     addRemoteHelper(remoteRoomName, ignoreRoom?: string[]): void
+    removePbHarvesteGroup(attackerName: string, healerName: string): void
+    spawnPbTransferGroup(flagName: string, number: number): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -487,11 +489,12 @@ interface RoomMemory {
         watchIndex: number
         // 监听的房间列表
         watchRooms: string[]
-        // 获取到的资源信息
-        resourceFlags: {
-            powerBank: string[]
-            deposit: string[]
-        }
+        // 当前已经找到的 powerBank 和 deposit 的数量，observer 找到后会增加该数值，采集 creep 采集完之后会减少该数值
+        pbNumber: number
+        depositNumber: number
+        // 和上面两个对应，分别是 powerBank 和 deposit 的查找上限，由玩家通过 api 指定。两者默认值均为 1
+        pbMax: number
+        depositMax: number
         // 是否暂停，为 true 时暂停
         pause?: boolean
     }

@@ -374,6 +374,34 @@ class CreepControl extends Room {
     }
 
     /**
+     * 移除 pb 采集小组配置项
+     * @param attackerName 攻击单位名称
+     * @param healerName 治疗单位名称
+     */
+    public removePbHarvesteGroup(attackerName: string, healerName: string): void {
+        console.log('移除 pb 采集小组', attackerName, healerName)
+        creepApi.remove(attackerName)
+        creepApi.remove(healerName)
+    }
+
+    /**
+     * 发布 pbTransfer 小组
+     * 由 pbAttacker 调用
+     * 
+     * @param flagName powerBank 上的旗帜名
+     * @param number 孵化几个 transfer
+     */
+    public spawnPbTransferGroup(flagName: string, number: number): void {
+        console.log("添加 pb 运输小组", flagName, number)
+        for (let i = 0; i < number; i++) {
+            creepApi.add(`${flagName} transfer${i}`, 'pbTransfer', {
+                sourceFlagName: flagName,
+                spawnRoom: this.name
+            }, this.name)
+        }
+    }
+
+    /**
      * 孵化 boost 进攻一体机
      * 
      * @param bearTowerNum 抗塔等级 0-6，等级越高扛伤能力越强，伤害越低

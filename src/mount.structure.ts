@@ -99,9 +99,12 @@ class SpawnExtension extends StructureSpawn {
         if (this.spawning || this.room.memory.spawnList.length == 0) return 
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.room.memory.spawnList[0])
+        if (this.room.name === 'W8N1') console.log("孵化返回值", spawnResult)
 
         // 生成成功后移除任务
-        if (spawnResult == OK) this.room.memory.spawnList.shift()
+        if (spawnResult === OK) this.room.memory.spawnList.shift()
+        // 能量不足就挂起任务
+        else if (spawnResult === ERR_NOT_ENOUGH_ENERGY) this.room.hangSpawnTask()
     }
 
     /**
@@ -111,26 +114,14 @@ class SpawnExtension extends StructureSpawn {
      * @returns Spawn.spawnCreep 的返回值
      */
     private mySpawnCreep(configName): MySpawnReturnCode {
+        if (this.room.name === 'W8N1') console.log('孵化', configName)
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
         if (!creepConfig) return OK
         // 找不到他的工作逻辑的话也直接移除任务
         const creepWork = roles[creepConfig.role](creepConfig.data)
         if (!creepWork) return OK
-        
-        // 检查是否需要生成
-        // if (creepConfig.isNeed) {
-        //     // 每 5 tick 才会检查一次
-        //     if (Game.time % 5) {
-        //         if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
-        //         return <CREEP_DONT_NEED_SPAWN>-101
-        //     }
-        //     // 检查不通过依旧会挂起
-        //     else if (!creepConfig.isNeed(this.room)) {
-        //         if (this.room.memory.spawnList.length > 1) this.room.hangSpawnTask()
-        //         return <CREEP_DONT_NEED_SPAWN>-101
-        //     }
-        // }
+        if (this.room.name === 'W8N1') console.log(configName, '通过检查')
 
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
@@ -139,10 +130,7 @@ class SpawnExtension extends StructureSpawn {
 
         // 获取身体部件, 优先使用 bodys
         const bodys = (typeof creepWork.bodys === 'string') ? this.getBodys(creepConfig.bodys as string) : creepConfig.bodys as BodyPartConstant[]
-        if (bodys.length <= 0) {
-            this.room.hangSpawnTask()
-            return ERR_NOT_ENOUGH_ENERGY
-        }
+        if (bodys.length <= 0) return ERR_NOT_ENOUGH_ENERGY
         
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
@@ -756,16 +744,20 @@ class PowerSpawnExtension extends StructurePowerSpawn {
  */
 class ObserverExtension extends StructureObserver {
     public work(): void {
-        if (!this.room.memory.observerId) this.room.memory.observerId = this.id
+        const memory = this.room.memory.observer
         // 没有初始化或者暂停了就不执行工作
-        if (!this.room.memory.observer) return
-        if (this.room.memory.observer.pause) return
-        // 都找到了就不继续工作了
-        if ((this.getFlagName('deposit') in Game.flags) && (this.getFlagName('powerBank') in Game.flags)) return
+        if (!memory) return
+        if (memory.pause) return
+        // 都找到上限就不继续工作了
+        if ((memory.pbNumber >= memory.pbMax) && (memory.depositNumber >= memory.depositMax)) return
 
         // 如果房间没有视野就获取视野，否则就执行搜索
         if (this.room.memory.observer.checkRoomName) this.searchRoom()
         else this.obRoom()
+    }
+
+    public onBuildComplete(): void {
+        this.room.memory.observerId = this.id
     }
 
     /**
@@ -774,16 +766,18 @@ class ObserverExtension extends StructureObserver {
      */
     private searchRoom(): void {
         // 从内存中获取要搜索的房间
-        const room = Game.rooms[this.room.memory.observer.checkRoomName]
+        const memory = this.room.memory.observer
+        const room = Game.rooms[memory.checkRoomName]
         // 兜底
         if (!room) {
             delete this.room.memory.observer.checkRoomName
             return
         }
+        // console.log("搜索房间", room.name)
+
 
         // 还没插旗的话就继续查找 deposit
-        const depositFlagName = this.getFlagName('deposit')
-        if (!(depositFlagName in Game.flags)) {
+        if (memory.depositNumber < memory.depositMax) {
             const deposits = room.find(FIND_DEPOSITS)
             // 对找到的 deposit 进行处置归档
             deposits.forEach(deposit => {
@@ -793,16 +787,15 @@ class ObserverExtension extends StructureObserver {
                 if (flags.length > 0) return
                 
                 // 确认完成，插旗
-                room.createFlag(deposit.pos, depositFlagName)
+                this.newHarvesteTask(deposit)
                 console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`)
             })
         }
         
         // 还没插旗的话就继续查找 pb
-        const powerBankFlagName = this.getFlagName('powerBank')
-        if (!(powerBankFlagName in Game.flags)) {
+        if (memory.pbNumber < memory.pbMax) {
             // pb 的存活时间大于 3000 / power 足够大的才去采集
-            const powerBanks = room.find(FIND_STRUCTURES, {
+            const powerBanks = room.find<StructurePowerBank>(FIND_STRUCTURES, {
                 filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3000 && (s as StructurePowerBank).power >= 2000
             })
             // 对找到的 pb 进行处置归档
@@ -811,7 +804,7 @@ class ObserverExtension extends StructureObserver {
                 if (flags.length > 0) return
     
                 // 确认完成，插旗
-                room.createFlag(powerBank.pos, powerBankFlagName)
+                this.newHarvesteTask(powerBank)
                 console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`)    
             })
         }
@@ -821,13 +814,47 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 获取旗帜名称
-     * 名字形如：powerbank W1N1
+     * 发布新的采集任务
+     * 会自行插旗并发布角色组
      * 
-     * @param resourceType 资源类型
+     * @param target 要采集的资源
      */
-    private getFlagName(resourceType: ObserverResource): string {
-        return `${resourceType} ${this.room.name}`
+    private newHarvesteTask(target: StructurePowerBank | Deposit): OK | ERR_INVALID_TARGET {
+        if (target instanceof StructurePowerBank) {
+            const targetFlagName = `${STRUCTURE_POWER_BANK} ${this.room.name} ${Game.time}`
+            target.pos.createFlag(targetFlagName)
+
+            // 更新数量
+            this.room.memory.observer.pbNumber += 1
+
+            // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
+            for (let i = 0; i < 2; i++) {
+                creepApi.add(`${targetFlagName} attacker${i}`, 'pbAttacker', {
+                    sourceFlagName: targetFlagName,
+                    spawnRoom: this.room.name
+                }, this.room.name)
+                creepApi.add(`${targetFlagName} healer${i}`, 'pbHealer', {
+                    creepName: `${targetFlagName} attacker${i}`
+                }, this.room.name)
+            }
+        }
+        else if (target instanceof Deposit) {
+            const targetFlagName = `deposit ${this.room.name} ${Game.time}`
+            target.pos.createFlag(targetFlagName)
+
+            // 更新数量
+            this.room.memory.observer.depositNumber += 1
+
+            // 发布采集者，他会自行完成剩下的工作
+            creepApi.add(`${targetFlagName} worker`, 'depositHarvester', {
+                sourceFlagName: targetFlagName,
+                spawnRoom: this.room.name
+            }, this.room.name)
+        }
+        else return ERR_INVALID_TARGET
+
+        
+        return OK
     }
 
     /**
@@ -839,6 +866,7 @@ class ObserverExtension extends StructureObserver {
         // 执行视野获取
         const roomName = this.room.memory.observer.watchRooms[this.room.memory.observer.watchIndex]
         const obResult = this.observeRoom(roomName)
+        // console.log("ob 房间", roomName)
 
         // 标志该房间视野已经获取，可以进行检查
         if (obResult === OK) this.room.memory.observer.checkRoomName = roomName
@@ -849,54 +877,75 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 【废弃】将新资源录入存档
-     * 
-     * @param resourceType 新发现的资源类型
-     * @param flagName 已经插好的旗帜名称
-     */
-    private addResource(resourceType: ObserverResource, flagName: string): void {
-        if (resourceType in this.room.memory.observer.resourceFlags) {
-            this.room.memory.observer.resourceFlags[resourceType].push(flagName)
-        }
-    }
-
-    /**
-     * 【废弃】查询 observer 发现的资源
-     * 暂时只支持返回首个资源
-     * 
-     * @param resourceType 要查询的资源类型
-     */
-    public getResource(resourceType: ObserverResource): string | undefined {
-        if (!this.room.memory.observer) return undefined
-
-        return this.room.memory.observer.resourceFlags[resourceType][0]
-    }
-
-    /**
-     * 【废弃】完成指定旗帜下的资源采集
-     * 
-     * @param resourceType 要移除的资源类型
-     * @param flagName 完成采集的旗帜名称
-     */
-    public clearResource(resourceType: ObserverResource, flagName: string): void {
-        if (!this.room.memory.observer) return 
-
-        this.room.memory.observer.resourceFlags[resourceType] = _.uniq(this.room.memory.observer.resourceFlags[resourceType], [ flagName ])
-    }
-
-    /**
      * 初始化 observer
      */
     private init(): void {
         this.room.memory.observer = {
             watchIndex: 0,
             watchRooms: [],
-            resourceFlags: { powerBank: [], deposit: [] }
+            pbNumber: 0,
+            depositNumber: 0,
+            pbMax: 1,
+            depositMax: 1
         }
     }
 
     /**
-     * 用户操作：新增监听房间
+     * 用户操作 - 查看状态
+     */
+    public stats(): string {
+        if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
+        
+        let stats = [ `[${this.room.name} observer] 当前状态` ]
+        // 这里并没有直接用 memory 里的信息，是因为为了保证准确性，并且下面会用 Game.flags 进行统计，所以也不用多费什么事情
+        let pbNumber = 0
+        let pbDetail = ''
+        let depositNumber = 0
+        let depositDetail = ''
+
+        // 遍历所有 flag，统计两种资源的旗帜数量
+        for (const flagName in Game.flags) {
+            if (flagName.includes(`${STRUCTURE_POWER_BANK} ${this.room.name}`)) {
+                pbNumber += 1
+                pbDetail += ` ${Game.flags[flagName].pos.roomName}`
+                continue
+            }
+            if (flagName.includes(`deposit ${this.room.name}`)) {
+                depositNumber += 1
+                depositDetail += ` ${Game.flags[flagName].pos.roomName}`
+                continue
+            }
+        }
+
+        stats.push(`[powerBank] 已发现：${pbNumber}/${this.room.memory.observer.pbMax} [位置] ${pbDetail}`)
+        stats.push(`[deposit] 已发现：${depositNumber}/${this.room.memory.observer.depositMax} [位置] ${depositDetail}`)
+
+        // 更新缓存信息
+        this.room.memory.observer.pbNumber = pbNumber
+        this.room.memory.observer.depositNumber = depositNumber
+
+        return stats.join('\n')
+    }
+
+    /**
+     * 设置 observer 对 pb、deposit 的搜索上限
+     * 
+     * @param type 要设置的类型
+     * @param max 要设置的最大值
+     */
+    public setMax(type: 'powerbank' | 'deposit', max: number): string {
+        if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
+        if (max < 0) return `[${this.room.name} observer] 最大数量不得小于 0，请重新指定`
+
+        if (type === 'powerbank') this.room.memory.observer.pbMax = max
+        else if (type == 'deposit') this.room.memory.observer.depositMax = max
+        else return `[${this.room.name} observer] 错误的类型，必须为 powerbank 或者 deposit`
+
+        return `[${this.room.name} observer] 配置成功\n` + this.stats()
+    }
+
+    /**
+     * 用户操作 - 新增监听房间
      * 
      * @param roomNames 要进行监听的房间名称
      */
@@ -910,7 +959,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 用户操作：移除监听房间
+     * 用户操作 - 移除监听房间
      * 
      * @param roomNames 不在监听的房间名
      */
@@ -924,7 +973,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 用户操作：暂停 observer
+     * 用户操作 - 暂停 observer
      */
     public off(): string {
         if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用`
@@ -935,7 +984,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 用户操作：重启 observer
+     * 用户操作 - 重启 observer
      */
     public on(): string {
         if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用`
@@ -946,7 +995,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 用户操作：清空房间列表
+     * 用户操作 - 清空房间列表
      */
     public clear(): string {
         if (!this.room.memory.observer) this.init()
@@ -957,7 +1006,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 用户操作：显示当前监听的房间列表
+     * 用户操作 - 显示当前监听的房间列表
      * 
      * @param noTitle 该参数为 true 则不显示前缀
      */
@@ -972,7 +1021,7 @@ class ObserverExtension extends StructureObserver {
     }
 
     /**
-     * 用户操作- 帮助
+     * 用户操作 - 帮助
      */
     public help(): string {
         return createHelp([
@@ -993,6 +1042,18 @@ class ObserverExtension extends StructureObserver {
             {
                 title: '显示所有监听房间',
                 functionName: 'show'
+            },
+            {
+                title: '设置 observer 对 pb、deposit 的搜索上限',
+                params: [
+                    { name: 'type', desc: 'powerbank 或 deposit 之一' },
+                    { name: 'max', desc: '查找的最大值' }
+                ],
+                functionName: 'setMax'
+            },
+            {
+                title: '显示状态',
+                functionName: 'stats'
             },
             {
                 title: '移除所有监听房间',
