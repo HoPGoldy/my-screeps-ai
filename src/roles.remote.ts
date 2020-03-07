@@ -80,13 +80,18 @@ const roles: {
         },
         // 一直进行预定
         target: creep => {
+            const targetRoom = Game.rooms[data.targetRoomName]
+            if (!targetRoom) return false
+            const controller = targetRoom.controller
+            if (!controller) return false
+
             // 如果房间的预订者不是自己, 就攻击控制器
-            if (creep.room.controller.reservation && creep.room.controller.reservation.username !== creep.owner.username) {
-                if (creep.attackController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[data.targetRoomName].controller.pos, data.ignoreRoom, 1)
+            if (controller.reservation && controller.reservation.username !== creep.owner.username) {
+                if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, data.ignoreRoom, 1)
             }
             // 房间没有预定满, 就继续预定
-            if (!creep.room.controller.reservation || creep.room.controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-                if (creep.reserveController(creep.room.controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(Game.rooms[data.targetRoomName].controller.pos, data.ignoreRoom, 1)
+            if (!controller.reservation || controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
+                if (creep.reserveController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, data.ignoreRoom, 1)
             }
             return false
         },
