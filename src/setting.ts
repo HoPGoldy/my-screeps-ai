@@ -374,7 +374,7 @@ export const boostResourceReloadLimit = 900
 export const PB_HARVESTE_STATE = {
     ATTACK: 'attack',
     PREPARE: 'prepare',
-    TRANSFE: 'transfer'
+    TRANSFER: 'transfer'
 }
 
 /**
@@ -461,3 +461,9 @@ export const factoryTopTargets: {
         5: [ RESOURCE_ESSENCE ]
     }
 }
+
+/**
+ * miner 的矿物采集上限
+ * 当 terminal 中的资源多余这个值时，miner 将不再继续采矿
+ */
+export const minerHervesteLimit = 200000

@@ -99,7 +99,7 @@ class SpawnExtension extends StructureSpawn {
         if (this.spawning || this.room.memory.spawnList.length == 0) return 
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.room.memory.spawnList[0])
-        if (this.room.name === 'W8N1') console.log("孵化返回值", spawnResult)
+        // if (this.room.name === 'W8N1') console.log("孵化返回值", spawnResult)
 
         // 生成成功后移除任务
         if (spawnResult === OK) this.room.memory.spawnList.shift()
@@ -114,14 +114,14 @@ class SpawnExtension extends StructureSpawn {
      * @returns Spawn.spawnCreep 的返回值
      */
     private mySpawnCreep(configName): MySpawnReturnCode {
-        if (this.room.name === 'W8N1') console.log('孵化', configName)
+        // if (this.room.name === 'W8N1') console.log('孵化', configName)
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
         if (!creepConfig) return OK
         // 找不到他的工作逻辑的话也直接移除任务
         const creepWork = roles[creepConfig.role](creepConfig.data)
         if (!creepWork) return OK
-        if (this.room.name === 'W8N1') console.log(configName, '通过检查')
+        // if (this.room.name === 'W8N1') console.log(configName, '通过检查')
 
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
@@ -145,7 +145,7 @@ class SpawnExtension extends StructureSpawn {
             return OK
         }
         else {
-            console.log(`[生成失败] ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
+            // console.log(`[生成失败] ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return spawnResult
         }
     }
@@ -829,11 +829,16 @@ class ObserverExtension extends StructureObserver {
 
             // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
             for (let i = 0; i < 2; i++) {
-                creepApi.add(`${targetFlagName} attacker${i}`, 'pbAttacker', {
+                const attackerName = `${targetFlagName} attacker${i}`
+                const healerName = `${targetFlagName} healer${i}`
+
+                // 添加采集小组
+                creepApi.add(attackerName, 'pbAttacker', {
                     sourceFlagName: targetFlagName,
-                    spawnRoom: this.room.name
+                    spawnRoom: this.room.name,
+                    healerCreepName: healerName
                 }, this.room.name)
-                creepApi.add(`${targetFlagName} healer${i}`, 'pbHealer', {
+                creepApi.add(healerName, 'pbHealer', {
                     creepName: `${targetFlagName} attacker${i}`
                 }, this.room.name)
             }
