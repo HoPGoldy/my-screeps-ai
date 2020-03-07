@@ -1,3 +1,5 @@
+import { minerHervesteLimit } from './setting'
+
 /**
  * 初级房间运维角色组
  * 本角色组包括了在没有 Storage 和 Link 的房间内运维所需的角色
@@ -120,13 +122,8 @@ const roles: {
                 return false
             }
 
-            // 再检查下目标存储是否已经满了，检查个吉尔，存储满了那是存储的事，我就专心采矿
-            // if (data.targetId) {
-            //     const target: StructureWithStore = Game.getObjectById(data.targetId)
-            //     if (!target) return false
-            //     if (target && target.store.getFreeCapacity() <= 0) return false
-            // }
-            // else if (!room.terminal || room.terminal.store.getFreeCapacity() <= 0) return false
+            // 再检查下终端存储是否已经太多了
+            if (!room.terminal || room.terminal.store.getUsedCapacity() >= minerHervesteLimit) return false
             
             return true
         },
@@ -156,9 +153,9 @@ const roles: {
             else if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
         },
         target: creep => {
-            const target: Structure = data.targetId ? Game.getObjectById(data.targetId) : creep.room.terminal
+            const target: StructureTerminal = creep.room.terminal
             if (!target) {
-                creep.say('放哪啊！')
+                creep.say('放哪？')
                 return false
             }
             // 转移/移动

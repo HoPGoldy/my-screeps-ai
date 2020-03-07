@@ -405,6 +405,10 @@ const roles: {
                 if (target) targetFlag.memory.sourceId = target.id
                 // 找不到就失去了存在的意义
                 else {
+                    const roomMemory = Memory.rooms[data.spawnRoom]
+                    if (roomMemory && roomMemory.observer) roomMemory.observer.depositNumber -= 1
+                    console.log('observer deposit 数量减少')
+
                     Memory.flags[targetFlag.name] = {}
                     targetFlag.remove()
                     creep.suicide()
@@ -432,7 +436,7 @@ const roles: {
             
             // 转移并检测返回值
             const transferResult = creep.transfer(room.terminal, creep.memory.depositType)
-            if (transferResult === OK) {
+            if (transferResult === OK || transferResult === ERR_NOT_ENOUGH_RESOURCES) {
                 // 获取旗帜，旗帜没了就自杀
                 const targetFlag = Game.flags[data.sourceFlagName]
                 if (!targetFlag) {
@@ -463,11 +467,13 @@ const roles: {
      * 
      * @property {} sourceFlagName 旗帜名，要插在 powerBank 上
      */
-    pbAttacker: (data: RemoteHarvesterData): ICreepConfig => ({
+    pbAttacker: (data: pbAttackerData): ICreepConfig => ({
         prepare: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
                 creep.say('旗呢？')
+                // 移除采集小组
+                removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
             }
 
@@ -483,7 +489,8 @@ const roles: {
                     // 没找到说明已经没了
                     Memory.flags[targetFlag.name] = {}
                     targetFlag.remove()
-                    creep.suicide()
+                    // 移除采集小组
+                    removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                     return false
                 }
             }
@@ -502,6 +509,8 @@ const roles: {
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
                 console.log(`[${creep.name}] 未找到旗帜，待命中`)
+                // 移除采集小组
+                removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
             }
             if (creep.ticksToLive <= 1) creep.room.removeRestrictedPos(creep.name)
@@ -518,22 +527,10 @@ const roles: {
 
             // 找不到 pb 了，进入下个阶段
             if (!powerbank) {
-                targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFE
+                targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFER
 
-                // 移除自己和 heal 的配置项
-                const spawnRoom = Game.rooms[data.spawnRoom]
-                if (!spawnRoom) {
-                    creep.say('家呢？')
-                    return false
-                }
-                /**
-                 * @danger 这里 Healer 的名称应该与发布时保持一致，但是这里并没有强相关，在 oberserver 发布角色组的代码里如果修改了 healer 的名称的话这里就会出问题
-                 */
-                spawnRoom.removePbHarvesteGroup(creep.name, `${data.sourceFlagName} healer`)
-                // 自杀并释放采集位置
-                creep.suicide()
-                creep.room.removeRestrictedPos(creep.name)
-                
+                // 移除采集小组
+                removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
             }
 
@@ -542,11 +539,10 @@ const roles: {
             // 如果血量低于标准了，则通知运输单位进行提前生成
             if (attackResult === OK) {
                 /**
-                 * @danger 注意下面这个计算式是固定两组在采集时的准备时间计算，如果有两组同时开采的话会出现 pb 拆完但是 transfer 还没到位的情况发生
+                 * @danger 注意下面这个计算式是固定两组在采集时的准备时间计算，如果更多单位一起开采的话会出现 pb 拆完但是 transfer 还没到位的情况发生
+                 * 下面这个 300 是两组 pbTransfer 的孵化时间
                  */
-                if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 150) * 600 * 2)) {
-                    targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
-
+                if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 300) * 600 * 2)) {
                     // 发布运输小组
                     const spawnRoom = Game.rooms[data.spawnRoom]
                     if (!spawnRoom) {
@@ -556,7 +552,10 @@ const roles: {
 
                     // 下面这个 1600 是 [ CARRY: 32, MOVE: 16 ] 的 pbTransfer 的最大运输量
                     spawnRoom.spawnPbTransferGroup(data.sourceFlagName, Math.ceil(powerbank.power / 1600))
-                    console.log('准备阶段！')
+
+                    // 设置为新状态
+                    targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
+                    // console.log('准备阶段！')
                 }
             }
             else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
@@ -568,6 +567,7 @@ const roles: {
      * PowerBank 治疗单位
      * 移动并治疗 pbAttacker, 请在 8 级时生成
      * @see doc "../doc/PB 采集小组设计案"
+     * @todo 治疗的时候应该禁止对穿的，现在没禁止有可能出现两个 healer 选在一个位置疯狂对穿。但是机率不大，不写了。
      * 
      * @property {} creepName 要治疗的 pbAttacker 的名字
      */
@@ -621,7 +621,7 @@ const roles: {
                 return false
             }
             // 没到搬运的时候就先待命
-            if (targetFlag.memory.state !== PB_HARVESTE_STATE.TRANSFE) return false
+            if (targetFlag.memory.state !== PB_HARVESTE_STATE.TRANSFER) return false
             // 到行动阶段了就过去
             creep.goTo(targetFlag.pos)
 
@@ -633,42 +633,16 @@ const roles: {
 
             // 如果 pb 废墟还存在
             if (powerbankRuin) {
-                if (creep.withdraw(powerbankRuin, RESOURCE_POWER) === OK) {
-                    // 如果自己能搬完，就移除旗帜
-                    if (powerbankRuin.store[RESOURCE_POWER] <= creep.store.getFreeCapacity(RESOURCE_POWER)) {
-                        Memory.flags[targetFlag.name] = {}
-                        targetFlag.remove()
-
-                        const roomMemory = Memory.rooms[data.spawnRoom]
-                        if (roomMemory && roomMemory.observer) roomMemory.observer.pbNumber -= 1
-                        console.log('observer pb 数量减少')
-                    }
-                    return true
-                }
+                if (creep.withdraw(powerbankRuin, RESOURCE_POWER) === OK) return true
             }
             // 如果废墟没了就从地上捡
             else {
                 const power = targetFlag.pos.lookFor(LOOK_RESOURCES)[0]
                 if (power) {
-                    if (creep.pickup(power) === OK) {
-                        // 如果自己能搬完，就移除旗帜
-                        if (power.amount <= creep.store.getFreeCapacity(RESOURCE_POWER)) {
-                            Memory.flags[targetFlag.name] = {}
-                            targetFlag.remove()
-
-                            const roomMemory = Memory.rooms[data.spawnRoom]
-                            if (roomMemory && roomMemory.observer) roomMemory.observer.pbNumber -= 1
-                            console.log('observer pb 数量减少')
-                        }
-                        return true
-                    }
+                    if (creep.pickup(power) === OK) return true
                 }
-                else {
-                    // 地上的 power 也没了就正式采集结束了
-                    Memory.flags[targetFlag.name] = {}
-                    targetFlag.remove()
-                    creep.suicide()
-                }
+                // 地上也没了那就上天堂
+                else creep.suicide()
             }
         },
         target: creep => {
@@ -681,8 +655,17 @@ const roles: {
             
             // 存放资源
             const transferResult = creep.transfer(room.terminal, RESOURCE_POWER)
-            // 存好了就直接自杀
+            // 存好了就直接自杀并移除旗帜
             if (transferResult === OK) {
+                const targetFlag = Game.flags[data.sourceFlagName]
+                if (targetFlag) {
+                    Memory.flags[targetFlag.name] = {}
+                    targetFlag.remove()
+
+                    const roomMemory = Memory.rooms[data.spawnRoom]
+                    if (roomMemory && roomMemory.observer) roomMemory.observer.pbNumber -= 1
+                }
+
                 creep.suicide()
                 return true
             }
@@ -691,7 +674,7 @@ const roles: {
         bodys: calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
     }),
 
-     /**
+    /**
      * 移动测试单位
      * 一直朝着旗帜移动
      * 
@@ -714,6 +697,31 @@ const roles: {
         },
         bodys: [ MOVE ]
     }),
+}
+
+/**
+ * pbAttacker 移除自身采集小组并自杀的封装
+ * 
+ * @param creep pbAttacker
+ * @param healerName 治疗单位名称
+ * @param spawnRoomName 出生房间名
+ * @returns 是否移除成功
+ */
+function removeSelfGroup(creep: Creep, healerName: string, spawnRoomName: string): boolean {
+    // 移除自己和 heal 的配置项
+    const spawnRoom = Game.rooms[spawnRoomName]
+    if (!spawnRoom) {
+        creep.say('家呢？')
+        return false
+    }
+    /**
+     * @danger 这里 Healer 的名称应该与发布时保持一致，但是这里并没有强相关，在 oberserver 发布角色组的代码里如果修改了 healer 的名称的话这里就会出问题
+     */
+    spawnRoom.removePbHarvesteGroup(creep.name, healerName)
+
+    // 自杀并释放采集位置
+    creep.suicide()
+    creep.room.removeRestrictedPos(creep.name)
 }
 
 export default roles

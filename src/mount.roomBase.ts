@@ -393,6 +393,10 @@ class CreepControl extends Room {
      */
     public spawnPbTransferGroup(flagName: string, number: number): void {
         console.log("添加 pb 运输小组", flagName, number)
+
+        // 如果已经有人发布过了就不再费事了
+        if (creepApi.has(`${flagName} transfer0`)) return
+        
         for (let i = 0; i < number; i++) {
             creepApi.add(`${flagName} transfer${i}`, 'pbTransfer', {
                 sourceFlagName: flagName,

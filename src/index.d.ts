@@ -108,6 +108,7 @@ type CreepData =
     RemoteHelperData | 
     RemoteDeclarerData |
     RemoteHarvesterData |
+    pbAttackerData |
     WarUnitData |
     ApocalypseData |
     HealUnitData
@@ -179,6 +180,17 @@ interface RemoteHarvesterData {
     targetId?: string
     // 出生房名称，资源会被运输到该房间中
     spawnRoom?: string
+    // 路上忽视的房间名列表
+    ignoreRoom?: string[]
+}
+
+interface pbAttackerData {
+    // 要采集的资源旗帜名称
+    sourceFlagName: string
+    // 资源要存放到哪个建筑里，外矿采集者必须指定该参数
+    healerCreepName: string
+    // 出生房名称，资源会被运输到该房间中
+    spawnRoom: string
     // 路上忽视的房间名列表
     ignoreRoom?: string[]
 }
