@@ -10,20 +10,6 @@ export default function () {
     })
     // 挂载没有别名的操作
     _.assign(global, globalExtension)
-    // 把所有的房间挂载到全局
-    mountRoomToGlobal()
-}
-
-/**
- * 把房间挂载到全局
- * 来方便控制台操作
- * 注意：本方法仅会挂载 Memory.rooms 里有的房间
- */
-function mountRoomToGlobal() {
-    for (const roomName in Memory.rooms) {
-        // console.log('挂载', roomName)
-        if (Game.rooms[roomName]) global[roomName] = Game.rooms[roomName]
-    }
 }
 
 /**
@@ -34,12 +20,14 @@ function mountRoomToGlobal() {
  * @property {function} exec 执行别名时触发的操作
  */
 const funcAlias = [
+    // 常用的资源常量
     {
         alias: 'resource',
         exec: function(): string {
             return resourcesHelp
         }
     },
+    // 释放所有禁止通行点位
     {
         alias: 'clearpos',
         exec: function(): string {
@@ -49,10 +37,8 @@ const funcAlias = [
             return '禁止通行点位已释放'
         }
     },
+    // 显示当前商品生产状态
     {
-        /**
-         * 显示当前商品生产状态
-         */
         alias: 'comm',
         exec: function(): string {
             if (!Memory.commodities) return '未启动商品生产线'
@@ -90,7 +76,19 @@ const funcAlias = [
 
             return stateStr.join('\n')
         }
-    }
+    },
+    /**
+     * 把房间挂载到全局
+     * 来方便控制台操作，在访问时会实时的获取房间对象
+     * 注意：仅会挂载 Memory.rooms 里有的房间
+     */
+    ...Object.keys(Memory.rooms).map(roomName => ({
+        alias: roomName,
+        exec: function(): Room {
+            console.log('我重新获取了房间!', roomName)
+            return Game.rooms[roomName]
+        }
+    }))
 ]
 
 // 全局拓展对象

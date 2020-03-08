@@ -10,7 +10,6 @@ import mountStructure from './mount.structure'
 export default function (): void {
     if (!global.hasExtension) {
         console.log('[mount] 重新挂载拓展')
-        global.hasExtension = true
 
         // 挂载全部拓展
         mountGlobal()
@@ -18,5 +17,7 @@ export default function (): void {
         mountCreep()
         mountPowerCreep()
         mountStructure()
+
+        global.hasExtension = true
     }
 }
