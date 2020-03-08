@@ -1,21 +1,22 @@
 # my-screeps-ai
 
-适用于游戏《[screeps](https://screeps.com/a/#!/map)》的半自动 ai。
+适用于游戏《[Screeps](https://screeps.com/a/#!/map)》的半自动 ai 项目。
 
-注意，本项目尚未完成，后续可能会进行大范围的代码更改，你可以通过本项目了解 screeps 相关的操作以及如何将 grunt 和 typescript 应用在 screeps 里（本项目包含完整的中文注释），但是如果你并不了解该项目的话，不要直接将本项目应用在实际游戏中。
+注意，本项目尚未完成，后续可能会进行大范围的代码更改，你可以通过本项目了解 Screeps 相关的操作以及如何将 grunt 和 TypeScript 应用在 Screeps 里（本项目包含完整的中文注释），但是请尊重自己和他人的游戏体验，不要将本项目直接部署在官方服务器上。
 
 ## 准备
 
 **安装依赖**
 
-```
+```bash
+# nodejs >= 10.13.0
 npm install
 ```
 
 **添加密钥**
 
 在根目录下新建 `secret.js` 文件，并填入以下内容，记得修改邮箱、密码及要复制到的文件夹路径。
-*`copyPath`是用于向本地文件夹复制代码，没有需要可以填空字符串。*
+*`copyPath`是用于向本地 screeps 代码文件夹复制代码，没有需要可以填空字符串。*
 
 ```js
 module.exports = {
@@ -24,10 +25,6 @@ module.exports = {
     copyPath: 'YOUR_TARGET_PATH'
 }
 ```
-
-**完成配置项**
-
-打开 `src/` 目录，将 `config.template.ts` 重命名为 `config.ts`。
 
 ## 使用
 
