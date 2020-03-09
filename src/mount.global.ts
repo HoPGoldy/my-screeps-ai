@@ -84,10 +84,7 @@ const funcAlias = [
      */
     ...Object.keys(Memory.rooms).map(roomName => ({
         alias: roomName,
-        exec: function(): Room {
-            console.log('我重新获取了房间!', roomName)
-            return Game.rooms[roomName]
-        }
+        exec: (): Room => Game.rooms[roomName]
     }))
 ]
 

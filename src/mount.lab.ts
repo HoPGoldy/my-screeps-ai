@@ -5,8 +5,8 @@ import { reactionSource, LAB_STATE, labTarget, BOOST_STATE, BOOST_RESOURCE, ROOM
  * 
  * 会自动监听 terminal 中的化合物是否足够
  * 不足的话会自行合成
- * 在房间中存在 boost 任务时会完成本轮化合物合成后切入 boost 任务
- * 在 boost 任务完成后则会重新恢复化合物合成
+ * 在房间启用战争状态时会完成本轮化合物合成后切入战争状态
+ * 在战争状态结束后后自动清理 lab 中残留的强化材料并重新恢复化合物合成
  */
 export default class LabExtension extends StructureLab {
     public work(): void {

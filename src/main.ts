@@ -21,9 +21,7 @@ module.exports.loop = function (): void {
     doing(Game.powerCreeps)
 
     // 所有建筑工地工作
-    // const cost = Game.cpu.getUsed()
     if (!(Game.time % 100)) doing(Game.constructionSites)
-    // console.log('工地消耗', Game.cpu.getUsed() - cost)
 
     // 统计全局资源使用
     stateScanner()
