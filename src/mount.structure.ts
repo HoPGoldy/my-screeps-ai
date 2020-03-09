@@ -631,6 +631,11 @@ class ControllerExtension extends StructureController {
                     creepApi.remove(`${this.room.name} RemoteBuilder0`)
                 }
             break
+            // 到 8 级之后就不再需要其他房间的能量共享
+            case 8:
+                this.room.removeTerminalTask(RESOURCE_ENERGY)
+                this.room.removeUpgradeGroup()
+            break
         }
     }
 
