@@ -524,7 +524,7 @@ class RoomExtension extends Room {
      *     @var market 市场（默认值）
      *     @var share 资源共享协议
      */
-    public addTerminalTask(resourceType: ResourceConstant, amount: number, mod: string = 'all', supplementAction: string = 'market'): void {
+    public addTerminalTask(resourceType: ResourceConstant, amount: number, mod: 'max' | 'min' | 'all' = 'all', supplementAction: 'market' | 'share' = 'market'): void {
         if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
 
         this.memory.terminalTasks[resourceType] = { amount, mod, supplementAction }
@@ -533,7 +533,7 @@ class RoomExtension extends Room {
     /**
      * 用户操作：addTerminalTask
      */
-    public tadd(resourceType: ResourceConstant, amount: number, mod: string = 'all', supplementAction: string = 'market'): string { 
+    public tadd(resourceType: ResourceConstant, amount: number, mod: 'max' | 'min' | 'all' = 'all', supplementAction: 'market' | 'share' = 'market'): string { 
         this.addTerminalTask(resourceType, amount, mod, supplementAction) 
         return `已添加，当前监听任务如下: \n${this.showTerminalTask()}`
     }

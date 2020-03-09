@@ -419,6 +419,12 @@ interface Room {
     addRemoteHelper(remoteRoomName, ignoreRoom?: string[]): void
     removePbHarvesteGroup(attackerName: string, healerName: string): void
     spawnPbTransferGroup(flagName: string, number: number): void
+    addUpgradeGroup(creepNum?: number): OK | ERR_NOT_FOUND
+    removeUpgradeGroup(creepNum?: number): void
+
+    // 添加及移除终端监听任务
+    addTerminalTask(resourceType: ResourceConstant, amount: number, mod?: 'max' | 'min' | 'all', supplementAction?: 'market' | 'share'): void
+    removeTerminalTask(resourceType: ResourceConstant): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义

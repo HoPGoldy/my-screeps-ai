@@ -374,6 +374,36 @@ class CreepControl extends Room {
     }
 
     /**
+     * 发布房间升级组
+     * 升级组依靠 terminal 中传递来的能量进行升级
+     * 
+     * @param creepNum 新增升级组的 creep 数量
+     * @returns ERR_NOT_FOUND 没有找到 terminal
+     */
+    public addUpgradeGroup(creepNum: number = 4): OK | ERR_NOT_FOUND {
+        if (!this.terminal) return ERR_NOT_FOUND
+
+        for (let i = 0; i < creepNum; i ++) {
+            creepApi.add(`${this.name} terminalUpgrader ${i}`, 'upgrader', {
+                sourceId: this.terminal.id
+            }, this.name)
+        }
+
+        return OK
+    }
+
+    /**
+     * 移除房间升级组
+     * 
+     * @param creepNum 要移除的升级组数量
+     */
+    public removeUpgradeGroup(creepNum: number = 4): void {
+        for (let i = 0; i < creepNum; i ++) {
+            creepApi.remove(`${this.name} terminalUpgrader ${i}`)
+        }
+    }
+
+    /**
      * 移除 pb 采集小组配置项
      * @param attackerName 攻击单位名称
      * @param healerName 治疗单位名称
