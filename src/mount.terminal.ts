@@ -40,7 +40,8 @@ export default class TerminalExtension extends StructureTerminal {
      */
     public onBuildComplete(): void {
         // 调整 miner 的目标存放建筑为 terminal
-        creepApi.add(`${this.room.name} miner`, 'miner', {
+        const minerName = `${this.room.name} miner`
+        if (creepApi.has(minerName)) creepApi.add(minerName, 'miner', {
             sourceId: this.room.mineral.id,
             targetId: this.id
         }, this.room.name)
@@ -49,7 +50,7 @@ export default class TerminalExtension extends StructureTerminal {
         if (Object.keys(Game.spawns).length > 3) {
             this.room.addTerminalTask(RESOURCE_ENERGY, 20000, 'min', 'share')
             this.room.addUpgradeGroup()
-        }   
+        }
     }
 
     /**
