@@ -285,17 +285,41 @@ export const observerInterval = 10
 
 /**
  * factory 会优先保证底物的数量超过下面的限制之后才会进行生产
- * 例如：factory 想要生产 oxidant，但是 O 的数量低于 FACTORY_LOCK_AMOUNT.RESOURCE_OXYGEN 所以 factory 就会暂时停工
+ * 例如：factory 想要生产 RESOURCE_OXIDANT，但是 RESOURCE_OXYGEN 的数量低于 FACTORY_LOCK_AMOUNT[RESOURCE_OXIDANT].limit 所以 factory 就会暂时停工
  */
 export const FACTORY_LOCK_AMOUNT = {
-    [RESOURCE_HYDROGEN]: 40000, 
-    [RESOURCE_OXYGEN]: 40000, 
-    [RESOURCE_UTRIUM]: 40000, 
-    [RESOURCE_LEMERGIUM]: 40000, 
-    [RESOURCE_KEANIUM]: 40000, 
-    [RESOURCE_ZYNTHIUM]: 40000, 
-    [RESOURCE_CATALYST]: 40000, 
-    [RESOURCE_GHODIUM]: 40000, 
+    [RESOURCE_OXIDANT]: {
+        sub: RESOURCE_OXYGEN,
+        limit: 40000
+    },
+    [RESOURCE_REDUCTANT]: {
+        sub: RESOURCE_HYDROGEN,
+        limit: 40000
+    },
+    [RESOURCE_UTRIUM_BAR]: {
+        sub: RESOURCE_UTRIUM,
+        limit: 40000
+    },
+    [RESOURCE_LEMERGIUM_BAR]: {
+        sub: RESOURCE_LEMERGIUM,
+        limit: 40000
+    },
+    [RESOURCE_KEANIUM_BAR]: {
+        sub: RESOURCE_KEANIUM,
+        limit: 40000
+    },
+    [RESOURCE_ZYNTHIUM_BAR]: {
+        sub: RESOURCE_ZYNTHIUM,
+        limit: 40000
+    },
+    [RESOURCE_PURIFIER]: {
+        sub: RESOURCE_CATALYST,
+        limit: 40000
+    },
+    [RESOURCE_GHODIUM_MELT]: {
+        sub: RESOURCE_GHODIUM,
+        limit: 3000
+    }
 }
 
 /**
@@ -344,8 +368,8 @@ export const ROOM_TRANSFER_TASK = {
 }
 
 /**
- * boost 强化的类型，用于提供给 `Room.boost` 来启动 boost 进程
- * 每个一 BOOST_TYPE 都应对应一个 boostConfig
+ * 战争 boost 需要的所有强化材料，在启动战争状态后，transfer 会依次将下列资源填充至 lab
+ * 注意：在强化旗帜旁的 lab 数量需要超过下面的资源数量
  */
 export const BOOST_RESOURCE = [
     // DISMANTLE
@@ -421,6 +445,21 @@ export const FACTORY_STATE = {
     WORKING: 'working',
     PUT_RESOURCE: 'putResource'
 }
+
+/**
+ * factory 合成黑名单
+ * 工厂在合成时不会将下属材料设置为任务目标
+ */
+export const factoryBlacklist = [
+    RESOURCE_HYDROGEN,
+    RESOURCE_OXYGEN,
+    RESOURCE_UTRIUM,
+    RESOURCE_KEANIUM,
+    RESOURCE_LEMERGIUM,
+    RESOURCE_ZYNTHIUM,
+    RESOURCE_CATALYST,
+    RESOURCE_GHODIUM
+]
 
 /**
  * 工厂不同沉积物 1-5 等级对应的顶级产物
