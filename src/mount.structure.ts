@@ -202,26 +202,30 @@ class TowerExtension extends StructureTower {
     private commandAttack(): boolean {
         let target: Creep | PowerCreep
         // 如果在搜索间隔时发现有缓存的敌人 id，就重新获取该敌人，没有的话就不进行搜索了
-        if (Game.time % 5 && this.room.memory.targetHostileId) {
-            target = Game.getObjectById<Creep | PowerCreep>(this.room.memory.targetHostileId)
+        if (Game.time % 5) {
+            if (this.room.memory.targetHostileId) {
+                target = Game.getObjectById<Creep | PowerCreep>(this.room.memory.targetHostileId)
 
-            // 如果该敌人已经不见了，就移除缓存
-            if (!target) {
-                target = undefined
-                delete this.room.memory.targetHostileId
+                // 如果该敌人已经不见了，就移除缓存
+                if (!target) {
+                    target = undefined
+                    delete this.room.memory.targetHostileId
+                }
             }
         }
         // 搜索时间到了，重新搜索房间内的敌人并将其加入非持久缓存
-        else if (!this.room._enemys) this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS, {
-            filter: creep => {
-                if (!Memory.whiteList) return true
-                // 加入白名单的玩家单位不会被攻击
-                if (creep.owner.username in Memory.whiteList) return false
-            }
-        })
+        else if (!this.room._enemys) {
+            this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS, {
+                filter: creep => {
+                    if (!Memory.whiteList) return true
+                    // 加入白名单的玩家单位不会被攻击
+                    if (creep.owner.username in Memory.whiteList) return false
+                }
+            })
+        }
 
         // 通过检查非持久缓存来获取最新的敌人信息
-        if (this.room._enemys) {
+        if (this.room._enemys && this.room._enemys.length > 0) {
             target = this.pos.findClosestByRange(this.room._enemys)
             // 重新搜索的敌人优先级更高，会覆盖过期的敌人信息
             this.room.memory.targetHostileId = target.id
