@@ -3,7 +3,7 @@ import { doing, stateScanner } from './utils'
 import creepNumberListener from './creepController'
 
 module.exports.loop = function (): void {
-    console.log(`-------------------------- [${Game.time}] ----`)
+    // console.log(`-------------------------- [${Game.time}] ----`)
     
     // 挂载拓展
     mountWork()

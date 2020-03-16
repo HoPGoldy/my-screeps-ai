@@ -200,9 +200,10 @@ class TowerExtension extends StructureTower {
      * @returns 有敌人返回 true，没敌人返回 false
      */
     private commandAttack(): boolean {
+        const searchInterval = 5
         let target: Creep | PowerCreep
         // 如果在搜索间隔时发现有缓存的敌人 id，就重新获取该敌人，没有的话就不进行搜索了
-        if (Game.time % 5) {
+        if (Game.time % searchInterval) {
             if (this.room.memory.targetHostileId) {
                 target = Game.getObjectById<Creep | PowerCreep>(this.room.memory.targetHostileId)
 
@@ -218,8 +219,11 @@ class TowerExtension extends StructureTower {
             this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS, {
                 filter: creep => {
                     if (!Memory.whiteList) return true
-                    // 加入白名单的玩家单位不会被攻击
-                    if (creep.owner.username in Memory.whiteList) return false
+                    // 加入白名单的玩家单位不会被攻击，但是会被记录
+                    if (creep.owner.username in Memory.whiteList) {
+                        Memory.whiteList[creep.owner.username] += searchInterval
+                        return false
+                    }
                 }
             })
         }
