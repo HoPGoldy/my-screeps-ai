@@ -1,4 +1,4 @@
-import { resourcesHelp } from './utils'
+import { resourcesHelp, whiteListApi } from './utils'
 import { factoryTopTargets } from './setting'
 import { creepApi } from './creepController'
 
@@ -113,6 +113,8 @@ export const globalExtension = {
 
         return returnString
     },
+
+    whitelist: whiteListApi,
 
     // 将 creepApi 挂载到全局方便手动发布或取消 creep
     creepApi

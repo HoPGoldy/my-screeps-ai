@@ -201,7 +201,13 @@ class TowerExtension extends StructureTower {
      */
     private commandAttack(): boolean {
         // 使用缓存
-        if (!this.room._enemys) this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
+        if (!this.room._enemys) this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS, {
+            filter: creep => {
+                if (!Memory.whiteList) return true
+                // 加入白名单的玩家不会被攻击
+                if (creep.owner.username in Memory.whiteList) return false
+            }
+        })
         // 从缓存中读取
         if (this.room._enemys.length > 0) {
             const target = this.pos.findClosestByRange(this.room._enemys)
