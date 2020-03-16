@@ -499,6 +499,10 @@ interface RoomMemory {
     restrictedPos?: {
         [creepName: string]: string
     }
+
+    // tower 发现的敌人 id
+    targetHostileId: string
+
     // observer 内存
     observer: {
         // 上个 tick 已经 ob 过的房间名
