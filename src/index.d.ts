@@ -765,8 +765,11 @@ interface IRoomShareTask {
 }
 
 interface Memory {
-    // 自己的玩家名称，由同名全局变量控制
-    MY_NAME: string
+    // 白名单，通过全局的 whitelist 对象控制
+    // 键是玩家名，值是该玩家进入自己房间的 tick 时长
+    whiteList: {
+        [userName: string]: number
+    }
     // 资源来源表
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
