@@ -1,4 +1,4 @@
-import { FACTORY_STATE, factoryTopTargets } from './setting'
+import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT } from './setting'
 import { createHelp } from './utils'
 
 /**
@@ -71,16 +71,7 @@ export default class FactoryExtension extends StructureFactory {
         const subResources = COMMODITIES[task.target].components
         for (const resType in subResources) {
             // 首先得保证这个东西是能合成的，不然推进去一个 energy 或者原矿的合成任务就尴尬了
-            if ([ 
-                RESOURCE_HYDROGEN,
-                RESOURCE_OXYGEN,
-                RESOURCE_UTRIUM,
-                RESOURCE_KEANIUM,
-                RESOURCE_LEMERGIUM,
-                RESOURCE_ZYNTHIUM,
-                RESOURCE_CATALYST,
-                RESOURCE_GHODIUM,
-            ].includes(resType as MineralConstant) || !(resType in COMMODITIES)) continue
+            if (factoryBlacklist.includes(resType as MineralConstant) || !(resType in COMMODITIES)) continue
 
             // 底物所需的数量
             // 由于反应可能会生成不止一个产物，所以需要除一下并向上取整
@@ -271,10 +262,22 @@ export default class FactoryExtension extends StructureFactory {
         let memory = this.room.memory.factory
 
         // 如果有用户指定的目标的话就直接生成
-        if (memory.specialTraget) return this.room.memory.factory.taskList.push({
-            target: memory.specialTraget,
-            amount: 1
-        })
+        if (memory.specialTraget) {
+            // 如果有生产限制的话，会先检查资源底物是否充足
+            if (memory.specialTraget in FACTORY_LOCK_AMOUNT) {
+                const subResLimit = FACTORY_LOCK_AMOUNT[memory.specialTraget]
+                // 如果 terminal 中对应底物的数量超过下线的话就会安排生产
+                if (this.room.terminal && this.room.terminal.store[subResLimit.sub] > subResLimit.limit) {}
+                // 否则不添加新任务
+                else return 0
+            }
+
+            // 添加用户指定的新任务
+            return this.room.memory.factory.taskList.push({
+                target: memory.specialTraget,
+                amount: 1
+            })
+        }
 
         const shareTask = this.room.memory.shareTask
         const topTargets: CommodityConstant[] = factoryTopTargets[memory.depositType][memory.level]
