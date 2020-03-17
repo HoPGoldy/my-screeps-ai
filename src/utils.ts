@@ -224,3 +224,22 @@ export const whiteListApi = {
         ])
     }
 }
+
+export const globalHelp = createHelp([
+    {
+        title: '房间帮助',
+        functionName: 'Room.help'
+    },
+    {
+        title: 'Link 帮助',
+        functionName: 'StructureLink.help'
+    },
+    {
+        title: 'factory 帮助',
+        functionName: 'StructureFactory.help'
+    },
+    {
+        title: 'Observer 帮助',
+        functionName: 'StructureObserver.help'
+    }
+])
