@@ -1,4 +1,4 @@
-import { resourcesHelp, whiteListApi } from './utils'
+import { resourcesHelp, whiteListApi, globalHelp } from './utils'
 import { factoryTopTargets } from './setting'
 import { creepApi } from './creepController'
 
@@ -25,6 +25,12 @@ const funcAlias = [
         alias: 'resource',
         exec: function(): string {
             return resourcesHelp
+        }
+    },
+    {
+        alias: 'help',
+        exec: function(): string {
+            return globalHelp
         }
     },
     // 释放所有禁止通行点位
@@ -114,6 +120,7 @@ export const globalExtension = {
         return returnString
     },
 
+    // 白名单操作
     whitelist: whiteListApi,
 
     // 将 creepApi 挂载到全局方便手动发布或取消 creep
