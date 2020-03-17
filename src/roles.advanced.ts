@@ -453,6 +453,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 if (targetLab.id in labMemory.outLab) creep.room.memory.lab.outLab[targetLab.id] = targetLab.mineralType ? targetLab.store[targetLab.mineralType] : 0
                 if (creep.store.getFreeCapacity() === 0) return true
             }
+            // 满了也先去转移资源
+            else if (withdrawResult === ERR_FULL) return true
             else creep.say(`draw ${withdrawResult}`)
         },
         target: (creep, task: ILabOut) => {
@@ -517,7 +519,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
-                console.log(`[${creep.name}] powerSpawn 填充任务，资源不足`)
+                console.log(`[${creep.name}] powerSpawn 填充任务，${task.resourceType} 资源不足`)
                 return false
             }
             

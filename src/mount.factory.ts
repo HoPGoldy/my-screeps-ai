@@ -413,23 +413,23 @@ export default class FactoryExtension extends StructureFactory {
     /**
      * 用户操作 - 输出当前工厂的状态
      */
-    public state(): string {
+    public stats(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 工厂未启用`
         const memory = this.room.memory.factory
 
         // 工厂基本信息
-        let states = [
+        let logs = [
             `生产线类型: ${memory.depositType} 工厂等级: ${memory.level} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''} ${memory.pause ? '已暂停' : ''}`,
             `当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
 
         // 工厂任务队列详情
-        if (memory.taskList.length <= 0) states.push('无任务')
-        else states.push(...memory.taskList.map((task, index) => `  - [任务 ${index}] 任务目标: ${task.target} 任务数量: ${task.amount}`))
+        if (memory.taskList.length <= 0) logs.push('无任务')
+        else logs.push(...memory.taskList.map((task, index) => `  - [任务 ${index}] 任务目标: ${task.target} 任务数量: ${task.amount}`))
         
         // 组装返回
-        return states.join('\n')
+        return logs.join('\n')
     }
 
     /**
@@ -447,7 +447,7 @@ export default class FactoryExtension extends StructureFactory {
     public on(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
         delete this.room.memory.factory.pause
-        return `[${this.room.name} factory] 已恢复, 当前状态：${this.state()}`
+        return `[${this.room.name} factory] 已恢复, 当前状态：${this.stats()}`
     }
 
     /**
@@ -466,9 +466,11 @@ export default class FactoryExtension extends StructureFactory {
      */
     public clear(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
-        const result = `[${this.room.name} factory] 已移除目标 ${this.room.memory.factory.specialTraget}，开始托管生产。当前生产状态：\n${this.state()}`
+        const logs = [ `[${this.room.name} factory] 已移除目标 ${this.room.memory.factory.specialTraget}，开始托管生产。当前生产状态：` ]
         delete this.room.memory.factory.specialTraget
-        return result
+        logs.push(this.stats())
+
+        return logs.join('\n')
     }
 
     public help(): string {
@@ -483,7 +485,7 @@ export default class FactoryExtension extends StructureFactory {
             },
             {
                 title: '显示工厂详情',
-                functionName: 'state'
+                functionName: 'stats'
             },
             {
                 title: '指定生产目标（工厂将无视 setLevel 的配置，一直生产该目标）',

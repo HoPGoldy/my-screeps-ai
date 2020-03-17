@@ -135,19 +135,18 @@ function getRoomFactoryState(room: Room): string {
     let states = [ 
         `    - [${room.name}]`,
         `[当前状态] ${memory.state}`,
-        `[任务数量] ${memory.taskList.length}`,
-        `[顶级产物]`
+        `[任务数量] ${memory.taskList.length}`
     ]
 
+    // 统计当前任务信息
+    if (memory.taskList.length > 0) states.push(`[当前任务] ${memory.taskList[0].target} ${memory.taskList[0].amount}`)
+
     // 统计顶级产物数量
-    if (room.terminal) states.push(...factoryTopTargets[memory.depositType][memory.level].map(res => {
+    if (room.terminal) states.push('[产物数量]', ...factoryTopTargets[memory.depositType][memory.level].map(res => {
         return `${res}*${room.terminal.store[res]}`
     }))
     else states.push('异常!未发现终端')
 
-    // 统计当前任务信息
-    if (memory.taskList.length > 0) states.push(`[当前任务] ${memory.taskList[0].target} ${memory.taskList[0].amount}`)
-    
     // 组装统计信息
     return states.join(' ')
 }
