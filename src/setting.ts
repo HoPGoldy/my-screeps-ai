@@ -451,6 +451,7 @@ export const FACTORY_STATE = {
  * 工厂在合成时不会将下属材料设置为任务目标
  */
 export const factoryBlacklist = [
+    RESOURCE_ENERGY,
     RESOURCE_HYDROGEN,
     RESOURCE_OXYGEN,
     RESOURCE_UTRIUM,

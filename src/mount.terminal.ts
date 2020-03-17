@@ -16,7 +16,7 @@ export default class TerminalExtension extends StructureTerminal {
         if (this.cooldown !== 0 || Game.time % 10) return
 
         // 如果自己存量下降了，就恢复 miner 进行采集
-        if (this.store.getUsedCapacity() < minerHervesteLimit && !creepApi.has(`${this.room.name} miner`)) {
+        if (this.store.getUsedCapacity() < minerHervesteLimit && this.room.memory.extractorId && !creepApi.has(`${this.room.name} miner`)) {
             creepApi.add(`${this.room.name} miner`, 'miner', {
                 sourceId: this.room.mineral.id
             }, this.room.name)
