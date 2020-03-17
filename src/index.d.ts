@@ -546,6 +546,8 @@ interface RoomMemory {
         depositType?: DepositConstant
         // 当前正在制作的顶级产品
         topTarget?: CommodityConstant
+        // 当该字段为真并且工厂在冷却时，就会执行一次底物是否充足的检查，执行完就会直接将该值移除
+        produceCheck?: boolean
         // 当前工厂所处的阶段
         state: string
         // 工厂生产队列
