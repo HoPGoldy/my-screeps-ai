@@ -507,12 +507,14 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return false
             }
 
+            // 如果身上有能量的话就直接去填充
+            if (creep.store[RESOURCE_ENERGY] > 0) return true
+
             // 把多余的能量放终端里
             if (task.resourceType != RESOURCE_ENERGY && creep.store[RESOURCE_ENERGY] > 0) {
                 creep.transferTo(sourceStructure, RESOURCE_ENERGY)
                 return false
             }
-
 
             // 获取应拿取的数量
             let getAmount = creep.getAmount(task.resourceType, sourceStructure, powerspawn)
