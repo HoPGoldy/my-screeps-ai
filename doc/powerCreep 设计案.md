@@ -23,19 +23,4 @@ powerCreep 在出生后会定期检查自己的 ttl，一旦低于指定值就�
 - **资源获取(source)**：该方法一般都是去获取 ops，可选
 - **工作(target)**：进行工作，例如强化 Source，或者强化 Factory
 
-这个配置和 creep 是比较像的，但是没有 switch 阶段，现在的工作状态是根据 source 和 target 的返回值决定的。**注意**：请把状态切换条件写在 source / target 的结尾，避免出现在条件满足后那一 tick 什么都不干的问题出现。
-
-**实验性设计**：这里取消 switch 阶段是因为之前的 creepConfig 配置中 switch 和 source / target 中有很多信息需要重复获取，浪费了 cpu。这里用于比较和普通 creepConfig 的区别。
-
-## 持久化
-
-powerCreep.memory
-
-```js
-{
-    // 工作的房间名，在第一次出生时由玩家指定，后面会根据该值自动出生到指定房间
-    workRoom: 'W1N1'
-    // 本 tick 要执行 source 还是 target
-    working: true
-}
-```
+这个配置和 creep 是比较像的，现在的工作状态是根据 source 和 target 的返回值决定的。**注意**：请把状态切换条件写在 source / target 的结尾，避免出现在条件满足后那一 tick 什么都不干的问题出现。
