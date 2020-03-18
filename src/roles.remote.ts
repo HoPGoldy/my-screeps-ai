@@ -654,7 +654,7 @@ const roles: {
             // 获取资源运输目标房间并兜底
             const room = Game.rooms[data.spawnRoom]
             if (!room || !room.terminal) {
-                console.log(`[${creep.name}] 找不到存放建筑`)
+                console.log(`[${creep.name}] 找不到 terminal`)
                 return false
             }
             

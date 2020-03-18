@@ -1,93 +1,13 @@
-# Observer 设计案（搁置）
-
-## 搁置原因
-
-observer 发现资源后需要根据资源的状态来灵活发布 creep 进行采集，但是现有的 creep 配置框架无法满足该需求，所以下面的开发暂时搁置。
-
-observer 目前每种资源只会插一个旗帜。旗帜一旦存在后将不在进行搜索。
+# Observer 设计案（已实装）
 
 ## 目标
 
-检测指定房间的 deposit 和 powerBank 并自动插旗
-
-## 核心规则
-
-- observer 以房间为单位，默认不启用
-- observer 开放 api，使得其他模块可以访问 ob 找到的资源
+- 包含一套用户接口可以配置要扫描的区域和最大采集数量
+- 检测指定房间的 deposit 和 powerBank 并自动插旗
 
 ## CLI 设计
 
-**添加监控房间**
-
-```ts
-Observer.add(roomName, ...)
-```
-
-**移除监控房间**
-
-```ts
-Observer.remove(roomName, ...)
-```
-
-**暂停**
-
-```ts
-Observer.off()
-```
-
-**重启**
-
-```ts
-Observer.on()
-```
-
-**清空监控房间**
-
-```ts
-Observer.clear()
-```
-
-**显示所有监控的房间**
-
-```ts
-Observer.show()
-```
-
-**后续开发：修改查找上限**
-
-observer 在找到某种资源多少个后就不再继续查找，默认为 `1`
-
-```ts
-Observer.setLimit(resourceType: 'powerBank' | 'deposit', limit: number)
-```
-
-## API 设计
-
-**新增资源（私有）**
-
-在 observer 找到新资源后会通过这个方法进行保存
-
-```ts
-Observer.addResource(resourceType: 'powerBank' | 'deposit', flagName: string): void
-```
-
-**获取资源（公共）**
-
-提供给其他模块使用，获取找到的某种资源
-
-返回插在资源上的 flag 名称
-
-```ts
-Observer.getResource(resourceType: 'powerBank' | 'deposit'): string
-```
-
-**资源已处置（公共）**
-
-其他模块（采集 creep）在完成任务后会通过 observer 移除该旗帜
-
-```ts
-Observer.resourceClear(flagName: string)
-```
+已实装，详见 `StructureObserver.help()`
 
 ## 流程
 
@@ -104,34 +24,3 @@ Observer.resourceClear(flagName: string)
   - 查找 deposit 和 powerBank 并插旗（旗帜名称 "资源类型 + 房间名 + 当前时间"）
   - 更新获取到的资源
   - 移除 `checkRoomName`
-
-# 持久化
-
-**Room.memory**
-
-```ts
-observer: {
-    // 上个 tick 已经 ob 过的房间名
-    checkRoomName: string
-    // 遍历 watchRooms 所使用的索引
-    watchIndex: number
-    // 监听的房间列表
-    watchRooms: string[]
-    // 获取到的资源信息
-    resourceFlags: {
-        [OBSERVER_RESOURCES.POWER_BANK]: string[]
-        [OBSERVER_RESOURCES.DEPOSIT]: string[]
-    }
-    pause: boolean
-}
-```
-
-**setting**
-
-```ts
-// observer 可以获取到哪些资源
-OBSERVER_RESOURCES: {
-    POWER_BANK: 'powerBank',
-    DEPOSIT: 'deposit'
-}
-```
