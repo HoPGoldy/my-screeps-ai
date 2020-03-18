@@ -415,7 +415,7 @@ export const DEFAULT_FLAG_NAME = {
 
 // 房间 storage 中的数量超过下面值时
 // 该房间就会将自己注册为能量共享的提供房间
-export const ENERGY_SHARE_LIMIT = 700000
+export const ENERGY_SHARE_LIMIT = 600000
 
 // 统计信息搜集模块的运行间隔，单位：tick
 export const stateScanInterval = 20
@@ -507,3 +507,15 @@ export const factoryTopTargets: {
  * 当 terminal 中的资源多余这个值时，miner 将不再继续采矿
  */
 export const minerHervesteLimit = 200000
+
+/**
+ * 交易时的购买区间限制
+ * 用于防止过贵的卖单或者太便宜的买单
+ * 在进行交易时会通过该资源的昨日历史价格配合下面的比例来确定合适的交易价格区间
+ */
+export const DEAL_RATIO = {
+    // 卖单的最高价格
+    MAX: 1.8,
+    // 买单的最低价格
+    MIN: 0.5
+}

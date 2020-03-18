@@ -158,7 +158,6 @@ export default class FactoryExtension extends StructureFactory {
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) {
             if (this.room.memory.factory.produceCheck) {
-                console.log(`[${this.room.name} factory] 执行检查`)
                 // 发现材料不足了就进入下个阶段
                 if (!this.canContinueProduce()) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
                 // 移除标志位，每个冷却阶段只坚持一次材料是否充足就够了

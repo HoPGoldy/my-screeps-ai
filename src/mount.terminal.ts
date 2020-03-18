@@ -1,4 +1,4 @@
-import { stateScanInterval, minerHervesteLimit } from './setting'
+import { stateScanInterval, minerHervesteLimit, DEAL_RATIO } from './setting'
 import { creepApi } from './creepController'
 
 /**
@@ -249,11 +249,7 @@ export default class TerminalExtension extends StructureTerminal {
      * @returns 找到则返回订单, 否找返回 null
      */
     private getOrder(filter: OrderFilter): Order | null {
-        const orders = Game.market.getAllOrders(order => {
-            return order.type === filter.type && 
-                order.resourceType === filter.resourceType && 
-                order.amount > 100
-        })
+        const orders = Game.market.getAllOrders(filter)
         // 没找到订单就返回空
         if (orders.length <= 0) return null
 
@@ -283,16 +279,16 @@ export default class TerminalExtension extends StructureTerminal {
         // console.log(JSON.stringify(history[0], null, 4))
         const avgPrice = history[0].avgPrice
 
-        // 目标订单的价格要在历史价格上下 0.5 左右的区间内浮动才算可靠
+        // 目标订单的价格要在规定好的价格区间内浮动才算可靠
         // 卖单的价格不能太高
         if (targetOrder.type == ORDER_SELL) {
-            // console.log(`${targetOrder.price} <= ${avgPrice * 1.5}`)
-            if (targetOrder.price <= avgPrice * 1.8) return true
+            // console.log(`${targetOrder.price} <= ${avgPrice * DEAL_RATIO.MAX}`)
+            if (targetOrder.price <= avgPrice * DEAL_RATIO.MAX) return true
         }
         // 买单的价格不能太低
         else {
-            // console.log(`${targetOrder.price} >= ${avgPrice * 0.5}`)
-            if (targetOrder.price >= avgPrice * 0.5) return true
+            // console.log(`${targetOrder.price} >= ${avgPrice * DEAL_RATIO.MIN}`)
+            if (targetOrder.price >= avgPrice * DEAL_RATIO.MIN) return true
         }
         return false
     }
