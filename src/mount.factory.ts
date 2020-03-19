@@ -504,6 +504,13 @@ export default class FactoryExtension extends StructureFactory {
         return logs.join('\n')
     }
 
+    /**
+     * 危险 - 清空当前任务队列
+     */
+    public clearTask(): void {
+        this.room.memory.factory.taskList = []
+    }
+
     public help(): string {
         return createHelp([
             {
