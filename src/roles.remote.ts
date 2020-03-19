@@ -357,7 +357,7 @@ const roles: {
      * @property {} spawnRoom 出生房间名
      */
     depositHarvester: (data: RemoteHarvesterData): ICreepConfig => ({
-        isNeed: room => {
+        isNeed: () => {
             // 旗帜效验, 没有旗帜则不生成
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) return false
@@ -512,9 +512,10 @@ const roles: {
         },
         target: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
+            // 未能成功在 pb 消失前将其摧毁，移除采集小组
             if (!targetFlag) {
-                console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                // 移除采集小组
+                Memory.flags[targetFlag.name] = {}
+                targetFlag.remove()
                 removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
             }
