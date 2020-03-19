@@ -521,8 +521,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
-                console.log(`[${creep.name}] powerSpawn 填充任务，${task.resourceType} 资源不足, ${creep.store.getFreeCapacity()} ${sourceStructure.store.getFreeCapacity(task.resourceType)} ${powerspawn.store[task.resourceType]}`)
-                Game.notify(`[${creep.name} ${creep.room.name}] powerSpawn 填充任务，${task.resourceType} 资源不足\n${creep.store.getFreeCapacity()} ${sourceStructure.store.getFreeCapacity(task.resourceType)} ${powerspawn.store[task.resourceType]}`)
+                console.log(`[${creep.name}] powerSpawn 填充任务，${task.resourceType} 资源不足`)
                 return false
             }
             
