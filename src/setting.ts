@@ -329,7 +329,7 @@ export const powerSettings = {
     // 当前房间 storage 内存量低于limit时自动停止 process
     processEnergyLimit: 500000,
     // 处理 power 的间隔
-    processInterval: 3
+    processInterval: 2
 }
 /**
  * boost 强化的阶段

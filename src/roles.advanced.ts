@@ -508,7 +508,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
 
             // 如果身上有能量的话就直接去填充
-            if (creep.store[RESOURCE_ENERGY] > 0) return true
+            if (creep.store[task.resourceType] > 0) return true
 
             // 把多余的能量放终端里
             if (task.resourceType != RESOURCE_ENERGY && creep.store[RESOURCE_ENERGY] > 0) {
