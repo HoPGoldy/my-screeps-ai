@@ -46,8 +46,8 @@ export default class TerminalExtension extends StructureTerminal {
             targetId: this.id
         }, this.room.name)
 
-        // 当已经有房间 8 级的时候才会添加能量共享请求
-        if (Object.keys(Game.spawns).length > 3) {
+        // 当已经有房间 8 级（保证有人能提供能量）并且自己不足 8 级时的时候才会添加能量共享请求
+        if (Object.keys(Game.spawns).length > 3 && this.room.controller.level != 8) {
             this.room.addTerminalTask(RESOURCE_ENERGY, 20000, 'min', 'share')
             this.room.addUpgradeGroup()
         }
