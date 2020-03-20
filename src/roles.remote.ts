@@ -99,7 +99,27 @@ const roles: {
             return false
         },
         target: creep => {
-            
+            const targetStructure = Game.getObjectById(data.targetId)
+            if (!targetStructure) {
+                console.log(`[${creep.name}] 找不到要存放资源的建筑 ${data.targetId}`)
+                creep.say('搬到哪？')
+                return false
+            }
+
+            // 遍历目标建筑存储并找到可以拿取的资源
+            for (const res in creep.store) {
+                if (creep.store[res] > 0) {
+                    console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
+                    const withdrawResult = creep.withdraw(targetStructure, res as ResourceConstant)
+
+                    // 如果拿满了就执行 target
+                    if (withdrawResult === ERR_FULL) return true
+                    // 还没到就继续走
+                    else if (withdrawResult === ERR_NOT_IN_RANGE) {
+                        creep.farMoveTo(targetStructure.pos)
+                    }
+                }
+            }
         },
         bodys: 'transfer'
     }),
