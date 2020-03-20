@@ -103,6 +103,7 @@ interface ICreepConfig {
  * 所有 creep 角色的 data
  */
 type CreepData = 
+    ReiverData |
     HarvesterData | 
     WorkerData | 
     CenterTransferData | 
