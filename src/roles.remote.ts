@@ -9,6 +9,101 @@ const roles: {
     [role in RemoteRoleConstant]: (data: CreepData) => ICreepConfig
 } = {
     /**
+     * 掠夺者
+     * 暂不支持从 ruin 中获取资源
+     * 从指定房间的目标建筑（由旗帜指定）中搬运物品到指定建筑
+     * 在目标建筑搬空后将会移除旗帜并自杀
+     * 
+     * data:
+     * @param flagName 目标建筑上的旗帜名称
+     * @param targetStructureId 要搬运到的建筑 id
+     */
+    reiver: (data: ReiverData): ICreepConfig => ({
+        // 要搬运资源的目标旗帜消失了就不再生成
+        isNeed: () => data.flagName in Game.flags,
+        // 如果已经统计了移动
+        prepare: creep => {
+            const flag = Game.flags[data.flagName]
+            if (!flag) {
+                console.log(`[${creep.name}] 未找到名为 ${data.flagName} 的旗帜，请在目标建筑上新建`)
+                return false
+            }
+
+            // 如果路程已经统计完了就不再统计
+            if (flag.memory.travelComplete && flag.memory.sourceId) return true
+            // 进入房间了
+            else if (flag.room) {
+                if (!flag.memory.sourceId) {
+                    // 搜索包含存储的目标建筑并存储
+                    const targetStructure = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s)
+                    if (!targetStructure) {
+                        creep.say('没找到建筑啊')
+                    }
+                    else {
+                        console.log("找到建筑", targetStructure, JSON.stringify((targetStructure as StructureWithStore).store))
+                        flag.memory.sourceId = targetStructure.id
+                    }
+                }
+
+                // 如果移动到附近了就准备完成
+                if (creep.pos.isNearTo(flag)) {
+                    flag.memory.travelComplete = true
+                    return true
+                }
+            }
+
+            // 移动并统计移动时长
+            creep.farMoveTo(flag.pos)
+            flag.memory.travelTime = flag.memory.travelTime ? flag.memory.travelTime + 1 : 0
+            return false
+        },
+        source: creep => {
+            const flag = Game.flags[data.flagName]
+            if (!flag) {
+                creep.suicide()
+                return false
+            }
+
+            if (flag.room) {
+                const targetStructure = Game.getObjectById<StructureWithStore>(flag.memory.sourceId)
+                // 如果对应的房间里没有找到目标建筑就自杀并移除旗帜
+                if (!targetStructure) {
+                    delete Memory.flags[data.flagName]
+                    flag.remove()
+                    creep.suicide()
+                    return false
+                }
+
+                // 遍历目标建筑存储并找到可以拿取的资源
+                for (const res in targetStructure.store) {
+                    if (targetStructure.store[res] > 0) {
+                        console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
+                        const withdrawResult = creep.withdraw(targetStructure, res as ResourceConstant)
+
+                        // 如果拿满了就执行 target
+                        if (withdrawResult === ERR_FULL) return true
+                        // 还没到就继续走
+                        else if (withdrawResult === ERR_NOT_IN_RANGE) {
+                            creep.farMoveTo(targetStructure.pos)
+                        }
+                    }
+                }
+
+                // 上面的遍历完了就说明搬空了，移除旗帜并执行 target
+                delete Memory.flags[data.flagName]
+                flag.remove()
+                return true
+            }
+            // 没有到指定房间就移动
+            else creep.farMoveTo(flag.pos)
+            return false
+        },
+        target: creep => {
+            
+        },
+        bodys: 'transfer'
+    }),
+    /**
      * 占领者
      * target: 占领指定房间
      * 
@@ -512,10 +607,7 @@ const roles: {
         },
         target: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
-            // 未能成功在 pb 消失前将其摧毁，移除采集小组
             if (!targetFlag) {
-                Memory.flags[targetFlag.name] = {}
-                targetFlag.remove()
                 removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
             }
@@ -531,10 +623,18 @@ const roles: {
                 if (powerbank) targetFlag.memory.sourceId = powerbank.id
             }
 
-            // 找不到 pb 了，进入下个阶段
+            // 找不到 pb 了
             if (!powerbank) {
-                targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFER
-
+                // 发现废墟，pb 成功摧毁，进入下个阶段
+                if (targetFlag.pos.lookFor(LOOK_RUINS).length > 1) {
+                    targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFER
+                }
+                else {
+                    // 未能成功在 pb 消失前将其摧毁，移除采集小组
+                    Memory.flags[targetFlag.name] = {}
+                    targetFlag.remove()
+                }
+                
                 // 移除采集小组
                 removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false

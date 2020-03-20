@@ -64,7 +64,8 @@ type RemoteRoleConstant =
     'pbAttacker' |
     'pbHealer' |
     'pbTransfer' |
-    'moveTester'
+    'moveTester' |
+    'reiver'
 
 // 战斗单位
 type WarRoleConstant =
@@ -152,6 +153,16 @@ interface RemoteHelperData {
     sourceId: string
     // 路上忽视的房间名列表
     ignoreRoom?: string[]
+}
+
+/**
+ * 掠夺者单位的 ddata
+ */
+interface ReiverData {
+    // 目标建筑上的旗帜名称
+    flagName: string
+    // 要搬运到的建筑 id
+    targetId: string
 }
 
 /**
