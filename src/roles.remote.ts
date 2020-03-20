@@ -20,7 +20,7 @@ const roles: {
      */
     reiver: (data: ReiverData): ICreepConfig => ({
         // 要搬运资源的目标旗帜消失了就不再生成
-        isNeed: () => data.flagName in Game.flags,
+        isNeed: () => data.flagName in Game.flags, 
         // 如果已经统计了移动
         prepare: creep => {
             const flag = Game.flags[data.flagName]
@@ -99,27 +99,42 @@ const roles: {
             return false
         },
         target: creep => {
-            const targetStructure = Game.getObjectById(data.targetId)
+            const targetStructure = Game.getObjectById<StructureWithStore>(data.targetId)
             if (!targetStructure) {
                 console.log(`[${creep.name}] 找不到要存放资源的建筑 ${data.targetId}`)
                 creep.say('搬到哪？')
                 return false
             }
 
-            // 遍历目标建筑存储并找到可以拿取的资源
-            for (const res in creep.store) {
-                if (creep.store[res] > 0) {
-                    console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
-                    const withdrawResult = creep.withdraw(targetStructure, res as ResourceConstant)
+            if (creep.room.name === targetStructure.room.name) {
+                // 遍历目标建筑存储并找到可以拿取的资源
+                for (const res in creep.store) {
+                    if (creep.store[res] > 0) {
+                        console.log(`[${creep.name}] 准备放置 ${res} 数量 ${creep.store[res]}`)
+                        const result = creep.transfer(targetStructure, res as ResourceConstant)
 
-                    // 如果拿满了就执行 target
-                    if (withdrawResult === ERR_FULL) return true
-                    // 还没到就继续走
-                    else if (withdrawResult === ERR_NOT_IN_RANGE) {
-                        creep.farMoveTo(targetStructure.pos)
+                        // 还没到就继续走
+                        if (result === ERR_NOT_IN_RANGE) {
+                            creep.farMoveTo(targetStructure.pos)
+                        }
                     }
                 }
+
+                // 上面的遍历完了就说明放完了，检查生命值，如果还够搬一趟的就过去，否则自杀
+                const flag = Game.flags[data.flagName]
+                if (!flag) {
+                    creep.suicide()
+                    return false
+                }
+                
+                // *3 是去一趟，回来的时候走的慢需要两倍的时间，20 是冗余
+                if (creep.ticksToLive >= flag.memory.travelTime * 3 + 20) return true
+                else {
+                    creep.suicide()
+                    return false
+                }
             }
+            else creep.farMoveTo(targetStructure.pos)
         },
         bodys: 'transfer'
     }),
