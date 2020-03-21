@@ -97,5 +97,19 @@ export const creepApi = {
 
         delete Memory.creepConfigs[creepName]
         return OK
+    },
+
+    /**
+     * 修改配置
+     * 修改 creep 的局部配置
+     * 
+     * @param creepName 要修改配置的 creep 名称
+     * @param data 要进行修改的配置
+     */
+    edit(creepName: string, data: CreepData): OK | ERR_NOT_FOUND {
+        if (!Memory.creepConfigs || !(creepName in Memory.creepConfigs)) return ERR_NOT_FOUND
+ 
+        Memory.creepConfigs[creepName].data = _.assign(Memory.creepConfigs[creepName].data, data)
+        return OK
     }
 } 

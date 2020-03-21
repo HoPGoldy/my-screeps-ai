@@ -50,6 +50,11 @@ export default class TerminalExtension extends StructureTerminal {
         if (Object.keys(Game.spawns).length > 3 && this.room.controller.level != 8) {
             this.room.addTerminalTask(RESOURCE_ENERGY, 20000, 'min', 'share')
             this.room.addUpgradeGroup()
+
+            // 调整远程支援单位的能量来源
+            creepApi.edit(`${this.room.name} RemoteUpgrader0`, { sourceId: this.id })
+            creepApi.edit(`${this.room.name} RemoteUpgrader1`, { sourceId: this.id })
+            creepApi.edit(`${this.room.name} RemoteBuilder1`, { sourceId: this.id })
         }
     }
 
