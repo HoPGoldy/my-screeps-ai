@@ -1,34 +1,5 @@
 import { stateScanInterval } from './setting'
 
-// 路径名到颜色的对应列表
-const pathMap: IPathMap = {
-    default: '#ffffff',
-    havest: '#CCFF99',
-    upgrade: '#99CCFF',
-    build: '#FFCC99',
-    repair: '#000099',
-    attack: '#DC143C', // 猩红
-    claimer: 'Indigo' // 靛青
-}
-
-/**
- * 通过路径名称获取 visualizePathStyle
- * 
- * @param pathName 路径的名称
- * @returns 包含可视化路径的对象
- */
-export function getPath(pathName: string='default'): MoveToOpts {
-    const pathColor: string = (pathName in pathMap) ? 
-        pathMap[pathName] : 
-        pathMap['default']
-    
-    return {
-        visualizePathStyle: {
-            stroke: pathColor
-        }
-    }
-}
-
 /**
 * 获取指定方向的相反方向
 * 

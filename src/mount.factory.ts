@@ -306,7 +306,7 @@ export default class FactoryExtension extends StructureFactory {
             // 添加用户指定的新任务
             return this.room.memory.factory.taskList.push({
                 target: memory.specialTraget,
-                amount: 1
+                amount: 2
             })
         }
 
@@ -325,10 +325,11 @@ export default class FactoryExtension extends StructureFactory {
         // 没有共享任务的话就按顺序挑选
         // 索引兜底
         if (!memory.targetIndex || memory.targetIndex >= topTargets.length) memory.targetIndex = 0
-        // 添加任务，一次只合成一个顶级产物
+        // console.log('添加任务', memory.targetIndex, topTargets.length, topTargets, topTargets[memory.targetIndex])
+        // 添加任务，一次只合成两个顶级产物
         const taskIndex = this.room.memory.factory.taskList.push({
             target: topTargets[memory.targetIndex] as CommodityConstant,
-            amount: 1
+            amount: 2
         })
         // 更新索引
         this.room.memory.factory.targetIndex = (memory.targetIndex + 1 >= topTargets.length) ?

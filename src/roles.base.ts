@@ -122,8 +122,11 @@ const roles: {
                 return false
             }
 
-            // 再检查下终端存储是否已经太多了
-            if (!room.terminal || room.terminal.store.getUsedCapacity() >= minerHervesteLimit) return false
+            // 再检查下终端存储是否已经太多了, 如果太多了就休眠一段时间再出来看看
+            if (!room.terminal || room.terminal.store.getUsedCapacity() >= minerHervesteLimit) {
+                room.memory.mineralCooldown = Game.time + 10000
+                return false
+            }
             
             return true
         },

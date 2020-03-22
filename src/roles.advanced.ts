@@ -59,7 +59,7 @@ const roles: {
         // 从中央任务队列中取出任务并执行
         source: creep => {
             // 快死了就拒绝执行任务
-            if (creep.ticksToLive <= 5) return
+            if (creep.ticksToLive <= 5) return false
             // 获取任务
             const task = creep.room.getCenterTask()
             if (!task) return false
@@ -82,7 +82,7 @@ const roles: {
             // 够不到就移动过去
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos)
             else {
-                creep.say(`[${creep.name}] source 阶段取出异常，错误码 ${result}`)
+                console.log(`[${creep.name}] source 阶段取出异常，错误码 ${result}`)
                 creep.room.hangCenterTask()
             }
 
@@ -116,6 +116,8 @@ const roles: {
                 creep.say(`${task.target} 满了`)
                 creep.room.hangCenterTask()
             }
+            // 资源不足就返回 source 阶段
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) return true
             else {
                 creep.say(`存入 ${result}`)
                 creep.room.hangCenterTask()

@@ -1,6 +1,6 @@
 import roles from './role'
 import { creepApi } from './creepController'
-import { createHelp } from './utils'
+import { createHelp, colorful } from './utils'
 import { 
     // spawn 孵化相关
     bodyConfigs, creepDefaultMemory, 
@@ -664,6 +664,8 @@ class ControllerExtension extends StructureController {
             case 8:
                 this.room.removeTerminalTask(RESOURCE_ENERGY)
                 this.room.removeUpgradeGroup()
+                // 移除房间升级进度
+                delete this.room.memory.stats.controllerRatio
             break
         }
     }
@@ -809,7 +811,6 @@ class ObserverExtension extends StructureObserver {
         }
         // console.log("搜索房间", room.name)
 
-
         // 还没插旗的话就继续查找 deposit
         if (memory.depositNumber < memory.depositMax) {
             const deposits = room.find(FIND_DEPOSITS)
@@ -935,7 +936,7 @@ class ObserverExtension extends StructureObserver {
     public stats(): string {
         if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
         
-        let stats = [ `[${this.room.name} observer] 当前状态` ]
+        let stats = [ `[${this.room.name} observer] 当前状态`, this.showList() ]
         // 这里并没有直接用 memory 里的信息，是因为为了保证准确性，并且下面会用 Game.flags 进行统计，所以也不用多费什么事情
         let pbNumber = 0
         let pbDetail = ''
@@ -956,8 +957,8 @@ class ObserverExtension extends StructureObserver {
             }
         }
 
-        stats.push(`[powerBank] 已发现：${pbNumber}/${this.room.memory.observer.pbMax} [位置] ${pbDetail}`)
-        stats.push(`[deposit] 已发现：${depositNumber}/${this.room.memory.observer.depositMax} [位置] ${depositDetail}`)
+        stats.push(`[powerBank] 已发现：${pbNumber}/${this.room.memory.observer.pbMax} ${pbDetail ? '[位置]' : ''} ${pbDetail}`)
+        stats.push(`[deposit] 已发现：${depositNumber}/${this.room.memory.observer.depositMax} ${pbDetail ? '[位置]' : ''} ${depositDetail}`)
 
         // 更新缓存信息
         this.room.memory.observer.pbNumber = pbNumber
@@ -994,7 +995,7 @@ class ObserverExtension extends StructureObserver {
         // 确保新增的房间名不会重复
         this.room.memory.observer.watchRooms = _.uniq([ ...this.room.memory.observer.watchRooms, ...roomNames])
 
-        return `[${this.room.name} observer] 已添加，${this.show(true)}`
+        return `[${this.room.name} observer] 已添加，${this.showList()}`
     }
 
     /**
@@ -1008,7 +1009,7 @@ class ObserverExtension extends StructureObserver {
         // 移除指定房间
         this.room.memory.observer.watchRooms = _.difference(this.room.memory.observer.watchRooms, roomNames)
         
-        return `[${this.room.name} observer] 已移除，${this.show(true)}`
+        return `[${this.room.name} observer] 已移除，${this.showList()}`
     }
 
     /**
@@ -1030,7 +1031,7 @@ class ObserverExtension extends StructureObserver {
 
         delete this.room.memory.observer.pause
 
-        return `[${this.room.name} observer] 已恢复, ${this.show(true)}`
+        return `[${this.room.name} observer] 已恢复, ${this.showList()}`
     }
 
     /**
@@ -1049,11 +1050,12 @@ class ObserverExtension extends StructureObserver {
      * 
      * @param noTitle 该参数为 true 则不显示前缀
      */
-    public show(noTitle: boolean = false): string {
-        let result = noTitle ? '' : `[${this.room.name} observer] `
-
-        result += this.room.memory.observer ? 
-        `监听中的房间列表为: ${this.room.memory.observer.watchRooms}` :
+    public showList(): string {
+        const result = this.room.memory.observer ? 
+        `监听中的房间列表: ${this.room.memory.observer.watchRooms.map((room, index) => {
+            if (index === this.room.memory.observer.watchIndex) return colorful(room, '#6b9955')
+            else return room
+        }).join(' ')}` :
         `未启用`
 
         return result
@@ -1077,10 +1079,6 @@ class ObserverExtension extends StructureObserver {
                     { name: '...roomNames', desc: '要移除的房间名列表' }
                 ],
                 functionName: 'remove'
-            },
-            {
-                title: '显示所有监听房间',
-                functionName: 'show'
             },
             {
                 title: '设置 observer 对 pb、deposit 的搜索上限',
