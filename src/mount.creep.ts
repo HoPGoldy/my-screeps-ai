@@ -75,45 +75,6 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * creep 工作状态更新
-     * @param workingMsg 工作时喊的话
-     * @param onStateChange 状态切换时的回调
-     */
-    public updateState(workingMsg: string='🧰 工作', onStateChange: Function=this.updateStateDefaultCallback): boolean {
-        const resourceType: ResourceConstant = (Object.keys(this.store).length > 0) ? <ResourceConstant>Object.keys(this.store)[0] : RESOURCE_ENERGY
-        const resourceAmount = this.store.getUsedCapacity(resourceType)
-
-        // creep 身上没有能量 && creep 之前的状态为“工作”
-        if (resourceAmount <= 0 && this.memory.working) {
-            // 切换状态
-            this.memory.working = false
-            this.say('⚡ 挖矿')
-            onStateChange(this, this.memory.working)
-
-            // 停止工作后自己的位置就不再是禁止通行点了
-            if (this.memory.standed) {
-                this.room.removeRestrictedPos(this.name)
-                delete this.memory.standed
-            }
-        }
-        // creep 身上能量满了 && creep 之前的状态为“不工作”
-        if(resourceAmount >= this.store.getCapacity() && !this.memory.working) {
-            // 切换状态
-            this.memory.working = true
-            this.say(workingMsg)
-            onStateChange(this, this.memory.working)
-
-            // 停止工作后自己的位置就不再是禁止通行点了
-            if (this.memory.standed) {
-                this.room.removeRestrictedPos(this.name)
-                delete this.memory.standed
-            }
-        }
-
-        return this.memory.working
-    }
-
-    /**
      * 检查是否有敌人
      * 注意! 该方法只能检查有视野的房间
      * 
@@ -184,11 +145,10 @@ class CreepExtension extends Creep {
      * 远程寻路
      * 
      * @param target 目标位置
-     * @param ignoreRoom 要绕开的房间数组
      * @param range 搜索范围 默认为 1
      * @returns PathFinder.search 的返回值
      */
-    public findPath(target: RoomPosition, ignoreRoom: string[] = [], range: number): string | null {
+    public findPath(target: RoomPosition, range: number): string | null {
         // console.log(`[${this.name}] 执行远程寻路`)
         if (!this.memory.farMove) this.memory.farMove = { }
         this.memory.farMove.index = 0
@@ -198,7 +158,7 @@ class CreepExtension extends Creep {
             swampCost: 10,
             roomCallback: roomName => {
                 // 强调了不许走就不走
-                if (ignoreRoom.includes(roomName)) return false
+                if (Memory.bypassRooms && Memory.bypassRooms.includes(roomName)) return false
 
                 const room = Game.rooms[roomName]
                 // 房间没有视野
@@ -361,24 +321,25 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 对穿寻路
-     * 由 farMoveTo 拓展而来，详情见 doc/对穿设计案.md
+     * 远程寻路
+     * 包含对穿功能，会自动躲避 bypass 中配置的绕过房间
      * 
-     * @param all 同 farMoveTo
+     * @param target 要移动到的位置对象
+     * @param range 允许移动到目标周围的范围
      */
-    public farMoveTo(target: RoomPosition, ignoreRoom: string[] = [], range: number = 0): CreepMoveReturnCode | ERR_NO_PATH | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET {
+    public farMoveTo(target: RoomPosition, range: number = 0): CreepMoveReturnCode | ERR_NO_PATH | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET {
         if (this.memory.farMove == undefined) this.memory.farMove = { }
         // 确认目标有没有变化, 变化了则重新规划路线
         const targetPosTag = this.room.serializePos(target)
         if (targetPosTag !== this.memory.farMove.targetPos) {
             // console.log(`[${this.name}] 目标变更`)
             this.memory.farMove.targetPos = targetPosTag
-            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
+            this.memory.farMove.path = this.findPath(target, range)
         }
         // 确认缓存有没有被清除
         if (!this.memory.farMove.path) {
             // console.log(`[${this.name}] 更新缓存`)
-            this.memory.farMove.path = this.findPath(target, ignoreRoom, range)
+            this.memory.farMove.path = this.findPath(target, range)
         }
 
         // 还为空的话就是没找到路径
@@ -779,12 +740,4 @@ class CreepExtension extends Creep {
         }
         else return flag
     }
-
-    /**
-     * updateState 方法的默认 onStateChange 回调
-     * 
-     * @param creep creep
-     * @param working 当前是否在工作
-     */
-    private updateStateDefaultCallback(creep: Creep, working: boolean): void { }
 }

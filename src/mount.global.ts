@@ -1,4 +1,4 @@
-import { resourcesHelp, whiteListApi, globalHelp } from './utils'
+import { resourcesHelp, globalHelp, createHelp } from './utils'
 import { factoryTopTargets } from './setting'
 import { creepApi } from './creepController'
 
@@ -120,8 +120,150 @@ export const globalExtension = {
         return returnString
     },
 
-    // 白名单操作
-    whitelist: whiteListApi,
+    /**
+     * 白名单控制 api
+     * 挂载在全局，由玩家手动调用
+     * 白名单仅应用于房间 tower 的防御目标，不会自动关闭 rempart，也不会因为进攻对象在白名单中而不攻击
+     */
+    whitelist: {
+        /**
+         * 添加用户到白名单
+         * 重复添加会清空监控记录
+         * 
+         * @param userName 要加入白名单的用户名
+         */
+        add(userName: string): string {
+            if (!Memory.whiteList) Memory.whiteList = {}
+    
+            Memory.whiteList[userName] = 0
+    
+            return `[白名单] 玩家 ${userName} 已加入白名单`
+        },
+    
+        /**
+         * 从白名单中移除玩家
+         * 
+         * @param userName 要移除的用户名
+         */
+        remove(userName: string): string {
+            if (!(userName in Memory.whiteList)) return `[白名单] 该玩家未加入白名单`
+    
+            const enterTicks = Memory.whiteList[userName]
+            delete Memory.whiteList[userName]
+            // 如果玩家都删完了就直接移除白名单
+            if (Object.keys(Memory.whiteList).length <= 0) delete Memory.whiteList
+    
+            return `[白名单] 玩家 ${userName} 已移出白名单，已记录的活跃时长为 ${enterTicks}`
+        },
+    
+        /**
+         * 显示所有白名单玩家及其活跃时长
+         */
+        show() {
+            if (!Memory.whiteList) return `[白名单] 未发现玩家`
+            const logs = [ `[白名单] 玩家名称 > 该玩家的单位在自己房间中的活跃总 tick 时长` ]
+    
+            // 绘制所有的白名单玩家信息
+            logs.push(...Object.keys(Memory.whiteList).map(userName => `[${userName}] > ${Memory.whiteList[userName]}`))
+    
+            return logs.join('\n')
+        },
+    
+        /**
+         * 帮助
+         */
+        help() {
+            return createHelp([
+                {
+                    title: '添加新玩家到白名单',
+                    params: [
+                        { name: 'userName', desc: '要加入白名单的用户名' }
+                    ],
+                    functionName: 'add'
+                },
+                {
+                    title: '从白名单移除玩家',
+                    params: [
+                        { name: 'userName', desc: '要移除的用户名' }
+                    ],
+                    functionName: 'remove'
+                },
+                {
+                    title: '列出所有白名单玩家',
+                    functionName: 'show'
+                }
+            ])
+        }
+    },
+
+    /**
+     * 绕过房间 api
+     * 用于配置在远程寻路时需要避开的房间，注意，该配置将影响所有角色，包括战斗角色。
+     * 所以在进攻房间前请确保该房间不在本配置项中
+     */
+    bypass: {
+        /**
+         * 添加绕过房间
+         * 
+         * @param roomNames 要添加的绕过房间名列表
+         */
+        add(...roomNames: string[]): string {
+            if (!Memory.bypassRooms) Memory.bypassRooms = []
+
+            // 确保新增的房间名不会重复
+            Memory.bypassRooms = _.uniq([ ...Memory.bypassRooms, ...roomNames])
+
+            return `[bypass] 已添加绕过房间，${this.show()}`
+        },
+
+        /**
+         * 移除绕过房间
+         * 
+         * @param roomNames 要移除的房间名列表
+         */
+        remove(...roomNames: string[]): string {
+            if (!Memory.bypassRooms) Memory.bypassRooms = []
+
+            // // 移除重复的房间
+            Memory.bypassRooms = _.difference(Memory.bypassRooms, roomNames)
+
+            return `[bypass] 已移除绕过房间，${this.show()}`
+        },
+
+        /**
+         * 显示所有绕过房间
+         */
+        show(): string {
+            if (!Memory.bypassRooms || Memory.bypassRooms.length <= 0) return `当前暂无绕过房间`
+            return `当前绕过房间列表：${Memory.bypassRooms.join(' ')}`
+        },
+
+        /**
+         * 帮助信息
+         */
+        help() {
+            return createHelp([
+                {
+                    title: '添加绕过房间',
+                    params: [
+                        { name: '...roomNames', desc: '要添加的绕过房间名列表' }
+                    ],
+                    functionName: 'add'
+                },
+                {
+                    title: '移除绕过房间',
+                    params: [
+                        { name: '...roomNames', desc: '要移除的房间名列表' }
+                    ],
+                    functionName: 'remove'
+                },
+                {
+                    title: '显示所有绕过房间',
+                    functionName: 'show'
+                }
+            ])
+        }
+    },
 
     // 将 creepApi 挂载到全局方便手动发布或取消 creep
     creepApi

@@ -1038,13 +1038,11 @@ class RoomExtension extends Room {
      * 本方法只会发布占领单位，等到占领成功后 claimer 会自己发布支援单位
      * 
      * @param targetRoomName 要占领的目标房间
-     * @param ignoreRoom 途中绕过的房间列表
      * @param signText 新房间的签名
      */
-    public claimRoom(targetRoomName: string, ignoreRoom: string[] = [], signText: string = ''): OK {
+    public claimRoom(targetRoomName: string, signText: string = ''): OK {
         creepApi.add(`${targetRoomName} Claimer`, 'claimer', {
             targetRoomName,
-            ignoreRoom,
             spawnRoom: this.name,
             signText
         }, this.name)
@@ -1057,8 +1055,8 @@ class RoomExtension extends Room {
      * 
      * @param 同上 claimRoom()
      */
-    public claim(targetRoomName: string, ignoreRoom: string[] = [], signText: string = ''): string {
-        this.claimRoom(targetRoomName, ignoreRoom, signText)
+    public claim(targetRoomName: string, signText: string = ''): string {
+        this.claimRoom(targetRoomName, signText)
 
         return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布`
     }
@@ -1262,7 +1260,6 @@ class RoomExtension extends Room {
                 title: '占领新房间',
                 params: [
                     { name: 'targetRoomName', desc: '要占领的房间名' },
-                    { name: 'ignoreRoom', desc: '[可选] 要绕路的房间数组，默认为空' },
                     { name: 'signText', desc: '[可选] 新房间的签名，默认为空' },
                 ],
                 functionName: 'claim'
