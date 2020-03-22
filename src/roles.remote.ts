@@ -144,7 +144,6 @@ const roles: {
      * 
      * data:
      * @param targetRoomName 要占领的目标房间
-     * @param ignoreRoom 要绕路的房间
      */ 
     claimer: (data: RemoteDeclarerData): ICreepConfig => ({
         // 该 creep 死了就不会再次孵化
@@ -153,7 +152,7 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName), data.ignoreRoom)
+                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else return true
@@ -179,7 +178,7 @@ const roles: {
                 console.log(`[${creep.name}] 新房间 ${data.targetRoomName} 占领成功！已向源房间 ${data.spawnRoom} 请求支援单位`)
                 // 占领成功，发布支援组
                 const spawnRoom = Game.rooms[data.spawnRoom]
-                if (spawnRoom) spawnRoom.addRemoteHelper(data.targetRoomName, data.ignoreRoom)
+                if (spawnRoom) spawnRoom.addRemoteHelper(data.targetRoomName)
                 if (data.signText) creep.signController(controller, data.signText)
                 creep.suicide()
             }
@@ -203,7 +202,7 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName), data.ignoreRoom)
+                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else return true
@@ -217,11 +216,11 @@ const roles: {
 
             // 如果房间的预订者不是自己, 就攻击控制器
             if (controller.reservation && controller.reservation.username !== creep.owner.username) {
-                if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, data.ignoreRoom, 1)
+                if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, 1)
             }
             // 房间没有预定满, 就继续预定
             if (!controller.reservation || controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-                if (creep.reserveController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, data.ignoreRoom, 1)
+                if (creep.reserveController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, 1)
             }
             return false
         },
@@ -235,7 +234,6 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
-     * @param ignoreRoom 不让过的房间名数组
      */
     signer: (data: RemoteDeclarerData): ICreepConfig => ({
         target: creep => {
@@ -244,7 +242,7 @@ const roles: {
                     creep.goTo(creep.room.controller.pos)
                 }
             }
-            else creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName), data.ignoreRoom)
+            else creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
 
             return false
         },
@@ -261,7 +259,7 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName), data.ignoreRoom)
+                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else {
@@ -292,7 +290,7 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName), data.ignoreRoom)
+                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else {
@@ -344,7 +342,7 @@ const roles: {
                 }
 
                 // 旗帜所在房间没视野, 就进行移动
-                if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos, data.ignoreRoom)
+                if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
                 else {
                     // 缓存外矿房间名
                     sourceFlag.memory.roomName = sourceFlag.room.name
@@ -427,7 +425,7 @@ const roles: {
             }
             // 这里只要有异常就直接向外矿移动, 因为外矿有可能没视野, 下同
             else {
-                creep.farMoveTo(sourceFlag.pos, data.ignoreRoom)
+                creep.farMoveTo(sourceFlag.pos)
             }
         },
         target: creep => {
@@ -470,7 +468,7 @@ const roles: {
             const transferResult = creep.transfer(target, RESOURCE_ENERGY)
             // 报自己身上资源不足了就说明能量放完了
             if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
-            else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, data.ignoreRoom, 1)
+            else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, 1)
             else if (transferResult === ERR_FULL) creep.say('满了啊')
             else if (transferResult !== OK) console.log(`[${creep.name}] target 阶段 transfer 出现异常，错误码 ${transferResult}`)
 
@@ -523,7 +521,7 @@ const roles: {
                 // 旅途时间还没有计算完成
                 else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime ++ // 增量
 
-                creep.farMoveTo(targetFlag.pos, [], 1)
+                creep.farMoveTo(targetFlag.pos, 1)
 
                 return false
             }
@@ -589,7 +587,7 @@ const roles: {
                 // 时间充足就回去继续采集
                 return true
             }
-            if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos, [], 1)
+            if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos, 1)
             else creep.say(`转移 ${transferResult}`)
         },
         bodys: 'remoteHarvester'
@@ -613,7 +611,7 @@ const roles: {
             }
 
             // 朝目标移动
-            creep.farMoveTo(targetFlag.pos, [], 1)
+            creep.farMoveTo(targetFlag.pos, 1)
 
             // 进入房间后搜索 pb 并缓存
             if (!targetFlag.memory.sourceId && creep.room.name === targetFlag.pos.roomName) {
@@ -835,7 +833,7 @@ const roles: {
                 return false
             }
             let cost1 = Game.cpu.getUsed()
-            creep.farMoveTo(targetFlag.pos, [])
+            creep.farMoveTo(targetFlag.pos)
             console.log('移动消耗', Game.cpu.getUsed() - cost1)
 
             return false

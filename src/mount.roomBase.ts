@@ -346,9 +346,8 @@ class CreepControl extends Room {
      * 发布支援角色组
      * 
      * @param remoteRoomName 要支援的房间名
-     * @param ignoreRoom 要绕路的房间名数组
      */
-    public addRemoteHelper(remoteRoomName, ignoreRoom: string[] = []): void {
+    public addRemoteHelper(remoteRoomName): void {
         const room = Game.rooms[remoteRoomName]
 
         if (!room) return console.log(`[${this.name} 拓展] 目标房间没有视野，无法发布支援单位`)
@@ -356,20 +355,17 @@ class CreepControl extends Room {
         // 发布两个 upgrader
         creepApi.add(`${remoteRoomName} RemoteUpgrader0`, 'remoteUpgrader', {
             targetRoomName: remoteRoomName,
-            sourceId: room.sources[0].id,
-            ignoreRoom
+            sourceId: room.sources[0].id
         }, this.name)
         if (room.sources.length >= 2) creepApi.add(`${remoteRoomName} RemoteUpgrader1`, 'remoteUpgrader', {
             targetRoomName: remoteRoomName,
-            sourceId: room.sources[0].id,
-            ignoreRoom
+            sourceId: room.sources[0].id
         }, this.name)
 
         // 和一个 builder
         creepApi.add(`${remoteRoomName} RemoteBuilder1`, 'remoteBuilder', {
             targetRoomName: remoteRoomName,
-            sourceId: room.sources.length >= 2 ? room.sources[1].id : room.sources[0].id,
-            ignoreRoom
+            sourceId: room.sources.length >= 2 ? room.sources[1].id : room.sources[0].id
         }, this.name)
     }
 

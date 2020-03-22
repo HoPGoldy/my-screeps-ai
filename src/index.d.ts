@@ -152,8 +152,6 @@ interface RemoteHelperData {
     targetRoomName: string
     // 该房间中的能量来源
     sourceId: string
-    // 路上忽视的房间名列表
-    ignoreRoom?: string[]
 }
 
 /**
@@ -177,8 +175,6 @@ interface RemoteDeclarerData {
     spawnRoom?: string
     // 给控制器的签名
     signText?: string
-    // 路上忽视的房间名列表
-    ignoreRoom?: string[]
 }
 
 /**
@@ -192,8 +188,6 @@ interface RemoteHarvesterData {
     targetId?: string
     // 出生房名称，资源会被运输到该房间中
     spawnRoom?: string
-    // 路上忽视的房间名列表
-    ignoreRoom?: string[]
 }
 
 interface pbAttackerData {
@@ -203,8 +197,6 @@ interface pbAttackerData {
     healerCreepName: string
     // 出生房名称，资源会被运输到该房间中
     spawnRoom: string
-    // 路上忽视的房间名列表
-    ignoreRoom?: string[]
 }
 
 /**
@@ -281,11 +273,10 @@ interface Creep {
     _id: string
     _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     work(): void
-    updateState(workingMsg?: string, onStateChange?: Function): boolean
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    farMoveTo(target: RoomPosition, ignoreRoom?: string[], range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE
+    farMoveTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
     mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND
@@ -428,7 +419,7 @@ interface Room {
     addCenterTransfer(): string
     addRemoteCreepGroup(remoteRoomName: string)
     addRemoteReserver(remoteRoomName): void
-    addRemoteHelper(remoteRoomName, ignoreRoom?: string[]): void
+    addRemoteHelper(remoteRoomName): void
     removePbHarvesteGroup(attackerName: string, healerName: string): void
     spawnPbTransferGroup(flagName: string, number: number): void
     addUpgradeGroup(creepNum?: number): OK | ERR_NOT_FOUND
@@ -787,7 +778,9 @@ interface Memory {
     // 键是玩家名，值是该玩家进入自己房间的 tick 时长
     whiteList: {
         [userName: string]: number
-    }
+    } 
+    // 要绕过的房间名列表，由全局模块 bypass 负责。
+    bypassRooms: string[]
     // 资源来源表
     resourceSourceMap: {
         // 资源类型为键，房间名列表为值
