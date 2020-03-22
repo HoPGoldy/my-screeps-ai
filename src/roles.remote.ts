@@ -661,13 +661,17 @@ const roles: {
             // 找不到 pb 了
             if (!powerbank) {
                 // 发现废墟，pb 成功摧毁，进入下个阶段
-                if (targetFlag.pos.lookFor(LOOK_RUINS).length > 1) {
+                if (targetFlag.pos.lookFor(LOOK_RUINS).length > 0) {
                     targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFER
                 }
                 else {
                     // 未能成功在 pb 消失前将其摧毁，移除采集小组
                     Memory.flags[targetFlag.name] = {}
                     targetFlag.remove()
+
+                    // 通知 observer
+                    const roomMemory = Memory.rooms[data.spawnRoom]
+                    if (roomMemory && roomMemory.observer) roomMemory.observer.pbNumber -= 1
                 }
                 
                 // 移除采集小组

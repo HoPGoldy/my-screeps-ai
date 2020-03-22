@@ -1,4 +1,4 @@
-import { getPath, getOppositeDirection } from './utils'
+import { getOppositeDirection } from './utils'
 import { repairSetting } from './setting'
 import roles from './role'
 
@@ -169,7 +169,7 @@ class CreepExtension extends Creep {
         // 从缓存中获取敌人
         const enemy = this.pos.findClosestByRange(this.room._enemys)
         this.say(`正在消灭 ${enemy.name}`)
-        this.moveTo(enemy.pos, getPath('attack'))
+        this.moveTo(enemy.pos)
 
         if (this.getActiveBodyparts(RANGED_ATTACK) > 0) this.rangedAttack(enemy)
         else this.attack(enemy)

@@ -15,13 +15,6 @@ export default class TerminalExtension extends StructureTerminal {
         // 没有冷却好或者不到 10 tick 就跳过
         if (this.cooldown !== 0 || Game.time % 10) return
 
-        // 如果自己存量下降了并且也有 extractor，就恢复 miner 进行采集
-        if (this.store.getUsedCapacity() < minerHervesteLimit && this.room.memory.extractorId && !creepApi.has(`${this.room.name} miner`)) {
-            creepApi.add(`${this.room.name} miner`, 'miner', {
-                sourceId: this.room.mineral.id
-            }, this.room.name)
-        }
-
         // 优先执行共享任务
         this.execShareTask()
 

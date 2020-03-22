@@ -472,7 +472,7 @@ export const factoryTopTargets: {
     [RESOURCE_METAL]: {
         1: [ RESOURCE_COMPOSITE, RESOURCE_TUBE ],
         2: [ RESOURCE_FIXTURES ],
-        3: [ RESOURCE_LIQUID, RESOURCE_FRAME ],
+        3: [ /* RESOURCE_LIQUID, */RESOURCE_FRAME ],
         4: [ RESOURCE_HYDRAULICS ],
         5: [ RESOURCE_MACHINE ]
     },
