@@ -696,8 +696,8 @@ class NukerExtension extends StructureNuker {
 
         if (Game.time % 30) return
 
-        // G 矿不满并且 terminal 中 G 矿大于 1k 则开始填充 G
-        if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal && this.room.terminal.store[RESOURCE_GHODIUM] >= 1000) {
+        // G 矿不满并且 terminal 中由 G 矿则开始填充 G
+        if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal && this.room.terminal.store[RESOURCE_GHODIUM] > 0) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
