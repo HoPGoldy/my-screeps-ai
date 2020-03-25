@@ -281,21 +281,26 @@ function getRoomFactoryState(room: Room): string {
     if (!memory) return `    - [${room.name}] 工厂未设置等级`
 
     // 基本信息
-    let states = [ 
+    let logs = [ 
         `    - [${room.name}][${memory.pause ? '暂停中' : '运行中'}]`,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`
     ]
 
     // 统计当前任务信息
-    if (memory.taskList.length > 0) states.push(`[当前任务] ${memory.taskList[0].target} ${memory.taskList[0].amount}`)
+    if (memory.taskList.length > 0) logs.push(`[当前任务] ${memory.taskList[0].target} ${memory.taskList[0].amount}`)
+    // 如果有共享任务的话（有可能不属于工厂共享任务）
+    if (room.memory.shareTask) {
+        const share = room.memory.shareTask
+        logs.push(`[共享任务] 目标 ${share.target} 资源 ${share.resourceType} 数量 ${share.amount}`)
+    }
 
     // 统计顶级产物数量
-    if (room.terminal) states.push('[产物数量]', ...factoryTopTargets[memory.depositType][memory.level].map(res => {
+    if (room.terminal) logs.push('[产物数量]', ...factoryTopTargets[memory.depositType][memory.level].map(res => {
         return `${res}*${room.terminal.store[res]}`
     }))
-    else states.push('异常!未发现终端')
+    else logs.push('异常!未发现终端')
 
     // 组装统计信息
-    return states.join(' ')
+    return logs.join(' ')
 }
