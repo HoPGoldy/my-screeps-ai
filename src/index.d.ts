@@ -262,7 +262,8 @@ interface Structure {
 
 // Factory 拓展
 interface StructureFactory {
-    make(resourceType: ResourceConstant): void
+    // 查看工厂状态，在 room 的 fshow 中调用
+    stats(): string
 }
 
 /**
