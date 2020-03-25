@@ -275,10 +275,12 @@ class RoomExtension extends Room {
      * @param amount 要发送的数量, 默认 100k
      */
     public giver(roomName: string, resourceType: ResourceConstant, amount: number = 1000): string {
-        // 如果在执行其他任务则添加失败
+        const logs = []
+        // 如果在执行其他任务则将其覆盖，因为相对于用户操作来说，其他模块发布的资源共享任务优先级肯定要低
+        // 并且其他模块的共享任务就算被删除了，过一段时间之后它也会再次发布并重新添加
         if (this.memory.shareTask) {
             const task = this.memory.shareTask
-            return `[资源共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`
+            logs.push(`┖─ 因此移除的共享任务为: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`)
         }
 
         // 检查资源是否足够
@@ -298,7 +300,9 @@ class RoomExtension extends Room {
             resourceType
         }
 
-        return `[资源共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
+        logs.unshift(`[资源共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
+
+        return logs.join('\n')
     }
 
     /**
@@ -466,50 +470,12 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 设置房间内的工厂目标
-     * 
-     * @param resourceType 工厂期望生成的商品
-     */
-    public setFactoryTarget(resourceType: ResourceConstant): string {
-        this.memory.factoryTarget = resourceType
-        return `${this.name} 工厂目标已被设置为 ${resourceType}`
-    }
-
-    /**
-     * 用户操作：setFactoryTarget
-     */
-    public fset(resourceType: ResourceConstant): string { return this.setFactoryTarget(resourceType) }
-
-    /**
-     * 读取房间内的工厂目标
-     * 一般由本房间的工厂调用
-     */
-    public getFactoryTarget(): ResourceConstant | null {
-        return this.memory.factoryTarget || null
-    }
-
-    /**
-     * 用户操作：getFactoryTarget
+     * 用户操作 - 查看房间工作状态
      */
     public fshow(): string {
-        const resource = this.getFactoryTarget()
-        return resource ? 
-        `${this.name} 工厂目标为 ${resource}` :
-        `${this.name} 工厂目标正处于空闲状态`
+        if (!this.factory) return `[${this.name}] 未建造工厂`
+        return this.factory.stats()
     }
-
-    /**
-     * 清空本房间工厂目标
-     */
-    public clearFactoryTarget(): string {
-        delete this.memory.factoryTarget
-        return `${this.name} 工厂目标已清除`
-    }
-
-    /**
-     * 用户操作：clearFactoryTarget
-     */
-    public fclear(): string { return this.clearFactoryTarget() }
 
     /**
      * 添加终端矿物监控
@@ -1198,19 +1164,8 @@ class RoomExtension extends Room {
                 functionName: 'gete'
             },
             {
-                title: '设置房间内工厂目标',
-                params: [
-                    { name: 'resourceType', desc: '工厂要生产的资源类型' }
-                ],
-                functionName: 'fset'
-            },
-            {
                 title: '获取房间内工厂目标',
                 functionName: 'fshow'
-            },
-            {
-                title: '清空房间内工厂目标',
-                functionName: 'fclear'
             },
             {
                 title: '添加终端矿物监控',
