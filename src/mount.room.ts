@@ -1,6 +1,6 @@
 import mountRoomBase from './mount.roomBase'
 import { createHelp } from './utils'
-import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, BOOST_STATE, boostResourceReloadLimit, ROOM_TRANSFER_TASK } from './setting'
+import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, BOOST_STATE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
 
 // 挂载拓展到 Room 原型
@@ -909,7 +909,7 @@ class RoomExtension extends Room {
         let stats = `[${this.name}] `
         const result = this.stopWar()
 
-        if (result === OK) stats += `已解除战争状态，boost 强化材料会依次运回`
+        if (result === OK) stats += `已解除战争状态，boost 强化材料会依次运回 Terminal`
         else if (result === ERR_NOT_FOUND) stats += `未启动战争状态`
 
         return stats
@@ -1092,25 +1092,25 @@ class RoomExtension extends Room {
             {
                 title: '孵化基础进攻单位',
                 params: [
-                    { name: 'targetFlagName', desc: '进攻旗帜名称' },
-                    { name: 'num', desc: '要孵化的数量，1 - 10，默认为 1' }
+                    { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
+                    { name: 'num', desc: '[可选] 要孵化的数量，1 - 10，默认为 1' }
                 ],
                 functionName: 'spwanSoldier'
             },
             {
                 title: '<需要战争状态> 孵化 boost 进攻一体机',
                 params: [
-                    { name: 'bearTowerNum', desc: '抗塔等级 0-6，等级越高扛伤能力越强，伤害越低' },
-                    { name: 'targetFlagName', desc: '目标旗帜名称' },
-                    { name: 'keepSpawn', desc: '是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成' },
+                    { name: 'bearTowerNum', desc: '[可选] 抗塔等级 0-6，等级越高扛伤能力越强，伤害越低，默认为 6' },
+                    { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
+                    { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' },
                 ],
                 functionName: 'spawnRangedAttacker'
             },
             {
                 title: '<需要战争状态> 孵化 boost 拆墙小组',
                 params: [
-                    { name: 'targetFlagName', desc: '进攻旗帜名称' },
-                    { name: 'keepSpawn', desc: '是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成' }
+                    { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
+                    { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' }
                 ],
                 functionName: 'spawnDismantleGroup'
             }
