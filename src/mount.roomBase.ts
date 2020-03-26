@@ -449,7 +449,7 @@ class CreepControl extends Room {
             keepSpawn
         }, this.name)
 
-        return `已发布进攻一体机 [${creepName}] [扛塔等级] ${bearTowerNum} [进攻旗帜名称] ${targetFlagName} ${keepSpawn ? '' : '不'}持续生成`
+        return `已发布进攻一体机 [${creepName}] [扛塔等级] ${bearTowerNum} [进攻旗帜名称] ${targetFlagName} ${keepSpawn ? '' : '不'}持续生成，GoodLuck Commander`
     }
 
     /**
@@ -472,7 +472,7 @@ class CreepControl extends Room {
             keepSpawn
         }, this.name)
 
-        return `已发布拆墙小组，正在孵化`
+        return `已发布拆墙小组，正在孵化，GoodLuck Commander`
     }
 
     /**

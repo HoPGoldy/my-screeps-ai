@@ -142,13 +142,6 @@ const roles: {
                     return false
                 }
 
-                // 根据 massMode 选择不同给攻击模式
-                if (creep.memory.massMode) creep.rangedMassAttack()
-                else {
-                    const structures = targetFlag.pos.lookFor(LOOK_STRUCTURES)
-                    if (structures.length > 0) creep.rangedAttack(structures[0])
-                }
-
                 // 治疗自己，不会检查自己生命值，一直治疗
                 // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害足以击穿 tough。
                 if (creep.getActiveBodyparts(HEAL)) creep.heal(creep)
@@ -156,7 +149,15 @@ const roles: {
                 // 无脑移动
                 creep.moveTo(targetFlag)
 
-                if (creep.room.name !== targetFlag.pos.roomName) {
+                if (creep.room.name == targetFlag.pos.roomName) {
+                    // 根据 massMode 选择不同给攻击模式
+                    if (creep.memory.massMode) creep.rangedMassAttack()
+                    else {
+                        const structures = targetFlag.pos.lookFor(LOOK_STRUCTURES)
+                        if (structures.length > 0) creep.rangedAttack(structures[0])
+                    }
+                }
+                else {
                     console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
                     return true
                 }
