@@ -1113,6 +1113,14 @@ class RoomExtension extends Room {
                     { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' }
                 ],
                 functionName: 'spawnDismantleGroup'
+            },
+            {
+                title: '孵化掠夺者',
+                params: [
+                    { name: 'targetStructureId', desc: `[可选] 要把资源存放到的建筑 id，默认为房间终端` },
+                    { name: 'sourceFlagName', desc: `[可选] 要搜刮的建筑上插好的旗帜名，默认为 ${DEFAULT_FLAG_NAME.REIVER}` }
+                ],
+                functionName: 'spawnReiver'
             }
         ])
     }
