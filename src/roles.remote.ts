@@ -35,20 +35,29 @@ const roles: {
             else if (flag.room) {
                 if (!flag.memory.sourceId) {
                     // 搜索包含存储的目标建筑并存储
-                    const targetStructure = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s)
+                    let targetStructure: StructureWithStore | Ruin = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s) as StructureWithStore
+                    
                     if (!targetStructure) {
-                        creep.say('没找到建筑啊')
+                        console.log('查找废墟')
+                        // 查找废墟，如果有包含 store 的废墟就设为目标
+                        const ruins = flag.pos.lookFor(LOOK_RUINS)
+                        for (const ruin of ruins) {
+                            if ('store' in ruin) {
+                                targetStructure = ruin
+                                break
+                            }
+                        }
                     }
-                    else {
-                        console.log("找到建筑", targetStructure, JSON.stringify((targetStructure as StructureWithStore).store))
+
+                    if (targetStructure) {
                         flag.memory.sourceId = targetStructure.id
                     }
+                    else creep.say('没找到建筑啊')
                 }
 
                 // 如果移动到附近了就准备完成
                 if (creep.pos.isNearTo(flag)) {
                     flag.memory.travelComplete = true
-                    return true
                 }
             }
 
@@ -65,7 +74,7 @@ const roles: {
             }
 
             if (flag.room) {
-                const targetStructure = Game.getObjectById<StructureWithStore>(flag.memory.sourceId)
+                const targetStructure = Game.getObjectById<StructureWithStore | Ruin>(flag.memory.sourceId)
                 // 如果对应的房间里没有找到目标建筑就自杀并移除旗帜
                 if (!targetStructure) {
                     delete Memory.flags[data.flagName]
@@ -86,6 +95,9 @@ const roles: {
                         else if (withdrawResult === ERR_NOT_IN_RANGE) {
                             creep.farMoveTo(targetStructure.pos)
                         }
+                        
+                        // 等到下个 tick 重新遍历来继续搬
+                        return false
                     }
                 }
 
@@ -114,14 +126,13 @@ const roles: {
                         const result = creep.transfer(targetStructure, res as ResourceConstant)
 
                         // 还没到就继续走
-                        if (result === ERR_NOT_IN_RANGE) {
-                            creep.farMoveTo(targetStructure.pos)
-                        }
+                        if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(targetStructure.pos)
+                        return false
                     }
                 }
 
                 // 上面的遍历完了就说明放完了，检查生命值，如果还够搬一趟的就过去，否则自杀
-                const flag = Game.flags[data.flagName]
+                const flag = Game.flags[data.flagName] 
                 if (!flag) {
                     creep.suicide()
                     return false

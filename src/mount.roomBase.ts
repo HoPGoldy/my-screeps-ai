@@ -444,7 +444,7 @@ class CreepControl extends Room {
 
         const creepName = `${this.name} apocalypse ${Game.time}`
         creepApi.add(creepName, 'apocalypse', {
-            targetFlagName: targetFlagName ? targetFlagName : DEFAULT_FLAG_NAME.ATTACK,
+            targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
             bearTowerNum,
             keepSpawn
         }, this.name)
@@ -464,7 +464,7 @@ class CreepControl extends Room {
 
         const dismantlerName = `${this.name} dismantler ${Game.time}`
         creepApi.add(dismantlerName, 'boostDismantler', {
-            targetFlagName: targetFlagName ? targetFlagName : DEFAULT_FLAG_NAME.ATTACK,
+            targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
             keepSpawn
         }, this.name)
         creepApi.add(`${this.name} doctor ${Game.time}`, 'boostDoctor', {
@@ -486,12 +486,29 @@ class CreepControl extends Room {
 
         for (let i = 0; i < num; i++) {
             creepApi.add(`${this.name} dismantler ${Game.time}-${i}`, 'soldier', {
-                targetFlagName: targetFlagName ? targetFlagName : DEFAULT_FLAG_NAME.ATTACK,
+                targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
                 keepSpawn: false
             }, this.name)
         }
 
         return `已发布 soldier*${num}，正在孵化`
+    }
+
+    /**
+     * 孵化掠夺者
+     * 
+     * @param targetStructureId 要把资源存放到的建筑 id
+     * @param sourceFlagName 要搜刮的建筑上插好的旗帜名
+     */
+    public spawnReiver(targetStructureId: string, sourceFlagName: string = ''): string {
+        if (!targetStructureId && !this.terminal) return `[${this.name}] 发布失败，请填写要存放到的建筑 id`
+
+        creepApi.add(`${this.name} reiver`, 'reiver', {
+            flagName: sourceFlagName || DEFAULT_FLAG_NAME.REIVER,
+            targetId: targetStructureId || this.terminal.id
+        }, this.name)
+
+        return `[${this.name}] 掠夺者已发布`
     }
 }
 
