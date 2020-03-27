@@ -335,8 +335,8 @@ class CreepControl extends Room {
 
         if (!Memory.creepConfigs) return `未发现任何 creep 配置项`
 
-        // 找到所有包含关键字的 creep 名称
-        const needRemoveCreeps: string[] = Object.keys(Memory.creepConfigs).filter(creepName => creepName.includes(RiseCreepKey))
+        // 找到所有包含关键字的 creep 名称，并且在本房间中孵化
+        const needRemoveCreeps: string[] = Object.keys(Memory.creepConfigs).filter(name => name.includes(RiseCreepKey) && Memory.creepConfigs[name].spawnRoom === this.name)
         // 将其移除
         needRemoveCreeps.forEach(name => creepApi.remove(name))
 
