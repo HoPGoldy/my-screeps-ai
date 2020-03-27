@@ -775,22 +775,22 @@ class RoomExtension extends Room {
     /**
      * 用户操作：暂停 lab 集群
      */
-    public lpause(): string { return this.pauseLab() }
+    public loff(): string { return this.pauseLab() }
 
     /**
      * 用户操作：重启 lab 集群
      */
-    public lresume(): string { return this.resumeLab() }
+    public lon(): string { return this.resumeLab() }
 
     /**
      * 用户操作：暂停 PowerSpawn 工作
      */
-    public ppause(): string { return this.pauseProceesPower() }
+    public poff(): string { return this.pauseProceesPower() }
 
     /**
      * 用户操作：重启 PowerSpawn 工作
      */
-    public presume(): string { return this.resumeProcessPower() }
+    public pon(): string { return this.resumeProcessPower() }
 
     /**
      * 切换为战争状态
@@ -1244,11 +1244,11 @@ class RoomExtension extends Room {
             },
             {
                 title: '暂停 lab 集群',
-                functionName: 'lpause'
+                functionName: 'loff'
             },
             {
                 title: '重启 lab 集群',
-                functionName: 'lresume'
+                functionName: 'lon'
             },
             {
                 title: '查看战争帮助',
@@ -1256,11 +1256,11 @@ class RoomExtension extends Room {
             },
             {
                 title: '暂停 powerSpawn 工作',
-                functionName: 'ppause'
+                functionName: 'poff'
             },
             {
                 title: '恢复 powerSpawn 工作',
-                functionName: 'presume'
+                functionName: 'pon'
             }
         ])
     }
