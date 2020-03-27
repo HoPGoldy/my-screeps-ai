@@ -1126,7 +1126,31 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 用户操作：房间操作帮助
+     * 用户操作 - creep 发布
+     */
+    public shelp(): string {
+        return createHelp([
+            {
+                title: '运行房间 creep 规划（默认由 controller 执行，如果发现房间没有孵化 creep 则可以手动执行）',
+                functionName: 'planCreep'
+            },
+            {
+                title: '添加额外的初始房间工作队伍（可加速初始房间升级速度）',
+                params: [
+                    { name: 'upgrader', desc: '[可选] 要添加的升级单位数量，默认为 5' },
+                    { name: 'harvester', desc: '[可选] 要添加的填充单位数量，默认为 2' },
+                ],
+                functionName: 'addRise'
+            },
+            {
+                title: '移除所有额外的初始房间工作队伍',
+                functionName: 'removeRise'
+            }
+        ])
+    }
+
+    /**
+     * 用户操作 - 房间操作帮助
      */
     public help(): string {
         return createHelp([
@@ -1253,6 +1277,10 @@ class RoomExtension extends Room {
             {
                 title: '查看战争帮助',
                 functionName: 'whelp'
+            },
+            {
+                title: '查看 creep 发布帮助',
+                functionName: 'shelp'
             },
             {
                 title: '暂停 powerSpawn 工作',
