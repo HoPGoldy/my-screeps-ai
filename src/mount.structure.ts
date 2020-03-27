@@ -581,9 +581,9 @@ class StorageExtension extends StructureStorage {
      */
     private stateScanner(): void {
         if (Game.time % stateScanInterval) return
-        if (!this.room.memory.stats) this.room.memory.stats = {}
+        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
-        this.room.memory.stats.energy = this.store[RESOURCE_ENERGY]
+        Memory.stats.rooms[this.room.name].energy = this.store[RESOURCE_ENERGY]
     }
 
     /**
@@ -629,14 +629,15 @@ class ControllerExtension extends StructureController {
      */
     private stateScanner(): boolean {
         let hasLevelChange = false
-        if (!this.room.memory.stats) this.room.memory.stats = {}
+        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
         // 统计升级进度
-        this.room.memory.stats.controllerRatio = (this.progress / this.progressTotal) * 100
+        Memory.stats.rooms[this.room.name].controllerRatio = (this.progress / this.progressTotal) * 100
 
         // 统计房间等级
-        if (this.room.memory.stats.controllerLevel !== this.level) hasLevelChange = true
-        this.room.memory.stats.controllerLevel = this.level
+        if (Memory.stats.rooms[this.room.name].controllerLevel !== this.level) hasLevelChange = true
+        if (this.level === 8) delete Memory.stats.rooms[this.room.name].controllerLevel
+        else Memory.stats.rooms[this.room.name].controllerLevel = this.level
 
         return hasLevelChange
     }
@@ -664,8 +665,6 @@ class ControllerExtension extends StructureController {
             case 8:
                 this.room.removeTerminalTask(RESOURCE_ENERGY)
                 this.room.removeUpgradeGroup()
-                // 移除房间升级进度
-                delete this.room.memory.stats.controllerRatio
             break
         }
     }
@@ -723,11 +722,11 @@ class NukerExtension extends StructureNuker {
      */
     private stateScanner(): void {
         if (Game.time % stateScanInterval) return
-        if (!this.room.memory.stats) this.room.memory.stats = {}
+        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
-        this.room.memory.stats.nukerEnergy = this.store[RESOURCE_ENERGY]
-        this.room.memory.stats.nukerG = this.store[RESOURCE_GHODIUM]
-        this.room.memory.stats.nukerCooldown = this.cooldown
+        Memory.stats.rooms[this.room.name].nukerEnergy = this.store[RESOURCE_ENERGY]
+        Memory.stats.rooms[this.room.name].nukerG = this.store[RESOURCE_GHODIUM]
+        Memory.stats.rooms[this.room.name].nukerCooldown = this.cooldown
     }
 }
 

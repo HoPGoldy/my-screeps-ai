@@ -57,9 +57,9 @@ export default class TerminalExtension extends StructureTerminal {
      */
     private stateScanner(): void {
         if (Game.time % stateScanInterval) return
-        if (!this.room.memory.stats) this.room.memory.stats = {}
+        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
-        this.room.memory.stats.power = this.store[RESOURCE_POWER]
+        Memory.stats.rooms[this.room.name].power = this.store[RESOURCE_POWER]
     }
 
     public execShareTask(): void {

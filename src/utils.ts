@@ -105,7 +105,7 @@ ${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')}   ${createC
 export function stateScanner(): void {
     if (Game.time % stateScanInterval) return 
 
-    if (!Memory.stats) Memory.stats = {}
+    if (!Memory.stats) Memory.stats = { rooms: {} }
     
     // 统计 GCL / GPL 的升级百分比和等级
     Memory.stats.gcl = (Game.gcl.progress / Game.gcl.progressTotal) * 100,

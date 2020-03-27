@@ -678,23 +678,6 @@ interface RoomMemory {
         // 是否暂停处理
         pause?: boolean
     }
-
-    /**
-     * 房间内的数据统计
-     */
-    stats: {
-        // storage 中的能量剩余量
-        energy?: number
-        // 终端中的 power 数量
-        power?: number
-        // nuker 的资源存储量
-        nukerEnergy?: number
-        nukerG?: number
-        nukerCooldown?: number
-        // 控制器升级进度，只包含没有到 8 级的
-        controllerRatio?: number
-        controllerLevel?: number
-    }
 }
 
 // 所有房间物流任务
@@ -833,6 +816,25 @@ interface Memory {
         // 已经完成的房间物流任务比例
         roomTaskNumber?: {
             [roomTransferTaskType: string]: number
+        }
+
+        /**
+        * 房间内的数据统计
+        */
+        rooms: {
+            [roomName: string]: {
+                // storage 中的能量剩余量
+                energy?: number
+                // 终端中的 power 数量
+                power?: number
+                // nuker 的资源存储量
+                nukerEnergy?: number
+                nukerG?: number
+                nukerCooldown?: number
+                // 控制器升级进度，只包含没有到 8 级的
+                controllerRatio?: number
+                controllerLevel?: number
+            }
         }
     }
 }
