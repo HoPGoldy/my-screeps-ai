@@ -460,7 +460,7 @@ class RoomExtension extends Room {
         const finishedTask = this.memory.transferTasks.shift()
 
         // // 先兜底
-        if (!Memory.stats) Memory.stats = {}
+        if (!Memory.stats) Memory.stats = { rooms: {} }
         if (!Memory.stats.roomTaskNumber) Memory.stats.roomTaskNumber = {}
 
         // 如果这个任务之前已经有过记录的话就增 1
