@@ -486,11 +486,16 @@ export default class FactoryExtension extends StructureFactory {
      * 用户操作：手动指定生产目标
      * 
      * @param target 要生产的目标
+     * @param clear 是否同时清理工厂之前的合成任务
      */
-    public set(target: CommodityConstant): string {
+    public set(target: CommodityConstant, clear: boolean = true): string {
         if (!this.room.memory.factory) this.initMemory()
         this.room.memory.factory.specialTraget = target
-        return `[${this.room.name} factory] 目标已锁定为 ${target}，将会持续生成`
+        // 让工厂从暂停中恢复
+        delete this.room.memory.factory.pause
+        // 清理残留任务
+        if (clear) this.clearTask()
+        return `[${this.room.name} factory] 目标已锁定为 ${target}，将会持续生成，${clear ? '遗留任务已被清空' : '遗留任务未清空，可能会堵塞队列'}`
     }
 
     /**
@@ -529,7 +534,8 @@ export default class FactoryExtension extends StructureFactory {
             {
                 title: '指定生产目标（工厂将无视 setLevel 的配置，一直生产该目标）',
                 params: [
-                    { name: 'target', desc: '要生产的目标产物'}
+                    { name: 'target', desc: '要生产的目标产物'},
+                    { name: 'clear', desc: '[可选] 是否清理工厂之前的遗留任务，默认为 true'}
                 ],
                 functionName: 'set'
             },
