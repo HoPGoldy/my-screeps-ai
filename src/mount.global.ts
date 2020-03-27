@@ -88,7 +88,7 @@ const funcAlias = [
      * 来方便控制台操作，在访问时会实时的获取房间对象
      * 注意：仅会挂载 Memory.rooms 里有的房间
      */
-    ...Object.keys(Memory.rooms).map(roomName => ({
+    ...Object.keys(Memory.rooms || {}).map(roomName => ({
         alias: roomName,
         exec: (): Room => Game.rooms[roomName]
     }))

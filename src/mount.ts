@@ -11,6 +11,8 @@ export default function (): void {
     if (!global.hasExtension) {
         console.log('[mount] 重新挂载拓展')
 
+        initStorage()
+        
         // 挂载全部拓展
         mountGlobal()
         mountRoom()
@@ -20,4 +22,12 @@ export default function (): void {
 
         global.hasExtension = true
     }
+}
+
+/**
+ * 初始化存储
+ */
+function initStorage() {
+    if (!Memory.rooms) Memory.rooms = {}
+    if (!Memory.stats) Memory.stats = { rooms: {} }
 }
