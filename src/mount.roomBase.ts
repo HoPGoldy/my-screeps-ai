@@ -289,6 +289,61 @@ class CreepControl extends Room {
     }
 
     /**
+     * 添加额外的初始房间工作队伍
+     * 
+     * @param upgrader 添加的升级单位数量
+     * @param harvester 添加的填充单位数量
+     */
+    public addRise(upgrader: number = 5, harvester: number = 2): string {
+        let creepNames = []
+        /**
+         * 要添加的角色配置项
+         * @property roleName 角色名
+         * @property number 要发布的角色数量
+         * @property sourceIndex 要采集的 Source 索引
+         */
+        const RiseRoleConfigs = [
+            { roleName: 'upgrader' as CreepRoleConstant, number: upgrader, sourceIndex: 0 },
+            { roleName: 'harvester' as CreepRoleConstant, number: harvester, sourceIndex: this.sources.length > 1 ? 0 : 1 }
+        ]
+        
+        // 遍历配置项，并用配置发布 Creep
+        RiseRoleConfigs.forEach(roleConfig => {
+            for (let i = 0; i < roleConfig.number; i++) {
+                // 生成名字
+                const creepName = `${this.name} rise${roleConfig.roleName} ${Game.time}-${i}`
+
+                // 发布 creep
+                creepApi.add(creepName, roleConfig.roleName, {
+                    sourceId: this.sources[roleConfig.sourceIndex].id
+                }, this.name)
+    
+                creepNames.push(creepName)
+            }
+        })
+
+        return `[${this.name}] 已添加额外的工作 creep: 升级单位 ${upgrader} 个，填充单位 ${harvester} 个，名称如下：\n ${creepNames.join(', ')}`
+    }
+
+    /**
+     * 移除额外的初始房间工作队伍
+     */
+    public removeRise() {
+        // 额外的工作 creep 名称中都包含的关键字
+        // 也就是说名字里有这个的 creep 都会被移除
+        const RiseCreepKey = 'rise'
+
+        if (!Memory.creepConfigs) return `未发现任何 creep 配置项`
+
+        // 找到所有包含关键字的 creep 名称
+        const needRemoveCreeps: string[] = Object.keys(Memory.creepConfigs).filter(creepName => creepName.includes(RiseCreepKey))
+        // 将其移除
+        needRemoveCreeps.forEach(name => creepApi.remove(name))
+
+        return `[${this.name}] 已移除 ${needRemoveCreeps.length} 个额外的支援单位：${needRemoveCreeps.join(', ')}`
+    }
+
+    /**
      * 发布中央物流管理员
      * 因为发布这个需要手动指定站桩位置，所以特地抽取出来方便手动执行
      */
