@@ -85,8 +85,8 @@ const roles: {
 
                 // 遍历目标建筑存储并找到可以拿取的资源
                 for (const res in targetStructure.store) {
-                    if (targetStructure.store[res] > 0) {
-                        console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
+                    if (((res as ResourceConstant) === RESOURCE_METAL || (res as ResourceConstant) === RESOURCE_ALLOY) && targetStructure.store[res] > 0) {
+                        // console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
                         const withdrawResult = creep.withdraw(targetStructure, res as ResourceConstant)
 
                         // 如果拿满了就执行 target
@@ -122,7 +122,7 @@ const roles: {
                 // 遍历目标建筑存储并找到可以拿取的资源
                 for (const res in creep.store) {
                     if (creep.store[res] > 0) {
-                        console.log(`[${creep.name}] 准备放置 ${res} 数量 ${creep.store[res]}`)
+                        // console.log(`[${creep.name}] 准备放置 ${res} 数量 ${creep.store[res]}`)
                         const result = creep.transfer(targetStructure, res as ResourceConstant)
 
                         // 还没到就继续走
@@ -694,9 +694,9 @@ const roles: {
             if (attackResult === OK) {
                 /**
                  * @danger 注意下面这个计算式是固定两组在采集时的准备时间计算，如果更多单位一起开采的话会出现 pb 拆完但是 transfer 还没到位的情况发生
-                 * 下面这个 300 是两组 pbTransfer 的孵化时间
+                 * 下面这个 150 是 pbTransfer 的孵化时间，50 为冗余时间，600 是 attacker 的攻击力，2 代表两组同时攻击
                  */
-                if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 300) * 600 * 2)) {
+                if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 150 + 50) * 600 * 2)) {
                     // 发布运输小组
                     const spawnRoom = Game.rooms[data.spawnRoom]
                     if (!spawnRoom) {

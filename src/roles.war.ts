@@ -230,12 +230,12 @@ const battleBase = (flagName: string, keepSpawn: boolean) => ({
 
         // 远程移动
         creep.farMoveTo(targetFlag.pos)
-        creep.say('🛴')
+        creep.say('🛴', true)
 
         // 保证自己血量健康（兼容没有 HEAL 的 creep）
         if ((creep.hits < creep.hitsMax) && creep.getActiveBodyparts(HEAL)) {
             creep.heal(creep)
-            creep.say('💔')
+            creep.say('💔', true)
         }
 
         if (creep.room.name == targetFlag.pos.roomName) {
