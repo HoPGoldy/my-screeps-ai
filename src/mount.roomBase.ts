@@ -391,7 +391,7 @@ class CreepControl extends Room {
      */
     public addRemoteReserver(remoteRoomName): void {
         // 添加外矿预定者
-        const reserverName = `${remoteRoomName} reserver ${Game.time}`
+        const reserverName = `${remoteRoomName} reserver`
         if (!creepApi.has(reserverName)) creepApi.add(reserverName, 'reserver', {
             targetRoomName: remoteRoomName
         }, this.name)
