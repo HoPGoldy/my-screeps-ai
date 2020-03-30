@@ -85,7 +85,12 @@ const roles: {
 
                 // 遍历目标建筑存储并找到可以拿取的资源
                 for (const res in targetStructure.store) {
-                    if (((res as ResourceConstant) === RESOURCE_METAL || (res as ResourceConstant) === RESOURCE_ALLOY) && targetStructure.store[res] > 0) {
+                    if (targetStructure.store[res] > 0) {
+                        // 如果有指定要搬运的资源，就看 res 是否是指定的资源之一，是则搬运，不是则检查下一个
+                        if (Memory.reiveList && Memory.reiveList.length > 0) {
+                            if (!Memory.reiveList.includes(res as ResourceConstant)) continue
+                        }
+
                         // console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
                         const withdrawResult = creep.withdraw(targetStructure, res as ResourceConstant)
 
