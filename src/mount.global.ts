@@ -141,6 +141,18 @@ export const globalExtension = {
     },
 
     /**
+     * 所有 creep 欢呼
+     * 
+     * @param content 要欢呼的内容
+     * @param toPublic 是否对其他人可见
+     */
+    hail(content: string = '', toPublic: boolean = true): string {
+        Object.values(Game.creeps).forEach(creep => creep.say(`${content}!`, toPublic))
+
+        return 'yeah!'
+    },
+
+    /**
      * 白名单控制 api
      * 挂载在全局，由玩家手动调用
      * 白名单仅应用于房间 tower 的防御目标，不会自动关闭 rempart，也不会因为进攻对象在白名单中而不攻击

@@ -603,7 +603,7 @@ class CreepExtension extends Creep {
      * @param flagName 要进攻的旗帜名称
      */
     public attackFlag(flagName: string): boolean {
-        this.say('💢')
+        this.say('💢', true)
         // 获取旗帜
         const attackFlag = this.getFlag(flagName)
         if (!attackFlag) return false
