@@ -224,8 +224,9 @@ export const globalExtension = {
         remove(...roomNames: string[]): string {
             if (!Memory.bypassRooms) Memory.bypassRooms = []
 
-            // // 移除重复的房间
-            Memory.bypassRooms = _.difference(Memory.bypassRooms, roomNames)
+            // 移除重复的房间
+            if (roomNames.length <= 0) delete Memory.bypassRooms
+            else Memory.bypassRooms = _.difference(Memory.bypassRooms, roomNames)
 
             return `[bypass] 已移除绕过房间，${this.show()}`
         },
@@ -253,12 +254,82 @@ export const globalExtension = {
                 {
                     title: '移除绕过房间',
                     params: [
-                        { name: '...roomNames', desc: '要移除的房间名列表' }
+                        { name: '...roomNames', desc: '[可选] 要移除的房间名列表，置空来移除所有' }
                     ],
                     functionName: 'remove'
                 },
                 {
                     title: '显示所有绕过房间',
+                    functionName: 'show'
+                }
+            ])
+        }
+    },
+
+    /**
+     * 掠夺配置 api
+     * 用于让 reiver 搬运指定的资源，该列表不存在时将默认搬运所有的资源
+     */
+    reive: {
+        /**
+         * 添加要掠夺的资源
+         * 
+         * @param resources 要掠夺的资源
+         */
+        add(...resources: ResourceConstant[]): string {
+            if (!Memory.reiveList) Memory.reiveList = []
+
+            // 确保新增的资源不会重复
+            Memory.reiveList = _.uniq([ ...Memory.reiveList, ...resources])
+
+            return `[reiver] 添加成功，${this.show()}`
+        },
+
+        /**
+         * 移除要掠夺的资源
+         * 参数为空时移除所有
+         * 
+         * @param resources 要移除的掠夺资源
+         */
+        remove(...resources: ResourceConstant[]): string {
+            if (!Memory.reiveList) Memory.reiveList = []
+
+            // 更新列表
+            if (resources.length <= 0) delete Memory.reiveList
+            else Memory.reiveList = _.difference(Memory.reiveList, resources)
+
+            return `[bypass] 移除成功，${this.show()}`
+        },
+
+        /**
+         * 显示所有掠夺资源
+         */
+        show(): string {
+            if (!Memory.reiveList || Memory.reiveList.length <= 0) return `暂无特指，将掠夺所有资源`
+            return `当前仅会掠夺如下资源：${Memory.reiveList.join(' ')}`
+        },
+
+        /**
+         * 帮助信息
+         */
+        help() {
+            return createHelp([
+                {
+                    title: '添加要掠夺的资源',
+                    params: [
+                        { name: '...resources', desc: '要掠夺的资源' }
+                    ],
+                    functionName: 'add'
+                },
+                {
+                    title: '移除要掠夺的资源',
+                    params: [
+                        { name: '...resources', desc: '[可选] 不再掠夺的资源，置空来移除所有' }
+                    ],
+                    functionName: 'remove'
+                },
+                {
+                    title: '显示所有掠夺资源',
                     functionName: 'show'
                 }
             ])

@@ -763,7 +763,9 @@ interface Memory {
     // 键是玩家名，值是该玩家进入自己房间的 tick 时长
     whiteList: {
         [userName: string]: number
-    } 
+    }
+    // 掠夺资源列表，如果存在的话 reiver 将只会掠夺该名单中存在的资源
+    reiveList: ResourceConstant[]
     // 要绕过的房间名列表，由全局模块 bypass 负责。
     bypassRooms: string[]
     // 资源来源表
