@@ -936,7 +936,7 @@ interface BodyConfig {
     1800: BodyPartConstant[]
     2300: BodyPartConstant[]
     5600: BodyPartConstant[]
-    12900: BodyPartConstant[]
+    10000: BodyPartConstant[]
 }
 
 /**
