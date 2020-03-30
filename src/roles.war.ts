@@ -42,6 +42,7 @@ const roles: {
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到目标 creep 出现
      */
     doctor: (data: HealUnitData): ICreepConfig => ({
+        isNeed: () => data.keepSpawn,
         target: creep => {
             const target = Game.creeps[data.creepName]
             if (!target) {
@@ -63,6 +64,7 @@ const roles: {
      * @param creepsName 要治疗的 creep 名称
      */
     boostDoctor: (data: HealUnitData): ICreepConfig => ({
+        isNeed: () => data.keepSpawn,
         ...boostPrepare(),
         target: creep => {
             const target = Game.creeps[data.creepName]
@@ -213,9 +215,7 @@ const boostPrepare = () => ({
  * @param flagName 目标旗帜名称
  */
 const battleBase = (flagName: string, keepSpawn: boolean) => ({
-    /**
-     * 自主调起强化进程并等待 lab 准备就绪
-     */
+    // 根据玩家配置决定是否持续生成
     isNeed: () => keepSpawn,
     /**
      * 获取旗帜，然后向指定房间移动

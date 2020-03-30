@@ -552,13 +552,13 @@ class CreepControl extends Room {
     /**
      * 孵化掠夺者
      * 
-     * @param targetStructureId 要把资源存放到的建筑 id
      * @param sourceFlagName 要搜刮的建筑上插好的旗帜名
+     * @param targetStructureId 要把资源存放到的建筑 id
      */
-    public spawnReiver(targetStructureId: string, sourceFlagName: string = ''): string {
+    public spawnReiver(sourceFlagName: string = '', targetStructureId: string = ''): string {
         if (!targetStructureId && !this.terminal) return `[${this.name}] 发布失败，请填写要存放到的建筑 id`
 
-        creepApi.add(`${this.name} reiver`, 'reiver', {
+        creepApi.add(`${this.name} reiver ${Game.time}`, 'reiver', {
             flagName: sourceFlagName || DEFAULT_FLAG_NAME.REIVER,
             targetId: targetStructureId || this.terminal.id
         }, this.name)

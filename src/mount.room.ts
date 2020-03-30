@@ -1117,8 +1117,8 @@ class RoomExtension extends Room {
             {
                 title: '孵化掠夺者',
                 params: [
-                    { name: 'targetStructureId', desc: `[可选] 要把资源存放到的建筑 id，默认为房间终端` },
-                    { name: 'sourceFlagName', desc: `[可选] 要搜刮的建筑上插好的旗帜名，默认为 ${DEFAULT_FLAG_NAME.REIVER}` }
+                    { name: 'sourceFlagName', desc: `[可选] 要搜刮的建筑上插好的旗帜名，默认为 ${DEFAULT_FLAG_NAME.REIVER}` },
+                    { name: 'targetStructureId', desc: `[可选] 要把资源存放到的建筑 id，默认为房间终端` }
                 ],
                 functionName: 'spawnReiver'
             }
