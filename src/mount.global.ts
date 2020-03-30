@@ -83,6 +83,7 @@ const funcAlias = [
             return stateStr.join('\n')
         }
     },
+
     /**
      * 把房间挂载到全局
      * 来方便控制台操作，在访问时会实时的获取房间对象
@@ -101,7 +102,7 @@ export const globalExtension = {
      * 
      * @param id 游戏对象的 id
      */
-    get: function(id: string): any {
+    get(id: string): any {
         return Game.getObjectById(id)
     },
     /**
@@ -110,7 +111,7 @@ export const globalExtension = {
      * @param orderId 订单的 id
      * @param amount 要追加的数量
      */
-    orderExtend: function(orderId: string, amount: number) {
+    orderExtend(orderId: string, amount: number) {
         const actionResult = Game.market.extendOrder(orderId, amount)
 
         let returnString = ''
@@ -118,6 +119,25 @@ export const globalExtension = {
         else returnString = `订单追加失败，错误码 ${returnString}`
 
         return returnString
+    },
+
+    /**
+     * 查询指定资源在各个房间中的数量
+     * 
+     * @param resourceName 要查询的资源名
+     */
+    seeres(resourceName: ResourceConstant): string {
+        // 根据资源不同选择不同的查询目标
+        const source = resourceName === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
+
+        let log = `${resourceName} 的分布如下：\n`
+        // 遍历所有房间并检查对应的存储建筑
+        log += Object.values(Game.rooms).map(room => {
+            if (room[source] && room[source].store[resourceName] > 0) return `${room.name} => ${room[source].store[resourceName]}`
+            else return false
+        }).filter(res => res).join('\n')
+
+        return log
     },
 
     /**
