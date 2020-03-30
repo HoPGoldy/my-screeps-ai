@@ -146,6 +146,13 @@ export const globalHelp = [
                 { name: 'amount', desc: '要追加的数量' }
             ],
             functionName: 'orderExtend'
+        },
+        {
+            title: '查询指定资源的房间分布',
+            params: [
+                { name: 'resourceName', desc: '要查询的资源名' }
+            ],
+            functionName: 'seeres'
         }
     ]),
     '——————————',
