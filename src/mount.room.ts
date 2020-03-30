@@ -146,16 +146,19 @@ class RoomExtension extends Room {
      * @param amount 要发送的数量, 默认 100k
      */
     public givee(roomName: string, amount: number = 100000): string {
-        // 如果在执行其他任务则添加失败
+        const logs = []
+        if (!this.terminal) return `[能量共享] 未发现 Terminal，共享终止`
+        // 如果在执行其他任务则将其覆盖，因为相对于用户操作来说，其他模块发布的资源共享任务优先级肯定要低
+        // 并且其他模块的共享任务就算被删除了，过一段时间之后它也会再次发布并重新添加
         if (this.memory.shareTask) {
             const task = this.memory.shareTask
-            return `[能量共享] 任务添加失败，当前房间正在执行其他共享任务，请稍后重试\n  ┖─ 当前执行的共享任务: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`
+            logs.push(`┖─ 因此移除的共享任务为: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`)
         }
 
         // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
         const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
-        if (amount + cost > TERMINAL_CAPACITY) {
-            return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost}`
+        if (amount + cost > this.terminal.store.getFreeCapacity()) {
+            return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost} Terminal 剩余容量 ${this.terminal.store.getFreeCapacity()}`
         }
 
         this.memory.shareTask = {
@@ -164,7 +167,9 @@ class RoomExtension extends Room {
             resourceType: RESOURCE_ENERGY
         }
 
-        return `[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}\n`
+        logs.unshift(`[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
+
+        return logs.join('\n')
     }
 
     /**

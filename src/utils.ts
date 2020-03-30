@@ -1,4 +1,4 @@
-import { stateScanInterval } from './setting'
+import { stateScanInterval, colors } from './setting'
 
 /**
 * 获取指定方向的相反方向
@@ -45,10 +45,10 @@ export function doing(hashMap: object, showCpu: string = ''): void {
  * 给指定文本添加颜色
  * 
  * @param content 要添加颜色的文本
- * @param color 要添加的颜色
+ * @param colorName 要添加的颜色常量字符串
  */
-export function colorful(content: string, color: string): string {
-    return `<text style="color: ${color}">${content}</text>`
+export function colorful(content: string, colorName: Colors): string {
+    return `<text style="color: ${colors[colorName]}">${content}</text>`
 }
 
 /**
@@ -60,15 +60,15 @@ export function colorful(content: string, color: string): string {
 export function createHelp(functionInfo: IFunctionDescribe[]): string {
     const functionList = functionInfo.map(func => {
         // 标题
-        const title = colorful(func.title, '#6b9955')
+        const title = colorful(func.title, 'green')
         // 参数介绍
         const param = func.params ? 
-            func.params.map(param => `  - ${colorful(param.name, '#8dc5e3')}: ${colorful(param.desc, '#6b9955')}`).join('\n') : ''
+            func.params.map(param => `  - ${colorful(param.name, 'blue')}: ${colorful(param.desc, 'green')}`).join('\n') : ''
         // 函数示例中的参数
         const paramInFunc = func.params ? 
-            func.params.map(param => colorful(param.name, '#8dc5e3')).join(', ') : ''
+            func.params.map(param => colorful(param.name, 'blue')).join(', ') : ''
         // 函数示例
-        const functionName = `${colorful(func.functionName, '#c5c599')}(${paramInFunc})`
+        const functionName = `${colorful(func.functionName, 'yellow')}(${paramInFunc})`
 
         return func.params ? `${title}\n${param}\n${functionName}\n` : `${title}\n${functionName}\n`
     })
@@ -83,7 +83,7 @@ export function createHelp(functionInfo: IFunctionDescribe[]): string {
  * @param constant 常量名
  */
 function createConst(name: string, constant: string): string {
-    return `${colorful(name, '#6b9955')} ${colorful(constant, '#8dc5e3')}`
+    return `${colorful(name, 'green')} ${colorful(constant, 'blue')}`
 }
 
 // 资源常量控制台帮助
@@ -120,21 +120,47 @@ export function stateScanner(): void {
     Memory.stats.credit = Game.market.credits
 }
 
-export const globalHelp = createHelp([
-    {
-        title: '房间帮助',
-        functionName: 'Room.help'
-    },
-    {
-        title: 'Link 帮助',
-        functionName: 'StructureLink.help'
-    },
-    {
-        title: 'factory 帮助',
-        functionName: 'StructureFactory.help'
-    },
-    {
-        title: 'Observer 帮助',
-        functionName: 'StructureObserver.help'
-    }
-])
+/**
+ * 全局帮助文档
+ */
+export const globalHelp = [
+    colorful('HoPGoldy Screeps', 'blue'),
+    colorful('半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息（如：Game.rooms.W1N1.help()）。在 Link, Factory, Terminal, PowerSpawn, Observer 也包含对应的 help 方法。以下为全局方法：', 'green'),
+    '——————————',
+    createConst('查看资源常量', 'resource'),
+    createConst('移除所有禁止通行点位', 'clearpos'),
+    createConst('查看商品生产线状态', 'comm'),
+    '——————————',
+    createHelp([
+        {
+            title: '获取游戏对象（Game.getObjectById 别名）',
+            params: [
+                { name: 'id', desc: '要查询的对象 id' }
+            ],
+            functionName: 'get'
+        },
+        {
+            title: '追加订单容量（Game.market.extendOrder 别名）',
+            params: [
+                { name: 'orderId', desc: '订单的 id' },
+                { name: 'amount', desc: '要追加的数量' }
+            ],
+            functionName: 'orderExtend'
+        }
+    ]),
+    '——————————',
+    createHelp([
+        {
+            title: '白名单',
+            functionName: 'whitelist.help'
+        },
+        {
+            title: '房间绕过',
+            functionName: 'bypass.help'
+        },
+        {
+            title: '掠夺配置',
+            functionName: 'reive.help'
+        }
+    ])
+].join('\n')
