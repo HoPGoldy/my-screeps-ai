@@ -1,8 +1,6 @@
-
 /**
  * 设置项
- * 本文件和 config.ts 的区别在于，本文件中的内容一般情况下不需要进行修改。
- * 本文件存放了项目中的内置常量
+ * 本文件存放了项目中的内置常量，一般情况下不需要进行修改。
  */
 
 /**
@@ -157,6 +155,14 @@ export const bodyConfigs: IBodyConfigs = {
     }
 }
 
+/**
+ * 在绘制控制台信息时使用的颜色
+ */
+export const colors: { [name in Colors]: string } = {
+    green: '#6b9955',
+    yellow: '#c5c599',
+    blue: '#8dc5e3'
+}
 
 // creep 的默认内存
 export const creepDefaultMemory: CreepMemory = {
@@ -164,7 +170,6 @@ export const creepDefaultMemory: CreepMemory = {
     ready: false, 
     working: false
 }
-
 
 // 房间建筑维修需要的设置
 export const repairSetting = {
