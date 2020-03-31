@@ -304,7 +304,7 @@ class CreepControl extends Room {
          */
         const RiseRoleConfigs = [
             { roleName: 'upgrader' as CreepRoleConstant, number: upgrader, sourceIndex: 0 },
-            { roleName: 'harvester' as CreepRoleConstant, number: harvester, sourceIndex: this.sources.length > 1 ? 0 : 1 }
+            { roleName: 'harvester' as CreepRoleConstant, number: harvester, sourceIndex: this.sources.length > 1 ? 1 : 0 }
         ]
         
         // 遍历配置项，并用配置发布 Creep
