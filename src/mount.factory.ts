@@ -103,6 +103,24 @@ export default class FactoryExtension extends StructureFactory {
     }
 
     /**
+     * 更新对应产物的统计信息
+     * 会将刚刚造出来的产物和 terminal 已经存在的产物数量加起来更新到 stats 中
+     * 
+     * @param res 要更新数量的资源
+     */
+    private updateStats(res: ResourceConstant) {
+        if (!Memory.stats || !Memory.stats.rooms) Memory.stats = { rooms: {} }
+        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
+
+        // 该产物的现存数量
+        let amount = this.store[res]
+        if (this.room.terminal) amount += this.room.terminal.store[res] || 0
+
+        // 更新数量
+        Memory.stats.rooms[this.room.name][res] = amount
+    }
+
+    /**
      * 获取资源
      */
     private getResource(): void {
@@ -222,6 +240,9 @@ export default class FactoryExtension extends StructureFactory {
 
         // 把所有东西都搬出去，保持工厂存储净空
         for (const resType in this.store) {
+            // 是目标产物的话就更新统计信息
+            if (resType === task.target) this.updateStats(resType)
+
             // 资源不足，发布任务
             const target = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
             this.room.addCenterTask({
