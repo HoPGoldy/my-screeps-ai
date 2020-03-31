@@ -388,10 +388,11 @@ class CreepControl extends Room {
      * 发布房间预定者
      * 
      * @param remoteRoomName 要预定的外矿房间名
+     * @param single 为 false 时将允许为一个房间发布多个预定者，为 true 时可以执行自动发布
      */
-    public addRemoteReserver(remoteRoomName): void {
+    public addRemoteReserver(remoteRoomName, single: boolean = true): void {
         // 添加外矿预定者
-        const reserverName = `${remoteRoomName} reserver`
+        const reserverName = `${remoteRoomName} reserver${single ? '' : Game.time}`
         if (!creepApi.has(reserverName)) creepApi.add(reserverName, 'reserver', {
             targetRoomName: remoteRoomName
         }, this.name)
@@ -557,13 +558,13 @@ class CreepControl extends Room {
      */
     public spawnReiver(sourceFlagName: string = '', targetStructureId: string = ''): string {
         if (!targetStructureId && !this.terminal) return `[${this.name}] 发布失败，请填写要存放到的建筑 id`
-
-        creepApi.add(`${this.name} reiver ${Game.time}`, 'reiver', {
+        const reiverName = `${this.name} reiver ${Game.time}`
+        creepApi.add(reiverName, 'reiver', {
             flagName: sourceFlagName || DEFAULT_FLAG_NAME.REIVER,
             targetId: targetStructureId || this.terminal.id
         }, this.name)
 
-        return `[${this.name}] 掠夺者已发布`
+        return `[${this.name}] 掠夺者 ${reiverName} 已发布, 目标旗帜名称 ${sourceFlagName || DEFAULT_FLAG_NAME.REIVER}, 将搬运至 ${targetStructureId ? targetStructureId : this.name + ' Terminal'}`
     }
 }
 
