@@ -63,7 +63,7 @@ const roles: {
 
             // 移动并统计移动时长
             creep.farMoveTo(flag.pos)
-            flag.memory.travelTime = flag.memory.travelTime ? flag.memory.travelTime + 1 : 0
+            flag.memory.travelTime = flag.memory.travelTime === undefined ? 0 : flag.memory.travelTime + 1
             return false
         },
         source: creep => {
@@ -143,8 +143,8 @@ const roles: {
                     return false
                 }
                 
-                // *3 是去一趟，回来的时候走的慢需要两倍的时间，20 是冗余
-                if (creep.ticksToLive >= flag.memory.travelTime * 3 + 20) return true
+                // 乘以 3 是去一趟，回来的时候走的慢需要两倍的时间再加上沼泽可能更慢，40 是冗余
+                if (creep.ticksToLive >= flag.memory.travelTime * 3 + 40) return true
                 else {
                     creep.suicide()
                     return false
