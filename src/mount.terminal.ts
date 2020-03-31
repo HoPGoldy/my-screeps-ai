@@ -10,10 +10,11 @@ import { creepApi } from './creepController'
  */
 export default class TerminalExtension extends StructureTerminal {
     public work(): void {
-        this.stateScanner()
-
         // 没有冷却好或者不到 10 tick 就跳过
         if (this.cooldown !== 0 || Game.time % 10) return
+        
+        // 资源统计
+        this.stateScanner()
 
         // 优先执行共享任务
         this.execShareTask()
