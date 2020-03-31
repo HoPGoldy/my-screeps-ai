@@ -42,7 +42,7 @@ const roles: {
                         // 查找废墟，如果有包含 store 的废墟就设为目标
                         const ruins = flag.pos.lookFor(LOOK_RUINS)
                         for (const ruin of ruins) {
-                            if ('store' in ruin) {
+                            if ('store' in ruin && ruin.store.getUsedCapacity() > 0) {
                                 targetStructure = ruin
                                 break
                             }
