@@ -33,6 +33,22 @@ const funcAlias = [
             return globalHelp
         }
     },
+    // 展示当前的全局路径缓存
+    {
+        alias: 'route',
+        exec: function(): string {
+            if (!global.routeCache) {
+                global.routeCache = {}
+                return `暂无路径缓存`
+            }
+
+            const logs = Object.keys(global.routeCache).map(routeKey => {
+                return `[${routeKey.split(' ').join(' > ')}] ${global.routeCache[routeKey]}`
+            })
+
+            return logs.length > 0 ? logs.join('\n') : '暂无路径缓存'
+        }
+    },
     // 释放所有禁止通行点位
     {
         alias: 'clearpos',

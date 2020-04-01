@@ -153,6 +153,15 @@ class CreepExtension extends Creep {
         if (!this.memory.farMove) this.memory.farMove = { }
         this.memory.farMove.index = 0
 
+        // 先查询下缓存里有没有值
+        const routeKey = `${this.room.serializePos(this.pos)} ${this.room.serializePos(target)}`
+        let route = global.routeCache[routeKey]
+        // 如果有值则直接返回
+        if (route) {
+            console.log(`[${this.name}] 寻路命中! ${routeKey}`)
+            return route
+        }
+        
         const result = PathFinder.search(this.pos, { pos: target, range }, {
             plainCost: 2,
             swampCost: 10,
@@ -203,9 +212,12 @@ class CreepExtension extends Creep {
 
         // 没找到就返回 null
         if (result.path.length <= 0) return null
+        // 找到了就进行压缩
+        route = this.serializeFarPath(result.path)
+        // 保存到全局缓存
+        if (!result.incomplete) global.routeCache[routeKey] = route
         
-        // 找到了就压缩后返回
-        return this.serializeFarPath(result.path)
+        return route
     }
 
     /**

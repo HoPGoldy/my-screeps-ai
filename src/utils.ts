@@ -130,6 +130,7 @@ export const globalHelp = [
     createConst('查看资源常量', 'resource'),
     createConst('移除所有禁止通行点位', 'clearpos'),
     createConst('查看商品生产线状态', 'comm'),
+    createConst('列出所有路径缓存', 'route'),
     '——————————',
     createHelp([
         {
