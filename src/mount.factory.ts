@@ -1,4 +1,4 @@
-import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT } from './setting'
+import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit } from './setting'
 import { createHelp } from './utils'
 
 /**
@@ -6,13 +6,20 @@ import { createHelp } from './utils'
  */
 export default class FactoryExtension extends StructureFactory {
     public work(): void {
-        // 没有启用则跳过
-        if (!this.room.memory.factory) return
-
-        if (this.room.memory.factory.pause) return
+        // 没有启用或者暂停了则跳过
+        if (!this.room.memory.factory || this.room.memory.factory.pause) return
+        // 检查工厂是否在休眠
+        if (this.room.memory.factory.sleep) {
+            if (Game.time > this.room.memory.factory.sleep) delete this.room.memory.factory.sleep
+            else return
+        }
 
         // 执行 factory 工作
-        this.runFactory()
+        if (this.runFactory()) {
+            // 如果 storage 里能量不足了则休眠
+            if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= factoryEnergyLimit) return
+            else this.room.memory.factory.sleep = Game.time + 10000
+        }
     }
 
     // 建筑完成
@@ -24,25 +31,29 @@ export default class FactoryExtension extends StructureFactory {
     /**
      * factory 的工作总入口
      * 根据当前状态跳转到指定工作
+     * 
+     * @returns 为 true 代表工厂本 tick 工作了，为 false 代表本 tick 休息了
      */
-    private runFactory(): void {
+    private runFactory(): boolean {
         switch (this.room.memory.factory.state) {
             case FACTORY_STATE.PREPARE: 
-                if (Game.time % 5) return
+                if (Game.time % 5) return false
                 this.prepare()
             break
             case FACTORY_STATE.GET_RESOURCE:
-                if (Game.time % 5) return
+                if (Game.time % 5) return false
                 this.getResource()
             break
             case FACTORY_STATE.WORKING:
                 this.working()
             break
             case FACTORY_STATE.PUT_RESOURCE:
-                if (Game.time % 5) return
+                if (Game.time % 5) return false
                 this.putResource()
             break
         }
+
+        return true
     }
     
     /**
@@ -472,8 +483,8 @@ export default class FactoryExtension extends StructureFactory {
 
         // 工厂基本信息
         let logs = [
-            `生产线类型: ${memory.depositType} 工厂等级: ${memory.level} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''} ${memory.pause ? '已暂停' : ''}`,
-            `当前工作阶段: ${memory.state}`,
+            `生产线类型: ${memory.depositType || '未指定'} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
+            `生产状态: ${memory.pause ? '已暂停' : ''} ${memory.sleep ? '休眠中' + Game.time + '/' + memory.sleep : '工作中'} 当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
 
@@ -496,10 +507,12 @@ export default class FactoryExtension extends StructureFactory {
 
     /**
      * 用户操作：重启 factory
+     * 会同时将工厂从休眠中唤醒
      */
     public on(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
         delete this.room.memory.factory.pause
+        delete this.room.memory.factory.sleep
         return `[${this.room.name} factory] 已恢复, 当前状态：${this.stats()}`
     }
 
@@ -569,7 +582,7 @@ export default class FactoryExtension extends StructureFactory {
                 functionName: 'off'
             },
             {
-                title: '重启工厂',
+                title: '重启工厂(会将工厂从休眠中唤醒)',
                 functionName: 'on'
             },
             {

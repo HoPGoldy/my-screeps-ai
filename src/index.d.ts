@@ -564,8 +564,10 @@ interface RoomMemory {
         // 在该字段存在时，工厂会搬出所有材料，并在净空后移除 room.factory 内存
         // 在净空前手动删除该字段可以终止移除进程
         remove?: true
-        // 工厂是否暂停
+        // 工厂是否暂停，该属性优先级高于 sleep，也就是说 sleep 结束的时候如果有 pause，则工厂依旧不会工作
         pause?: true
+        // 工厂休眠时间，如果该时间存在的话则工厂将会待机
+        sleep?: number
         // 玩家手动指定的目标，工厂将一直合成该目标
         specialTraget?: CommodityConstant
     }

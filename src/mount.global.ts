@@ -385,7 +385,7 @@ function getRoomFactoryState(room: Room): string {
 
     // 基本信息
     let logs = [ 
-        `    - [${room.name}][${memory.pause ? '暂停中' : '运行中'}]`,
+        `    - [${room.name}]${memory.pause ? '[暂停中]' : ''} [${memory.sleep ? '正在休眠 ' + Game.time + '/' + memory.sleep : '工作中'}]`,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`
     ]
