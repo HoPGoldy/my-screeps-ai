@@ -111,5 +111,26 @@ export const creepApi = {
  
         Memory.creepConfigs[creepName].data = _.assign(Memory.creepConfigs[creepName].data, data)
         return OK
+    },
+
+    /**
+     * 格式化输出所有 creep 配置
+     */
+    show(): string {
+        if (!Memory.creepConfigs) return `暂无 creep 配置`
+        // 将 creep 的配置进行格式化
+        let format: { [roomName: string]: string[] } = {}
+        // 遍历所有配置项并格式化
+        for (const creepName in Memory.creepConfigs) {
+            const creepConfig = Memory.creepConfigs[creepName]
+            // 兜底
+            if (!(creepConfig.spawnRoom in format)) format[creepConfig.spawnRoom] = [ `${creepConfig.spawnRoom} 下属 creep：` ]
+
+            format[creepConfig.spawnRoom].push(`  - [${creepName}] [角色] ${creepConfig.role}`)
+        }
+
+        let logs = []
+        Object.values(format).forEach(roomCreeps => logs.push(...roomCreeps))
+        return logs.join('\n')
     }
 } 

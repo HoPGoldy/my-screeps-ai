@@ -1,4 +1,4 @@
-import { resourcesHelp, globalHelp, createHelp } from './utils'
+import { colorful, resourcesHelp, globalHelp, createHelp } from './utils'
 import { factoryTopTargets } from './setting'
 import { creepApi } from './creepController'
 
@@ -383,9 +383,12 @@ function getRoomFactoryState(room: Room): string {
     const memory = room.memory.factory
     if (!memory) return `    - [${room.name}] 工厂未设置等级`
 
+    const workStats = memory.pause ? colorful('[暂停中]', 'yellow') :
+        memory.sleep ? colorful(`[休眠中 剩余${memory.sleep - Game.time}t]`, 'yellow') : colorful('工作中', 'green')
+
     // 基本信息
     let logs = [ 
-        `    - [${room.name}]${memory.pause ? '[暂停中]' : ''} [${memory.sleep ? '正在休眠 ' + Game.time + '/' + memory.sleep : '工作中'}]`,
+        `    - [${room.name}]${workStats}`,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`
     ]
