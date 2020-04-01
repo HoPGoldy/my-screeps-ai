@@ -30,4 +30,5 @@ export default function (): void {
 function initStorage() {
     if (!Memory.rooms) Memory.rooms = {}
     if (!Memory.stats) Memory.stats = { rooms: {} }
+    if (!global.routeCache) global.routeCache = {}
 }
