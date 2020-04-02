@@ -158,7 +158,7 @@ class CreepExtension extends Creep {
         let route = global.routeCache[routeKey]
         // 如果有值则直接返回
         if (route) {
-            console.log(`[${this.name}] 寻路命中! ${routeKey}`)
+            // console.log(`[${this.name}] 寻路命中! ${routeKey}`)
             return route
         }
         
