@@ -46,7 +46,12 @@ const funcAlias = [
                 return `[${routeKey.split(' ').join(' > ')}] ${global.routeCache[routeKey]}`
             })
 
-            return logs.length > 0 ? logs.join('\n') : '暂无路径缓存'
+            if (logs.length > 0) {
+                logs.unshift(`当前共缓存路径 ${Object.keys(global.routeCache).length} 条`)
+            }
+            else return `暂无路径缓存`
+
+            return logs.join('\n')
         }
     },
     // 释放所有禁止通行点位
@@ -400,7 +405,7 @@ function getRoomFactoryState(room: Room): string {
     if (!memory) return `    - [${room.name}] 工厂未设置等级`
 
     const workStats = memory.pause ? colorful('[暂停中]', 'yellow') :
-        memory.sleep ? colorful(`[休眠中 剩余${memory.sleep - Game.time}t]`, 'yellow') : colorful('工作中', 'green')
+        memory.sleep ? colorful(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`, 'yellow') : colorful('工作中', 'green')
 
     // 基本信息
     let logs = [ 

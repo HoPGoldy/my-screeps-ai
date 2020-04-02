@@ -1,5 +1,5 @@
 import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit } from './setting'
-import { createHelp } from './utils'
+import { createHelp, colorful } from './utils'
 
 /**
  * Factory 原型拓展
@@ -10,7 +10,7 @@ export default class FactoryExtension extends StructureFactory {
         if (!this.room.memory.factory || this.room.memory.factory.pause) return
         // 检查工厂是否在休眠
         if (this.room.memory.factory.sleep) {
-            if (Game.time > this.room.memory.factory.sleep) delete this.room.memory.factory.sleep
+            if (Game.time > this.room.memory.factory.sleep) this.wakeup()
             else return
         }
 
@@ -18,7 +18,7 @@ export default class FactoryExtension extends StructureFactory {
         if (this.runFactory()) {
             // 如果 storage 里能量不足了则休眠
             if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= factoryEnergyLimit) return
-            else this.room.memory.factory.sleep = Game.time + 10000
+            else this.gotoBed(Game.time + 10000, '能量不足')
         }
     }
 
@@ -97,6 +97,9 @@ export default class FactoryExtension extends StructureFactory {
                         resType as CommodityConstant, 
                         subResAmount - this.room.terminal.store[resType]
                     )
+
+                    // 如果这时候只有这一个任务了，就进入待机状态
+                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(Game.time + 10000, '等待共享')
                 }
                 // 能合成的话就添加新任务，数量为需要数量 - 已存在数量
                 else this.addTask({
@@ -129,6 +132,30 @@ export default class FactoryExtension extends StructureFactory {
 
         // 更新数量
         Memory.stats.rooms[this.room.name][res] = amount
+    }
+
+    /**
+     * 进入待机状态
+     * 
+     * @param time 待机的市场
+     * @param reason 待机的理由
+     */
+    private gotoBed(time: number, reason: string): OK | ERR_NOT_FOUND {
+        if (!this.room.memory || !this.room.memory.factory) return ERR_NOT_FOUND
+
+        this.room.memory.factory.sleep = time
+        this.room.memory.factory.sleepReason = reason
+        return OK
+    }
+
+    /**
+     * 从休眠中唤醒
+     */
+    private wakeup(): OK | ERR_NOT_FOUND{
+        if (!this.room.memory || !this.room.memory.factory) return ERR_NOT_FOUND
+
+        delete this.room.memory.factory.sleep
+        delete this.room.memory.factory.sleepReason
     }
 
     /**
@@ -481,10 +508,14 @@ export default class FactoryExtension extends StructureFactory {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 工厂未启用`
         const memory = this.room.memory.factory
 
+        const workStats = memory.pause ? colorful('[暂停中]', 'yellow') :
+        memory.sleep ? colorful(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`, 'yellow') : colorful('工作中', 'green')
+
+
         // 工厂基本信息
         let logs = [
             `生产线类型: ${memory.depositType || '未指定'} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
-            `生产状态: ${memory.pause ? '已暂停' : ''} ${memory.sleep ? '休眠中' + Game.time + '/' + memory.sleep : '工作中'} 当前工作阶段: ${memory.state}`,
+            `生产状态: ${workStats} 当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
 
@@ -512,7 +543,7 @@ export default class FactoryExtension extends StructureFactory {
     public on(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
         delete this.room.memory.factory.pause
-        delete this.room.memory.factory.sleep
+        this.wakeup()
         return `[${this.room.name} factory] 已恢复, 当前状态：${this.stats()}`
     }
 

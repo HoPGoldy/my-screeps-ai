@@ -4,7 +4,7 @@ type CREEP_DONT_NEED_SPAWN = -101
 type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 
 // 本项目中出现的颜色常量
-type Colors = 'green' | 'blue' | 'yellow'
+type Colors = 'green' | 'blue' | 'yellow' | 'red'
 
 // 函数介绍构造函数的参数对象
 interface IFunctionDescribe {
@@ -574,6 +574,8 @@ interface RoomMemory {
         pause?: true
         // 工厂休眠时间，如果该时间存在的话则工厂将会待机
         sleep?: number
+        // 休眠的原因
+        sleepReason?: string
         // 玩家手动指定的目标，工厂将一直合成该目标
         specialTraget?: CommodityConstant
     }
