@@ -1,4 +1,5 @@
 import roles from './role'
+import { colorful } from './utils'
 /**
  * creep 控制模块
  * 
@@ -125,12 +126,22 @@ export const creepApi = {
             const creepConfig = Memory.creepConfigs[creepName]
             // 兜底
             if (!(creepConfig.spawnRoom in format)) format[creepConfig.spawnRoom] = [ `${creepConfig.spawnRoom} 下属 creep：` ]
+            
+            // 检查该单位的存活状态
+            const creep = Game.creeps[creepName]
+            let liveStats: string = ''
+            if (creep) {
+                if (creep.spawning) liveStats = colorful('孵化中', 'yellow')
+                else liveStats = `${colorful('存活', 'green')} 剩余生命 ${Game.creeps[creepName].ticksToLive}`
+            }
+            else liveStats = colorful('未孵化', 'red')
 
-            format[creepConfig.spawnRoom].push(`  - [${creepName}] [角色] ${creepConfig.role}`)
+            format[creepConfig.spawnRoom].push(`  - [${creepName}] [角色] ${creepConfig.role} [当前状态] ${liveStats}`)
         }
 
         let logs = []
         Object.values(format).forEach(roomCreeps => logs.push(...roomCreeps))
+        logs.unshift(`当前共有 creep 配置 ${Object.keys(Memory.creepConfigs).length} 项`)
         return logs.join('\n')
     }
 } 

@@ -159,6 +159,7 @@ export const bodyConfigs: IBodyConfigs = {
  * 在绘制控制台信息时使用的颜色
  */
 export const colors: { [name in Colors]: string } = {
+    red: '#ef9a9a',
     green: '#6b9955',
     yellow: '#c5c599',
     blue: '#8dc5e3'
