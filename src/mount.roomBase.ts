@@ -399,6 +399,28 @@ class CreepControl extends Room {
     }
 
     /**
+     * 给本房间签名
+     * 
+     * @param content 要签名的内容
+     */
+    public sign(content: string): string {
+        const creepName = `${this.name} signer`
+        const creep = Game.creeps[creepName]
+        // 如果有显存的签名单位就直接签名
+        if (creep) {
+            (creep.memory.data as RemoteDeclarerData).signText = content
+            return `已将 ${creepName} 的签名内容修改为：${content}`
+        }
+        // 否则就发布一个
+        creepApi.add(creepName, 'signer', {
+            targetRoomName: this.name,
+            signText: content
+        }, this.name)
+
+        return `已发布 ${creepName}, 签名内容为：${content}`
+    }
+
+    /**
      * 发布支援角色组
      * 
      * @param remoteRoomName 要支援的房间名
