@@ -252,6 +252,7 @@ const roles: {
      * @param signText 要签名的内容
      */
     signer: (data: RemoteDeclarerData): ICreepConfig => ({
+        isNeed: () => false,
         target: creep => {
             if (creep.room.name === data.targetRoomName) {
                 if (creep.signController(creep.room.controller, data.signText) === ERR_NOT_IN_RANGE) {

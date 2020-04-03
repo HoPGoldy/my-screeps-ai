@@ -772,6 +772,8 @@ interface IRoomShareTask {
 }
 
 interface Memory {
+    // 全局的喊话索引
+    sayIndex?: number
     // 白名单，通过全局的 whitelist 对象控制
     // 键是玩家名，值是该玩家进入自己房间的 tick 时长
     whiteList: {

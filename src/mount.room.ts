@@ -1257,6 +1257,13 @@ class RoomExtension extends Room {
                 functionName: 'claim'
             },
             {
+                title: '给本房间签名',
+                params: [
+                    { name: 'content', desc: '要签名的内容' }
+                ],
+                functionName: 'sign'
+            },
+            {
                 title: '移除终端矿物监控',
                 params: [
                     { name: 'resourceType', desc: '要移除监控的资源类型' }
