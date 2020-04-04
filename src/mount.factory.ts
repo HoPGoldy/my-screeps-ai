@@ -97,7 +97,7 @@ export default class FactoryExtension extends StructureFactory {
                     this.room.shareRequest(resType as CommodityConstant, requestAmount)
 
                     // 如果这时候只有这一个任务了，就进入待机状态
-                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(Game.time + 10000, `等待 ${resType}*${requestAmount}`)
+                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(Game.time + 100, `等待 ${resType}*${requestAmount}`)
                 }
                 // 能合成的话就添加新任务，数量为需要数量 - 已存在数量
                 else this.addTask({
