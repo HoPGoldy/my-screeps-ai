@@ -111,7 +111,7 @@ export default class TerminalExtension extends StructureTerminal {
      * 
      * @returns 是否需要继续执行 ResourceListener
      */
-    public dealOrder(resource: ITerminalListenerTask): boolean {
+    public dealOrder(resource: TerminalOrderTask): boolean {
         // 没有订单需要处理
         if (!this.room.memory.targetOrderId) return true
         // 获取订单
@@ -159,7 +159,7 @@ export default class TerminalExtension extends StructureTerminal {
      * 资源监听
      * 检查资源是否符合用户给定的期望
      */
-    public ResourceListener(resource: ITerminalListenerTask): void {
+    public ResourceListener(resource: TerminalOrderTask): void {
         const resourceAmount = this.store[resource.type]
         // 最大值监听，超过才进行卖出
         if (resource.mod == 'max') {
@@ -226,7 +226,7 @@ export default class TerminalExtension extends StructureTerminal {
      *   @property {} type 资源类型
      *   @property {} amount 期望数量
      */
-    private getResourceByIndex(): ITerminalListenerTask | null {
+    private getResourceByIndex(): TerminalOrderTask | null {
         if (!this.room.memory.terminalTasks) return null
         const resources = Object.keys(this.room.memory.terminalTasks)
         if (!resources || resources.length == 0) return null
