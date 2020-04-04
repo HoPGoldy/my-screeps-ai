@@ -92,14 +92,12 @@ export default class FactoryExtension extends StructureFactory {
             if (this.room.terminal.store[resType] < subResAmount) {
                 // 如果自己的等级无法合成该产品
                 if ('level' in COMMODITIES[resType] && COMMODITIES[resType].level !== this.room.memory.factory.level) {
+                    const requestAmount = subResAmount - this.room.terminal.store[resType]
                     // 请求其他房间共享
-                    this.room.shareRequest(
-                        resType as CommodityConstant, 
-                        subResAmount - this.room.terminal.store[resType]
-                    )
+                    this.room.shareRequest(resType as CommodityConstant, requestAmount)
 
                     // 如果这时候只有这一个任务了，就进入待机状态
-                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(Game.time + 10000, '等待共享')
+                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(Game.time + 10000, `等待 ${resType}*${requestAmount}`)
                 }
                 // 能合成的话就添加新任务，数量为需要数量 - 已存在数量
                 else this.addTask({
