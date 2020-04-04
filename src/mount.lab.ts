@@ -193,9 +193,6 @@ export default class LabExtension extends StructureLab {
             this.room.memory.lab.state = LAB_STATE.BOOST
             return
         }
-
-        // 还有 boost 任务再排队的话就等会
-        if (this.room.memory.hasMoreBoost) return 
         
         // 获取目标
         if (!this.room.memory.lab.targetIndex) this.room.memory.lab.targetIndex = 0
