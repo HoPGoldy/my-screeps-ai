@@ -535,7 +535,7 @@ class RoomExtension extends Room {
      */
     public treset(hard: boolean = false): string {
         // 模板任务
-        const templateTask = {
+        const templateTask: TerminalListenerTask = {
             amount: 5000,
             mod: 'min',
             supplementAction: 'share'
@@ -1058,6 +1058,13 @@ class RoomExtension extends Room {
 
         return returnString
     }
+
+    // private deal(orderId: string, amount?: number) {
+    //     const order = Game.market.getOrderById(orderId)
+    //     if (!order) return `[${this.name} terminal] 找不到订单 ${orderId}`
+
+    //     if (!amount) amount = order.amount
+    // }
 
     /**
      * 为该房间创建一个 ORDER_BUY 订单

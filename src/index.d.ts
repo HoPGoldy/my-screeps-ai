@@ -583,11 +583,7 @@ interface RoomMemory {
     // 终端监听矿物列表
     // 键为资源名称，值为资源期望数量
     terminalTasks: {
-        [resourceType: string]: {
-            amount: number
-            mod: string
-            supplementAction: string
-        }
+        [resourceType: string]: TerminalListenerTask
     }
     // 房间内终端缓存的订单id
     targetOrderId: string
@@ -681,11 +677,6 @@ interface RoomMemory {
             [resourceType: string]: string
         }
     }
-    /**
-     * 是否还有 boost 任务在排队
-     * 如果为 true 的话则 lab 集群会一直停留在 GetTarget 阶段
-     */
-    hasMoreBoost: boolean
 
     // powerSpawn 内存
     powerSpawn: {
@@ -963,15 +954,18 @@ type IBodyConfigs = {
 }
 
 // 终端监听任务
-interface ITerminalListenerTask { 
-    // 要监听的资源类型
-    type: ResourceConstant,
+interface TerminalListenerTask {
     // 期望数量 
-    amount: number,
-    // 监听类型: max, min, all 
-    mod: string, 
+    amount: number
+    // 监听类型
+    mod: 'max' | 'min' | 'all'
     // 补充来源: market, share
-    supplementAction: string 
+    supplementAction: 'market' | 'share'
+}
+
+interface TerminalOrderTask extends TerminalListenerTask { 
+    // 要监听的资源类型
+    type: ResourceConstant
 }
 
 // 反应底物表接口
