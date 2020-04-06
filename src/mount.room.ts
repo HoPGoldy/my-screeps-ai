@@ -173,6 +173,16 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作 - 发送 power 到指定房间
+     * 
+     * @param RoomName 要发送到的房间名
+     * @param amount 发送的数量
+     */
+    public givep(RoomName: string, amount: number = 5000) {
+        return this.giver(RoomName, RESOURCE_POWER, amount)
+    }
+
+    /**
      * 添加禁止通行位置
      * 
      * @param creepName 禁止通行点位的注册者

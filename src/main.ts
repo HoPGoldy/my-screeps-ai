@@ -25,15 +25,5 @@ module.exports.loop = function (): void {
 
     // 统计全局资源使用
     stateScanner()
-
-    globalSay([
-        '深切哀悼',
-        '在抗击新冠疫情中',
-        '牺牲的烈士',
-        '与逝世的同胞',
-        '愿逝者安息',
-        '愿生者奋发',
-        '愿祖国昌盛'
-    ])
 }
 
