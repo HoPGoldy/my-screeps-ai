@@ -432,8 +432,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 获取还有资源的 lab
             let targetLab = getNotClearLab(labMemory)
 
-            // 还找不到的话就说明搬空了，执行 target
-            if (!targetLab) return true
+            // 还找不到或者目标里没有化合物了，说明已经搬空，执行 target
+            if (!targetLab || !targetLab.mineralType) return true
 
             // 自己还拿着能量就先放到终端里
             if (!creep.room.terminal) {
@@ -478,7 +478,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             // 转移资源
             const transferResult = creep.transfer(terminal, resourceType)
 
-            if (transferResult === OK) {
+            if (transferResult === OK || transferResult === ERR_NOT_ENOUGH_RESOURCES) {
                 // 转移完之后就检查下还有没有没搬空的 lab，没有的话就完成任务
                 if (getNotClearLab(creep.room.memory.lab) === undefined) creep.room.deleteCurrentRoomTransferTask()
                 return true
@@ -756,9 +756,7 @@ function getNotClearLab(labMemory: any): StructureLab {
         if (!inLab) continue
 
         // 如果有剩余资源的话就拿出来
-        if (inLab.store.getUsedCapacity(inLab.mineralType) as Number > 0) {
-            return inLab
-        }
+        if (inLab.mineralType) return inLab
     }
 
     return undefined

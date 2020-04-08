@@ -351,7 +351,7 @@ const PowerTasks: IPowerTaskConfigs = {
             if (!creep.memory.sourceIndex) {
                 // 如果有 source 没有 regen_source 任务，则将其选为目标
                 target = creep.room.sources.find((s, index) => {
-                    if (!s.effects.map(e => e.effect).includes(PWR_REGEN_SOURCE)) {
+                    if (!s.effects || !s.effects.map(e => e.effect).includes(PWR_REGEN_SOURCE)) {
                         // 缓存目标
                         creep.memory.sourceIndex = index
                         return true
@@ -361,6 +361,8 @@ const PowerTasks: IPowerTaskConfigs = {
             }
             // 有缓存了就直接获取
             else target = creep.room.sources[creep.memory.sourceIndex]
+            // 两个 source 都有 regen_source 时将获取不到 target
+            if (!target) return ERR_BUSY
             
             const actionResult = creep.usePower(PWR_REGEN_SOURCE, target)
 
@@ -369,7 +371,7 @@ const PowerTasks: IPowerTaskConfigs = {
                 delete creep.memory.sourceIndex
                 return OK
             }
-            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
+            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(target.pos)
             else {
                 console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_REGEN_SOURCE target 时出错，错误码 ${actionResult}`)
                 return OK
