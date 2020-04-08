@@ -253,6 +253,7 @@ class CreepControl extends Room {
      * @returns 规划详情
      */
     public planCreep(): string {
+        const secondSource = this.sources.length >= 2 ? this.sources[1] : this.sources[0]
         let stats = [ `[${this.name}] 正在执行 creep 角色规划` ]
         // 如果没有 storage 的话说明房间还在初级阶段，发布几个小 creep
         if (!this.storage) {
@@ -261,26 +262,31 @@ class CreepControl extends Room {
                 sourceId: this.sources[0].id
             }, this.name)
             creepApi.add(`${this.name} upgrader1`, 'upgrader', {
-                sourceId: this.sources.length === 2 ? this.sources[1].id : this.sources[0].id
+                sourceId: secondSource.id
             }, this.name)
 
             return stats.join('\n')
         }
         
-        // 有 storage 了，修改 harvester 和 upgrader 的目标建筑，发布 transfer
+        // 有 storage 了，给 harvester 添加目标，并发布额外的 harvester
         stats.push('发现 storage，发布 collector，upgrader，transfer')
-        creepApi.add(`${this.name} harvester0`, 'collector', {
-            sourceId: this.sources[0].id
-        }, this.name)
-        if (this.sources.length >= 2) creepApi.add(`${this.name} harvester1`, 'collector', {
-            sourceId: this.sources[1].id
-        }, this.name)
-        creepApi.add(`${this.name} upgrader1`, 'upgrader', {
-            sourceId: this.storage.id
-        }, this.name)
-        creepApi.add(`${this.name} transfer`, 'transfer', {
-            sourceId: this.storage.id
-        }, this.name)
+        for (let i = 0; i <= 3; i ++) {
+            creepApi.add(`${this.name} harvester${i}`, 'harvester', {
+                // 根据 i 来把 creep 平均分配到两个 source（如果有两个的话）
+                sourceId: i % 2 ? this.sources[0].id : secondSource.id,
+                targetId: this.storage.id
+            }, this.name)
+        }
+
+        // RCL 大于 5 再发布 transfer
+        if (this.controller.level >= 5) {
+            creepApi.add(`${this.name} upgrader1`, 'upgrader', {
+                sourceId: this.storage.id
+            }, this.name)
+            creepApi.add(`${this.name} transfer`, 'transfer', {
+                sourceId: this.storage.id
+            }, this.name)
+        }
 
         // 如果有 centerLink 或者工厂或者终端，就说明中央集群已经出现，发布 centerTransfer
         if (!creepApi.has(`${this.name} centerTransfer`) && (this.memory.centerLinkId || this.factory || this.terminal)) stats.push(this.addCenterTransfer())
