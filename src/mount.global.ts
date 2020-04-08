@@ -1,4 +1,4 @@
-import { colorful, resourcesHelp, globalHelp, createHelp } from './utils'
+import { colorful, resourcesHelp, globalHelp, createHelp, clearFlag } from './utils'
 import { factoryTopTargets } from './setting'
 import { creepApi } from './creepController'
 
@@ -104,6 +104,8 @@ const funcAlias = [
             return stateStr.join('\n')
         }
     },
+    // 移除过期旗帜
+    { alias: 'clearflag', exec: clearFlag },
 
     /**
      * 把房间挂载到全局
@@ -409,7 +411,7 @@ function getRoomFactoryState(room: Room): string {
 
     // 基本信息
     let logs = [ 
-        `    - [${room.name}]${workStats}`,
+        `    - [${room.name}] ${workStats}`,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`
     ]
