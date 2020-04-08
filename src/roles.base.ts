@@ -90,7 +90,19 @@ const roles: {
                 return false
             }
 
-            if (creep.harvest(source) == ERR_NOT_IN_RANGE) creep.goTo(source.pos)
+            const actionResult = creep.harvest(source)
+
+            if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
+            else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) {
+                // 如果不存在 sendRegenSource 字段，或者存在但是已经是 300t 之前的事了，就重新发送 regen_source 任务
+                if (
+                    (creep.memory.sendRegenSource && creep.memory.sendRegenSource <= Game.time + 300) ||
+                    !creep.memory.sendRegenSource
+                ) {
+                    // 如果任务添加成功则更新任务发布时间
+                    if (creep.room.addPowerTask(PWR_REGEN_SOURCE) === OK) creep.memory.sendRegenSource = Game.time
+                }
+            }
 
             // 快死了就把能量移出去
             if (creep.ticksToLive <= 3) return true
@@ -102,7 +114,7 @@ const roles: {
                 return false
             }
 
-            if (creep.transfer(target, Object.keys(creep.store)[0] as ResourceConstant) == ERR_NOT_IN_RANGE) creep.goTo(target.pos)
+            if (creep.transfer(target, RESOURCE_ENERGY) == ERR_NOT_IN_RANGE) creep.goTo(target.pos)
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
