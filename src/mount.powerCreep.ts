@@ -338,5 +338,42 @@ const PowerTasks: IPowerTaskConfigs = {
                 return OK
             }
         }
+    },
+
+    /**
+     * 强化 source
+     */
+    [PWR_REGEN_SOURCE]: {
+        // regen_source 不需要 ops，所以没有 source 阶段
+        source: () => OK,
+        target: creep => {
+            let target: Source
+            if (!creep.memory.sourceIndex) {
+                // 如果有 source 没有 regen_source 任务，则将其选为目标
+                target = creep.room.sources.find((s, index) => {
+                    if (!s.effects.map(e => e.effect).includes(PWR_REGEN_SOURCE)) {
+                        // 缓存目标
+                        creep.memory.sourceIndex = index
+                        return true
+                    }
+                    return false
+                })
+            }
+            // 有缓存了就直接获取
+            else target = creep.room.sources[creep.memory.sourceIndex]
+            
+            const actionResult = creep.usePower(PWR_REGEN_SOURCE, target)
+
+            if (actionResult === OK) {
+                // 移除缓存
+                delete creep.memory.sourceIndex
+                return OK
+            }
+            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
+            else {
+                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_REGEN_SOURCE target 时出错，错误码 ${actionResult}`)
+                return OK
+            }
+        }
     }
 }

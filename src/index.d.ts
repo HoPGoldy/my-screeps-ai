@@ -369,8 +369,10 @@ interface CreepMemory {
     expectHits?: number
     // 攻击者的小队编号 暂时未使用
     squad?: number
-    // 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用pos.isEqualTo()
+    // 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用 pos.isEqualTo()
     isStanBy?: boolean
+    // collector 上次发送 regen_source 的时间，该时间小于 300t 将不会重复发布 power 任务
+    sendRegenSource?: number
 
     // 移动到某位置需要的时间
     // 例如：miner 会用它来保存移动到 mineral 的时间
@@ -988,13 +990,16 @@ interface PowerCreepMemory {
     // 为 true 时执行 target，否则执行 source
     working: boolean
     // 接下来要检查哪个 power
-    powerIndex: number, 
+    powerIndex: number
     // 当前要处理的工作
     // 字段值均为 PWR_* 常量
     // 在该字段不存在时将默认执行 PWR_GENERATE_OPS（如果 power 资源足够并且 ops 不足时）
-    task: PowerConstant,
+    task: PowerConstant
     // 工作的房间名，在第一次出生时由玩家指定，后面会根据该值自动出生到指定房间
     workRoom: string
+
+    // 要添加 REGEN_SOURCE 的 souce 在 room.sources 中的索引值
+    sourceIndex?: number
 }
 
 /**
