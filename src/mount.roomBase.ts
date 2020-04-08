@@ -597,6 +597,8 @@ class ConstructionSiteExtension extends ConstructionSite {
     public work(): void {
         if (!this.room || this.room._hasRunConstructionSite) return
         this.room._hasRunConstructionSite = true
+        // 如果房间自己没 claim 的话就不发布 builder
+        if (!this.room.controller.owner || this.room.controller.owner.username !== this.owner.username) return
 
         const builderName = `${this.room.name} builder`
         if (creepApi.has(builderName)) return

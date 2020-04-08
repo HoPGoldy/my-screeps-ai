@@ -95,10 +95,7 @@ const roles: {
             if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
             else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) {
                 // 如果不存在 sendRegenSource 字段，或者存在但是已经是 300t 之前的事了，就重新发送 regen_source 任务
-                if (
-                    (creep.memory.sendRegenSource && creep.memory.sendRegenSource <= Game.time + 300) ||
-                    !creep.memory.sendRegenSource
-                ) {
+                if (!creep.memory.sendRegenSource || creep.memory.sendRegenSource <= Game.time + 300) {
                     // 如果任务添加成功则更新任务发布时间
                     if (creep.room.addPowerTask(PWR_REGEN_SOURCE) === OK) creep.memory.sendRegenSource = Game.time
                 }
