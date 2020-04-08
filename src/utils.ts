@@ -183,3 +183,18 @@ export function globalSay(words: string[]) {
 
     Memory.sayIndex = Memory.sayIndex + 1 >= words.length ? 0 : Memory.sayIndex + 1
 }
+
+/**
+ * 移除过期的 flag 内存
+ */
+export function clearFlag(): string {
+    let logs = [ '已清理过期旗帜:' ]
+    for (const flagName in Memory.flags) {
+        if (!Game.flags[flagName]) {
+            delete Memory.flags[flagName]
+            logs.push(flagName)
+        }
+    }
+
+    return logs.join(' ')
+}
