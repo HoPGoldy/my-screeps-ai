@@ -1,4 +1,4 @@
-import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit } from './setting'
+import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit, commodityMax } from './setting'
 import { createHelp, colorful } from './utils'
 
 /**
@@ -383,11 +383,23 @@ export default class FactoryExtension extends StructureFactory {
         // 索引兜底
         if (!memory.targetIndex || memory.targetIndex >= topTargets.length) memory.targetIndex = 0
         // console.log('添加任务', memory.targetIndex, topTargets.length, topTargets, topTargets[memory.targetIndex])
-        // 添加任务，一次只合成两个顶级产物
-        const taskIndex = this.room.memory.factory.taskList.push({
-            target: topTargets[memory.targetIndex] as CommodityConstant,
-            amount: 2
-        })
+        
+        const topTarget = topTargets[memory.targetIndex]
+        let taskIndex = this.room.memory.factory.taskList.length
+
+        // 如果该顶级产物存在并已经超过最大生产上限，则暂停停工
+        if (this.room.terminal && topTarget in commodityMax && this.room.terminal.store[topTarget] >= commodityMax[topTarget]) {
+            // console.log(`${this.room.name} ${topTarget} 达到生产上限，已停工`)
+            this.gotoBed(Game.time + 100, '达到上限')
+        }
+        else {
+            // 添加任务，一次只合成两个顶级产物
+            taskIndex = this.room.memory.factory.taskList.push({
+                target: topTarget,
+                amount: 2
+            })
+        }
+        
         // 更新索引
         this.room.memory.factory.targetIndex = (memory.targetIndex + 1 >= topTargets.length) ?
         0 : memory.targetIndex + 1
@@ -406,8 +418,6 @@ export default class FactoryExtension extends StructureFactory {
 
     /**
      * 设置工厂等级
-     * 
-     * @todo 如果已经有 power 的话就拒绝设置
      * 
      * @param depositType 生产线类型
      * @param level 等级
