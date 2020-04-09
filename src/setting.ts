@@ -470,7 +470,7 @@ export const factoryBlacklist = [
     RESOURCE_GHODIUM
 ]
 
-// 工厂在低于该值时将暂停工作
+// 工厂在 storage 中能量低于该值时将暂停工作
 export const factoryEnergyLimit = 300000
 
 /**
@@ -483,7 +483,7 @@ export const factoryTopTargets: {
     [RESOURCE_METAL]: {
         1: [ RESOURCE_COMPOSITE, RESOURCE_TUBE ],
         2: [ RESOURCE_FIXTURES ],
-        3: [ /* RESOURCE_LIQUID, */RESOURCE_FRAME ],
+        3: [ RESOURCE_LIQUID, RESOURCE_FRAME ],
         4: [ RESOURCE_HYDRAULICS ],
         5: [ RESOURCE_MACHINE ]
     },
@@ -511,6 +511,21 @@ export const factoryTopTargets: {
         4: [ RESOURCE_EMANATION ],
         5: [ RESOURCE_ESSENCE ]
     }
+}
+
+/**
+ * 商品的最大生产数量
+ * 为了避免低级工厂一直抢夺更低级工厂的资源导致高级工厂无法合成，引入该配置项（例如 3 级工厂一直吃 2 级商品，导致 4 级工厂停工）
+ * 未在该配置项中出现的资源将一直生产
+ * 只有上面 factoryTopTargets 中规定的商品才会受此约束
+ */
+export const commodityMax = {
+    [RESOURCE_COMPOSITE]: 3000,
+    [RESOURCE_LIQUID]: 1000,
+    [RESOURCE_TUBE]: 1000,
+    [RESOURCE_FIXTURES]: 500,
+    [RESOURCE_FRAME]: 200,
+    [RESOURCE_HYDRAULICS]: 50
 }
 
 /**
