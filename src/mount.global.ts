@@ -406,8 +406,8 @@ function getRoomFactoryState(room: Room): string {
     const memory = room.memory.factory
     if (!memory) return `    - [${room.name}] 工厂未设置等级`
 
-    const workStats = memory.pause ? colorful('[暂停中]', 'yellow') :
-        memory.sleep ? colorful(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`, 'yellow') : colorful('工作中', 'green')
+    const workStats = memory.pause ? colorful('暂停中', 'yellow') :
+        memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, 'yellow') : colorful('工作中', 'green')
 
     // 基本信息
     let logs = [ 
@@ -417,7 +417,7 @@ function getRoomFactoryState(room: Room): string {
     ]
 
     // 统计当前任务信息
-    if (memory.taskList.length > 0) logs.push(`[当前任务] ${memory.taskList[0].target} ${memory.taskList[0].amount}`)
+    if (memory.taskList.length > 0) logs.push(`[任务目标] ${memory.taskList[0].target}*${memory.taskList[0].amount}`)
     // 如果有共享任务的话（有可能不属于工厂共享任务）
     if (room.memory.shareTask) {
         const share = room.memory.shareTask
