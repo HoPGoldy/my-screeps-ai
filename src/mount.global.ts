@@ -106,6 +106,25 @@ const funcAlias = [
     },
     // 移除过期旗帜
     { alias: 'clearflag', exec: clearFlag },
+    // 统计当前所有房间的存储状态
+    {
+        alias: 'storage',
+        exec: function(): string {
+            return Object.values(Game.rooms).map(room => {
+                // 如果两者都没有或者房间无法被控制就不显示
+                if ((!room.storage && !room.terminal) || !room.controller) return false
+
+                let log = `[${room.name}] `
+                if (room.storage) log += `STORAGE: ${room.storage.store.getFreeCapacity()}/${room.storage.store.getCapacity()} `
+                else log += 'STORAGE: X '
+
+                if (room.terminal) log += `TERMINAL: ${room.terminal.store.getFreeCapacity()}/${room.terminal.store.getCapacity()} `
+                else log += 'TERMINAL: X '
+
+                return log
+            }).filter(log => log).join('\n')
+        }
+    },
 
     /**
      * 把房间挂载到全局
