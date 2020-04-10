@@ -606,7 +606,7 @@ class RoomExtension extends Room {
      * @param amount 请求的数量
      */
     public shareRequest(resourceType: ResourceConstant, amount: number): boolean {
-        const targetRoom = this.shareGetSource(resourceType)
+        const targetRoom = this.shareGetSource(resourceType, amount)
         if (!targetRoom) return false
 
         const addResult = targetRoom.shareAdd(this.name, resourceType, amount)
@@ -666,9 +666,10 @@ class RoomExtension extends Room {
      * 根据资源类型查找来源房间
      * 
      * @param resourceType 要查找的资源类型
+     * @param amount 请求的数量
      * @returns 找到的目标房间，没找到返回 null
      */
-    private shareGetSource(resourceType: ResourceConstant): Room | null {
+    private shareGetSource(resourceType: ResourceConstant, amount: number): Room | null {
         // 兜底
         if (!Memory.resourceSourceMap) {
             Memory.resourceSourceMap = {}
@@ -683,14 +684,18 @@ class RoomExtension extends Room {
         // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
         let roomWithEmpty = SourceRoomsName.map(roomName => {
             const room = Game.rooms[roomName]
-            if (!room) return ''
+            if (!room || !room.terminal) return ''
+            
             // console.log(room.memory.shareTask, room.name, this.name)
 
             // 如果该房间当前没有任务，就选择其为目标
             if (!room.memory.shareTask && (room.name != this.name)) {
                 // 如果请求共享的是能量，并且房间内 storage 低于上限的话，就从资源提供列表中移除该房间
                 if (resourceType === RESOURCE_ENERGY && room.storage && room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return ''
-
+                // 如果请求的资源不够的话就搜索下一个房间
+                if (room.terminal.store[resourceType] < amount) return roomName
+                
+                // 接受任务的房间就是你了！
                 targetRoom = room
             }
             
