@@ -522,7 +522,7 @@ export const factoryTopTargets: {
 export const commodityMax = {
     [RESOURCE_COMPOSITE]: 3000,
     [RESOURCE_LIQUID]: 1000,
-    [RESOURCE_TUBE]: 1000,
+    [RESOURCE_TUBE]: 700,
     [RESOURCE_FIXTURES]: 500,
     [RESOURCE_FRAME]: 200,
     [RESOURCE_HYDRAULICS]: 50

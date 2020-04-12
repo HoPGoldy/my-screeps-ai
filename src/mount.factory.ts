@@ -384,27 +384,40 @@ export default class FactoryExtension extends StructureFactory {
         if (!memory.targetIndex || memory.targetIndex >= topTargets.length) memory.targetIndex = 0
         // console.log('添加任务', memory.targetIndex, topTargets.length, topTargets, topTargets[memory.targetIndex])
         
-        const topTarget = topTargets[memory.targetIndex]
-        let taskIndex = this.room.memory.factory.taskList.length
+        // 获取预定目标
+        let topTarget = topTargets[memory.targetIndex]
 
-        // 如果该顶级产物存在并已经超过最大生产上限，则暂停停工
+        // 如果该顶级产物存在并已经超过最大生产上限，则遍历检查是否有未到上限的
         if (this.room.terminal && topTarget in commodityMax && this.room.terminal.store[topTarget] >= commodityMax[topTarget]) {
-            // console.log(`${this.room.name} ${topTarget} 达到生产上限，已停工`)
-            this.gotoBed(Game.time + 100, '达到上限')
-        }
-        else {
-            // 添加任务，一次只合成两个顶级产物
-            taskIndex = this.room.memory.factory.taskList.push({
-                target: topTarget,
-                amount: 2
+            // console.log(`${this.room.name} ${topTarget} 达到生产上限，正在检查其他目标`)
+            let targetIndex = 0
+            // 修正预定目标
+            topTarget = topTargets.find((res, index) => {
+                if (this.room.terminal.store[res] >= commodityMax[res]) return false
+                else {
+                    targetIndex = index
+                    return true
+                }
             })
+            
+            // 遍历了还没找到的话就休眠
+            if (!topTarget) {
+                this.gotoBed(Game.time + 100, '达到上限')
+                return 0
+            }
+            // 找到了，按照其索引更新下次预定索引
+            else this.room.memory.factory.targetIndex = (targetIndex + 1 >= topTargets.length) ?
+                0 : targetIndex + 1
         }
-        
-        // 更新索引
-        this.room.memory.factory.targetIndex = (memory.targetIndex + 1 >= topTargets.length) ?
-        0 : memory.targetIndex + 1
+        // 没有到达上限，按原计划更新索引
+        else this.room.memory.factory.targetIndex = (memory.targetIndex + 1 >= topTargets.length) ?
+            0 : memory.targetIndex + 1
 
-        return taskIndex
+        // 添加任务，一次只合成两个顶级产物
+        return this.room.memory.factory.taskList.push({
+            target: topTarget,
+            amount: 2
+        })
     }
 
     /**
