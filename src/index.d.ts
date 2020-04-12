@@ -275,6 +275,11 @@ interface StructureFactory {
     stats(): string
 }
 
+interface StructureTerminal {
+    // 平衡 power
+    balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND
+}
+
 /**
  * Creep 拓展
  * 来自于 mount.creep.ts

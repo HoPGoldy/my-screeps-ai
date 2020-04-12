@@ -63,6 +63,53 @@ export default class TerminalExtension extends StructureTerminal {
         Memory.stats.rooms[this.room.name].power = this.store[RESOURCE_POWER]
     }
 
+    /**
+     * 平衡 power
+     * 将自己存储的多余 power 转移至其他房间
+     * 
+     * @returns ERR_NOT_ENOUGH_RESOURCES power 的资源不足
+     * @returns ERR_NAME_EXISTS 房间内已经存在 shareTask
+     */
+    public balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND {
+        // 已经有共享任务了也不会执行
+        if (this.room.memory.shareTask) return ERR_NAME_EXISTS
+
+        // 允许共享的下限
+        const SHARE_LIMIE = 10000
+        // power 足够才能共享
+        if (this.store[RESOURCE_POWER] < SHARE_LIMIE) return ERR_NOT_ENOUGH_RESOURCES
+
+        const targetRoomInfo = Object.values(Game.rooms)
+            // 统计出所有符合条件的目标房间
+            .map(room => {
+                if (!room.terminal) return { room: room.name, number: 0 }
+                // power 的数量
+                const number = room.terminal.store[RESOURCE_POWER]
+
+                if (room.terminal && number > 0 && number < SHARE_LIMIE) return { room: room.name, number }
+                else return { room: room.name, number: 0 }
+            })
+            // 找到 power 数量最小的房间
+            .reduce((prev, next) => {
+                if (prev.number === 0) return next
+
+                if (prev.number > next.number) return next
+                else return prev 
+            })
+        
+        // 添加共享任务
+        if (targetRoomInfo.number <= 0) return ERR_NOT_FOUND
+        else {
+            this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
+            Game.notify(`[power 平衡] ${this.room.name} ${this.store[RESOURCE_POWER]} > ${targetRoomInfo.room} ${targetRoomInfo.number}`)
+        }
+
+        return OK
+    }
+
+    /**
+     * 执行已经存在的共享任务
+     */
     public execShareTask(): void {
         // 获取任务
         const task = this.room.memory.shareTask
