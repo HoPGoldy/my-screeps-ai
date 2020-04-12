@@ -827,6 +827,10 @@ const roles: {
                 }
 
                 creep.suicide()
+
+                // 通知 terminal 进行 power 平衡
+                room.terminal.balancePower()
+                
                 return true
             }
             else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos)
