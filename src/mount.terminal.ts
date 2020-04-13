@@ -91,17 +91,19 @@ export default class TerminalExtension extends StructureTerminal {
             })
             // 找到 power 数量最小的房间
             .reduce((prev, next) => {
+                // 等于 0 说明是被上面 map 筛选掉的房间
                 if (prev.number === 0) return next
+                if (next.number === 0) return prev
 
                 if (prev.number > next.number) return next
-                else return prev 
+                else return prev
             })
         
         // 添加共享任务
         if (targetRoomInfo.number <= 0) return ERR_NOT_FOUND
         else {
             this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
-            Game.notify(`[power 平衡] ${this.room.name} ${this.store[RESOURCE_POWER]} > ${targetRoomInfo.room} ${targetRoomInfo.number}`)
+            Game.notify(`[power 平衡] ${this.room.name} ${this.store[RESOURCE_POWER]} > ${targetRoomInfo.room} ${targetRoomInfo.number}`, 5)
         }
 
         return OK
