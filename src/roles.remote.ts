@@ -829,7 +829,9 @@ const roles: {
                 creep.suicide()
 
                 // 通知 terminal 进行 power 平衡
-                room.terminal.balancePower()
+                const balanceResult = room.terminal.balancePower()
+
+                Game.notify(`${creep.name} 触发 power 平衡，结果 ${balanceResult}`, 5)
                 
                 return true
             }
