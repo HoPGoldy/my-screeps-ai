@@ -22,7 +22,7 @@ export default function () {
 const funcAlias = [
     // 常用的资源常量
     {
-        alias: 'resource',
+        alias: 'res',
         exec: function(): string {
             return resourcesHelp
         }
