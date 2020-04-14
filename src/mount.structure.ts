@@ -224,6 +224,8 @@ class TowerExtension extends StructureTower {
                         Memory.whiteList[creep.owner.username] += searchInterval
                         return false
                     }
+
+                    return true
                 }
             })
         }
