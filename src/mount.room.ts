@@ -1088,7 +1088,7 @@ class RoomExtension extends Room {
      * @param price 单价
      * @param amount 总量
      */
-    public tbuy(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+    public buy(resourceType: ResourceConstant, price: number, totalAmount: number): string {
         return this.createOrder(ORDER_BUY, resourceType, price, totalAmount)
     }
 
@@ -1099,7 +1099,7 @@ class RoomExtension extends Room {
      * @param price 单价
      * @param amount 总量
      */
-    public tsell(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+    public sell(resourceType: ResourceConstant, price: number, totalAmount: number): string {
         return this.createOrder(ORDER_SELL, resourceType, price, totalAmount)
     }
 
@@ -1243,7 +1243,7 @@ class RoomExtension extends Room {
                     { name: 'price', desc: '单价' },
                     { name: 'totalAmount', desc: '总量' },
                 ],
-                functionName: 'tbuy'
+                functionName: 'buy'
             },
             {
                 title: '给该房间新增 SELL 单',
@@ -1252,7 +1252,7 @@ class RoomExtension extends Room {
                     { name: 'price', desc: '单价' },
                     { name: 'totalAmount', desc: '总量' },
                 ],
-                functionName: 'tsell'
+                functionName: 'sell'
             },
             {
                 title: '拓展新外矿',
