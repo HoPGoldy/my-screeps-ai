@@ -509,7 +509,7 @@ const roles: {
 
             // 冷却时长过长则放弃该 deposit
             if (targetFlag.memory.depositCooldown >= DEPOSIT_MAX_COOLDOWN) {
-                Memory.flags[targetFlag.name] = {}
+                delete Memory.flags[targetFlag.name]
                 targetFlag.remove()
                 return false
             }
@@ -559,7 +559,7 @@ const roles: {
                     if (roomMemory && roomMemory.observer) roomMemory.observer.depositNumber -= 1
                     console.log('observer deposit 数量减少')
 
-                    Memory.flags[targetFlag.name] = {}
+                    delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
                     creep.suicide()
                     return
@@ -637,7 +637,7 @@ const roles: {
                 if (powerbank) targetFlag.memory.sourceId = powerbank.id
                 else {
                     // 没找到说明已经没了
-                    Memory.flags[targetFlag.name] = {}
+                    delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
                     // 移除采集小组
                     removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
@@ -681,7 +681,7 @@ const roles: {
                 }
                 else {
                     // 未能成功在 pb 消失前将其摧毁，移除采集小组
-                    Memory.flags[targetFlag.name] = {}
+                    delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
 
                     // 通知 observer
@@ -819,7 +819,7 @@ const roles: {
             if (transferResult === OK) {
                 const targetFlag = Game.flags[data.sourceFlagName]
                 if (targetFlag) {
-                    Memory.flags[targetFlag.name] = {}
+                    delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
 
                     const roomMemory = Memory.rooms[data.spawnRoom]
