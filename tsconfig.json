@@ -1,6 +1,10 @@
 {
     "compilerOptions": {
-        "target": "es5"
+        "sourceMap": false,
+        "removeComments": false,
+        "target": "es5",
+        "rootDir": "src/",
+        "outDir": "dist/"
     },
     "include": [
         "src/*.ts",

@@ -39,17 +39,10 @@ module.exports = function(grunt) {
         // typescripts 编译任务
         'ts': {
             default : {
-                options: {
-                    sourceMap: false,
-                    target: 'es5',
-                    comments: true,
-                    rootDir: "src/"
-                },
-                src: [ "src/*.ts", "screeps.d.ts", "!src/*.template.ts"],
-                outDir: 'dist/'
+                tsconfig: './tsconfig.json'
             }
         },
-        // 代码文件夹扁平化及复制任务
+        // 复制任务
         'copy': {
             main: {
                 expand: true,
