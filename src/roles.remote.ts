@@ -142,7 +142,7 @@ const roles: {
                     creep.suicide()
                     return false
                 }
-                
+
                 // 乘以 3 是去一趟，回来的时候走的慢需要两倍的时间再加上沼泽可能更慢，40 是冗余
                 if (creep.ticksToLive >= flag.memory.travelTime * 3 + 40) return true
                 else {

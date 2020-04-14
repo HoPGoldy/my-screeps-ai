@@ -1054,7 +1054,7 @@ class ObserverExtension extends StructureObserver {
     public showList(): string {
         const result = this.room.memory.observer ? 
         `监听中的房间列表: ${this.room.memory.observer.watchRooms.map((room, index) => {
-            if (index === this.room.memory.observer.watchIndex) return colorful(room, 'green')
+            if (index === this.room.memory.observer.watchIndex) return colorful(room, 'green')]
             else return room
         }).join(' ')}` :
         `未启用`
