@@ -183,7 +183,10 @@ export default class FactoryExtension extends StructureFactory {
                 // 这里不能挂起任务，因为它之后有更高级的任务以他为原料，如果它没有合成的话
                 // 准备阶段会重新拆出来一个低级任务，如果底物缺失很久的话，会导致循环拆分从而堆积很多相同任务
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
-                    if (this.room.terminal.store[resType] < needAmount) return console.log(`[${this.room.name} factory] 合成暂停，需要 ${resType}*${needAmount}`)
+                    if (this.room.terminal.store[resType] < needAmount) {
+                        this.gotoBed(100, `需要 ${resType}*${needAmount}`)
+                        return console.log(`[${this.room.name} factory] 合成暂停，需要 ${resType}*${needAmount}`)
+                    }
                 }
 
                 // console.log('发布物流任务', resType, needAmount)
