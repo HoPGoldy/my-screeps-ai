@@ -183,6 +183,26 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作 - 成交订单
+     * 
+     * @param id 交易的订单 id
+     * @param amount 交易的数量，默认为最大值
+     */
+    public deal(id: string, amount: number): string {
+        if (!amount) {
+            const order = Game.market.getOrderById(id)
+            if (!order) return `[${this.name}] 订单 ${id} 不存在`
+
+            amount = order.amount
+        }
+
+        const actionResult = Game.market.deal(id, amount, this.name)
+
+        if (actionResult === OK) return `[${this.name}] 交易成功`
+        else return `[${this.name}] 交易异常，Game.market.deal 返回值 ${actionResult}`
+    }
+
+    /**
      * 添加禁止通行位置
      * 
      * @param creepName 禁止通行点位的注册者
@@ -1253,6 +1273,14 @@ class RoomExtension extends Room {
                     { name: 'totalAmount', desc: '总量' },
                 ],
                 functionName: 'sell'
+            },
+            {
+                title: '拍下订单',
+                params: [
+                    { name: 'id', desc: '订单 id' },
+                    { name: 'amount', desc: '[可选] 交易数量，默认为全部' }
+                ],
+                functionName: 'deal'
             },
             {
                 title: '拓展新外矿',
