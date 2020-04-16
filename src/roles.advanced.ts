@@ -471,12 +471,18 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return false
             }
 
-            // 指定资源类型
-            let resourceType: ResourceConstant = (creep.store[RESOURCE_ENERGY] > 0) ?
-                RESOURCE_ENERGY : task.resourceType
+            // 指定资源类型及目标
+            let resourceType = task.resourceType
+            let target: StructureTerminal | StructureStorage = terminal
+
+            // 如果是能量就优先放到 storage 里
+            if (creep.store[RESOURCE_ENERGY] > 0) {
+                resourceType = RESOURCE_ENERGY
+                target = creep.room.storage || terminal
+            }
             
             // 转移资源
-            const transferResult = creep.transfer(terminal, resourceType)
+            const transferResult = creep.transfer(target, resourceType)
 
             if (transferResult === OK || transferResult === ERR_NOT_ENOUGH_RESOURCES) {
                 // 转移完之后就检查下还有没有没搬空的 lab，没有的话就完成任务

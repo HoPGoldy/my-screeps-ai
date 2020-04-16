@@ -101,10 +101,7 @@ export default class TerminalExtension extends StructureTerminal {
         
         // 添加共享任务
         if (targetRoomInfo.number <= 0) return ERR_NOT_FOUND
-        else {
-            this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
-            Game.notify(`[power 平衡] ${this.room.name} ${this.store[RESOURCE_POWER]} > ${targetRoomInfo.room} ${targetRoomInfo.number}`, 5)
-        }
+        else this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
 
         return OK
     }
