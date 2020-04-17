@@ -513,117 +513,35 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 添加终端矿物监控
-     * 
-     * @param resourceType 要监控的资源类型
-     * @param amount 期望的资源数量
-     * @param mod 监听的方式，包括
-     *     @var max 只在资源超过期望值时触发卖出操作
-     *     @var min 只在资源低于期望值时触发补充操作
-     *     @var all 双向监听，包含上述两种（默认值）
-     * @param supplementAction 从哪里补充资源
-     *     @var market 市场（默认值）
-     *     @var share 资源共享协议
-     */
-    public addTerminalTask(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take'): void {
-        if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
-
-        this.memory.terminalTasks[resourceType] = { amount, mod, supplementAction }
-    }
-
-    /**
      * 用户操作：addTerminalTask
      */
-    public tadd(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take'): string { 
-        this.addTerminalTask(resourceType, amount, mod, supplementAction) 
-        return `已添加，当前监听任务如下: \n${this.showTerminalTask()}`
+    public tadd(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take', priceLimit: number = undefined): string { 
+        if (!this.terminal) return `[${this.name}] 未找到终端`
+
+        this.terminal.add(resourceType, amount, mod, supplementAction, priceLimit)
+        return `已添加，当前监听任务如下: \n${this.terminal.show()}`
     }
 
-    /**
-     * 移除终端矿物监控
-     * 
-     * @param resourceType 要停止监控的资源类型
-     */
-    public removeTerminalTask(resourceType: ResourceConstant): void {
-        if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
-
-        delete this.memory.terminalTasks[resourceType]
-    }
+    
 
     /**
      * 用户操作：removeTerminalTask
      */
     public tremove(resourceType: ResourceConstant): string { 
-        this.removeTerminalTask(resourceType) 
-        return `已移除，当前监听任务如下:\n${this.showTerminalTask()}`
-    }
+        if (!this.terminal) return `[${this.name}] 未找到终端`
 
-    /**
-     * 用户操作：将终端监听设置为默认值
-     * 
-     * @param hard 设为 true 来移除其默认值中不包含的监听资源
-     */
-    public treset(hard: boolean = false): string {
-        // 模板任务
-        const templateTask: TerminalListenerTask = {
-            amount: 5000,
-            mod: 'buy',
-            supplementAction: 'share'
-        }
-
-        // 重置任务
-        if (hard) this.memory.terminalTasks = {
-            [RESOURCE_OXYGEN]: templateTask,
-            [RESOURCE_HYDROGEN]: templateTask,
-            [RESOURCE_KEANIUM]: templateTask,
-            [RESOURCE_LEMERGIUM]: templateTask,
-            [RESOURCE_ZYNTHIUM]: templateTask,
-            [RESOURCE_UTRIUM]: templateTask,
-            [RESOURCE_CATALYST]: templateTask
-        }
-        else {
-            this.memory.terminalTasks[RESOURCE_OXYGEN] = templateTask
-            this.memory.terminalTasks[RESOURCE_HYDROGEN] = templateTask
-            this.memory.terminalTasks[RESOURCE_KEANIUM] = templateTask
-            this.memory.terminalTasks[RESOURCE_LEMERGIUM] = templateTask
-            this.memory.terminalTasks[RESOURCE_ZYNTHIUM] = templateTask
-            this.memory.terminalTasks[RESOURCE_UTRIUM] = templateTask
-            this.memory.terminalTasks[RESOURCE_CATALYST] = templateTask
-        }
-        
-        this.memory.terminalIndex = 0
-        
-        return `已重置，当前监听任务如下:\n${this.showTerminalTask()}`
-    }
-
-    /**
-     * 显示所有终端监听任务
-     */
-    public showTerminalTask(): string {
-        if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
-        if (!this.terminal) return '该房间还没有 Terminal'
-
-        const resources = Object.keys(this.memory.terminalTasks)
-        if (resources.length == 0) return '该房间暂无终端监听任务'
-
-        const supplementActionIntroduce: { [action in SupplementActions]: string } = {
-            release: '挂单',
-            take: '拍单',
-            share: '共享'
-        }
-
-        return resources.map(res => {
-            const task = this.memory.terminalTasks[res]
-            let result = `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod}`
-            result += ` 资源来源: ${supplementActionIntroduce[task.supplementAction]}`
-            return result
-        }).join('\n')
+        this.terminal.remove(resourceType) 
+        return `已移除，当前监听任务如下:\n${this.terminal.show()}`
     }
 
     /**
      * 用户操作：showTerminalTask
      */
-    public tshow(): string { return this.showTerminalTask() }
+    public tshow(): string {
+        if (!this.terminal) return `[${this.name}] 未找到终端`
+
+        return this.terminal.show()
+    }
 
     /**
      * 向其他房间请求资源共享
@@ -1249,18 +1167,20 @@ class RoomExtension extends Room {
                 functionName: 'gete'
             },
             {
-                title: '获取房间内工厂目标',
+                title: 'factory.stats 的别名',
                 functionName: 'fshow'
             },
             {
-                title: '添加终端矿物监控',
-                params: [
-                    { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
-                    { name: 'amount', desc: '指定类型的期望数量' },
-                    { name: 'mod', desc: '[可选] 监听类型，分为 max, min, all(默认)' },
-                    { name: 'supplementAction', desc: '[可选] 补货来源，分为 share, market(默认)'}
-                ],
+                title: 'terminal.add 的别名',
                 functionName: 'tadd'
+            },
+            {
+                title: 'terminal.remove 的别名',
+                functionName: 'tremove'
+            },
+            {
+                title: 'terminal.show 的别名',
+                functionName: 'tshow'
             },
             {
                 title: '给该房间新增 BUY 单',
@@ -1318,17 +1238,6 @@ class RoomExtension extends Room {
                     { name: 'content', desc: '要签名的内容' }
                 ],
                 functionName: 'sign'
-            },
-            {
-                title: '移除终端矿物监控',
-                params: [
-                    { name: 'resourceType', desc: '要移除监控的资源类型' }
-                ],
-                functionName: 'tremove'
-            },
-            {
-                title: '显示所有终端监听任务',
-                functionName: 'tshow'
             },
             {
                 title: '初始化 lab 集群',

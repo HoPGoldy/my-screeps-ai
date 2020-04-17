@@ -638,8 +638,7 @@ class ControllerExtension extends StructureController {
 
         // 统计房间等级
         if (Memory.stats.rooms[this.room.name].controllerLevel !== this.level) hasLevelChange = true
-        if (this.level === 8) delete Memory.stats.rooms[this.room.name].controllerLevel
-        else Memory.stats.rooms[this.room.name].controllerLevel = this.level
+        Memory.stats.rooms[this.room.name].controllerLevel = this.level
 
         return hasLevelChange
     }
@@ -665,7 +664,7 @@ class ControllerExtension extends StructureController {
             break
             // 到 8 级之后就不再需要其他房间的能量共享
             case 8:
-                this.room.removeTerminalTask(RESOURCE_ENERGY)
+                if (this.room.terminal) this.room.terminal.remove(RESOURCE_ENERGY)
                 this.room.removeUpgradeGroup()
             break
         }

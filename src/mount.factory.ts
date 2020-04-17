@@ -18,7 +18,7 @@ export default class FactoryExtension extends StructureFactory {
         if (this.runFactory()) {
             // 如果 storage 里能量不足了则休眠
             if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= factoryEnergyLimit) return
-            else this.gotoBed(Game.time + 10000, '能量不足')
+            else this.gotoBed(10000, '能量不足')
         }
     }
 
@@ -97,7 +97,7 @@ export default class FactoryExtension extends StructureFactory {
                     this.room.shareRequest(resType as CommodityConstant, requestAmount)
 
                     // 如果这时候只有这一个任务了，就进入待机状态
-                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(Game.time + 50, `等待 ${resType}*${requestAmount}`)
+                    if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(50, `等待共享 ${resType}*${requestAmount}`)
                 }
                 // 能合成的话就添加新任务，数量为需要数量 - 已存在数量
                 else this.addTask({
@@ -135,13 +135,13 @@ export default class FactoryExtension extends StructureFactory {
     /**
      * 进入待机状态
      * 
-     * @param time 待机的市场
+     * @param time 待机的时长
      * @param reason 待机的理由
      */
     private gotoBed(time: number, reason: string): OK | ERR_NOT_FOUND {
         if (!this.room.memory || !this.room.memory.factory) return ERR_NOT_FOUND
 
-        this.room.memory.factory.sleep = time
+        this.room.memory.factory.sleep = Game.time + time
         this.room.memory.factory.sleepReason = reason
         return OK
     }
@@ -184,8 +184,8 @@ export default class FactoryExtension extends StructureFactory {
                 // 准备阶段会重新拆出来一个低级任务，如果底物缺失很久的话，会导致循环拆分从而堆积很多相同任务
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
                     if (this.room.terminal.store[resType] < needAmount) {
-                        this.gotoBed(100, `需要 ${resType}*${needAmount}`)
-                        return console.log(`[${this.room.name} factory] 合成暂停，需要 ${resType}*${needAmount}`)
+                        this.gotoBed(100, `缺少 ${resType}*${needAmount}`)
+                        return console.log(`[${this.room.name} factory] 合成暂停，缺少 ${resType}*${needAmount}`)
                     }
                 }
 
@@ -405,7 +405,7 @@ export default class FactoryExtension extends StructureFactory {
             
             // 遍历了还没找到的话就休眠
             if (!topTarget) {
-                this.gotoBed(Game.time + 100, '达到上限')
+                this.gotoBed(100, '达到上限')
                 return 0
             }
             // 找到了，按照其索引更新下次预定索引
