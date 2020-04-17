@@ -1,5 +1,6 @@
-import { stateScanInterval, minerHervesteLimit, DEAL_RATIO } from './setting'
+import { stateScanInterval, DEAL_RATIO } from './setting'
 import { creepApi } from './creepController'
+import { createHelp } from './utils'
 
 /**
  * Terminal 原型拓展
@@ -42,7 +43,7 @@ export default class TerminalExtension extends StructureTerminal {
 
         // 当已经有房间 8 级（保证有人能提供能量）并且自己不足 8 级时的时候才会添加能量共享请求
         if (Object.keys(Game.spawns).length > 3 && this.room.controller.level != 8) {
-            this.room.addTerminalTask(RESOURCE_ENERGY, 20000, 'buy', 'share')
+            this.add(RESOURCE_ENERGY, 20000, 'buy', 'share')
             this.room.addUpgradeGroup()
 
             // 调整远程支援单位的能量来源
@@ -234,7 +235,7 @@ export default class TerminalExtension extends StructureTerminal {
             this.releaseOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount)
         }
         else if (resource.supplementAction === 'take') {
-            this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount)
+            this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount, resource.priceLimit)
         }
         else {
             console.log(`[${this.room.name} Terminal] 未知交易策略 ${resource.supplementAction}`)
@@ -271,7 +272,7 @@ export default class TerminalExtension extends StructureTerminal {
         }
 
         // 新增订单
-        const actionResult = Game.market.createOrder({ type, resourceType, })
+        // const actionResult = Game.market.createOrder({ type, resourceType, })
 
         // 判断返回值
     }
@@ -282,11 +283,11 @@ export default class TerminalExtension extends StructureTerminal {
      * @param resourceType 要拍单的资源类型
      * @param type 订单类型
      * @param amount 要购买的数量
+     * @param priceLimit 价格限制
      */
-    private takeOrder(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
-        console.log('拍单', this.room.name, resourceType, type, amount)
+    private takeOrder(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number, priceLimit: number = undefined) {
         // 获取订单
-        const targetOrder = this.getOrder({ type, resourceType })
+        const targetOrder = this.getOrder({ type, resourceType }, priceLimit)
 
         if (!targetOrder) {
             // console.log(`[${this.room.name} terminal] 没有为 ${resource.type} 找到合适的订单`)
@@ -297,9 +298,9 @@ export default class TerminalExtension extends StructureTerminal {
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
         
-        // 计算路费
         if (amount < 0) amount *= -1
-        const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
+        // 想要卖出的数量有可能比订单数量大，所以计算路费的时候要考虑到
+        const cost = Game.market.calcTransactionCost(amount > targetOrder.amount ? amount : targetOrder.amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就问 sotrage 要
         if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
             this.getEnergy(cost)
@@ -344,7 +345,7 @@ export default class TerminalExtension extends StructureTerminal {
      * @param config 市场交易任务
      * @returns 找到则返回订单, 否找返回 null
      */
-    private getOrder(filter: OrderFilter): Order | null {
+    private getOrder(filter: OrderFilter, priceLimit: number = undefined): Order | null {
         const orders = Game.market.getAllOrders(filter)
         // 没找到订单就返回空
         if (orders.length <= 0) return null
@@ -356,8 +357,14 @@ export default class TerminalExtension extends StructureTerminal {
         const targetOrder = sortedOrders[filter.type === ORDER_SELL ? 0 : (sortedOrders.length - 1)]
         // console.log('选中订单价格', targetOrder.resourceType, targetOrder.type, targetOrder.price)
 
-        // 最后进行均价检查
-        if (!this.checkPrice(targetOrder)) return null
+        // 最后进行均价检查，如果玩家指定了限制的话就用，否则就看历史平均价格
+        if (priceLimit) {
+            // 卖单的价格不能太高
+            if (targetOrder.type == ORDER_SELL) return targetOrder.price <= priceLimit ? targetOrder : null
+            // 买单的价格不能太低
+            else return targetOrder.price >= priceLimit ? targetOrder : null
+        }
+        else if (!this.checkPrice(targetOrder)) return null
         else return targetOrder
     }
 
@@ -366,7 +373,7 @@ export default class TerminalExtension extends StructureTerminal {
      * @param resourceType 资源类型
      * @param type 买单还是买单
      */
-    private getOrderPrice(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL): number {
+    private getOrderPrice(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL): void {
         
     }
 
@@ -413,5 +420,127 @@ export default class TerminalExtension extends StructureTerminal {
             resourceType: RESOURCE_ENERGY,
             amount
         })
+    }
+
+    /**
+     * 添加终端矿物监控
+     * 
+     * @param resourceType 要监控的资源类型
+     * @param amount 期望的资源数量
+     * @param mod 监听类型
+     * @param supplementAction 交易策略
+     * @param priceLimit 价格限制
+     */
+    public add(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take', priceLimit: number = undefined): void {
+        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = {}
+
+        this.room.memory.terminalTasks[resourceType] = { amount, mod, supplementAction, priceLimit }
+    }
+
+    /**
+     * 移除终端矿物监控
+     * 
+     * @param resourceType 要停止监控的资源类型
+     */
+    public remove(resourceType: ResourceConstant): void {
+        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = {}
+
+        delete this.room.memory.terminalTasks[resourceType]
+    }
+
+    /**
+     * 用户操作：将终端监听设置为默认值
+     * 
+     * @param hard 设为 true 来移除其默认值中不包含的监听资源
+     */
+    public reset(hard: boolean = false): string {
+        // 模板任务
+        const templateTask: TerminalListenerTask = {
+            amount: 5000,
+            mod: 'buy',
+            supplementAction: 'share'
+        }
+
+        // 重置任务
+        if (hard) this.room.memory.terminalTasks = {
+            [RESOURCE_OXYGEN]: templateTask,
+            [RESOURCE_HYDROGEN]: templateTask,
+            [RESOURCE_KEANIUM]: templateTask,
+            [RESOURCE_LEMERGIUM]: templateTask,
+            [RESOURCE_ZYNTHIUM]: templateTask,
+            [RESOURCE_UTRIUM]: templateTask,
+            [RESOURCE_CATALYST]: templateTask
+        }
+        else {
+            this.room.memory.terminalTasks[RESOURCE_OXYGEN] = templateTask
+            this.room.memory.terminalTasks[RESOURCE_HYDROGEN] = templateTask
+            this.room.memory.terminalTasks[RESOURCE_KEANIUM] = templateTask
+            this.room.memory.terminalTasks[RESOURCE_LEMERGIUM] = templateTask
+            this.room.memory.terminalTasks[RESOURCE_ZYNTHIUM] = templateTask
+            this.room.memory.terminalTasks[RESOURCE_UTRIUM] = templateTask
+            this.room.memory.terminalTasks[RESOURCE_CATALYST] = templateTask
+        }
+        
+        this.room.memory.terminalIndex = 0
+        
+        return `已重置，当前监听任务如下:\n${this.show()}`
+    }
+
+    /**
+     * 显示所有终端监听任务
+     */
+    public show(): string {
+        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = {}
+
+        const resources = Object.keys(this.room.memory.terminalTasks)
+        if (resources.length == 0) return '该房间暂无终端监听任务'
+
+        const supplementActionIntroduce: { [action in SupplementActions]: string } = {
+            release: '挂单',
+            take: '拍单',
+            share: '共享'
+        }
+
+        return resources.map(res => {
+            const task = this.room.memory.terminalTasks[res]
+            let result = `  ${res} [当前/期望] ${this.room.terminal.store[res]}/${task.amount} [监听类型] ${task.mod}`
+            result += ` [资源来源] ${supplementActionIntroduce[task.supplementAction]}`
+            if (task.priceLimit) result += ` [价格${task.mod === 'buy' ? '上限' : '下限'}] ${task.priceLimit}`
+            return result
+        }).join('\n')
+    }
+
+    public help(): string {
+        return createHelp([
+            {
+                title: '添加资源监听',
+                params: [
+                    { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
+                    { name: 'amount', desc: '指定类型的期望数量' },
+                    { name: 'mod', desc: '[可选] 监听类型，分为 sell(卖出), buy(购买，默认)' },
+                    { name: 'supplementAction', desc: '[可选] 补货来源，分为 share(共享), release(挂单), take(拍单，默认)'},
+                    { name: 'priceLimit', desc: '[可选] 价格限制，若不填则通过历史平均价格检查'}
+                ],
+                functionName: 'add'
+            },
+            {
+                title: '移除资源监听',
+                params: [
+                    { name: 'resourceType', desc: '移除监听的资源类型' }
+                ],
+                functionName: 'remove'
+            },
+            {
+                title: '列出所有监听任务',
+                functionName: 'show'
+            },
+            {
+                title: '重设默认监听',
+                params: [
+                    { name: 'hard', desc: '[可选] 将移除非默认的监听任务，默认为 false' }
+                ],
+                functionName: 'reset'
+            },
+        ])
     }
 }

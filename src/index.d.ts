@@ -447,10 +447,6 @@ interface Room {
     addUpgradeGroup(creepNum?: number): OK | ERR_NOT_FOUND
     removeUpgradeGroup(creepNum?: number): void
 
-    // 添加及移除终端监听任务
-    addTerminalTask(resourceType: ResourceConstant, amount: number, mod?: TerminalListenerModes, supplementAction?: SupplementActions): void
-    removeTerminalTask(resourceType: ResourceConstant): void
-
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
      */
@@ -967,6 +963,12 @@ interface BodyConfig {
  */
 type IBodyConfigs = {
     [type in BodyAutoConfigConstant]: BodyConfig
+}
+
+interface StructureTerminal {
+    add(resourceType: ResourceConstant, amount: number, mod?: TerminalListenerModes, supplementAction?: SupplementActions, priceLimit?: number): void
+    remove(resourceType: ResourceConstant): void
+    show(): string
 }
 
 // 终端监听任务，详见 doc/终端设计案

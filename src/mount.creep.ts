@@ -735,6 +735,18 @@ class CreepExtension extends Creep {
 
         // 一直朝着目标移动
         if (!this.pos.isNearTo(creep.pos)) this.moveTo(creep)
+        else {
+            // 检查自己是不是在骑墙
+            if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
+                const safePosFinder = i => i !== 0 && i !== 49
+                // 遍历找到目标 creep 身边的不骑墙位置
+                const x = [creep.pos.x - 1, creep.pos.x + 1].find(safePosFinder)
+                const y = [creep.pos.y - 1, creep.pos.y + 1].find(safePosFinder)
+                
+                // 移动到不骑墙位置
+                this.moveTo(new RoomPosition(x, y, creep.pos.roomName))
+            }
+        }
     }
 
     /**
