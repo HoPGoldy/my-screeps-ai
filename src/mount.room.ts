@@ -525,7 +525,7 @@ class RoomExtension extends Room {
      *     @var market 市场（默认值）
      *     @var share 资源共享协议
      */
-    public addTerminalTask(resourceType: ResourceConstant, amount: number, mod: 'max' | 'min' | 'all' = 'all', supplementAction: 'market' | 'share' = 'market'): void {
+    public addTerminalTask(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take'): void {
         if (!this.memory.terminalTasks) this.memory.terminalTasks = {}
 
         this.memory.terminalTasks[resourceType] = { amount, mod, supplementAction }
@@ -534,7 +534,7 @@ class RoomExtension extends Room {
     /**
      * 用户操作：addTerminalTask
      */
-    public tadd(resourceType: ResourceConstant, amount: number, mod: 'max' | 'min' | 'all' = 'all', supplementAction: 'market' | 'share' = 'market'): string { 
+    public tadd(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take'): string { 
         this.addTerminalTask(resourceType, amount, mod, supplementAction) 
         return `已添加，当前监听任务如下: \n${this.showTerminalTask()}`
     }
@@ -567,7 +567,7 @@ class RoomExtension extends Room {
         // 模板任务
         const templateTask: TerminalListenerTask = {
             amount: 5000,
-            mod: 'min',
+            mod: 'buy',
             supplementAction: 'share'
         }
 
@@ -606,10 +606,16 @@ class RoomExtension extends Room {
         const resources = Object.keys(this.memory.terminalTasks)
         if (resources.length == 0) return '该房间暂无终端监听任务'
 
+        const supplementActionIntroduce: { [action in SupplementActions]: string } = {
+            release: '挂单',
+            take: '拍单',
+            share: '共享'
+        }
+
         return resources.map(res => {
             const task = this.memory.terminalTasks[res]
             let result = `  ${res} 当前数量/期望数量: ${this.terminal.store[res]}/${task.amount} 监听类型: ${task.mod}`
-            if (task.mod == 'min') result += ` 资源来源: ${task.supplementAction}`
+            result += ` 资源来源: ${supplementActionIntroduce[task.supplementAction]}`
             return result
         }).join('\n')
     }

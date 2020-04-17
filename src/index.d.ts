@@ -6,6 +6,11 @@ type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 // 本项目中出现的颜色常量
 type Colors = 'green' | 'blue' | 'yellow' | 'red'
 
+// 终端监听规则类型
+type TerminalListenerModes = 'sell' | 'buy'
+// 终端监听规则的资源来源
+type SupplementActions = 'release' | 'take' | 'share'
+
 // 函数介绍构造函数的参数对象
 interface IFunctionDescribe {
     // 该函数的用法
@@ -443,7 +448,7 @@ interface Room {
     removeUpgradeGroup(creepNum?: number): void
 
     // 添加及移除终端监听任务
-    addTerminalTask(resourceType: ResourceConstant, amount: number, mod?: 'max' | 'min' | 'all', supplementAction?: 'market' | 'share'): void
+    addTerminalTask(resourceType: ResourceConstant, amount: number, mod?: TerminalListenerModes, supplementAction?: SupplementActions): void
     removeTerminalTask(resourceType: ResourceConstant): void
 
     /**
@@ -591,6 +596,10 @@ interface RoomMemory {
     // 键为资源名称，值为资源期望数量
     terminalTasks: {
         [resourceType: string]: TerminalListenerTask
+    }
+    // 本房间持有的订单，键为订单资源，值为订单 id
+    holdOrders?: {
+        [res in MarketResourceConstant]: string
     }
     // 房间内终端缓存的订单id
     targetOrderId: string
@@ -960,16 +969,20 @@ type IBodyConfigs = {
     [type in BodyAutoConfigConstant]: BodyConfig
 }
 
-// 终端监听任务
+// 终端监听任务，详见 doc/终端设计案
 interface TerminalListenerTask {
     // 期望数量 
     amount: number
     // 监听类型
-    mod: 'max' | 'min' | 'all'
+    mod: TerminalListenerModes
     // 补充来源: market, share
-    supplementAction: 'market' | 'share'
+    supplementAction: SupplementActions
+    // 价格限制
+    priceLimit?: number
 }
 
+// terminal 内部逻辑使用的任务对象
+// 之所以比 TerminalListenerTask 多了个 type，是因为 TerminalListenerTask 的资源类型是它的键，详见 RoomMemory
 interface TerminalOrderTask extends TerminalListenerTask { 
     // 要监听的资源类型
     type: ResourceConstant
