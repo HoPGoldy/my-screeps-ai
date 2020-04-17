@@ -42,7 +42,7 @@ export default class TerminalExtension extends StructureTerminal {
 
         // 当已经有房间 8 级（保证有人能提供能量）并且自己不足 8 级时的时候才会添加能量共享请求
         if (Object.keys(Game.spawns).length > 3 && this.room.controller.level != 8) {
-            this.room.addTerminalTask(RESOURCE_ENERGY, 20000, 'min', 'share')
+            this.room.addTerminalTask(RESOURCE_ENERGY, 20000, 'buy', 'share')
             this.room.addUpgradeGroup()
 
             // 调整远程支援单位的能量来源
@@ -207,12 +207,12 @@ export default class TerminalExtension extends StructureTerminal {
      */
     public ResourceListener(resource: TerminalOrderTask): void {
         const resourceAmount = this.store[resource.type]
-        // 最大值监听，超过才进行卖出
-        if (resource.mod == 'max') {
+        // 卖出监听，超过才进行卖出
+        if (resource.mod === 'sell') {
             if (resourceAmount <= resource.amount) return this.setNextIndex()
         }
-        // 最小值监听，再判断是从市场买入还是从其他房间共享
-        else if (resource.mod == 'min') {
+        // 买入监听，再判断是从市场买入还是从其他房间共享
+        else if (resource.mod === 'buy') {
             // console.log('最小值检查！', resourceAmount, resource.type, resource.amount)
             if (resourceAmount >= resource.amount) return this.setNextIndex()
             else {
@@ -224,30 +224,81 @@ export default class TerminalExtension extends StructureTerminal {
                 }
             }
         }
-        // 双向监听，必须相等才不会触发操作
         else {
-            if (resourceAmount == resource.amount) return this.setNextIndex()
+            console.log(`[${this.room.name} Terminal] 未知监听类型 ${resource.mod}`)
+            return this.setNextIndex()
         }
 
+        // 根据交易策略来执行不同的逻辑
+        if (resource.supplementAction === 'release') {
+            this.releaseOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount)
+        }
+        else if (resource.supplementAction === 'take') {
+            this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount)
+        }
+        else {
+            console.log(`[${this.room.name} Terminal] 未知交易策略 ${resource.supplementAction}`)
+            return this.setNextIndex()
+        }        
+    }
+
+    /**
+     * 挂单
+     * 
+     * @param resourceType 要拍单的资源类型
+     * @param type 订单类型
+     * @param amount 要购买的数量
+     */
+    private releaseOrder(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
+        console.log('挂单', this.room.name, resourceType, type, amount)
+        // 检查房间内是否已经有对应资源的订单
+        if (this.room.memory.holdOrders && resourceType in this.room.memory.holdOrders) {
+            const order = Game.market.getOrderById(this.room.memory.holdOrders[resourceType])
+
+            // 订单可用，保证其数量大于需求
+            if (order && order.type === type) {
+                // 数量不足，增大订单数量
+                if (order.amount < amount) {
+                    const actionResult = Game.market.extendOrder(order.id, amount - order.amount)
+                    if (actionResult !== OK) console.log(`[${this.room.name} Terminal] 订单扩容异常, Game.market.extendOrder 返回值 ${actionResult}`) 
+                    else console.log(`[${this.room.name} Terminal] 订单扩容成功 ${order.id}`) 
+                }
+
+                return this.setNextIndex()
+            }
+            // 订单不可用，移除缓存
+            else delete this.room.memory.holdOrders[resourceType]
+        }
+
+        // 新增订单
+        const actionResult = Game.market.createOrder({ type, resourceType, })
+
+        // 判断返回值
+    }
+
+    /**
+     * 拍单
+     * 
+     * @param resourceType 要拍单的资源类型
+     * @param type 订单类型
+     * @param amount 要购买的数量
+     */
+    private takeOrder(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
+        console.log('拍单', this.room.name, resourceType, type, amount)
         // 获取订单
-        const targetOrder = this.getOrder({
-            // 根据存储的数量是否超过上限来决定是买单还是卖单
-            type: (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL,
-            resourceType: resource.type
-        })
+        const targetOrder = this.getOrder({ type, resourceType })
+
         if (!targetOrder) {
             // console.log(`[${this.room.name} terminal] 没有为 ${resource.type} 找到合适的订单`)
-            this.setNextIndex()
-            return
+            return this.setNextIndex()
         }
         
         // console.log(`${this.room.name} 为 ${targetOrder.resourceType} 找到了一个合适的订单 类型: ${targetOrder.type} 单价: ${targetOrder.price}`)
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
-        // 计算要传输的数量
-        let amount = resourceAmount - resource.amount
-        if (amount < 0) amount *= -1
+        
         // 计算路费
+        if (amount < 0) amount *= -1
         const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就问 sotrage 要
         if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
@@ -308,6 +359,15 @@ export default class TerminalExtension extends StructureTerminal {
         // 最后进行均价检查
         if (!this.checkPrice(targetOrder)) return null
         else return targetOrder
+    }
+
+    /**
+     * 
+     * @param resourceType 资源类型
+     * @param type 买单还是买单
+     */
+    private getOrderPrice(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL): number {
+        
     }
 
     /**
