@@ -131,6 +131,7 @@ export const globalHelp = [
     createConst('移除所有禁止通行点位', 'clearpos'),
     createConst('查看商品生产线状态', 'comm'),
     createConst('列出所有路径缓存', 'route'),
+    createConst('向指定旗帜发射核弹（需二次确认）', 'nuker'),
     '——————————',
     createHelp([
         {
