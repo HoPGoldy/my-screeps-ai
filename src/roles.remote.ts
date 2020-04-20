@@ -502,13 +502,14 @@ const roles: {
      * @property {} spawnRoom 出生房间名
      */
     depositHarvester: (data: RemoteHarvesterData): ICreepConfig => ({
-        isNeed: () => {
+        isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) return false
 
             // 冷却时长过长则放弃该 deposit
             if (targetFlag.memory.depositCooldown >= DEPOSIT_MAX_COOLDOWN) {
+                if (room.memory && room.memory.observer) room.memory.observer.depositNumber -= 1
                 delete Memory.flags[targetFlag.name]
                 targetFlag.remove()
                 return false
