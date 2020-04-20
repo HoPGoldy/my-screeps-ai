@@ -135,6 +135,7 @@ export default class TerminalExtension extends StructureTerminal {
             if (sendResult == OK) {
                 // console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
                 delete this.room.memory.shareTask
+                this.energyCheck()
             }
             else if (sendResult == ERR_INVALID_ARGS) {
                 console.log(`${this.room.name} 中的共享任务参数异常，无法执行传送，已移除`)
@@ -151,6 +152,20 @@ export default class TerminalExtension extends StructureTerminal {
                 this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])
             }
         }
+    }
+
+    /**
+     * 能量检查
+     * 如果 terminal 中能量过多会返还至 storage
+     */
+    private energyCheck(): void {
+        if (this.store[RESOURCE_ENERGY] >= 80000) this.room.addCenterTask({
+            submit: STRUCTURE_TERMINAL,
+            source: STRUCTURE_TERMINAL,
+            target: STRUCTURE_STORAGE,
+            resourceType: RESOURCE_ENERGY,
+            amount: this.store[RESOURCE_ENERGY]
+        })
     }
 
     /**
@@ -190,7 +205,10 @@ export default class TerminalExtension extends StructureTerminal {
             const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.resourceType} 单价: ${targetOrder.price}`
             console.log(`[${this.room.name} terminal] 交易成功! ${introduce} ${crChange}`)
             delete this.room.memory.targetOrderId
+
             this.setNextIndex()
+            this.energyCheck()
+            
             return false // 把这个改成 true 可以加快交易速度
         }
         else if (dealResult === ERR_INVALID_ARGS) {
