@@ -775,6 +775,14 @@ interface IRoomShareTask {
 }
 
 interface Memory {
+    // 核弹投放指示器
+    // 核弹是否已经确认
+    nukerLock?: boolean
+    // 核弹发射指令集，键为发射房间，值为目标旗帜名称
+    nukerDirective?: {
+        [fireRoomName: string]: string
+    }
+
     // 全局的喊话索引
     sayIndex?: number
     // 白名单，通过全局的 whitelist 对象控制
