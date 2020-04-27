@@ -157,7 +157,7 @@ class RoomExtension extends Room {
 
         // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
         const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
-        if (amount + cost > this.terminal.store.getFreeCapacity()) {
+        if (amount + cost - this.terminal.store[RESOURCE_ENERGY] > this.terminal.store.getFreeCapacity()) {
             return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost} Terminal 剩余容量 ${this.terminal.store.getFreeCapacity()}`
         }
 
