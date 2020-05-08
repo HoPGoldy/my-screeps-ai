@@ -81,6 +81,7 @@ const roles: {
             else if (result === ERR_NOT_ENOUGH_RESOURCES) creep.room.deleteCurrentCenterTask()
             // 够不到就移动过去
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos)
+            else if (result === ERR_FULL) return true
             else {
                 console.log(`[${creep.name}] source 阶段取出异常，错误码 ${result}`)
                 creep.room.hangCenterTask()
@@ -114,15 +115,19 @@ const roles: {
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos)
             else if (result === ERR_FULL) {
                 creep.say(`${task.target} 满了`)
+                Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
                 creep.room.hangCenterTask()
             }
             // 资源不足就返回 source 阶段
-            else if (result === ERR_NOT_ENOUGH_RESOURCES) return true
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                creep.say(`取出资源`)
+                return true
+            }
             else {
                 creep.say(`存入 ${result}`)
                 creep.room.hangCenterTask()
             }
-
+ 
             return false
         },
         bodys: 'centerTransfer'

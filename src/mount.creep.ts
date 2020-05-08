@@ -764,4 +764,16 @@ class CreepExtension extends Creep {
         }
         else return flag
     }
+
+    /**
+     * 将身上的资源存放起来
+     * 会根据资源类型自动选择存放建筑，只会存放 store 中第一位资源
+     */
+    // public storeResource(): void {
+    //     const carryRes = Object.keys(this.store)[0]
+
+    //     if (carryRes as ResourceConstant === RESOURCE_ENERGY) {
+            
+    //     }
+    // }
 }

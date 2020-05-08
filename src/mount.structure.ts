@@ -18,7 +18,8 @@ import {
     observerInterval,
     DEPOSIT_MAX_COOLDOWN,
     // 挂载内存相关
-    structureWithMemory
+    structureWithMemory,
+    minerHervesteLimit
 } from './setting'
 
 import LabExtension from './mount.lab'
@@ -524,8 +525,8 @@ class LinkExtension extends StructureLink {
  */
 class ExtractorExtension extends StructureExtractor {
     public work(): void {
-        // 如果 mineral 冷却好了就重新发布 miner
-        if (Game.time > this.room.memory.mineralCooldown) {
+        // 如果 mineral 冷却好了并且 terminal 还有空间就重新发布 miner
+        if (Game.time > this.room.memory.mineralCooldown && this.room.terminal && this.room.terminal.store.getUsedCapacity() > minerHervesteLimit) {
             delete this.room.memory.mineralCooldown
 
             creepApi.add(`${this.room.name} miner`, 'miner', {
