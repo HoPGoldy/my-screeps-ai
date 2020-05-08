@@ -457,7 +457,7 @@ interface Room {
     hangSpawnTask(): void
 
     // 中央物流 api
-    addCenterTask(task: ITransferTask): number
+    addCenterTask(task: ITransferTask, priority?: number): number
     hasCenterTask(submit: CenterStructures | number): boolean
     hangCenterTask(): number
     handleCenterTask(transferAmount: number): void

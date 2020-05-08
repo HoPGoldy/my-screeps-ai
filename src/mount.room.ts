@@ -18,12 +18,15 @@ class RoomExtension extends Room {
      * 添加任务
      * 
      * @param task 要提交的任务
+     * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
      * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
      */
-    public addCenterTask(task: ITransferTask): number {
+    public addCenterTask(task: ITransferTask, priority: number = null): number {
         if (this.hasCenterTask(task.submit)) return -1
 
-        this.memory.centerTransferTasks.push(task)
+        if (!priority) this.memory.centerTransferTasks.push(task)
+        else this.memory.centerTransferTasks.splice(priority, 0, task)
+
         return this.memory.centerTransferTasks.length - 1
     }
 
