@@ -115,7 +115,7 @@ const roles: {
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos)
             else if (result === ERR_FULL) {
                 creep.say(`${task.target} 满了`)
-                Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
+                if (task.target === STRUCTURE_TERMINAL) Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
                 creep.room.hangCenterTask()
             }
             // 资源不足就返回 source 阶段

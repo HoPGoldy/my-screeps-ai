@@ -110,19 +110,42 @@ const funcAlias = [
     {
         alias: 'storage',
         exec: function(): string {
-            return Object.values(Game.rooms).map(room => {
-                // 如果两者都没有或者房间无法被控制就不显示
-                if ((!room.storage && !room.terminal) || !room.controller) return false
+            // 建筑容量在小于如下值时将会变色
+            const colorLevel = {
+                [STRUCTURE_TERMINAL]: { warning: 60000, danger: 30000 },
+                [STRUCTURE_STORAGE]: { warning: 150000, danger: 50000 }
+            }
 
-                let log = `[${room.name}] `
-                if (room.storage) log += `STORAGE: ${room.storage.store.getFreeCapacity()}/${room.storage.store.getCapacity()} `
-                else log += 'STORAGE: X '
+            /**
+             * 给数值添加颜色
+             * 
+             * @param capacity 要添加颜色的容量数值
+             * @param warningLimit 报警的颜色等级
+             */
+            const addColor = (capacity: number, structureType: STRUCTURE_TERMINAL | STRUCTURE_STORAGE): string => {
+                return capacity > colorLevel[structureType].warning ? colorful(capacity.toString(), 'green') : 
+                    capacity > colorLevel[structureType].danger ? colorful(capacity.toString(), 'yellow') : colorful(capacity.toString(), 'red')
+            }
 
-                if (room.terminal) log += `TERMINAL: ${room.terminal.store.getFreeCapacity()}/${room.terminal.store.getCapacity()} `
-                else log += 'TERMINAL: X '
+            const logs = [
+                `剩余容量/总容量 [storage 报警限制] ${colorful(colorLevel[STRUCTURE_STORAGE].warning.toString(), 'yellow')} ${colorful(colorLevel[STRUCTURE_STORAGE].danger.toString(), 'red')} [terminal 报警限制] ${colorful(colorLevel[STRUCTURE_TERMINAL].warning.toString(), 'yellow')} ${colorful(colorLevel[STRUCTURE_TERMINAL].danger.toString(), 'red')}`,
+                '',
+                ...Object.values(Game.rooms).map(room => {
+                    // 如果两者都没有或者房间无法被控制就不显示
+                    if ((!room.storage && !room.terminal) || !room.controller) return false
+    
+                    let log = `[${room.name}] `
+                    if (room.storage) log += `STORAGE: ${addColor(room.storage.store.getFreeCapacity(), STRUCTURE_STORAGE)}/${room.storage.store.getCapacity()} `
+                    else log += 'STORAGE: X '
+    
+                    if (room.terminal) log += `TERMINAL: ${addColor(room.terminal.store.getFreeCapacity(), STRUCTURE_TERMINAL)}/${room.terminal.store.getCapacity()} `
+                    else log += 'TERMINAL: X '
+    
+                    return log
+                }).filter(log => log)
+            ]
 
-                return log
-            }).filter(log => log).join('\n')
+            return logs.join('\n')
         }
     },
     {
