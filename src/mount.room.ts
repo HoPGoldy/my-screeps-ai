@@ -19,10 +19,11 @@ class RoomExtension extends Room {
      * 
      * @param task 要提交的任务
      * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
-     * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
+     * @returns 任务的排队位置, 0 是最前面，负数为添加失败，-1 为已有同种任务,-2 为目标建筑无法容纳任务数量
      */
     public addCenterTask(task: ITransferTask, priority: number = null): number {
         if (this.hasCenterTask(task.submit)) return -1
+        if (this[task.target] && this[task.target].store.getFreeCapacity() < task.amount) return -2
 
         if (!priority) this.memory.centerTransferTasks.push(task)
         else this.memory.centerTransferTasks.splice(priority, 0, task)
@@ -128,9 +129,12 @@ class RoomExtension extends Room {
     /**
      * 用户操作：将能量从 terminal 转移至 storage 里
      * 
-     * @param amount 要转移的能量数量, 默认100k
+     * @param amount 要转移的能量数量, 默认全部转回来
      */
-    public gete(amount: number = 100000): string {
+    public gete(amount: number = null): string {
+        if (!this.terminal) return `未找到 ${this.name} 中的终端`
+        if (amount === null) amount = this.terminal.store[RESOURCE_ENERGY]
+        
         const addResult = this.addCenterTask({
             submit: this.memory.centerTransferTasks.length,
             target: STRUCTURE_STORAGE,
