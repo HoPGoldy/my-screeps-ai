@@ -126,7 +126,8 @@ export default class TerminalExtension extends StructureTerminal {
 
             // 如果路费不够的话就继续等
             if (costCondition) {
-                this.getEnergy(cost)
+                if (this.getEnergy(cost) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 等待路费, ${cost}`)
+                // this.getEnergy(cost)
                 return 
             }
 
@@ -149,7 +150,8 @@ export default class TerminalExtension extends StructureTerminal {
         else {
             // 如果要共享能量，则从 storage 里拿
             if (task.resourceType === RESOURCE_ENERGY) {
-                this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])
+                if (this.getEnergy(task.amount - this.store[RESOURCE_ENERGY]) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 获取路费, ${task.amount - this.store[RESOURCE_ENERGY]}`)
+                // this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])
             }
         }
     }
@@ -193,7 +195,8 @@ export default class TerminalExtension extends StructureTerminal {
         const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就继续等
         if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
-            this.getEnergy(cost)
+            if (this.getEnergy(cost) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 继续处理订单时路费, ${cost}`)
+            // this.getEnergy(cost)
             return false
         }
 
@@ -321,7 +324,8 @@ export default class TerminalExtension extends StructureTerminal {
         const cost = Game.market.calcTransactionCost(amount > targetOrder.amount ? amount : targetOrder.amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就问 sotrage 要
         if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
-            this.getEnergy(cost)
+            if (this.getEnergy(cost) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 拍单时等待路费, ${cost}`)
+            // this.getEnergy(cost)
         }
     }
 
@@ -427,11 +431,9 @@ export default class TerminalExtension extends StructureTerminal {
      * 从 storage 获取能量
      * @param amount 需要能量的数量
      */
-    private getEnergy(amount: number): void {
-        // 发布前先检查下有没有任务
-        if (this.room.hasCenterTask(STRUCTURE_TERMINAL)) return 
-
-        this.room.addCenterTask({
+    private getEnergy(amount: number): number {
+        // 添加时会自动判断有没有对应的建筑，不会重复添加
+        return this.room.addCenterTask({
             submit: STRUCTURE_TERMINAL,
             source: STRUCTURE_STORAGE,
             target: STRUCTURE_TERMINAL,
