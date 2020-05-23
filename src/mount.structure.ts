@@ -526,13 +526,16 @@ class LinkExtension extends StructureLink {
 class ExtractorExtension extends StructureExtractor {
     public work(): void {
         // 如果 mineral 冷却好了并且 terminal 还有空间就重新发布 miner
-        if (Game.time > this.room.memory.mineralCooldown && this.room.terminal && this.room.terminal.store.getUsedCapacity() > minerHervesteLimit) {
-            delete this.room.memory.mineralCooldown
+        if (Game.time > this.room.memory.mineralCooldown) {
+            if (this.room.terminal && this.room.terminal.store.getUsedCapacity() < minerHervesteLimit) {
+                delete this.room.memory.mineralCooldown
 
-            creepApi.add(`${this.room.name} miner`, 'miner', {
-                sourceId: this.room.mineral.id,
-                targetId: this.room.terminal ? this.room.terminal.id : this.room.storage.id
-            }, this.room.name)
+                creepApi.add(`${this.room.name} miner`, 'miner', {
+                    sourceId: this.room.mineral.id,
+                    targetId: this.room.terminal ? this.room.terminal.id : this.room.storage.id
+                }, this.room.name)
+            }
+            else this.room.memory.mineralCooldown = Game.time + 10000
         }
     }
     /**
