@@ -234,7 +234,7 @@ class PowerCreepExtension extends PowerCreep {
 const PowerTasks: IPowerTaskConfigs = {
     /**
      * 房间初始化任务，会在房间 power 任务队列初始化时同时添加
-     * 该任务必定未房间的第一个 power 任务
+     * 该任务必定为房间的第一个 power 任务
      */
     [-1]: {
         target: creep => creep.enablePower()

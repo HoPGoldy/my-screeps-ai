@@ -127,7 +127,7 @@ export const globalHelp = [
     colorful('HoPGoldy Screeps', 'blue'),
     colorful('半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息（如：Game.rooms.W1N1.help()）。在 Link, Factory, Terminal, PowerSpawn, Observer 也包含对应的 help 方法。以下为全局方法：', 'green'),
     '——————————',
-    createConst('查看资源常量', 'resource'),
+    createConst('查看资源常量', 'res'),
     createConst('移除所有禁止通行点位', 'clearpos'),
     createConst('查看商品生产线状态', 'comm'),
     createConst('列出所有路径缓存', 'route'),
