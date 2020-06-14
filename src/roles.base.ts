@@ -21,7 +21,7 @@ const roles: {
 
             // 有缓存就用缓存
             if (creep.memory.fillStructureId) {
-                target = <StructureExtension>Game.getObjectById(creep.memory.fillStructureId)
+                target = <StructureTower>Game.getObjectById(creep.memory.fillStructureId)
 
                 // 如果 tower 填到 800 以上或者 spwan extension 填满就移除
                 if ((target instanceof StructureTower && target.store[RESOURCE_ENERGY] < 800) || target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
@@ -237,19 +237,32 @@ const roles: {
     /**
      * 维修者
      * 从指定结构中获取能量 > 维修房间内的建筑
-     * 注：目前维修者更适合在能量爆仓或者敌人攻城时使用
+     * 注：目前维修者只会在敌人攻城时使用
      * 
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
     repairer: (data: WorkerData): ICreepConfig => ({
+        // 不需要持续生成
+        isNeed: () => false,
         source: creep => {
+            creep.getEngryFrom(Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal)
+
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
         },
         // 一直修墙就完事了
         target: creep => {
-            creep.fillDefenseStructure()
+            let importantWall = creep.room._importantWall
+            // 先尝试获取焦点墙，有最新的就更新缓存，没有就用缓存中的墙
+            if (importantWall) creep.memory.fillWallId = importantWall.id
+            else if (creep.memory.fillWallId) importantWall = Game.getObjectById(creep.memory.fillWallId)
+            
+            // 有焦点墙就优先刷
+            if (importantWall) {
+                if (creep.repair(creep.room._importantWall) == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
+            }
+            // 否则就按原计划维修
+            else creep.fillDefenseStructure()
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
