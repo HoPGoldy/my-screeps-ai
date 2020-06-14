@@ -284,8 +284,8 @@ class CreepExtension extends Creep {
         const currentPos = `${this.pos.x}/${this.pos.y}`
         // 如果和之前位置重复了就分析撞上了啥
         if (this.memory.prePos && currentPos == this.memory.prePos) {
-            // 尝试对穿
-            const crossResult = this.mutualCross(target)
+            // 尝试对穿，如果自己禁用了对穿的话则直接重新寻路
+            const crossResult = this.memory.disableCross ? ERR_BUSY : this.mutualCross(target)
 
             // 没找到说明撞墙上了或者前面的 creep 拒绝对穿，重新寻路
             if (crossResult != OK) {
@@ -734,18 +734,17 @@ class CreepExtension extends Creep {
         if (healResult == ERR_NOT_IN_RANGE) this.rangedHeal(target)
 
         // 一直朝着目标移动
-        if (!this.pos.isNearTo(creep.pos)) this.moveTo(creep)
-        else {
-            // 检查自己是不是在骑墙
-            if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
-                const safePosFinder = i => i !== 0 && i !== 49
-                // 遍历找到目标 creep 身边的不骑墙位置
-                const x = [creep.pos.x - 1, creep.pos.x + 1].find(safePosFinder)
-                const y = [creep.pos.y - 1, creep.pos.y + 1].find(safePosFinder)
-                
-                // 移动到不骑墙位置
-                this.moveTo(new RoomPosition(x, y, creep.pos.roomName))
-            }
+        this.moveTo(creep)
+        
+        // 检查自己是不是在骑墙
+        if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
+            const safePosFinder = i => i !== 0 && i !== 49
+            // 遍历找到目标 creep 身边的不骑墙位置
+            const x = [creep.pos.x - 1, creep.pos.x + 1].find(safePosFinder)
+            const y = [creep.pos.y - 1, creep.pos.y + 1].find(safePosFinder)
+            
+            // 移动到不骑墙位置
+            this.moveTo(new RoomPosition(x, y, creep.pos.roomName))
         }
     }
 
