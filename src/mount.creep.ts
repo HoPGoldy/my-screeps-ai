@@ -569,7 +569,7 @@ class CreepExtension extends Creep {
      * @param target 提供能量的结构
      * @returns 执行 harvest 或 withdraw 后的返回值
      */
-    public getEngryFrom(target: Structure|Source): ScreepsReturnCode {
+    public getEngryFrom(target: Structure | Source): ScreepsReturnCode {
         let result: ScreepsReturnCode
         // 是建筑就用 withdraw
         if (target instanceof Structure) result = this.withdraw(target as Structure, RESOURCE_ENERGY)

@@ -410,9 +410,8 @@ interface Room {
     // 外矿房间特有，外矿单位维护
     // 一旦该字段为 true 就告诉出生点暂时禁止自己重生直到 1500 tick 之后
     _hasEnemy: boolean
-    // 当该字段为 true 时, repairer 角色将专心给 tower 填充
-    // 由房间中的 tower 负责更新
-    _towerShoulderRepair: boolean
+    // 焦点墙，维修单位总是倾向于优先修复该墙体
+    _importantWall: StructureWall | StructureRampart
     // 该房间是否已经执行过 lab 集群作业了
     // 在 Lab.work 中调用，一个房间只会执行一次
     _hasRunLab: boolean

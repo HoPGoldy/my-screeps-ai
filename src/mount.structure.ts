@@ -25,6 +25,7 @@ import {
 import LabExtension from './mount.lab'
 import FactoryExtension from './mount.factory'
 import TerminalExtension from './mount.terminal'
+import { StringRepresentable } from 'lodash'
 
 // 挂载拓展到建筑原型
 export default function () {
@@ -182,15 +183,67 @@ class TowerExtension extends StructureTower {
      */
     public work(): void {
         if (this.store[RESOURCE_ENERGY] > 10) {
-            // 告诉房间内的 repairer 不用再维修了
-            if (!this.room._towerShoulderRepair) this.room._towerShoulderRepair = true
-
             // 先攻击敌人
             if (this.commandAttack()) { }
             // 找不到敌人再维修建筑
             else if (this.commandRepair()) { }
             // 找不到要维修的建筑就刷墙
             else if (this.commandFillWall()) { }
+        }
+    }
+
+    /**
+     * 检查敌人威胁
+     * 检查房间内所有敌人的身体部件情况确认是否可以造成威胁
+     * 
+     * @returns 是否可以造成威胁（是否启用主动防御模式）
+     */
+    private checkEnemyThreat(): boolean {
+        const bodyNum = this.room._enemys.map(creep => creep.body.length).reduce((pre, cur) => pre + cur)
+
+        // 满配 creep 数量大于 1，就启动主动防御
+        return bodyNum > MAX_CREEP_SIZE
+    }
+
+    /**
+     * 墙壁检查
+     * 受到攻击就孵化修墙工
+     * 有墙壁被摧毁就进入安全模式
+     */
+    private wallCheck(): void {
+        const logs = this.room.getEventLog()
+        
+        for (const log of logs) {
+            // 墙壁或 ram 被摧毁
+            if (log.event === EVENT_OBJECT_DESTROYED) {
+                // 不是墙体被摧毁就继续检查 log
+                if (log.data.type != STRUCTURE_RAMPART && log.data.type != STRUCTURE_WALL) continue
+                // 有墙体被摧毁，直接启动安全模式
+                this.room.controller.activateSafeMode()
+                const enemyUsername = _.uniq(this.room._enemys.map(creep => creep.owner.username)).join(', ')
+                Game.notify(`[${this.room.name}] 墙壁被击破，已启动安全模式 [Game.ticks] ${Game.time} [敌人] ${enemyUsername}`)
+
+                break
+            }
+            // 墙壁被攻击
+            else if (log.event === EVENT_ATTACK) {
+                const target = Game.getObjectById<Structure>(log.data.targetId)
+                if (!target) continue
+
+                if (target instanceof StructureRampart || target instanceof StructureWall) {
+                    // 设为焦点墙体
+                    this.room._importantWall = target
+                    
+                    const repairCreepName = `${this.room.name} repair`
+                    if (creepApi.has(`${repairCreepName} 1`)) break
+                    // 如果没有维修者的话就进行发布
+                    [1, 2, 3].forEach(index => {
+                        creepApi.add(`${repairCreepName} ${index}`, 'repairer', {
+                            sourceId: this.room.storage ? this.room.storage.id : '',
+                        }, this.room.name)
+                    })
+                }
+            }
         }
     }
 
@@ -241,6 +294,7 @@ class TowerExtension extends StructureTower {
         // 没找到敌人就下个指令
         if (!target) return false
         this.attack(target)
+        this.wallCheck()
         // 如果能量低了就发布填充任务
         if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })
         return true
