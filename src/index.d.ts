@@ -337,6 +337,8 @@ type StructureWithStore = StructureStorage | StructureContainer | StructureExten
 interface CreepMemory {
     // 内置移动缓存
     _move?: Object
+    // 自己是否会向他人发起对穿
+    disableCross?: boolean
     // creep 是否已经准备好可以工作了
     ready: boolean
     // creep 的角色
