@@ -204,14 +204,7 @@ class TowerExtension extends StructureTower {
      * 被攻击时的 tower 工作逻辑（主动模式）
      */
     private underAttackWork(): void {
-        if (this.room.memory.boost) {
-            // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
-            if (this.room.memory.boost.type !== 'DEFENSE' && this.room.memory.boost.state !== 'boostClear') {
-                console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式`)
-                this.room.stopWar()
-            }
-        }
-        else this.room.startWar('DEFENSE')
+        
     }
 
     /**
@@ -317,7 +310,22 @@ class TowerExtension extends StructureTower {
         if (!target) return false
         this.attack(target)
         // 检查是否需要启动主动防御模式
-        if (this.checkEnemyThreat()) this.room.memory.activeDefense = true
+        if (this.checkEnemyThreat()) {
+            // 启动主动防御模式
+            this.room.memory.activeDefense = true
+            // 准备强化任务
+            if (this.room.memory.boost) {
+                // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
+                if (this.room.memory.boost.type !== 'DEFENSE' && this.room.memory.boost.state !== 'boostClear') {
+                    console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
+                    this.room.stopWar()
+                }
+            }
+            else {
+                console.log(`[${this.room.name}] 已启动强化准备`)
+                this.room.startWar('DEFENSE')
+            }
+        }
         this.wallCheck()
         // 如果能量低了就发布填充任务
         if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })
