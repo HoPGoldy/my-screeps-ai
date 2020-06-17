@@ -337,20 +337,6 @@ export const powerSettings = {
     // 处理 power 的间隔
     processInterval: 1
 }
-/**
- * boost 强化的阶段
- * 仅在房间的 LAB_STATE 为 boost 时有效
- */
-export const BOOST_STATE = {
-    // 获取资源, boost 进程的默认阶段
-    GET_RESOURCE: 'boostGet', 
-    // 获取能量, 有 lab 能量不足时触发
-    GET_ENERGY: 'labGetEnergy', 
-    // 等待强化，lab 在该阶段会一直等待直到 creep 调用强化
-    WAIT_BOOST: 'waitBoost', 
-    // 清除资源，在强化完成后打扫 lab
-    CLEAR: 'boostClear'
-}
 
 /**
  * 此处定义了所有的房间物流任务类型
@@ -377,18 +363,30 @@ export const ROOM_TRANSFER_TASK = {
  * 战争 boost 需要的所有强化材料，在启动战争状态后，transfer 会依次将下列资源填充至 lab
  * 注意：在强化旗帜旁的 lab 数量需要超过下面的资源数量
  */
-export const BOOST_RESOURCE = [
-    // DISMANTLE
-    RESOURCE_CATALYZED_ZYNTHIUM_ACID,
-    // RANGED_ATTACK
-    RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
-    // HEAL
-    RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
-    // MOVE
-    RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
-    // TOUGH
-    RESOURCE_CATALYZED_GHODIUM_ALKALIDE
-]
+export const BOOST_RESOURCE: BoostResourceConfig = {
+    // 对外战争所需的资源
+    WAR: [
+        // DISMANTLE
+        RESOURCE_CATALYZED_ZYNTHIUM_ACID,
+        // RANGED_ATTACK
+        RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
+        // HEAL
+        RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
+        // MOVE
+        RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
+        // TOUGH
+        RESOURCE_CATALYZED_GHODIUM_ALKALIDE
+    ],
+    // 主动防御所需资源
+    DEFENSE: [
+        // ATTACK
+        RESOURCE_CATALYZED_UTRIUM_ACID,
+        // TOUGH
+        RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
+        // MOVE
+        RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE
+    ]
+}
 
 /**
  * 当 lab 强化过 creep 之后会检查资源的剩余容量，如果低于下面这个值就会重新装填

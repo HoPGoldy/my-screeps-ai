@@ -1,4 +1,4 @@
-import { reactionSource, LAB_STATE, labTarget, BOOST_STATE, BOOST_RESOURCE, ROOM_TRANSFER_TASK, DEFAULT_FLAG_NAME } from './setting'
+import { reactionSource, LAB_STATE, labTarget, BOOST_RESOURCE, ROOM_TRANSFER_TASK } from './setting'
 
 /**
  * Lab 原型拓展
@@ -71,16 +71,16 @@ export default class LabExtension extends StructureLab {
      */
     private boostController(): void {
         switch (this.room.memory.boost.state) {
-            case BOOST_STATE.GET_RESOURCE: 
+            case 'boostGet': 
                 this.boostGetResource()
             break
-            case BOOST_STATE.GET_ENERGY:
+            case 'labGetEnergy':
                 this.boostGetEnergy()
             break
-            case BOOST_STATE.WAIT_BOOST:
+            case 'waitBoost':
                 // 感受宁静
             break
-            case BOOST_STATE.CLEAR:
+            case 'boostClear':
                 this.boostClear()
             break
             default:
@@ -100,7 +100,7 @@ export default class LabExtension extends StructureLab {
 
         // 遍历检查资源是否到位
         let allResourceReady = true
-        for (const res of BOOST_RESOURCE) {
+        for (const res of BOOST_RESOURCE[boostTask.type]) {
             const lab = Game.getObjectById<StructureLab>(boostTask.lab[res])
             if (!lab) continue
 
@@ -111,7 +111,7 @@ export default class LabExtension extends StructureLab {
         // 都就位了就进入下一个阶段
         if (allResourceReady) {
             console.log(`[${this.room.name} boost] 材料准备完成，开始填充能量`)
-            this.room.memory.boost.state = BOOST_STATE.GET_ENERGY
+            this.room.memory.boost.state = 'labGetEnergy'
         }
         // 否则就发布任务
         else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) {
@@ -144,7 +144,7 @@ export default class LabExtension extends StructureLab {
         }
 
         // 能循环完说明能量都填好了
-        this.room.memory.boost.state = BOOST_STATE.WAIT_BOOST
+        this.room.memory.boost.state = 'waitBoost'
         console.log(`[${this.room.name} boost] 能量填充完成，boost 准备就绪，等待强化，键入 ${this.room.name}.whelp() 来查看如何孵化战斗单位`)
     }
 
