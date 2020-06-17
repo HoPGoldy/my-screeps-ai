@@ -1,4 +1,3 @@
-import { BOOST_STATE } from './setting'
 import { calcBodyPart } from './utils'
 
 /**
@@ -183,7 +182,7 @@ const boostPrepare = () => ({
     prepare: (creep: Creep) => {
         // 获取强化位置
         const boostTask = creep.room.memory.boost
-        if (boostTask.state !== BOOST_STATE.WAIT_BOOST) {
+        if (boostTask.state !== 'waitBoost') {
             creep.say('boost 未准备就绪')
             return false
         }

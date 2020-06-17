@@ -183,13 +183,35 @@ class TowerExtension extends StructureTower {
      */
     public work(): void {
         if (this.store[RESOURCE_ENERGY] > 10) {
-            // 先攻击敌人
-            if (this.commandAttack()) { }
-            // 找不到敌人再维修建筑
-            else if (this.commandRepair()) { }
-            // 找不到要维修的建筑就刷墙
-            else if (this.commandFillWall()) { }
+            if (this.room.memory.activeDefense) this.underAttackWork()
+            else this.dailyWork()
         }
+    }
+
+    /**
+     * 日常的 tower 工作逻辑
+     */
+    private dailyWork(): void {
+        // 先攻击敌人
+        if (this.commandAttack()) { }
+        // 找不到敌人再维修建筑
+        else if (this.commandRepair()) { }
+        // 找不到要维修的建筑就刷墙
+        else if (this.commandFillWall()) { }
+    }
+
+    /**
+     * 被攻击时的 tower 工作逻辑（主动模式）
+     */
+    private underAttackWork(): void {
+        if (this.room.memory.boost) {
+            // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
+            if (this.room.memory.boost.type !== 'DEFENSE' && this.room.memory.boost.state !== 'boostClear') {
+                console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式`)
+                this.room.stopWar()
+            }
+        }
+        else this.room.startWar('DEFENSE')
     }
 
     /**
@@ -249,7 +271,7 @@ class TowerExtension extends StructureTower {
 
     /**
      * 攻击指令
-     * 每 5 tick 搜索一次，检查本房间是否有敌人，有的话则攻击，受到白名单影响
+     * 间隔搜索一次，检查本房间是否有敌人，有的话则攻击，受到白名单影响
      * 
      * @returns 有敌人返回 true，没敌人返回 false
      */
@@ -294,6 +316,8 @@ class TowerExtension extends StructureTower {
         // 没找到敌人就下个指令
         if (!target) return false
         this.attack(target)
+        // 检查是否需要启动主动防御模式
+        if (this.checkEnemyThreat()) this.room.memory.activeDefense = true
         this.wallCheck()
         // 如果能量低了就发布填充任务
         if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })

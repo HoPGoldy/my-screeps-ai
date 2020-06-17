@@ -1,6 +1,6 @@
 import mountRoomBase from './mount.roomBase'
 import { createHelp } from './utils'
-import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, BOOST_STATE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
+import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
 
 // 挂载拓展到 Room 原型
@@ -767,11 +767,12 @@ class RoomExtension extends Room {
      * 切换为战争状态
      * 需要提前插好名为 [房间名 + Boost] 的旗帜，并保证其周围有足够数量的 lab
      * 
+     * @param boostType 以什么形式启动战争状态
      * @returns ERR_NAME_EXISTS 已经处于战争状态
      * @returns ERR_NOT_FOUND 未找到强化旗帜
      * @returns ERR_INVALID_TARGET 强化旗帜附近的lab数量不足
      */
-    public startWar(): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET {
+    public startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET {
         if (this.memory.war) return ERR_NAME_EXISTS
 
         // 获取 boost 旗帜
@@ -784,17 +785,18 @@ class RoomExtension extends Room {
             filter: s => s.structureType == STRUCTURE_LAB
         })
         // 如果 lab 数量不够
-        if (labs.length < BOOST_RESOURCE.length) return ERR_INVALID_TARGET
+        if (labs.length < BOOST_RESOURCE[boostType].length) return ERR_INVALID_TARGET
 
         // 初始化 boost 任务
-        let boostTask = {
-            state: BOOST_STATE.GET_RESOURCE,
+        let boostTask: BoostTask = {
+            state: 'boostGet',
             pos: [ boostFlag.pos.x, boostFlag.pos.y ],
+            type: boostType,
             lab: {}
         }
 
-        // 统计需要执行强化工作的 lab 并保持到内存
-        BOOST_RESOURCE.forEach(res => boostTask.lab[res] = labs.pop().id)
+        // 统计需要执行强化工作的 lab 并保存到内存
+        BOOST_RESOURCE[boostType].forEach(res => boostTask.lab[res] = labs.pop().id)
 
         // 发布 boost 任务
         this.memory.boost = boostTask
@@ -807,7 +809,7 @@ class RoomExtension extends Room {
      */
     public war(): string {
         let stats = `[${this.name}] `
-        const result = this.startWar()
+        const result = this.startWar('WAR')
 
         if (result === OK) stats += `已启动战争状态，正在准备 boost 材料，请在准备完成后再发布角色组`
         else if (result === ERR_NAME_EXISTS) stats += '已处于战争状态'
@@ -829,7 +831,7 @@ class RoomExtension extends Room {
         if (!this.memory.boost) return ERR_NOT_FOUND
 
         // 检查是否准备好了
-        if (this.memory.boost.state != BOOST_STATE.WAIT_BOOST) return ERR_BUSY
+        if (this.memory.boost.state != 'waitBoost') return ERR_BUSY
 
         // 获取全部 lab
         let executiveLab: StructureLab[] = []
@@ -867,7 +869,7 @@ class RoomExtension extends Room {
         if (!this.memory.war) return ERR_NOT_FOUND
 
         // 将 boost 状态置为 clear，labExtension 会自动发布清理任务并移除 boostTask
-        if (this.memory.boost) this.memory.boost.state = BOOST_STATE.CLEAR
+        if (this.memory.boost) this.memory.boost.state = 'boostClear'
         delete this.memory.war
 
         return OK
