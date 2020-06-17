@@ -39,34 +39,7 @@ lab 集群的子模块包括：**目标指定**、**数量检查**、**工作模
 - 该目标化合物所需要的基础原料都已经存在于 terminal 里（保证不会因原料不足而暂停合成，由基本资源检查模块负责）
 - storage 中的能量大于 100k（暂定）
 
-暂定的工作目标队列：
-
-```js
-[
-    // 基础
-    { target: RESOURCE_HYDROXIDE, number: 5000 },
-    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 5000 },
-    { target: RESOURCE_UTRIUM_LEMERGITE, number: 5000 },
-    // G
-    { target: RESOURCE_GHODIUM, number: 5000 },
-    // XKHO2 生产线，强化 RANGE_ATTACK
-    { target: RESOURCE_KEANIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_KEANIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 1000 },
-    // XLHO2 生产线，强化 HEAL
-    { target: RESOURCE_LEMERGIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 1000 },
-    // XZHO2 生产线，强化 MOVE
-    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 1000 },
-    // XGHO2 生产线，强化 TOUGH
-    { target: RESOURCE_GHODIUM_OXIDE, number: 3000 },
-    { target: RESOURCE_GHODIUM_ALKALIDE, number: 2000 },
-    { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 1000 },
-]
-```
+目前的工作目标见 `setting.ts` 中的 `labTarget` 。
 
 注：基础矿物不属于 lab 集群的目标，关于基础矿物的收集应有其他模块（例如资源共享协议或 terminal 监控模块）负责，lab 模块在发现对应基础矿物缺失后只会跳过该化合物的合成。
 
@@ -178,9 +151,6 @@ lab 的物流任务一共包含三个任务，in(底物填充)、out(产物移�
         '5d9bdd4b1acf0f000174aa51': 300,
         '5d9bdd4b1acf0f000174aa52': 100,
         '5d9bdd4b1acf0f000174aa53': 100
-    },
-    // 当前 working 阶段要进行反应的 outLab
-    // 由工作模块在 working 阶段修改
-    outLabIndex: 1
+    }
 }
 ```
