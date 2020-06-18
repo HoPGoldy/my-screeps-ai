@@ -88,7 +88,8 @@ type WarRoleConstant =
     'boostDoctor' |
     'dismantler' |
     'boostDismantler' |
-    'apocalypse'
+    'apocalypse' |
+    'defender'
 
 /**
  * creep 工作逻辑集合
@@ -117,6 +118,7 @@ interface ICreepConfig {
  * 所有 creep 角色的 data
  */
 type CreepData = 
+    EmptyData |
     ReiverData |
     HarvesterData | 
     WorkerData | 
@@ -128,6 +130,11 @@ type CreepData =
     WarUnitData |
     ApocalypseData |
     HealUnitData
+
+/**
+ * 有些角色不需要 data
+ */
+interface EmptyData { }
 
 /**
  * 采集单位的 data
@@ -260,7 +267,6 @@ type BodyAutoConfigConstant =
     'reserver' |
     'attacker' |
     'healer' |
-    'remoteDefender' |
     'dismantler' |
     'remoteHarvester'
 
@@ -272,6 +278,11 @@ interface Structure {
     work?(): void
     // 建筑在完成建造时触发的回调
     onBuildComplete?(): void
+}
+
+interface StructureController {
+    // 检查房间内敌人是否有威胁
+    checkEnemyThreat(): boolean
 }
 
 // Factory 拓展
@@ -402,7 +413,7 @@ interface CreepMemory {
  */
 interface Room {
     // 已拥有的房间特有，tower 负责维护
-    _enemys: Creep[]
+    _enemys: (Creep|PowerCreep)[]
     // 需要维修的建筑，tower 负责维护，为 1 说明建筑均良好
     _damagedStructure: AnyStructure | 1
     // 该 tick 是否已经有 tower 刷过墙了
@@ -526,9 +537,6 @@ interface RoomMemory {
         [creepName: string]: string
     }
 
-    // tower 发现的敌人 id
-    targetHostileId: string
-
     // observer 内存
     observer: {
         // 上个 tick 已经 ob 过的房间名
@@ -645,8 +653,10 @@ interface RoomMemory {
         id: string
         endTime: number
     }
-    // true 代表已激活主动防御模式
-    activeDefense: boolean
+
+    // 当前房间所处的防御模式
+    // defense 为基础防御，active 为主动防御，该值未定义时为日常模式
+    defenseMode?: 'defense' | 'active'
 
     // 该房间要执行的资源共享任务
     shareTask: IRoomShareTask
