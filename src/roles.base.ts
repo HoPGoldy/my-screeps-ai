@@ -243,8 +243,8 @@ const roles: {
      * @param sourceId 要挖的矿 id
      */
     repairer: (data: WorkerData): ICreepConfig => ({
-        // 不需要持续生成
-        isNeed: () => false,
+        // 根据敌人威胁决定是否继续生成
+        isNeed: room => room.controller.checkEnemyThreat(),
         source: creep => {
             creep.getEngryFrom(Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal)
 

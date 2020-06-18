@@ -1,6 +1,6 @@
 import roles from './role'
 import { creepApi } from './creepController'
-import { createHelp, colorful } from './utils'
+import { createHelp, colorful, whiteListFilter } from './utils'
 import { 
     // spawn 孵化相关
     bodyConfigs, creepDefaultMemory, 
@@ -87,8 +87,8 @@ class SpawnExtension extends StructureSpawn {
              * 不在 mySpawnCreep 返回 OK 时判断是因为：
              * 由于孵化是在 tick 末的行动执行阶段进行的，所以能量在 tick 末期才会从 extension 中扣除
              * 如果返回 OK 就推送任务的话，就会出现任务已经存在了，而 extension 还是满的
-             * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现：
-             * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > 移除任务 > tick 末期开始孵化 > extension 扣除能量的错误逻辑
+             * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现如下错误逻辑：
+             * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > **移除任务** > tick 末期开始孵化 > extension 扣除能量
              */
             if (this.spawning.needTime - this.spawning.remainingTime == 1) {
                 this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION }, 1)
@@ -183,17 +183,28 @@ class TowerExtension extends StructureTower {
      */
     public work(): void {
         if (this.store[RESOURCE_ENERGY] > 10) {
-            if (this.room.memory.activeDefense) this.underAttackWork()
-            else this.dailyWork()
+            // 根据当前状态执行对应的逻辑
+            switch (this.room.memory.defenseMode) {
+                case 'defense': // 普通防御模式
+                    this.defenseWork()
+                break
+                case 'active': // 主动防御模式
+                    this.activeWork()
+                break
+                default: // 日常模式
+                case undefined: 
+                    this.dailyWork()
+                break
+            }
         }
     }
 
     /**
-     * 日常的 tower 工作逻辑
+     * 日常的 tower 工作
      */
     private dailyWork(): void {
         // 先攻击敌人
-        if (this.commandAttack()) { }
+        if (this.dailyAlert()) { }
         // 找不到敌人再维修建筑
         else if (this.commandRepair()) { }
         // 找不到要维修的建筑就刷墙
@@ -201,23 +212,47 @@ class TowerExtension extends StructureTower {
     }
 
     /**
-     * 被攻击时的 tower 工作逻辑（主动模式）
+     * 遇到敌人且敌人不足以启动主动模式时的防御工作
      */
-    private underAttackWork(): void {
-        
+    private defenseWork(): void {
+        const enemys = this.findEnemy()
+
+        // 没有敌人了就返回日常模式
+        if (enemys.length <= 0){
+            delete this.room.memory.defenseMode
+            return
+        }
+
+        this.fire(enemys)
+        if (this.room.controller.checkEnemyThreat()) {
+            // 启动主动防御模式
+            this.room.memory.defenseMode = 'active'
+            // 准备强化任务
+            if (this.room.memory.boost) {
+                // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
+                if (this.room.memory.boost.type !== 'DEFENSE' && this.room.memory.boost.state !== 'boostClear') {
+                    console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
+                    this.room.stopWar()
+                }
+            }
+            else {
+                console.log(`[${this.room.name}] 已启动强化准备`)
+                this.room.startWar('DEFENSE')
+            }
+        }
     }
 
     /**
-     * 检查敌人威胁
-     * 检查房间内所有敌人的身体部件情况确认是否可以造成威胁
-     * 
-     * @returns 是否可以造成威胁（是否启用主动防御模式）
+     * 主动防御模式 tower 工作
      */
-    private checkEnemyThreat(): boolean {
-        const bodyNum = this.room._enemys.map(creep => creep.body.length).reduce((pre, cur) => pre + cur)
+    private activeWork(): void {
+        // const defenderName = `${this.room.name} defender`
+        // const defender = Game.creeps[defenderName]
 
-        // 满配 creep 数量大于 1，就启动主动防御
-        return bodyNum > MAX_CREEP_SIZE
+        // if (defender) {
+        //     if (defender.hits < defender.hitsMax) this.heal(defender)
+        //     else 
+        // }
     }
 
     /**
@@ -251,8 +286,11 @@ class TowerExtension extends StructureTower {
                     
                     const repairCreepName = `${this.room.name} repair`
                     if (creepApi.has(`${repairCreepName} 1`)) break
+
+                    // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
+                    const repairerList = this.room.controller.level >= 7 ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8]
                     // 如果没有维修者的话就进行发布
-                    [1, 2, 3].forEach(index => {
+                    repairerList.forEach(index => {
                         creepApi.add(`${repairCreepName} ${index}`, 'repairer', {
                             sourceId: this.room.storage ? this.room.storage.id : '',
                         }, this.room.name)
@@ -263,72 +301,18 @@ class TowerExtension extends StructureTower {
     }
 
     /**
-     * 攻击指令
-     * 间隔搜索一次，检查本房间是否有敌人，有的话则攻击，受到白名单影响
+     * 日常警戒
+     * 间隔搜索一次，检查本房间是否有敌人，有的话则攻击并切入防御模式
      * 
      * @returns 有敌人返回 true，没敌人返回 false
      */
-    private commandAttack(): boolean {
-        const searchInterval = 5
-        let target: Creep | PowerCreep
-        // 如果在搜索间隔时发现有缓存的敌人 id，就重新获取该敌人，没有的话就不进行搜索了
-        if (Game.time % searchInterval) {
-            if (this.room.memory.targetHostileId) {
-                target = Game.getObjectById<Creep | PowerCreep>(this.room.memory.targetHostileId)
+    private dailyAlert(): boolean {
+        const enemys = this.findEnemy(5)
+        if (enemys.length <= 0) return false
 
-                // 如果该敌人已经不见了，就移除缓存
-                if (!target) {
-                    target = undefined
-                    delete this.room.memory.targetHostileId
-                }
-            }
-        }
-        // 搜索时间到了，重新搜索房间内的敌人并将其加入非持久缓存
-        else if (!this.room._enemys) {
-            this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS, {
-                filter: creep => {
-                    if (!Memory.whiteList) return true
-                    // 加入白名单的玩家单位不会被攻击，但是会被记录
-                    if (creep.owner.username in Memory.whiteList) {
-                        Memory.whiteList[creep.owner.username] += searchInterval
-                        return false
-                    }
-
-                    return true
-                }
-            })
-        }
-
-        // 通过检查非持久缓存来获取最新的敌人信息
-        if (this.room._enemys && this.room._enemys.length > 0) {
-            target = this.pos.findClosestByRange(this.room._enemys)
-            // 重新搜索的敌人优先级更高，会覆盖过期的敌人信息
-            this.room.memory.targetHostileId = target.id
-        }
-
-        // 没找到敌人就下个指令
-        if (!target) return false
-        this.attack(target)
-        // 检查是否需要启动主动防御模式
-        if (this.checkEnemyThreat()) {
-            // 启动主动防御模式
-            this.room.memory.activeDefense = true
-            // 准备强化任务
-            if (this.room.memory.boost) {
-                // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
-                if (this.room.memory.boost.type !== 'DEFENSE' && this.room.memory.boost.state !== 'boostClear') {
-                    console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
-                    this.room.stopWar()
-                }
-            }
-            else {
-                console.log(`[${this.room.name}] 已启动强化准备`)
-                this.room.startWar('DEFENSE')
-            }
-        }
-        this.wallCheck()
-        // 如果能量低了就发布填充任务
-        if (this.store[RESOURCE_ENERGY] <= 900) this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })
+        // 发现敌人则攻击并设置状态为普通防御
+        this.fire(enemys)
+        this.room.memory.defenseMode = 'defense'
         return true
     }
 
@@ -367,8 +351,7 @@ class TowerExtension extends StructureTower {
             if (this.room._damagedStructure.hits + 500 >= this.room._damagedStructure.hitsMax) this.room._damagedStructure = 1
 
             // 如果能量低了就发布填充任务
-            if (this.store[RESOURCE_ENERGY] <= 600) this.room.addRoomTransferTask({ type: 'fillTower', id: this.id})
-
+            this.requireEnergy(600)
             return true
         }
         return false
@@ -422,11 +405,54 @@ class TowerExtension extends StructureTower {
         this.repair(targetWall)
 
         // 如果能量低了就发布填充任务
-        if (this.store[RESOURCE_ENERGY] <= 600) this.room.addRoomTransferTask({ type: 'fillTower', id: this.id})
+        this.requireEnergy(600)
 
         // 标记一下防止其他 tower 继续刷墙
         this.room._hasFillWall = true
         return true
+    }
+
+    /**
+     * 搜索敌人
+     * 
+     * @param searchInterval 搜索间隔，每隔多久进行一次搜索
+     */
+    private findEnemy(searchInterval: number = 1): (Creep|PowerCreep)[] {
+        if (!(Game.time % searchInterval)) return []
+        // 有其他 tower 搜索好的缓存就直接返回
+        if (this.room._enemys) return this.room._enemys
+
+        // 搜索白名单之外的玩家
+        this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS, {
+            filter: whiteListFilter 
+        })
+        if (this.room._enemys.length <= 0) this.room._enemys = this.room.find(FIND_HOSTILE_POWER_CREEPS, {
+            filter: whiteListFilter
+        })
+
+        return this.room._enemys
+    }
+
+    /**
+     * 选择目标并开火
+     * 
+     * @param enemys 目标合集
+     */
+    private fire(enemys: (Creep|PowerCreep)[]): ScreepsReturnCode {
+        if (enemys.length <= 0) return ERR_NOT_FOUND
+
+        return this.attack(this.pos.findClosestByRange(enemys))
+    }
+
+    /**
+     * 请求能量
+     * 
+     * @param lowerLimit 能量下限，当自己能量低于该值时将发起请求
+     */
+    private requireEnergy(lowerLimit: number = 900): void {
+        if (this.store[RESOURCE_ENERGY] <= lowerLimit) {
+            this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })
+        }
     }
 }
 
@@ -758,6 +784,30 @@ class ControllerExtension extends StructureController {
                 this.room.removeUpgradeGroup()
             break
         }
+    }
+
+    /**
+     * 检查敌人威胁
+     * 检查房间内所有敌人的身体部件情况确认是否可以造成威胁
+     * 
+     * @returns 是否可以造成威胁（是否启用主动防御模式）
+     */
+    public checkEnemyThreat(): boolean {
+        // 这里并没有搜索 PC，因为 PC 不是敌人主力
+        const enemy = this.room._enemys || this.room.find(FIND_HOSTILE_CREEPS, {
+            filter: whiteListFilter
+        })
+        if (enemy.length <= 0) return false
+
+        // 如果来的都是入侵者的话，就算撑破天了也不管
+        if (!enemy.find(creep => creep.owner.username !== 'Invader')) return false
+
+        const bodyNum = enemy.map(creep => {
+            // 如果是 creep 则返回身体部件，如果不是则不参与验证
+            return creep instanceof Creep ? creep.body.length : 0
+        }).reduce((pre, cur) => pre + cur)
+        // 满配 creep 数量大于 1，就启动主动防御
+        return bodyNum > MAX_CREEP_SIZE
     }
 
     /**
