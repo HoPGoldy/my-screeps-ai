@@ -174,7 +174,17 @@ const roles: {
      */
     defender: (): ICreepConfig => ({
         // 委托 controller 判断房间内是否有威胁
-        isNeed: room => room.controller.checkEnemyThreat(),
+        isNeed: room => {
+            const needSpawn = room.controller.checkEnemyThreat()
+
+            // 如果威胁已经解除了，就解除主动防御相关工作
+            if (!needSpawn) {
+                room.memory.boost.state === 'boostClear'
+                delete room.memory.war
+                delete room.memory.defenseMode
+            }
+            return needSpawn
+        },
         ...boostPrepare(),
         target: creep => {
             let enemys: (Creep | PowerCreep)[] = creep.room._enemys

@@ -227,18 +227,7 @@ class TowerExtension extends StructureTower {
         if (this.room.controller.checkEnemyThreat()) {
             // 启动主动防御模式
             this.room.memory.defenseMode = 'active'
-            // 准备强化任务
-            if (this.room.memory.boost) {
-                // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
-                if (this.room.memory.boost.type !== 'DEFENSE' && this.room.memory.boost.state !== 'boostClear') {
-                    console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
-                    this.room.stopWar()
-                }
-            }
-            else {
-                console.log(`[${this.room.name}] 已启动强化准备`)
-                this.room.startWar('DEFENSE')
-            }
+            console.log(`[${this.room.name}] 已启动主动防御`)
         }
     }
 
@@ -246,13 +235,63 @@ class TowerExtension extends StructureTower {
      * 主动防御模式 tower 工作
      */
     private activeWork(): void {
-        // const defenderName = `${this.room.name} defender`
-        // const defender = Game.creeps[defenderName]
+        const defenderName = `${this.room.name} defender`
+        const defender = Game.creeps[defenderName]
 
-        // if (defender) {
-        //     if (defender.hits < defender.hitsMax) this.heal(defender)
-        //     else 
-        // }
+        if (defender) {
+            // 有防御单位并且掉血了就进行治疗
+            if (defender.hits < defender.hitsMax) {
+                this.heal(defender)
+                console.log(`[${this.room.name}] 治疗防御者`)
+            }
+            // 没掉血就攻击敌人
+            else {
+                const enemys = this.findEnemy()
+                this.fire(enemys)
+                console.log(`[${this.room.name}] 攻击敌人`)
+            }
+        }
+        else {
+            
+            // 没有防御单位的情况下当能量大于 1000 才攻击敌方单位，省下能量来之后治疗防御单位
+            if (this.store[RESOURCE_ENERGY] > 1000) {
+                console.log(`[${this.room.name}] 剩余能量 ${this.store[RESOURCE_ENERGY]}`)
+                const enemys = this.findEnemy()
+                this.fire(enemys)
+            }
+
+            // 没有防御单位时才准备 boost
+            this.prepareBoost(defenderName)
+        }
+
+        this.wallCheck()
+        this.requireEnergy(700)
+    }
+
+    /**
+     * 准备主动防御需要的 boost 并发布防御单位
+     * 
+     * @param defenderName 要发布的防御单位名称
+     */
+    private prepareBoost(defenderName: string): void {
+        if (!this.room.memory.boost) {
+            console.log(`[${this.room.name}] 正在准备 boost 主动防御`)
+            this.room.startWar('DEFENSE')
+        }
+
+        // 已经有主动防御任务了
+        if (this.room.memory.boost.type === 'DEFENSE') {
+            // 强化准备完成，发布防御单位
+            if (this.room.memory.boost.state === 'waitBoost') {
+                const result = creepApi.add(defenderName, 'defender', {}, this.room.name)
+                console.log('发布防御单位', result)
+            }
+        }
+        // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
+        else if (this.room.memory.boost.state !== 'boostClear') {
+            console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
+            this.room.stopWar()
+        }
     }
 
     /**
@@ -287,6 +326,7 @@ class TowerExtension extends StructureTower {
                     const repairCreepName = `${this.room.name} repair`
                     if (creepApi.has(`${repairCreepName} 1`)) break
 
+                    console.log(`[${this.room.name}] 墙体被攻击!孵化维修单位`)
                     // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
                     const repairerList = this.room.controller.level >= 7 ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8]
                     // 如果没有维修者的话就进行发布
@@ -313,6 +353,7 @@ class TowerExtension extends StructureTower {
         // 发现敌人则攻击并设置状态为普通防御
         this.fire(enemys)
         this.room.memory.defenseMode = 'defense'
+        console.log(`[${this.room.name}] 已启动防御模式`)
         return true
     }
 
