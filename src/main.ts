@@ -1,5 +1,5 @@
 import mountWork from './mount'
-import { doing, stateScanner, globalSay } from './utils'
+import { doing, stateScanner } from './utils'
 import creepNumberListener from './creepController'
 
 module.exports.loop = function (): void {
