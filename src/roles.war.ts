@@ -179,9 +179,11 @@ const roles: {
 
             // 如果威胁已经解除了，就解除主动防御相关工作
             if (!needSpawn) {
-                room.memory.boost.state === 'boostClear'
+                room.memory.boost && (room.memory.boost.state = 'boostClear')
                 delete room.memory.war
                 delete room.memory.defenseMode
+
+                Game.notify(`[${room.name}][${Game.time}] 入侵威胁解除，已取消主动防御模式`)
             }
             return needSpawn
         },
@@ -195,14 +197,15 @@ const roles: {
             if (enemys.length <= 0) return false
 
             // 从缓存中获取敌人
-            const enemy = this.pos.findClosestByRange(this.room._enemys)
-            creep.say(`目标 ${enemy.name}`)
-            creep.moveTo(enemy.pos)
+            const enemy = creep.pos.findClosestByRange(creep.room._enemys)
+            creep.say(`💢`)
+            // 防止一不小心出房间了
+            if ((enemy.pos.x !== 0 && enemy.pos.x !== 49 && enemy.pos.y !== 0 && enemy.pos.y !== 49) && !creep.pos.isNearTo(enemy.pos)) creep.moveTo(enemy.pos)
 
             creep.attack(enemy)
         },
         // 34 个 t3 强化的 ATTACK 可以造成 4.08K/T 的伤害，刚好可以打穿 12 个 T3 TOUGH
-        bodys: calcBodyPart({ [TOUGH]: 6, [RANGED_ATTACK]: 34, [MOVE]: 10 })
+        bodys: calcBodyPart({ [TOUGH]: 6, [ATTACK]: 34, [MOVE]: 10 })
     })
 }
 

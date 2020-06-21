@@ -259,7 +259,17 @@ const roles: {
             
             // 有焦点墙就优先刷
             if (importantWall) {
-                if (creep.repair(creep.room._importantWall) == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
+                const actionResult = creep.repair(creep.room._importantWall)
+                if (actionResult === OK) {
+                    if (!creep.memory.standed) {
+                        creep.memory.standed = true
+                        creep.room.addRestrictedPos(creep.name, creep.pos)
+                    }
+                    
+                    // 离墙三格远可能正好把路堵上，所以要走进一点
+                    if (!creep.room._importantWall.pos.inRangeTo(creep.pos, 2)) creep.goTo(creep.room._importantWall.pos)
+                }
+                else if (actionResult == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
             }
             // 否则就按原计划维修
             else creep.fillDefenseStructure()

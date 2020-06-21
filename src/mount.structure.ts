@@ -219,6 +219,7 @@ class TowerExtension extends StructureTower {
 
         // 没有敌人了就返回日常模式
         if (enemys.length <= 0){
+            // console.log(`[${this.room.name}] 威胁解除，返回日常模式`)
             delete this.room.memory.defenseMode
             return
         }
@@ -227,7 +228,7 @@ class TowerExtension extends StructureTower {
         if (this.room.controller.checkEnemyThreat()) {
             // 启动主动防御模式
             this.room.memory.defenseMode = 'active'
-            console.log(`[${this.room.name}] 已启动主动防御`)
+            // console.log(`[${this.room.name}] 已启动主动防御`)
         }
     }
 
@@ -242,20 +243,16 @@ class TowerExtension extends StructureTower {
             // 有防御单位并且掉血了就进行治疗
             if (defender.hits < defender.hitsMax) {
                 this.heal(defender)
-                console.log(`[${this.room.name}] 治疗防御者`)
             }
             // 没掉血就攻击敌人
             else {
                 const enemys = this.findEnemy()
                 this.fire(enemys)
-                console.log(`[${this.room.name}] 攻击敌人`)
             }
         }
         else {
-            
-            // 没有防御单位的情况下当能量大于 1000 才攻击敌方单位，省下能量来之后治疗防御单位
-            if (this.store[RESOURCE_ENERGY] > 1000) {
-                console.log(`[${this.room.name}] 剩余能量 ${this.store[RESOURCE_ENERGY]}`)
+            // 没有防御单位的情况下当能量大于 700 才攻击敌方单位，省下能量来之后治疗防御单位
+            if (this.store[RESOURCE_ENERGY] > 700) {
                 const enemys = this.findEnemy()
                 this.fire(enemys)
             }
@@ -276,15 +273,20 @@ class TowerExtension extends StructureTower {
     private prepareBoost(defenderName: string): void {
         if (!this.room.memory.boost) {
             console.log(`[${this.room.name}] 正在准备 boost 主动防御`)
-            this.room.startWar('DEFENSE')
+            const result = this.room.startWar('DEFENSE')
+
+            if (result === ERR_NOT_FOUND) console.log(`[${this.room.name}] 未找到名为 [${this.room.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`)
+            else if (result === ERR_INVALID_TARGET) console.log(`[${this.room.name}] 旗帜周围的 lab 数量不足，请移动旗帜位置`)
+
+            return
         }
 
         // 已经有主动防御任务了
         if (this.room.memory.boost.type === 'DEFENSE') {
             // 强化准备完成，发布防御单位
-            if (this.room.memory.boost.state === 'waitBoost') {
+            if (this.room.memory.boost.state === 'waitBoost' && !creepApi.has(defenderName)) {
                 const result = creepApi.add(defenderName, 'defender', {}, this.room.name)
-                console.log('发布防御单位', result)
+                console.log(`[${this.room.name}] 已发布主动防御单位，返回值：${result}`)
             }
         }
         // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
@@ -306,7 +308,7 @@ class TowerExtension extends StructureTower {
             // 墙壁或 ram 被摧毁
             if (log.event === EVENT_OBJECT_DESTROYED) {
                 // 不是墙体被摧毁就继续检查 log
-                if (log.data.type != STRUCTURE_RAMPART && log.data.type != STRUCTURE_WALL) continue
+                if (!log.data || (log.data.type != STRUCTURE_RAMPART && log.data.type != STRUCTURE_WALL)) continue
                 // 有墙体被摧毁，直接启动安全模式
                 this.room.controller.activateSafeMode()
                 const enemyUsername = _.uniq(this.room._enemys.map(creep => creep.owner.username)).join(', ')
@@ -459,7 +461,7 @@ class TowerExtension extends StructureTower {
      * @param searchInterval 搜索间隔，每隔多久进行一次搜索
      */
     private findEnemy(searchInterval: number = 1): (Creep|PowerCreep)[] {
-        if (!(Game.time % searchInterval)) return []
+        if (Game.time % searchInterval) return []
         // 有其他 tower 搜索好的缓存就直接返回
         if (this.room._enemys) return this.room._enemys
 

@@ -539,7 +539,6 @@ class CreepExtension extends Creep {
 
             // 找到血量最小的墙
             targetWall = walls.sort((a, b) => a.hits - b.hits)[0]
-            console.log(`${this.room.name} 血量最少的墙为 ${targetWall}`)
 
             // 将其缓存在内存里
             this.room.memory.focusWall = {
@@ -557,7 +556,17 @@ class CreepExtension extends Creep {
         }
 
         // 填充墙壁
-        if(this.repair(targetWall) == ERR_NOT_IN_RANGE) {
+        const result = this.repair(targetWall)
+        if (result === OK) {
+            if (!this.memory.standed) {
+                this.memory.standed = true
+                this.room.addRestrictedPos(this.name, this.pos)
+            }
+            
+            // 离墙三格远可能正好把路堵上，所以要走进一点
+            if (!targetWall.pos.inRangeTo(this.pos, 2)) this.goTo(targetWall.pos)
+        }
+        else if (result == ERR_NOT_IN_RANGE) {
             this.goTo(targetWall.pos)
         }
         return true
