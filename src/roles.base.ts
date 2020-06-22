@@ -226,7 +226,11 @@ const roles: {
             creep.getEngryFrom(Game.getObjectById(data.sourceId))
         },
         target: creep => {
-            if (creep.buildStructure() !== ERR_NOT_FOUND) { }
+            // 有新墙就先刷新墙
+            if (creep.memory.fillWallId) creep.steadyWall()
+            // 没有就建其他工地
+            else if (creep.buildStructure() !== ERR_NOT_FOUND) { }
+            // 工地也没了就去升级
             else if (creep.upgrade()) { }
 
             if (creep.store.getUsedCapacity() === 0) return true
