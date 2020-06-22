@@ -519,6 +519,11 @@ export const commodityMax = {
 export const minerHervesteLimit = 200000
 
 /**
+ * 当 terminal 中能量超过该值则优先使用 terminal 作为 Upgrader 的能量来源
+ */
+export const useTerminalUpraderLimit = 50000
+
+/**
  * 交易时的购买区间限制
  * 用于防止过贵的卖单或者太便宜的买单
  * 在进行交易时会通过该资源的昨日历史价格配合下面的比例来确定合适的交易价格区间

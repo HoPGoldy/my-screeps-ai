@@ -101,7 +101,7 @@ type CreepWork = {
 
 interface ICreepConfig {
     // 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
-    isNeed?: (room: Room) => boolean
+    isNeed?: (room: Room, creepName: string) => boolean
     // 准备阶段执行的方法, 返回 true 时代表准备完成
     prepare?: (creep: Creep) => boolean
     // creep 获取工作所需资源时执行的方法
@@ -507,6 +507,9 @@ interface Room {
 
     startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET
     stopWar(): OK | ERR_NOT_FOUND
+
+    // 指定 upgrader 是否可以继续孵化
+    needUpgraderRespawn(upgraderName: string): boolean
 }
 
 interface RoomPosition {
