@@ -1,5 +1,5 @@
 import { creepApi } from './creepController'
-import { DEFAULT_FLAG_NAME } from './setting'
+import { DEFAULT_FLAG_NAME, useTerminalUpraderLimit } from './setting'
 
 /**
  * 将所有的房间基础服务挂载至 Room 原型上
@@ -292,6 +292,71 @@ class CreepControl extends Room {
         if (!creepApi.has(`${this.name} centerTransfer`) && (this.memory.centerLinkId || this.factory || this.terminal)) stats.push(this.addCenterTransfer())
 
         return stats.join('\n')
+    }
+
+    /**
+     * 规划 upgrader
+     * 负责发布、移除、修改 upgrader 的能量来源
+     */
+    public planUpgrader() {
+        // 可用的 upgrader 索引，重新规划后剩余的 upgrader 会被移除
+        const availableIndex = [ 1, 2, 3, 4 ]
+        // 快捷发布 upgrader
+        const addUpgrader = (num: number, sourceId: string) => {
+            for (let i = 0; i < num; i++) {
+                creepApi.add(`${this.name} upgrader${availableIndex.shift()}`, 'upgrader', { sourceId }, this.name)
+            }
+        }
+
+        // terminal 中能量足够
+        if (this.terminal && this.terminal.store[RESOURCE_ENERGY] >= useTerminalUpraderLimit) {
+            addUpgrader(this.controller.level >= 8 ? 1 : 2, this.terminal.id)
+        }
+        // 根据 storage 中能量余额进行发布
+        else if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
+            const energy = this.storage.store[RESOURCE_ENERGY]
+
+            /**
+             * 数量配置项
+             * @property {} energy 能量大于该值时启用本行配置
+             * @property {} level8 房间等级8时发布的 upgrader 数量
+             * @property {} levelOther 其他等级时发布的数量
+             */
+            const numberConfig = [
+                { energy: 700000, level8: 1, levelOther: 4 },
+                { energy: 500000, level8: 0, levelOther: 3 },
+                { energy: 300000, level8: 0, levelOther: 2 },
+                { energy: 100000, level8: 0, levelOther: 1 }
+            ]
+            
+            // 遍历配置项进行 upgrader 发布
+            numberConfig.find(config => {
+                if (energy > config.energy) {
+                    addUpgrader(this.controller.level >= 8 ? config.level8 : config.levelOther, this.storage.id)
+                    return true
+                }
+                return false
+            })
+        }
+        // 从 source 里取
+        else {
+            addUpgrader(1, this.sources[0].id)
+            const secondSource = this.sources.length >= 2 ? this.sources[1] : this.sources[0]
+            addUpgrader(1, secondSource.id)
+        }
+
+        // 移除未使用的 upgrader
+        availableIndex.map(unuseIndex => creepApi.remove(`${this.name} upgrader${unuseIndex}`))
+    }
+
+    /**
+     * 
+     * @param upgraderName 要询问是否继续孵化的 upgrader 名称
+     */
+    public needUpgraderRespawn(upgraderName: string): boolean {
+        if (upgraderName === `${this.name} upgrader1`) this.planCreep()
+
+        return creepApi.has(upgraderName)
     }
 
     /**

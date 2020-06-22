@@ -35,7 +35,7 @@ export default function creepNumberListener(): void {
         const creepWork = roles[creepConfig.role](creepConfig.data)
 
         // 如果有 isNeed 阶段并且该阶段返回 false 则遗弃该 creep
-        if (creepWork.isNeed && !creepWork.isNeed(Game.rooms[creepConfig.spawnRoom])) {
+        if (creepWork.isNeed && !creepWork.isNeed(Game.rooms[creepConfig.spawnRoom], name)) {
             creepApi.remove(name)
             delete Memory.creeps[name]
             return

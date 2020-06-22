@@ -185,18 +185,7 @@ const roles: {
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      */
     upgrader: (data: WorkerData): ICreepConfig => ({
-        isNeed: room => {
-            const source = Game.getObjectById(data.sourceId)
-            if (!source) {
-                console.log(`[生成挂起] ${room.name} upgrader 中的 ${data.sourceId} 不是一个有效的能量来源`)
-                return false
-            }
-
-            // 八级时只有降级倒计时低于 100000 时才会生成
-            if (room.controller.level === 8 && room.controller.ticksToDowngrade > 100000) return false
-
-            return true
-        },
+        isNeed: (room, creepName) => room.needUpgraderRespawn(creepName),
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
             creep.getEngryFrom(Game.getObjectById(data.sourceId))
