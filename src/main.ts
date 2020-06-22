@@ -1,9 +1,9 @@
 import mountWork from './mount'
-import { doing, stateScanner } from './utils'
+import { doing, stateScanner, generatePixel } from './utils'
 import creepNumberListener from './creepController'
 
 module.exports.loop = function (): void {
-    // console.log(`-------------------------- [${Game.time}] ----`)
+    // console.log(`-------------------------- [${Game.time}] -------------------------- `)
     
     // 挂载拓展
     mountWork()
@@ -22,6 +22,9 @@ module.exports.loop = function (): void {
 
     // 所有建筑工地工作
     if (!(Game.time % 100)) doing(Game.constructionSites)
+
+    // 搓 pixel
+    generatePixel()
 
     // 统计全局资源使用
     stateScanner()

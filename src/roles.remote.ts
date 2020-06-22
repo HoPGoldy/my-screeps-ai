@@ -1,4 +1,4 @@
-import { DEFAULT_FLAG_NAME, PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from './setting'
+import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from './setting'
 import { calcBodyPart } from './utils'
 
 /**

@@ -1684,6 +1684,11 @@ interface CPU {
      * Player code execution stops immediately.
      */
     halt?(): never;
+
+    /**
+     * 生成 pixel 资源
+     */
+    generatePixel(): OK | ERR_NOT_ENOUGH_RESOURCES
 }
 
 interface HeapStatistics {
