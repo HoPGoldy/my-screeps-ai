@@ -239,7 +239,7 @@ class TowerExtension extends StructureTower {
         const defenderName = `${this.room.name} defender`
         const defender = Game.creeps[defenderName]
 
-        if (defender) {
+        if (defender && !defender.spawning) {
             // 有防御单位并且掉血了就进行治疗
             if (defender.hits < defender.hitsMax) {
                 this.heal(defender)

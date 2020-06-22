@@ -323,6 +323,7 @@ interface Creep {
     healTo(creep: Creep): void
     getFlag(flagName: string): Flag|null
     getAmount(resourceType: ResourceConstant, source: StructureWithStore, target: StructureWithStore): number
+    steadyWall(): OK | ERR_NOT_FOUND
 }
 
 /**

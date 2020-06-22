@@ -529,3 +529,6 @@ export const DEAL_RATIO = {
     // 买单的最低价格
     MIN: 0.5
 }
+
+// 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
+export const minWallHits = 8000
