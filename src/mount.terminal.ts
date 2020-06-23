@@ -70,6 +70,7 @@ export default class TerminalExtension extends StructureTerminal {
      * 
      * @returns ERR_NOT_ENOUGH_RESOURCES power 的资源不足
      * @returns ERR_NAME_EXISTS 房间内已经存在 shareTask
+     * @returns ERR_NOT_FOUND 未找到有效的目标房间
      */
     public balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND {
         // 已经有共享任务了也不会执行
@@ -80,29 +81,32 @@ export default class TerminalExtension extends StructureTerminal {
         // power 足够才能共享
         if (this.store[RESOURCE_POWER] < SHARE_LIMIE) return ERR_NOT_ENOUGH_RESOURCES
 
-        const targetRoomInfo = Object.values(Game.rooms)
-            // 统计出所有符合条件的目标房间
-            .map(room => {
-                if (!room.terminal) return { room: room.name, number: 0 }
-                // power 的数量
-                const number = room.terminal.store[RESOURCE_POWER]
+        if (!Memory.psRooms || Memory.psRooms.length <= 0) return ERR_NOT_FOUND
+        
+        // 找到 power 数量最少的已启用 ps 房间的信息
+        const targetRoomInfo = Memory.psRooms
+            // 统计出所有目标房间的 power 数量
+            .map(roomName => {
+                const room = Game.rooms[roomName]
+                // 无法正常接收的不参与计算
+                if (!room || !room.terminal) return { room: room.name, number: null }
 
-                if (room.terminal && number > 0 && number < SHARE_LIMIE) return { room: room.name, number }
-                else return { room: room.name, number: 0 }
+                return {
+                    room: room.name,
+                    number: room.terminal.store[RESOURCE_POWER]
+                }
             })
+            // 移除掉所有不参与计算的房间
+            .filter(info => info.number !== null)
             // 找到 power 数量最小的房间
             .reduce((prev, next) => {
-                // 等于 0 说明是被上面 map 筛选掉的房间
-                if (prev.number === 0) return next
-                if (next.number === 0) return prev
-
                 if (prev.number > next.number) return next
                 else return prev
             })
         
         // 添加共享任务
-        if (targetRoomInfo.number <= 0) return ERR_NOT_FOUND
-        else this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
+        if (!targetRoomInfo || !targetRoomInfo.room) return ERR_NOT_FOUND
+        this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
 
         return OK
     }
