@@ -106,6 +106,37 @@ const funcAlias = [
     },
     // 移除过期旗帜
     { alias: 'clearflag', exec: clearFlag },
+    // 查看当前启用的 powerSpawn 工作状态
+    {
+        alias: 'ps',
+        exec: function(): string {
+            if (!Memory.psRooms || Memory.psRooms.length <= 0) return `没有正在工作的 powerSpawn，在 powerSpawn 对象实例上执行 .on() 方法来进行激活。`
+            // 下面遍历是会把正常的房间名放在这里面
+            const workingPowerSpawn = []
+
+            // 遍历保存的所有房间
+            const stats = Memory.psRooms.map(roomName => {
+                const room = Game.rooms[roomName]
+                if (!room || !room.powerSpawn) return `[${roomName}] 无法访问该房间或该房间中的 powerSpawn，已移除。请重新尝试对该 powerSpawn 执行 .on()`
+                workingPowerSpawn.push(roomName)
+
+                let roomsStats: string[] = []
+                // 生成状态
+                const working = room.powerSpawn.store[RESOURCE_POWER] > 1 && room.powerSpawn.store[RESOURCE_ENERGY] > 50
+                const stats = working ? colorful('工作中', 'green') : colorful('等待资源中', 'red')
+                // 统计 powerSpawn、storage、terminal 的状态
+                roomsStats.push(`[${roomName}] ${stats} POWER: ${room.powerSpawn.store[RESOURCE_POWER]}/${POWER_SPAWN_POWER_CAPACITY} ENERGY:  ${room.powerSpawn.store[RESOURCE_ENERGY]}/${POWER_SPAWN_ENERGY_CAPACITY}`)
+                roomsStats.push(room.storage ? `Storage 中 energy: ${room.storage.store[RESOURCE_ENERGY]}` : `无法识别 Storage`)
+                roomsStats.push(room.terminal ? `Terminal 中 power: ${room.terminal.store[RESOURCE_POWER]}` : `无法识别 Terminal`)
+
+                return roomsStats.join(' || ')
+            }).join('\n')
+
+            // 更新可用的房间名
+            Memory.psRooms = workingPowerSpawn
+            return stats
+        }
+    },
     // 统计当前所有房间的存储状态
     {
         alias: 'storage',
@@ -321,7 +352,7 @@ export const globalExtension = {
     hail(content: string = '', toPublic: boolean = true): string {
         Object.values(Game.creeps).forEach(creep => creep.say(`${content}!`, toPublic))
 
-        return 'yeah!'
+        return content ? content : 'yeah!'
     },
 
     /**

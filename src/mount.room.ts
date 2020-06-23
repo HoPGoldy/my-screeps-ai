@@ -721,24 +721,6 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 暂停 PowerSpawn 工作
-     */
-    private pauseProceesPower(): string {
-        if (!this.memory.powerSpawn) this.memory.powerSpawn = { }
-        this.memory.powerSpawn.pause = true
-        return `[${this.name} PowerSpawn] 已暂停process power`
-    }
-
-    /**
-     * 重启 PowerSpawn 工作
-     */
-    private resumeProcessPower(): string {
-        if (!this.memory.powerSpawn) this.memory.powerSpawn = { }
-        delete this.memory.powerSpawn.pause
-        return `[${this.name} PowerSpawn] 已恢复 process power`
-    }
-
-    /**
      * 用户操作：初始化 lab 集群
      */
     public linit(): string { return this.initLab() }
@@ -752,16 +734,6 @@ class RoomExtension extends Room {
      * 用户操作：重启 lab 集群
      */
     public lon(): string { return this.resumeLab() }
-
-    /**
-     * 用户操作：暂停 PowerSpawn 工作
-     */
-    public poff(): string { return this.pauseProceesPower() }
-
-    /**
-     * 用户操作：重启 PowerSpawn 工作
-     */
-    public pon(): string { return this.resumeProcessPower() }
 
     /**
      * 切换为战争状态
@@ -1267,14 +1239,6 @@ class RoomExtension extends Room {
             {
                 title: '查看 creep 发布帮助',
                 functionName: 'shelp'
-            },
-            {
-                title: '暂停 powerSpawn 工作',
-                functionName: 'poff'
-            },
-            {
-                title: '恢复 powerSpawn 工作',
-                functionName: 'pon'
             }
         ])
     }

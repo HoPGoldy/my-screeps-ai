@@ -923,37 +923,89 @@ class NukerExtension extends StructureNuker {
  */
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
-        if (Game.time % powerSettings.processInterval) return
-        // 注册自己的 id 来让房间基础服务可以发现自己
-        if (!this.room.memory.powerSpawnId) this.room.memory.powerSpawnId = this.id
-        // 兜底
-        if (!this.room.memory.powerSpawn) this.room.memory.powerSpawn = {}
-        if (this.room.memory.powerSpawn.pause) return
+        // ps 未启用或者被暂停了就跳过
+        if (this.room.memory.pausePS) return
 
         // 处理 power
         this.processPower()
 
-        // powerSpawn 内 power 不足且 terminal 内 energy 充足
-        if (this.store[RESOURCE_POWER] < 10 && this.room.terminal && this.room.terminal.store.getUsedCapacity(RESOURCE_POWER) > 0) {
+        // 剩余 power 不足且 terminal 内 power 充足
+        if (!this.keepResource(RESOURCE_POWER, 10, this.room.terminal, 0)) return
+        // 剩余energy 不足且 storage 内 energy 充足
+        if (!this.keepResource(RESOURCE_ENERGY, 1000, this.room.storage, powerSettings.processEnergyLimit)) return
+    }
+
+    /**
+     * 将自身存储的资源维持在指定容量之上
+     * 
+     * @param resource 要检查的资源
+     * @param amount 当资源余量少于该值时会发布搬运任务
+     * @param source 资源不足时从哪里获取资源
+     * @param sourceLimit 资源来源建筑中剩余目标资源最小值（低于该值将不会发布资源获取任务）
+     * @returns 该资源是否足够
+     */
+    private keepResource(resource: ResourceConstant, amount: number, source: StructureStorage | StructureTerminal, sourceLimit: number): boolean {
+        if (this.store[resource] >= amount) return true
+
+        // 检查来源是否符合规则，符合则发布资源转移任务
+        if (source && source.store.getUsedCapacity(resource) > sourceLimit) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
                 id: this.id,
-                resourceType: RESOURCE_POWER
-            })
-
-            return
+                resourceType: resource
+            })    
         }
 
-        // powerSpawn 内 energy 不足且 storage 内 energy 充足
-        if (this.store[RESOURCE_ENERGY] < 1000 && this.room.storage && this.room.storage.store.getUsedCapacity(RESOURCE_ENERGY) > powerSettings.processEnergyLimit) {
-            this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.FILL_POWERSPAWN,
-                id: this.id,
-                resourceType: RESOURCE_ENERGY
-            })
+        return false
+    }
 
-            return
+    // 建造完成时注册自己的 id 到房间
+    public onBuildComplete(): void {
+        this.room.memory.powerSpawnId = this.id
+    }
+
+    /**
+     * 用户操作 - 启动 powerSpawn
+     */
+    public on(): string {
+        delete this.room.memory.pausePS
+
+        // 把自己注册到全局的启用 ps 列表
+        if (!Memory.psRooms) Memory.psRooms = []
+        Memory.psRooms = _.uniq([ ...Memory.psRooms, this.room.name])
+
+        return `[${this.room.name} PowerSpawn] 已恢复 process power`
+    }
+
+    /**
+     * 用户操作 - 关闭 powerSpawn
+     */
+    public off(): string {
+        this.room.memory.pausePS = true
+        
+        // 把自己从全局启用 ps 列表中移除
+        if (Memory.psRooms) {
+            Memory.psRooms = _.difference(Memory.psRooms, [ this.room.name ])
+            if (Memory.psRooms.length <= 0) delete Memory.psRooms
         }
+
+        return `[${this.room.name} PowerSpawn] 已暂停 process power`
+    }
+
+    /**
+     * 用户操作 - 帮助信息
+     */
+    public help(): string {
+        return createHelp([
+            {
+                title: '启动/恢复 process power',
+                functionName: 'on'
+            },
+            {
+                title: '暂停 process power',
+                functionName: 'off'
+            }
+        ])
     }
 }
 
