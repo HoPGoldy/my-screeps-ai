@@ -91,6 +91,11 @@ type WarRoleConstant =
     'apocalypse' |
     'defender'
 
+// creep 名字生成器集合
+type CreepNameGenerator = {
+    [role in CreepRoleConstant]?: (room: string, index?: number, ...args: any[]) => string
+}
+    
 /**
  * creep 工作逻辑集合
  * 包含了每个角色应该做的工作
