@@ -231,8 +231,10 @@ interface pbAttackerData {
 interface WarUnitData {
     // 要攻击的旗帜名
     targetFlagName: string
+    // 其治疗者名称，战斗单位会尽量保持该单位和自己相邻
+    healerName?: string
     // 待命位置旗帜名
-    // standByFlagName: string/
+    // standByFlagName: string
     // 是否持续孵化
     keepSpawn: boolean
 }
@@ -324,7 +326,7 @@ interface Creep {
     attackFlag(flagName: string): boolean
     rangedAttackFlag(flagName: string): boolean
     smass(): void
-    dismantleFlag(flagName: string): boolean
+    dismantleFlag(flagName: string, healerName?: string): boolean
     healTo(creep: Creep): void
     getFlag(flagName: string): Flag|null
     getAmount(resourceType: ResourceConstant, source: StructureWithStore, target: StructureWithStore): number
