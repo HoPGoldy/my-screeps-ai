@@ -125,9 +125,9 @@ const funcAlias = [
                 const working = room.powerSpawn.store[RESOURCE_POWER] > 1 && room.powerSpawn.store[RESOURCE_ENERGY] > 50
                 const stats = working ? colorful('工作中', 'green') : colorful('等待资源中', 'red')
                 // 统计 powerSpawn、storage、terminal 的状态
-                roomsStats.push(`[${roomName}] ${stats} POWER: ${room.powerSpawn.store[RESOURCE_POWER]}/${POWER_SPAWN_POWER_CAPACITY} ENERGY:  ${room.powerSpawn.store[RESOURCE_ENERGY]}/${POWER_SPAWN_ENERGY_CAPACITY}`)
-                roomsStats.push(room.storage ? `Storage 中 energy: ${room.storage.store[RESOURCE_ENERGY]}` : `无法识别 Storage`)
-                roomsStats.push(room.terminal ? `Terminal 中 power: ${room.terminal.store[RESOURCE_POWER]}` : `无法识别 Terminal`)
+                roomsStats.push(`[${roomName}] ${stats} POWER: ${room.powerSpawn.store[RESOURCE_POWER]}/${POWER_SPAWN_POWER_CAPACITY} ENERGY: ${room.powerSpawn.store[RESOURCE_ENERGY]}/${POWER_SPAWN_ENERGY_CAPACITY}`)
+                roomsStats.push(room.storage ? `Storage energy: ${room.storage.store[RESOURCE_ENERGY]}` : `无法识别 Storage`)
+                roomsStats.push(room.terminal ? `Terminal power: ${room.terminal.store[RESOURCE_POWER]}` : `无法识别 Terminal`)
 
                 return roomsStats.join(' || ')
             }).join('\n')

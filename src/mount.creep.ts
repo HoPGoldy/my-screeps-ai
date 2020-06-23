@@ -736,7 +736,7 @@ class CreepExtension extends Creep {
         // 如果 creep 不在房间里 则一直向旗帜移动
         if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
             // 如果 healer 存在则只会在 healer 相邻且可以移动时才进行移动
-            if (this.canMoveWith(healer)) return true
+            if (!this.canMoveWith(healer)) return true
             this.farMoveTo(attackFlag.pos)
             return true
         }
@@ -783,8 +783,9 @@ class CreepExtension extends Creep {
         const healResult = this.heal(target)
         if (healResult == ERR_NOT_IN_RANGE) this.rangedHeal(target)
 
-        // 一直朝着目标移动
-        this.moveTo(creep)
+        // 一直朝着目标移动，在友方领土上移动时会无视 creep
+        if (!this.room.controller || !this.room.controller.owner || this.room.controller.owner.username !== this.owner.username) this.moveTo(creep)
+        else this.goTo(creep.pos)
         
         // 检查自己是不是在骑墙
         if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {

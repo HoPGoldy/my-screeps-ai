@@ -42,6 +42,11 @@ const roles: {
      */
     doctor: (data: HealUnitData): ICreepConfig => ({
         isNeed: () => data.keepSpawn,
+        prepare: creep => {
+            // 治疗单位不允许发起对穿
+            if (!creep.memory.disableCross) creep.memory.disableCross = true
+            return true
+        },
         target: creep => {
             const target = Game.creeps[data.creepName]
             if (!target) {
@@ -64,7 +69,12 @@ const roles: {
      */
     boostDoctor: (data: HealUnitData): ICreepConfig => ({
         isNeed: () => data.keepSpawn,
-        ...boostPrepare(),
+        prepare: creep => {
+            // 治疗单位不允许发起对穿
+            if (!creep.memory.disableCross) creep.memory.disableCross = true
+
+            return boostPrepare().prepare(creep)
+        },
         target: creep => {
             const target = Game.creeps[data.creepName]
             if (!target) {
