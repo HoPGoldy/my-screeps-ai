@@ -355,7 +355,7 @@ class TowerExtension extends StructureTower {
         // 发现敌人则攻击并设置状态为普通防御
         this.fire(enemys)
         this.room.memory.defenseMode = 'defense'
-        console.log(`[${this.room.name}] 已启动防御模式`)
+        // console.log(`[${this.room.name}] 已启动防御模式`)
         return true
     }
 
@@ -974,7 +974,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
         if (!Memory.psRooms) Memory.psRooms = []
         Memory.psRooms = _.uniq([ ...Memory.psRooms, this.room.name])
 
-        return `[${this.room.name} PowerSpawn] 已恢复 process power`
+        return `[${this.room.name} PowerSpawn] 已启动 process power`
     }
 
     /**
