@@ -46,9 +46,20 @@ export function doing(hashMap: object, showCpu: string = ''): void {
  * 
  * @param content 要添加颜色的文本
  * @param colorName 要添加的颜色常量字符串
+ * @param bolder 是否加粗
  */
-export function colorful(content: string, colorName: Colors): string {
-    return `<text style="color: ${colors[colorName]}">${content}</text>`
+export function colorful(content: string, colorName: Colors, bolder: boolean = false): string {
+    const bolderStyle = bolder ? 'font-weight: bolder;' : ''
+    return `<text style="color: ${colors[colorName]}; ${bolderStyle}">${content}</text>`
+}
+
+/**
+ * 生成控制台链接
+ * @param content 要显示的内容
+ * @param url 要跳转到的 url
+ */
+export function createLink(content: string, url: string): string {
+    return `<a href="${url}" target="_blank">${content}</a>`
 }
 
 /**
@@ -120,19 +131,30 @@ export function stateScanner(): void {
     Memory.stats.credit = Game.market.credits
 }
 
+const projectTitle = [
+    String.raw`        __  __      ____  ______      __    __         _____                               `,
+    String.raw`       / / / /___  / __ \/ ____/___  / /___/ /_  __   / ___/_____________  ___  ____  _____`,
+    String.raw`      / /_/ / __ \/ /_/ / / __/ __ \/ / __  / / / /   \__ \/ ___/ ___/ _ \/ _ \/ __ \/ ___/`,
+    String.raw`     / __  / /_/ / ____/ /_/ / /_/ / / /_/ / /_/ /   ___/ / /__/ /  /  __/  __/ /_/ (__  ) `,
+    String.raw`    /_/ /_/\____/_/    \____/\____/_/\__,_/\__, /   /____/\___/_/   \___/\___/ .___/____/  `,
+    String.raw`                                          /____/                            /_/              openSource at github - ${createLink('hopgoldy/screeps-ai', 'https://github.com/HoPGoldy/my-screeps-ai')}`
+]
+
 /**
  * 全局帮助文档
  */
 export const globalHelp = [
-    colorful('HoPGoldy Screeps', 'blue'),
-    colorful('半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息（如：Game.rooms.W1N1.help()）。在 Link, Factory, Terminal, PowerSpawn, Observer 也包含对应的 help 方法。以下为全局方法：', 'green'),
-    '——————————',
+    ...projectTitle.map(line => colorful(line, 'blue', true)),
+
+    `\n半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息 (如：${colorful('Game.rooms.W1N1.help', 'yellow')}())。在 ${colorful('Link, Factory, Terminal, PowerSpawn, Observer', 'yellow')} 对象实例上也包含对应的 help 方法。`,
+
+    '\n—— [全局指令] ————————',
     createConst('查看资源常量', 'res'),
     createConst('移除所有禁止通行点位', 'clearpos'),
     createConst('查看商品生产线状态', 'comm'),
     createConst('列出所有路径缓存', 'route'),
     createConst('向指定旗帜发射核弹（需二次确认）', 'nuker'),
-    '——————————',
+    '\n—— [全局方法] ————————',
     createHelp([
         {
             title: '获取游戏对象（Game.getObjectById 别名）',
@@ -157,7 +179,7 @@ export const globalHelp = [
             functionName: 'seeres'
         }
     ]),
-    '——————————',
+    '—— [全局模块] ————————',
     createHelp([
         {
             title: '白名单',
