@@ -612,11 +612,13 @@ class CreepControl extends Room {
         if (this.memory.boost.state !== 'waitBoost') return `无法发布，Boost 材料未准备就绪`
 
         const dismantlerName = `${this.name} dismantler ${Game.time}`
+        const healerName = `${this.name} doctor ${Game.time}`
         creepApi.add(dismantlerName, 'boostDismantler', {
             targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
+            healerName,
             keepSpawn
         }, this.name)
-        creepApi.add(`${this.name} doctor ${Game.time}`, 'boostDoctor', {
+        creepApi.add(healerName, 'boostDoctor', {
             creepName: dismantlerName,
             keepSpawn
         }, this.name)

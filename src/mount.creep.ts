@@ -726,13 +726,17 @@ class CreepExtension extends Creep {
      * 
      * @param flagName 要进攻的旗帜名称
      */
-    public dismantleFlag(flagName: string): boolean {
+    public dismantleFlag(flagName: string, healerName: string = ''): boolean {
         // 获取旗帜
         let attackFlag = this.getFlag(flagName)
         if (!attackFlag) return false
+        // 治疗单位
+        const healer = Game.creeps[healerName]
 
         // 如果 creep 不在房间里 则一直向旗帜移动
         if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
+            // 如果 healer 存在则只会在 healer 相邻且可以移动时才进行移动
+            if (this.canMoveWith(healer)) return true
             this.farMoveTo(attackFlag.pos)
             return true
         }
@@ -741,8 +745,21 @@ class CreepExtension extends Creep {
         const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
         if (structures.length == 0) this.say('干谁?')
 
-        this.moveTo(attackFlag)
+        if (this.canMoveWith(healer)) this.moveTo(attackFlag)
         this.dismantle(structures[0])
+    }
+
+    /**
+     * 是否可以和指定 Creep 一起移动
+     * 并不会执行移动，本方法只是进行查询，返回 true 时说明当前两者状态可以一起移动
+     * 当目标 creep 不存在时本方法将永远返回 false
+     * 
+     * @param creep 要一起移动的 creep
+     * @returns 可以移动时返回 true，否则返回 false
+     */
+    private canMoveWith(creep: Creep): boolean {
+        if (creep && this.pos.isNearTo(creep) && creep.fatigue === 0) return true
+        return false
     }
 
     /**

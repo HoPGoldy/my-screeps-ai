@@ -87,7 +87,7 @@ const roles: {
      */
     dismantler: (data: WarUnitData): ICreepConfig => ({
         ...battleBase(data.targetFlagName, data.keepSpawn),
-        target: creep => creep.dismantleFlag(data.targetFlagName),
+        target: creep => creep.dismantleFlag(data.targetFlagName, data.healerName),
         bodys: 'dismantler'
     }),
 
@@ -103,7 +103,7 @@ const roles: {
     boostDismantler: (data: WarUnitData): ICreepConfig => ({
         ...battleBase(data.targetFlagName, data.keepSpawn),
         ...boostPrepare(),
-        target: creep => creep.dismantleFlag(data.targetFlagName),
+        target: creep => creep.dismantleFlag(data.targetFlagName, data.healerName),
         bodys: calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
     }),
 
