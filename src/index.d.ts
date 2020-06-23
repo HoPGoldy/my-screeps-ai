@@ -706,11 +706,8 @@ interface RoomMemory {
      */
     boost?: BoostTask
 
-    // powerSpawn 内存
-    powerSpawn: {
-        // 是否暂停处理
-        pause?: boolean
-    }
+    // powerSpawn 是否暂停
+    pausePS?: boolean
 }
 
 // 所有房间物流任务
@@ -885,6 +882,9 @@ interface Memory {
             }
         }
     }
+
+    // 启动 powerSpawn 的房间名列表
+    psRooms: string[]
 }
 
 interface FlagMemory {

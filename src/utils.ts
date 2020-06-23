@@ -151,6 +151,7 @@ export const globalHelp = [
     '\n—— [全局指令] ————————',
     createConst('查看资源常量', 'res'),
     createConst('移除所有禁止通行点位', 'clearpos'),
+    createConst('查看所有 powerSpawn 的工作状态', 'ps'),
     createConst('查看商品生产线状态', 'comm'),
     createConst('列出所有路径缓存', 'route'),
     createConst('向指定旗帜发射核弹（需二次确认）', 'nuker'),
@@ -177,6 +178,14 @@ export const globalHelp = [
                 { name: 'resourceName', desc: '要查询的资源名' }
             ],
             functionName: 'seeres'
+        },
+        {
+            title: '欢呼',
+            params: [
+                { name: 'content', desc: '欢呼内容' },
+                { name: 'toPublic', desc: '[可选] 其他人是否可见，默认为 true' },
+            ],
+            functionName: 'hail'
         }
     ]),
     '—— [全局模块] ————————',
