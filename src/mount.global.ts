@@ -114,22 +114,13 @@ const funcAlias = [
             // 下面遍历是会把正常的房间名放在这里面
             const workingPowerSpawn = []
 
-            // 遍历保存的所有房间
+            // 遍历保存的所有房间，统计 ps 状态
             const stats = Memory.psRooms.map(roomName => {
                 const room = Game.rooms[roomName]
                 if (!room || !room.powerSpawn) return `[${roomName}] 无法访问该房间或该房间中的 powerSpawn，已移除。请重新尝试对该 powerSpawn 执行 .on()`
                 workingPowerSpawn.push(roomName)
 
-                let roomsStats: string[] = []
-                // 生成状态
-                const working = room.powerSpawn.store[RESOURCE_POWER] > 1 && room.powerSpawn.store[RESOURCE_ENERGY] > 50
-                const stats = working ? colorful('工作中', 'green') : colorful('等待资源中', 'red')
-                // 统计 powerSpawn、storage、terminal 的状态
-                roomsStats.push(`[${roomName}] ${stats} POWER: ${room.powerSpawn.store[RESOURCE_POWER]}/${POWER_SPAWN_POWER_CAPACITY} ENERGY: ${room.powerSpawn.store[RESOURCE_ENERGY]}/${POWER_SPAWN_ENERGY_CAPACITY}`)
-                roomsStats.push(room.storage ? `Storage energy: ${room.storage.store[RESOURCE_ENERGY]}` : `无法识别 Storage`)
-                roomsStats.push(room.terminal ? `Terminal power: ${room.terminal.store[RESOURCE_POWER]}` : `无法识别 Terminal`)
-
-                return roomsStats.join(' || ')
+                return room.powerSpawn.stats()
             }).join('\n')
 
             // 更新可用的房间名

@@ -303,6 +303,11 @@ interface StructureTerminal {
     balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND
 }
 
+interface StructurePowerSpawn {
+    // 查看状态
+    stats(): string
+}
+
 /**
  * Creep 拓展
  * 来自于 mount.creep.ts
