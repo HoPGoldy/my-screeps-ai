@@ -993,17 +993,37 @@ class PowerSpawnExtension extends StructurePowerSpawn {
     }
 
     /**
+     * 用户操作 - 查看 ps 运行状态
+     */
+    public stats(): string {
+        let roomsStats: string[] = []
+        // 生成状态
+        const working = this.store[RESOURCE_POWER] > 1 && this.store[RESOURCE_ENERGY] > 50
+        const stats = working ? colorful('工作中', 'green') : colorful('等待资源中', 'red')
+        // 统计 powerSpawn、storage、terminal 的状态
+        roomsStats.push(`[${this.room.name}] ${stats} POWER: ${this.store[RESOURCE_POWER]}/${POWER_SPAWN_POWER_CAPACITY} ENERGY: ${this.store[RESOURCE_ENERGY]}/${POWER_SPAWN_ENERGY_CAPACITY}`)
+        roomsStats.push(this.room.storage ? `Storage energy: ${this.room.storage.store[RESOURCE_ENERGY]}` : `Storage X`)
+        roomsStats.push(this.room.terminal ? `Terminal power: ${this.room.terminal.store[RESOURCE_POWER]}` : `Terminal X`)
+
+        return roomsStats.join(' || ')
+    }
+
+    /**
      * 用户操作 - 帮助信息
      */
     public help(): string {
         return createHelp([
             {
-                title: '启动/恢复 process power',
+                title: '启动/恢复处理 power',
                 functionName: 'on'
             },
             {
-                title: '暂停 process power',
+                title: '暂停处理 power',
                 functionName: 'off'
+            },
+            {
+                title: '查看当前状态',
+                functionName: 'stats'
             }
         ])
     }
