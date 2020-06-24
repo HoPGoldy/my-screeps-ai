@@ -92,7 +92,8 @@ class SpawnExtension extends StructureSpawn {
              */
             if (this.spawning.needTime - this.spawning.remainingTime == 1) {
                 this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION }, 1)
-                this.room.addPowerTask(PWR_OPERATE_EXTENSION, 1)
+                // 剩余能量掉至一半以下再发布 power 任务
+                if (this.room.energyAvailable / this.room.energyCapacityAvailable <= 0.5) this.room.addPowerTask(PWR_OPERATE_EXTENSION, 1)
             }
             return
         }
@@ -874,31 +875,42 @@ class ControllerExtension extends StructureController {
 class NukerExtension extends StructureNuker {
     public work(): void {
         this.stateScanner()
-        // 注册自己的 id 来让房间基础服务可以发现自己
-        if (!this.room.memory.nukerId) this.room.memory.nukerId = this.id
 
         if (Game.time % 30) return
 
-        // G 矿不满并且 terminal 中由 G 矿则开始填充 G
-        if (this.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY && this.room.terminal && this.room.terminal.store[RESOURCE_GHODIUM] > 0) {
-            this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.FILL_NUKER,
-                id: this.id,
-                resourceType: RESOURCE_GHODIUM
-            })
-
-            return
-        }
+        // G 矿不满并且 terminal 中有 G 矿则开始填充 G
+        if (!this.keepResource(RESOURCE_GHODIUM, NUKER_GHODIUM_CAPACITY, this.room.terminal, 0)) return 
         // 能量不满并且 storage 能量大于 300k 则开始填充能量
-        if (this.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY && this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= 300000) {
+        if (!this.keepResource(RESOURCE_ENERGY, NUKER_ENERGY_CAPACITY, this.room.storage, 300000)) return
+    }
+
+    // 在房间基础服务中注册自己
+    public onBuildComplete(): void {
+        this.room.memory.nukerId = this.id
+    }
+
+    /**
+     * 将自身存储的资源维持在指定容量之上
+     * 
+     * @param resource 要检查的资源
+     * @param amount 当资源余量少于该值时会发布搬运任务
+     * @param source 资源不足时从哪里获取资源
+     * @param sourceLimit 资源来源建筑中剩余目标资源最小值（低于该值将不会发布资源获取任务）
+     * @returns 该资源是否足够
+     */
+    private keepResource(resource: ResourceConstant, amount: number, source: StructureStorage | StructureTerminal, sourceLimit: number): boolean {
+        if (this.store[resource] >= amount) return true
+
+        // 检查来源是否符合规则，符合则发布资源转移任务
+        if (source && source.store.getUsedCapacity(resource) > sourceLimit) {
             this.room.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
-                resourceType: RESOURCE_ENERGY
-            })
-
-            return
+                resourceType: resource
+            })    
         }
+
+        return false
     }
 
     /**
@@ -916,10 +928,10 @@ class NukerExtension extends StructureNuker {
 
 /**
  * PowerSpawn 拓展
- * ps 的主要任务就是 processPower，一旦 ps 建立完成，他会每隔一段时间对自己存储进行检查
- * 一旦发现自己资源不足，就会发起向自己运输资源的物流任务。
+ * ps 的主要任务就是 processPower，一旦 ps 启动之后，他会每隔一段时间对自己存储进行检查
+ * 发现自己资源不足，就会发起向自己运输资源的物流任务。
  * 
- * 可以随时通过房间上的指定方法来暂停/重启 ps，详见 Room.help()
+ * 可以随时通过原型上的指定方法来暂停/重启 ps，详见 .help()
  */
 class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
