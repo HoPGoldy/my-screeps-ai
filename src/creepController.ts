@@ -101,6 +101,24 @@ export const creepApi = {
     },
 
     /**
+     * 危险操作 - 批量移除 creep 及其配置项
+     * 
+     * @param creepNamePart creep 名称关键字
+     */
+    batchRemove(creepNamePart: string): OK | ERR_INVALID_ARGS {
+        if (creepNamePart) return ERR_INVALID_ARGS
+
+        Object.keys(Memory.creepConfigs).map(configName => {
+            if (configName.includes(creepNamePart)) {
+                delete Memory.creepConfigs[configName]
+               Game.creeps[configName] && Game.creeps[configName].suicide()
+            }
+        })
+
+        return OK
+    },
+
+    /**
      * 修改配置
      * 修改 creep 的局部配置
      * 

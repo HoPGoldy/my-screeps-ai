@@ -31,4 +31,5 @@ function initStorage() {
     if (!Memory.rooms) Memory.rooms = {}
     if (!Memory.stats) Memory.stats = { rooms: {} }
     if (!global.routeCache) global.routeCache = {}
+    if (!global.resourcePrice) global.resourcePrice = {}
 }
