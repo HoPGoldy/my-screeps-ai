@@ -25,24 +25,30 @@ import {
 import LabExtension from './mount.lab'
 import FactoryExtension from './mount.factory'
 import TerminalExtension from './mount.terminal'
-import { StringRepresentable } from 'lodash'
 
 // 挂载拓展到建筑原型
 export default function () {
     mountMemory()
 
-    _.assign(StructureSpawn.prototype, SpawnExtension.prototype)
-    _.assign(StructureTower.prototype, TowerExtension.prototype)
-    _.assign(StructureLink.prototype, LinkExtension.prototype)
-    _.assign(StructureFactory.prototype, FactoryExtension.prototype)
-    _.assign(StructureTerminal.prototype, TerminalExtension.prototype)
-    _.assign(StructureExtractor.prototype, ExtractorExtension.prototype)
-    _.assign(StructureStorage.prototype, StorageExtension.prototype)
-    _.assign(StructureLab.prototype, LabExtension.prototype)
-    _.assign(StructureNuker.prototype, NukerExtension.prototype)
-    _.assign(StructurePowerSpawn.prototype, PowerSpawnExtension.prototype)
-    _.assign(StructureObserver.prototype, ObserverExtension.prototype)   
-    _.assign(StructureController.prototype, ControllerExtension.prototype)
+    // 拓展到原型的对应关系
+    const assignMap = [
+        [ Structure, StructureExtension ],
+        [ StructureController, ControllerExtension ],
+        [ StructureSpawn, SpawnExtension ],
+        [ StructureTower, TowerExtension ],
+        [ StructureLink, LinkExtension ],
+        [ StructureFactory, FactoryExtension ],
+        [ StructureTerminal, TerminalExtension ],
+        [ StructureExtractor, ExtractorExtension ],
+        [ StructureStorage, StorageExtension ],
+        [ StructureLab, LabExtension ],
+        [ StructureNuker, NukerExtension ],
+        [ StructurePowerSpawn, PowerSpawnExtension ],
+        [ StructureObserver, ObserverExtension ]
+    ]
+
+    // 挂载所有拓展
+    assignMap.forEach(protos => _.assign(protos[0].prototype, protos[1].prototype))
 }
 
 /**
@@ -70,6 +76,13 @@ function mountMemory(): void {
             }
         })
     })
+}
+
+class StructureExtension extends Structure {
+    // 建筑通用的日志方法
+    log(content:string, color: Colors | undefined = undefined, notify: boolean = false): void {
+        this.room.log(content, this.structureType, color, notify)
+    }
 }
 
 /**
@@ -102,7 +115,6 @@ class SpawnExtension extends StructureSpawn {
         if (this.spawning || this.room.memory.spawnList.length == 0) return 
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.room.memory.spawnList[0])
-        // if (this.room.name === 'W8N1') console.log("孵化返回值", spawnResult)
 
         // 生成成功后移除任务
         if (spawnResult === OK) this.room.memory.spawnList.shift()
@@ -117,14 +129,12 @@ class SpawnExtension extends StructureSpawn {
      * @returns Spawn.spawnCreep 的返回值
      */
     private mySpawnCreep(configName): MySpawnReturnCode {
-        // if (this.room.name === 'W8N1') console.log('孵化', configName)
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
         if (!creepConfig) return OK
         // 找不到他的工作逻辑的话也直接移除任务
         const creepWork = roles[creepConfig.role](creepConfig.data)
         if (!creepWork) return OK
-        // if (this.room.name === 'W8N1') console.log(configName, '通过检查')
 
         // 设置 creep 内存
         let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
@@ -140,15 +150,15 @@ class SpawnExtension extends StructureSpawn {
         })
         // 检查是否生成成功
         if (spawnResult == OK) {
-            // console.log(`${creepConfig.spawn} 正在生成 ${configName} ...`)
+            // this.log(`正在生成 ${configName} ...`)
             return OK
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
-            console.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成 ...`)
+            this.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成 ...`)
             return OK
         }
         else {
-            // console.log(`[生成失败] ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
+            // this.log(`生成失败, ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`, 'red')
             return spawnResult
         }
     }
@@ -220,7 +230,7 @@ class TowerExtension extends StructureTower {
 
         // 没有敌人了就返回日常模式
         if (enemys.length <= 0){
-            // console.log(`[${this.room.name}] 威胁解除，返回日常模式`)
+            // this.log('威胁解除，返回日常模式')
             delete this.room.memory.defenseMode
             return
         }
@@ -229,7 +239,7 @@ class TowerExtension extends StructureTower {
         if (this.room.controller.checkEnemyThreat()) {
             // 启动主动防御模式
             this.room.memory.defenseMode = 'active'
-            // console.log(`[${this.room.name}] 已启动主动防御`)
+            // this.log('已启动主动防御')
         }
     }
 
@@ -273,11 +283,11 @@ class TowerExtension extends StructureTower {
      */
     private prepareBoost(defenderName: string): void {
         if (!this.room.memory.boost) {
-            console.log(`[${this.room.name}] 正在准备 boost 主动防御`)
+            this.log('正在准备 boost 主动防御')
             const result = this.room.startWar('DEFENSE')
 
-            if (result === ERR_NOT_FOUND) console.log(`[${this.room.name}] 未找到名为 [${this.room.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`)
-            else if (result === ERR_INVALID_TARGET) console.log(`[${this.room.name}] 旗帜周围的 lab 数量不足，请移动旗帜位置`)
+            if (result === ERR_NOT_FOUND) this.log(`未找到名为 [${this.room.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`, 'yellow')
+            else if (result === ERR_INVALID_TARGET) this.log('旗帜周围的 lab 数量不足，请移动旗帜位置', 'yellow')
 
             return
         }
@@ -287,12 +297,12 @@ class TowerExtension extends StructureTower {
             // 强化准备完成，发布防御单位
             if (this.room.memory.boost.state === 'waitBoost' && !creepApi.has(defenderName)) {
                 const result = creepApi.add(defenderName, 'defender', {}, this.room.name)
-                console.log(`[${this.room.name}] 已发布主动防御单位，返回值：${result}`)
+                this.log(`已发布主动防御单位，返回值：${result}`, 'green')
             }
         }
         // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
         else if (this.room.memory.boost.state !== 'boostClear') {
-            console.log(`[${this.room.name}] 当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
+            this.log(`当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
             this.room.stopWar()
         }
     }
@@ -329,7 +339,7 @@ class TowerExtension extends StructureTower {
                     const repairCreepName = `${this.room.name} repair`
                     if (creepApi.has(`${repairCreepName} 1`)) break
 
-                    console.log(`[${this.room.name}] 墙体被攻击!孵化维修单位`)
+                    this.log(`墙体被攻击!孵化维修单位`, 'yellow')
                     // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
                     const repairerList = this.room.controller.level >= 7 ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8]
                     // 如果没有维修者的话就进行发布
@@ -356,7 +366,7 @@ class TowerExtension extends StructureTower {
         // 发现敌人则攻击并设置状态为普通防御
         this.fire(enemys)
         this.room.memory.defenseMode = 'defense'
-        // console.log(`[${this.room.name}] 已启动防御模式`)
+        // this.log(`已启动防御模式`)
         return true
     }
 
@@ -513,7 +523,7 @@ class LinkExtension extends StructureLink {
 
         // 读配置项
         const linkWorkFunctionName: string = this.room.memory.links[this.id]
-        if (!linkWorkFunctionName) return console.log(`[空闲 link] 请为 ${this.id} 分配角色`)
+        if (!linkWorkFunctionName) return this.log(`请为 ${this.id} 分配角色`, 'yellow')
         
         if (this[linkWorkFunctionName]) this[linkWorkFunctionName]()
     }
@@ -538,7 +548,7 @@ class LinkExtension extends StructureLink {
                 targetId: this.id
             }, this.room.name)
 
-            // console.log(`${this.room.name} harvester${index} 已将目标修改为该 sourceLink`)
+            this.log(`已将 harvester${index} 的目标修改为该 sourceLink`)
         })
 
         return `${this} 已注册为源 link`
@@ -807,7 +817,7 @@ class ControllerExtension extends StructureController {
      * 维持房间运营的 creep 规划
      */
     private planCreep(): void {
-        // console.log('creep 规划运行！等级', this.level)
+        // this.log(`creep 规划运行！等级 ${this.level}`)
 
         switch (this.level) {
             // 添加最基本的 creep
@@ -1076,7 +1086,7 @@ class ObserverExtension extends StructureObserver {
             delete this.room.memory.observer.checkRoomName
             return
         }
-        // console.log("搜索房间", room.name)
+        // this.log(`搜索房间 ${room.name}`)
 
         // 还没插旗的话就继续查找 deposit
         if (memory.depositNumber < memory.depositMax) {
@@ -1090,7 +1100,7 @@ class ObserverExtension extends StructureObserver {
                 
                 // 确认完成，插旗
                 this.newHarvesteTask(deposit)
-                console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`)
+                this.log(`${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`, 'green')
             })
         }
         
@@ -1107,7 +1117,7 @@ class ObserverExtension extends StructureObserver {
     
                 // 确认完成，插旗
                 this.newHarvesteTask(powerBank)
-                console.log(`[${this.room.name} Observer] ${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`)    
+                this.log(`${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`, 'green')  
             })
         }
 
@@ -1175,7 +1185,7 @@ class ObserverExtension extends StructureObserver {
         // 执行视野获取
         const roomName = this.room.memory.observer.watchRooms[this.room.memory.observer.watchIndex]
         const obResult = this.observeRoom(roomName)
-        // console.log("ob 房间", roomName)
+        // this.log(`ob 房间 ${roomName}`)
 
         // 标志该房间视野已经获取，可以进行检查
         if (obResult === OK) this.room.memory.observer.checkRoomName = roomName

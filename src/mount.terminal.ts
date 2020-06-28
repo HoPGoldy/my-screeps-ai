@@ -139,17 +139,14 @@ export default class TerminalExtension extends StructureTerminal {
             // 路费够了就执行转移
             const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.room.controller.owner.username} 的资源共享 - ${this.room.name}`)
             if (sendResult == OK) {
-                // console.log(`${this.room.name} 完成了向 ${task.target} 的资源转移任务 ${task.resourceType} ${task.amount}`)
                 delete this.room.memory.shareTask
                 this.energyCheck()
             }
             else if (sendResult == ERR_INVALID_ARGS) {
-                console.log(`${this.room.name} 中的共享任务参数异常，无法执行传送，已移除`)
+                this.log(`共享任务参数异常，无法执行传送，已移除`, 'yellow')
                 delete this.room.memory.shareTask
             }
-            else {
-                console.log(`${this.room.name} 执行共享任务出错, 错误码：${sendResult}`)
-            }
+            else this.log(`执行共享任务出错, 错误码：${sendResult}`, 'yellow')
         }
         // 如果不足
         else {
@@ -211,7 +208,7 @@ export default class TerminalExtension extends StructureTerminal {
         if (dealResult === OK) {
             const crChange = (targetOrder.type == ORDER_BUY ? '+ ' : '- ') + (amount * targetOrder.price).toString() + ' Cr' 
             const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.resourceType} 单价: ${targetOrder.price}`
-            console.log(`[${this.room.name} terminal] 交易成功! ${introduce} ${crChange}`)
+            this.log(`交易成功! ${introduce} ${crChange}`, 'green')
             delete this.room.memory.targetOrderId
 
             this.setNextIndex()
@@ -219,13 +216,8 @@ export default class TerminalExtension extends StructureTerminal {
             
             return false // 把这个改成 true 可以加快交易速度
         }
-        else if (dealResult === ERR_INVALID_ARGS) {
-            delete this.room.memory.targetOrderId
-            
-        }
-        else {
-            console.log(`[终端警告] ${this.room.name} 处理订单异常 ${dealResult}`)
-        }
+        else if (dealResult === ERR_INVALID_ARGS) delete this.room.memory.targetOrderId
+        else this.log(`${this.room.name} 处理订单异常 ${dealResult}`, 'yellow')
     }
 
     /**
@@ -240,19 +232,17 @@ export default class TerminalExtension extends StructureTerminal {
         }
         // 买入监听，再判断是从市场买入还是从其他房间共享
         else if (resource.mod === 'buy') {
-            // console.log('最小值检查！', resourceAmount, resource.type, resource.amount)
             if (resourceAmount >= resource.amount) return this.setNextIndex()
             else {
                 // 从其他房间共享
                 if (resource.supplementAction == 'share') {
                     const getShareRequest = this.room.shareRequest(resource.type, resource.amount - resourceAmount)
-                    // console.log(`${this.room.name} 想要从资源共享获取 ${resource.type} 数量: ${resource.amount - resourceAmount}  请求结果为 ${getShareRequest}`)
                     return this.setNextIndex()
                 }
             }
         }
         else {
-            console.log(`[${this.room.name} Terminal] 未知监听类型 ${resource.mod}`)
+            this.log(`未知监听类型 ${resource.mod}`, 'yellow')
             return this.setNextIndex()
         }
 
@@ -264,7 +254,7 @@ export default class TerminalExtension extends StructureTerminal {
             this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, Math.abs(resourceAmount - resource.amount), resource.priceLimit)
         }
         else {
-            console.log(`[${this.room.name} Terminal] 未知交易策略 ${resource.supplementAction}`)
+            this.log(`未知交易策略 ${resource.supplementAction}`, 'yellow')
             return this.setNextIndex()
         }
     }
@@ -277,25 +267,25 @@ export default class TerminalExtension extends StructureTerminal {
      * @param amount 要购买的数量
      */
     private releaseOrder(resourceType: ResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
-        console.log('挂单', this.room.name, resourceType, type, amount)
+        this.log(`挂单 ${this.room.name} ${resourceType} ${type} ${amount}`)
         // 检查是否已经有对应资源的订单
         const order = this.getExistOrder(resourceType, type)
         
         // 存在就追加订单
         if (order) {
             // 先调整下价格
-            console.log(`[${this.room.name} Terminal] 尝试调整订单价格 ${order.id}`)
+            this.log(`尝试调整订单价格 ${order.id}`)
             let result = Game.market.changeOrderPrice(order.id, this.getOrderPrice(resourceType, type))
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                console.log(`[${this.room.name} Terminal] 没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
+                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
                 return this.setNextIndex()
             }
 
             // 再调整下数量
-            console.log(`[${this.room.name} Terminal] 扩充订单容量 ${order.id}`)
+            this.log(`扩充订单容量 ${order.id}`)
             result = Game.market.extendOrder(order.id, amount)
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                console.log(`[${this.room.name} Terminal] 没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
+                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
             }
         }
         // 不存在就新建订单
@@ -307,13 +297,13 @@ export default class TerminalExtension extends StructureTerminal {
                 totalAmount: amount,
                 roomName: this.room.name
             })
-            console.log(`[${this.room.name} Terminal] 创建新订单 ${order.id} 结果 ${result}`)
+            this.log(`创建新订单 ${order.id} 结果 ${result}`)
 
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                console.log(`[${this.room.name} Terminal] 没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
+                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
             }
             else if (result === ERR_FULL) {
-                console.log(`[${this.room.name} Terminal] 订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`)
+                this.log(`订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`, 'yellow')
             }
         }
 
@@ -356,11 +346,9 @@ export default class TerminalExtension extends StructureTerminal {
         const targetOrder = this.getOrder({ type, resourceType }, priceLimit)
 
         if (!targetOrder) {
-            // console.log(`[${this.room.name} terminal] 没有为 ${resource.type} 找到合适的订单`)
             return this.setNextIndex()
         }
         
-        // console.log(`${this.room.name} 为 ${targetOrder.resourceType} 找到了一个合适的订单 类型: ${targetOrder.type} 单价: ${targetOrder.price}`)
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
 
@@ -419,9 +407,7 @@ export default class TerminalExtension extends StructureTerminal {
         // price 升序找到最适合的订单
         // 买入找 price 最低的 卖出找 price 最高的
         const sortedOrders = _.sortBy(orders, order => order.price)
-        // console.log('订单单价', sortedOrders.map(order => order.price))
         const targetOrder = sortedOrders[filter.type === ORDER_SELL ? 0 : (sortedOrders.length - 1)]
-        // console.log('选中订单价格', targetOrder.resourceType, targetOrder.type, targetOrder.price)
 
         // 最后进行均价检查，如果玩家指定了限制的话就用，否则就看历史平均价格
         if (priceLimit) {
@@ -445,9 +431,7 @@ export default class TerminalExtension extends StructureTerminal {
             const history = Game.market.getHistory(resourceType)
             if (history.length > 0) return history[0].avgPrice
             else {
-                Game.notify(`[${this.room.name} terminal] 无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`)
-                console.log(`[${this.room.name} terminal] 无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`)
-
+                this.log(`无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`, 'yellow', true)
                 return undefined
             }
         }
@@ -475,18 +459,15 @@ export default class TerminalExtension extends StructureTerminal {
         // 没有历史记录的话直接运行购买
         if (history.length <= 0) return true
         // 以昨日均价为准
-        // console.log(JSON.stringify(history[0], null, 4))
         const avgPrice = history[0].avgPrice
 
         // 目标订单的价格要在规定好的价格区间内浮动才算可靠
         // 卖单的价格不能太高
         if (targetOrder.type == ORDER_SELL) {
-            // console.log(`${targetOrder.price} <= ${avgPrice * DEAL_RATIO.MAX}`)
             if (targetOrder.price <= avgPrice * DEAL_RATIO.MAX) return true
         }
         // 买单的价格不能太低
         else {
-            // console.log(`${targetOrder.price} >= ${avgPrice * DEAL_RATIO.MIN}`)
             if (targetOrder.price >= avgPrice * DEAL_RATIO.MIN) return true
         }
         return false

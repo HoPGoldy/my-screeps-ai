@@ -1,5 +1,5 @@
 import mountRoomBase from './mount.roomBase'
-import { createHelp } from './utils'
+import { createHelp, log } from './utils'
 import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
 
@@ -14,6 +14,19 @@ export default function () {
 }
 
 class RoomExtension extends Room {
+    /**
+     * 全局日志
+     * 
+     * @param content 日志内容
+     * @param prefixes 前缀中包含的内容
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content:string, instanceName: string = '', color: Colors | undefined = undefined, notify: boolean = false): void {
+        const prefixes = instanceName ? [ this.name, instanceName ] : [ this.name ]
+
+        log(content, prefixes, color, notify)
+    }
     /**
      * 添加任务
      * 
@@ -420,8 +433,6 @@ class RoomExtension extends Room {
     public addRoomTransferTask(task: RoomTransferTasks, priority: number = null): number {
         if (this.hasRoomTransferTask(task.type)) return -1
 
-        // console.log(`[物流任务] ${this.name} 添加任务 ${task.type}`)
-
         // 默认追加到队列末尾
         if (!priority) {
             this.memory.transferTasks.push(task)
@@ -632,13 +643,10 @@ class RoomExtension extends Room {
 
         // 寻找合适的房间
         let targetRoom: Room = null
-        // console.log('来源表健全', SourceRoomsName)
         // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
         let roomWithEmpty = SourceRoomsName.map(roomName => {
             const room = Game.rooms[roomName]
             if (!room || !room.terminal) return ''
-            
-            // console.log(room.memory.shareTask, room.name, this.name)
 
             // 如果该房间当前没有任务，就选择其为目标
             if (!room.memory.shareTask && (room.name != this.name)) {

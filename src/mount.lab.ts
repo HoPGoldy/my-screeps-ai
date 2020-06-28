@@ -92,9 +92,7 @@ export default class LabExtension extends StructureLab {
     /**
      * boost 阶段：获取强化材料
      */
-    private boostGetResource(): void {
-        // console.log(`[${this.room.name} boost] 获取 boost 材料`)
-        
+    private boostGetResource(): void {        
         // 获取 boost 任务
         const boostTask = this.room.memory.boost
 
@@ -110,7 +108,7 @@ export default class LabExtension extends StructureLab {
 
         // 都就位了就进入下一个阶段
         if (allResourceReady) {
-            console.log(`[${this.room.name} boost] 材料准备完成，开始填充能量`)
+            this.log(`boost 材料准备完成，开始填充能量`, 'green')
             this.room.memory.boost.state = 'labGetEnergy'
         }
         // 否则就发布任务
@@ -124,9 +122,7 @@ export default class LabExtension extends StructureLab {
     /**
      * boost 阶段：获取能量
      */
-    private boostGetEnergy(): void {
-        // console.log(`[${this.room.name} boost] 获取强化能量`)
-        
+    private boostGetEnergy(): void {        
         const boostTask = this.room.memory.boost
 
         // 遍历所有执行强化的 lab
@@ -145,7 +141,7 @@ export default class LabExtension extends StructureLab {
 
         // 能循环完说明能量都填好了
         this.room.memory.boost.state = 'waitBoost'
-        console.log(`[${this.room.name} boost] 能量填充完成，boost 准备就绪，等待强化，键入 ${this.room.name}.whelp() 来查看如何孵化战斗单位`)
+        this.log(`能量填充完成，boost 准备就绪，等待强化，键入 ${this.room.name}.whelp() 来查看如何孵化战斗单位`, 'green')
     }
 
     /**
@@ -153,8 +149,6 @@ export default class LabExtension extends StructureLab {
      * 将强化用剩下的材料从 lab 中转移到 terminal 中
      */
     private boostClear(): void {
-        // console.log(`[${this.room.name} boost] 回收材料`)
-
         // 所有执行强化的 labId
         const boostLabs = Object.values(this.room.memory.boost.lab)
 
@@ -177,7 +171,7 @@ export default class LabExtension extends StructureLab {
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) return
         // lab 净空并且 boost clear 物流任务完成，就算是彻底完成了 boost 进程
         else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
-            console.log(`[${this.room.name} boost] 材料回收完成`)
+            this.log(`材料回收完成`, 'green')
             delete this.room.memory.boost
             if (this.room.memory.lab) this.room.memory.lab.state = LAB_STATE.GET_TARGET
         }
@@ -187,7 +181,6 @@ export default class LabExtension extends StructureLab {
      * lab 阶段：获取全局目标
      */
     private labGetTarget(): void {
-        // console.log(`[${this.room.name} lab] - 获取目标`)
         // 如果有 boost 任务的话就优先执行
         if (this.room.memory.boost) {
             this.room.memory.lab.state = LAB_STATE.BOOST
@@ -206,7 +199,7 @@ export default class LabExtension extends StructureLab {
         }
 
         // 检查目标资源数量是否已经足够
-        if (!this.room.terminal) return console.log(`[${this.room.name} lab] 错误! 找不到终端`)
+        if (!this.room.terminal) return this.log(`错误! 找不到终端`, 'red')
         if (this.room.terminal.store[resource.target] >= resource.number) {
             this.setNextIndex()
             return
@@ -219,11 +212,11 @@ export default class LabExtension extends StructureLab {
             this.room.memory.lab.state = LAB_STATE.GET_RESOURCE
             // 单次作业数量不能超过 lab 容量上限
             this.room.memory.lab.targetAmount = canReactionAmount > LAB_MINERAL_CAPACITY ? LAB_MINERAL_CAPACITY : canReactionAmount
-            console.log(`[${this.room.name} lab] 指定目标：${resource.target}`)
+            this.log(`指定目标：${resource.target}`)
         }
         // 合成不了
         else {
-            // console.log(`[${this.room.name} lab] 无法合成 ${resource.target}`)
+            // this.log(`无法合成 ${resource.target}`, 'yellow')
             this.setNextIndex()
         }
     }
@@ -232,8 +225,6 @@ export default class LabExtension extends StructureLab {
      * lab 阶段：获取底物
      */
     private labGetResource(): void {
-        // console.log(`[${this.room.name} lab] - 获取底物`)
-        
         // 检查是否有能量移入任务
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_IN)) return
 
@@ -247,7 +238,7 @@ export default class LabExtension extends StructureLab {
 
         // 获取终端
         const termial = this.room.terminal
-        if (!termial) return console.log(`[${this.room.name} lab] 错误! 找不到终端`)
+        if (!termial) return this.log(`错误! 找不到终端`, 'red')
 
         // 检查底物是否足够
         const targetResource = labTarget[this.room.memory.lab.targetIndex].target
@@ -266,7 +257,6 @@ export default class LabExtension extends StructureLab {
      * lab 阶段：进行反应
      */
     private labWorking(): void {
-        // console.log(`[${this.room.name} lab] - 进行反应`)
         const labMemory = this.room.memory.lab
 
         // 还没冷却好
@@ -276,7 +266,7 @@ export default class LabExtension extends StructureLab {
         let inLabs: StructureLab[] = []
         labMemory.inLab.forEach(labId => {
             const lab = Game.getObjectById(labId) as StructureLab
-            if (!lab) console.log(`[${this.room.name} lab] 错误! 找不到 inLab ${labId}`)
+            if (!lab) this.log(`错误! 找不到 inLab ${labId}`, 'red')
             else inLabs.push(lab)
         })
         if (inLabs.length < 2) return
@@ -286,7 +276,7 @@ export default class LabExtension extends StructureLab {
             const outLab = Game.getObjectById(labId) as StructureLab
             // 兜底
             if (!outLab) {
-                console.log(`[${this.room.name} lab] 错误! 找不到 outLab ${labId}, 已将其移除`)
+                this.log(`错误! 找不到 outLab ${labId}, 已将其移除`, 'red')
                 delete this.room.memory.lab.outLab[labId]
                 continue
             }
@@ -305,7 +295,7 @@ export default class LabExtension extends StructureLab {
                 return
             }
             else if (runResult !== OK) {
-                console.log(`[${this.room.name} lab] runReaction 异常，错误码 ${runResult}`)
+                this.log(`runReaction 异常，错误码 ${runResult}`, 'red')
             }
         }
     }
@@ -314,8 +304,6 @@ export default class LabExtension extends StructureLab {
      * lab 阶段：移出产物
      */
     private labPutResource(): void {
-        // console.log(`[${this.room.name} lab] - 移出产物`)
-
         // 检查是否已经有正在执行的移出任务嘛
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)) return
 
@@ -357,7 +345,7 @@ export default class LabExtension extends StructureLab {
         // 获取资源及其数量, 并将数量从小到大排序
         const needResourcesName = reactionSource[resourceType]
         if (!needResourcesName) {
-            console.log(`[${this.room.name} lab] reactionSource 中未定义 ${resourceType}`)
+            this.log(`reactionSource 中未定义 ${resourceType}`, 'yellow')
             return 0
         }
         const needResources = needResourcesName

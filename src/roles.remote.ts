@@ -25,7 +25,7 @@ const roles: {
         prepare: creep => {
             const flag = Game.flags[data.flagName]
             if (!flag) {
-                console.log(`[${creep.name}] 未找到名为 ${data.flagName} 的旗帜，请在目标建筑上新建`)
+                creep.log(`未找到名为 ${data.flagName} 的旗帜，请在目标建筑上新建`)
                 return false
             }
 
@@ -38,7 +38,6 @@ const roles: {
                     let targetStructure: StructureWithStore | Ruin = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s) as StructureWithStore
                     
                     if (!targetStructure) {
-                        console.log('查找废墟')
                         // 查找废墟，如果有包含 store 的废墟就设为目标
                         const ruins = flag.pos.lookFor(LOOK_RUINS)
                         for (const ruin of ruins) {
@@ -91,7 +90,6 @@ const roles: {
                             if (!Memory.reiveList.includes(res as ResourceConstant)) continue
                         }
 
-                        // console.log(`[${creep.name}] 准备搬运 ${res} 数量 ${targetStructure.store[res]}`)
                         const withdrawResult = creep.withdraw(targetStructure, res as ResourceConstant)
 
                         // 如果拿满了就执行 target
@@ -118,7 +116,7 @@ const roles: {
         target: creep => {
             const targetStructure = Game.getObjectById<StructureWithStore>(data.targetId)
             if (!targetStructure) {
-                console.log(`[${creep.name}] 找不到要存放资源的建筑 ${data.targetId}`)
+                creep.log(`找不到要存放资源的建筑 ${data.targetId}`, 'yellow')
                 creep.say('搬到哪？')
                 return false
             }
@@ -127,7 +125,6 @@ const roles: {
                 // 遍历目标建筑存储并找到可以拿取的资源
                 for (const res in creep.store) {
                     if (creep.store[res] > 0) {
-                        // console.log(`[${creep.name}] 准备放置 ${res} 数量 ${creep.store[res]}`)
                         const result = creep.transfer(targetStructure, res as ResourceConstant)
 
                         // 还没到就继续走
@@ -191,14 +188,14 @@ const roles: {
             const claimResult = creep.claimController(controller)
             if (claimResult === ERR_NOT_IN_RANGE) creep.goTo(controller.pos)
             else if (claimResult === OK) {
-                console.log(`[${creep.name}] 新房间 ${data.targetRoomName} 占领成功！已向源房间 ${data.spawnRoom} 请求支援单位`)
+                creep.log(`新房间 ${data.targetRoomName} 占领成功！已向源房间 ${data.spawnRoom} 请求支援单位`, 'green')
                 // 占领成功，发布支援组
                 const spawnRoom = Game.rooms[data.spawnRoom]
                 if (spawnRoom) spawnRoom.addRemoteHelper(data.targetRoomName)
                 if (data.signText) creep.signController(controller, data.signText)
                 creep.suicide()
             }
-            else if (claimResult === ERR_GCL_NOT_ENOUGH) console.log(`[${creep.name}] CCL 不足，无法占领`)
+            else if (claimResult === ERR_GCL_NOT_ENOUGH) creep.log(`CCL 不足，无法占领`)
             else creep.say(`占领 ${claimResult}`)
         },
         bodys: [ MOVE, CLAIM ]
@@ -337,7 +334,7 @@ const roles: {
             // 旗帜效验, 没有旗帜则不生成
             const sourceFlag = Game.flags[data.sourceFlagName]
             if (!sourceFlag) {
-                console.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                room.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`, 'remoteHarvester')
                 return false
             }
 
@@ -354,7 +351,7 @@ const roles: {
             if (!creep.memory.sourceId) {
                 const sourceFlag = Game.flags[data.sourceFlagName]
                 if (!sourceFlag) {
-                    console.log(`[${creep.name}] 找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                    creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
                     return false
                 }
 
@@ -365,7 +362,7 @@ const roles: {
                     sourceFlag.memory.roomName = sourceFlag.room.name
                     const sources = sourceFlag.pos.lookFor(LOOK_SOURCES)
                     if (sources.length <= 0) {
-                        console.log(`[${creep.name}] ${data.sourceFlagName} 附近没有找到 source`)
+                        creep.log(`${data.sourceFlagName} 附近没有找到 source`)
                         return false
                     }
                     // 找到 source 后就写入内存
@@ -386,7 +383,7 @@ const roles: {
 
             const sourceFlag = Game.flags[data.sourceFlagName]
             if (!sourceFlag) {
-                console.log(`[${creep.name}] 找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
                 return false
             }
 
@@ -394,7 +391,7 @@ const roles: {
             if (creep.hits < creep.hitsMax) {
                 const room = Game.rooms[data.spawnRoom]
                 if (!room) {
-                    console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
+                    creep.log(`找不到 ${data.spawnRoom}`)
                     return false
                 }
                 // 如果还没有设置重生时间的话
@@ -422,7 +419,7 @@ const roles: {
                 if (core.length > 0) {
                     const room = Game.rooms[data.spawnRoom]
                     if (!room) {
-                        console.log(`${creep.name} 在 source 阶段中找不到 ${room}`)
+                        creep.log(`找不到 ${data.spawnRoom}`)
                         return false
                     }
 
@@ -477,7 +474,7 @@ const roles: {
 
             const target = Game.getObjectById<Structure>(data.targetId)
             if (!target) {
-                console.log(`[${creep.name}] 找不到存放建筑 ${data.targetId}`)
+                creep.log(`找不到存放建筑 ${data.targetId}`, 'yellow')
                 return false
             }
             
@@ -487,7 +484,7 @@ const roles: {
             if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
             else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, 1)
             else if (transferResult === ERR_FULL) creep.say('满了啊')
-            else if (transferResult !== OK) console.log(`[${creep.name}] target 阶段 transfer 出现异常，错误码 ${transferResult}`)
+            else if (transferResult !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${transferResult}`, 'red')
 
             return false
         },
@@ -520,7 +517,7 @@ const roles: {
             // 旗帜效验, 没有旗帜则原地待命
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] 找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
                 creep.say('旗呢？')
                 return false
             }
@@ -558,7 +555,6 @@ const roles: {
                 else {
                     const roomMemory = Memory.rooms[data.spawnRoom]
                     if (roomMemory && roomMemory.observer) roomMemory.observer.depositNumber -= 1
-                    console.log('observer deposit 数量减少')
 
                     delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
@@ -581,7 +577,7 @@ const roles: {
         target: creep => {
             const room = Game.rooms[data.spawnRoom]
             if (!room || !room.terminal) {
-                console.log(`[${creep.name}] 找不到存放建筑`)
+                creep.log(`[${creep.name}] 找不到存放建筑`, 'yellow')
                 return false
             }
             
@@ -716,7 +712,6 @@ const roles: {
 
                     // 设置为新状态
                     targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
-                    // console.log('准备阶段！')
                 }
             }
             else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
@@ -763,8 +758,6 @@ const roles: {
         prepare: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
-                // console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                // creep.say('搬啥？')
                 creep.suicide()
                 return false
             }
@@ -776,8 +769,6 @@ const roles: {
         source: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
-                // console.log(`[${creep.name}] 未找到旗帜，待命中`)
-                // creep.say('搬啥？')
                 creep.suicide()
                 return false
             }
@@ -810,7 +801,7 @@ const roles: {
             // 获取资源运输目标房间并兜底
             const room = Game.rooms[data.spawnRoom]
             if (!room || !room.terminal) {
-                console.log(`[${creep.name}] 找不到 terminal`)
+                creep.log(`找不到 terminal`, 'yellow')
                 return false
             }
             
@@ -850,13 +841,13 @@ const roles: {
         target: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
-                console.log(`[${creep.name}] 找不到 ${data.sourceFlagName} 旗帜`)
+                creep.log(`找不到 ${data.sourceFlagName} 旗帜`, 'yellow')
                 creep.say('旗呢？')
                 return false
             }
             let cost1 = Game.cpu.getUsed()
             creep.farMoveTo(targetFlag.pos)
-            console.log('移动消耗', Game.cpu.getUsed() - cost1)
+            creep.log(`移动消耗 ${Game.cpu.getUsed() - cost1}`)
 
             return false
         },

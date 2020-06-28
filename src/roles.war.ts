@@ -24,7 +24,7 @@ const roles: {
             }
 
             if (creep.room.name !== targetFlag.pos.roomName) {
-                console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
+                creep.log(`不在指定房间，切入迁徙模式`)
                 return true
             }
             return false
@@ -169,7 +169,7 @@ const roles: {
                     }
                 }
                 else {
-                    console.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
+                    creep.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
                     return true
                 }
             },
@@ -248,7 +248,7 @@ const boostPrepare = () => ({
                 return true
             }
             else {
-                console.log(`[${creep.name}] 强化失败 ${boostResult}`)
+                creep.log(`强化失败 ${boostResult}`, 'red')
                 return false
             }
         }
@@ -289,7 +289,7 @@ const battleBase = (flagName: string, keepSpawn: boolean) => ({
         }
 
         if (creep.room.name == targetFlag.pos.roomName) {
-            console.log(`[${creep.name}] 抵达指定房间，切入作战模式`)
+            creep.log(`[${creep.name}] 抵达指定房间，切入作战模式`, 'green')
             return true
         }
         

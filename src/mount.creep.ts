@@ -15,12 +15,11 @@ class CreepExtension extends Creep {
      * creep 主要工作
      */
     public work(): void {
-        // let cost1 = Game.cpu.getUsed()
         // 检查 creep 内存中的角色是否存在
         if (!(this.memory.role in roles)) {
-            console.log(`${this.name} 找不到对应的 creepConfig`)
+            this.log(`找不到对应的 creepConfig`, 'yellow')
             this.say('我凉了！')
-            return 
+            return
         }
 
         // 还没出生就啥都不干
@@ -33,7 +32,7 @@ class CreepExtension extends Creep {
         if (this.ticksToLive <= 3) {
             // 如果还在工作，就释放掉自己的工作位置
             if (this.memory.standed) this.room.removeRestrictedPos(this.name)
-        } 
+        }
 
         // 获取对应配置项
         const creepConfig: ICreepConfig = roles[this.memory.role](this.memory.data)
@@ -70,8 +69,18 @@ class CreepExtension extends Creep {
                 delete this.memory.standed
             }
         }
-        // let cost2 = Game.cpu.getUsed()
-        // if ((cost2 - cost1) > 0.5) console.log(`[${this.name}] 消耗 ${cost2 - cost1}`)
+    }
+
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param instanceName 发送日志的实例名
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content:string, color: Colors = undefined, notify: boolean = false): void {
+        this.room.log(content, this.name, color, notify)
     }
 
     /**
@@ -149,7 +158,6 @@ class CreepExtension extends Creep {
      * @returns PathFinder.search 的返回值
      */
     public findPath(target: RoomPosition, range: number): string | null {
-        // console.log(`[${this.name}] 执行远程寻路`)
         if (!this.memory.farMove) this.memory.farMove = { }
         this.memory.farMove.index = 0
 
@@ -158,7 +166,6 @@ class CreepExtension extends Creep {
         let route = global.routeCache[routeKey]
         // 如果有值则直接返回
         if (route) {
-            // console.log(`[${this.name}] 寻路命中! ${routeKey}`)
             return route
         }
         
@@ -296,7 +303,6 @@ class CreepExtension extends Creep {
 
         // 没有之前的位置或者没重复就正常返回 OK 和更新之前位置
         this.memory.prePos = currentPos
-        // console.log('move消耗', Game.cpu.getUsed() - baseCost)
 
         return OK
     }
@@ -327,7 +333,6 @@ class CreepExtension extends Creep {
                 return costMatrix
             }
         })
-        // console.log('寻路消耗', Game.cpu.getUsed() - baseCost)
 
         return moveResult
     }
@@ -344,19 +349,16 @@ class CreepExtension extends Creep {
         // 确认目标有没有变化, 变化了则重新规划路线
         const targetPosTag = this.room.serializePos(target)
         if (targetPosTag !== this.memory.farMove.targetPos) {
-            // console.log(`[${this.name}] 目标变更`)
             this.memory.farMove.targetPos = targetPosTag
             this.memory.farMove.path = this.findPath(target, range)
         }
         // 确认缓存有没有被清除
         if (!this.memory.farMove.path) {
-            // console.log(`[${this.name}] 更新缓存`)
             this.memory.farMove.path = this.findPath(target, range)
         }
 
         // 还为空的话就是没找到路径
         if (!this.memory.farMove.path) {
-            // console.log(`[${this.name}] 未找到路径`)
             delete this.memory.farMove.path
             return OK
         }
@@ -366,7 +368,6 @@ class CreepExtension extends Creep {
 
         // 如果发生撞停或者参数异常的话说明缓存可能存在问题，移除缓存
         if (goResult === ERR_INVALID_TARGET || goResult == ERR_INVALID_ARGS) {
-            // console.log('撞墙了！')
             delete this.memory.farMove.path
         }
         // 其他异常直接报告
@@ -809,7 +810,7 @@ class CreepExtension extends Creep {
     public getFlag(flagName: string): Flag | null {
         const flag = Game.flags[flagName]
         if (!flag) {
-            console.log(`场上不存在名称为 [${flagName}] 的旗帜，请新建`)
+            this.log(`场上不存在名称为 [${flagName}] 的旗帜，请新建`)
             return null
         }
         else return flag
