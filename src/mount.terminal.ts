@@ -308,7 +308,6 @@ export default class TerminalExtension extends StructureTerminal {
                 totalAmount: amount,
                 roomName: this.room.name
             })
-            this.log(`创建新订单 ${order.id} 结果 ${result}`)
 
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
