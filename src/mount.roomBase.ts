@@ -323,16 +323,17 @@ class CreepControl extends Room {
              * @property {} levelOther 其他等级时发布的数量
              */
             const numberConfig = [
-                { energy: 700000, level8: 1, levelOther: 4 },
-                { energy: 500000, level8: 0, levelOther: 3 },
-                { energy: 300000, level8: 0, levelOther: 2 },
-                { energy: 100000, level8: 0, levelOther: 1 }
+                { energy: 700000, upgraderNum: 4 },
+                { energy: 500000, upgraderNum: 3 },
+                { energy: 300000, upgraderNum: 2 },
+                { energy: 100000, upgraderNum: 1 }
             ]
-            
+
             // 遍历配置项进行 upgrader 发布
             numberConfig.find(config => {
                 if (energy > config.energy) {
-                    addUpgrader(this.controller.level >= 8 ? config.level8 : config.levelOther, this.storage.id)
+                    // 房间等级大于 8 就不发布了，不然后期 cpu 撑不住
+                    if (this.controller.level >= 8) addUpgrader(config.upgraderNum, this.storage.id)
                     return true
                 }
                 return false
