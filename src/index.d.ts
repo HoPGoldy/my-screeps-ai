@@ -281,6 +281,15 @@ type BodyAutoConfigConstant =
  * 建筑拓展
  */
 interface Structure {
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param instanceName 发送日志的实例名
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content:string, color?: Colors, notify?: boolean): void
     // 建筑的工作方法
     work?(): void
     // 建筑在完成建造时触发的回调
@@ -313,6 +322,16 @@ interface StructurePowerSpawn {
  * 来自于 mount.creep.ts
  */
 interface Creep {
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param instanceName 发送日志的实例名
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content:string, color?: Colors, notify?: boolean): void
+
     _id: string
     _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     work(): void
@@ -343,6 +362,16 @@ interface Creep {
  * 来自于 mount.powerCreep.ts
  */
 interface PowerCreep {
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param instanceName 发送日志的实例名
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content:string, color?: Colors, notify?: boolean): void
+    
     _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
@@ -425,6 +454,16 @@ interface CreepMemory {
  * 来自于 mount.structure.ts
  */
 interface Room {
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param instanceName 发送日志的实例名
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content:string, instanceName?: string, color?: Colors, notify?: boolean): void
+
     // 已拥有的房间特有，tower 负责维护
     _enemys: (Creep|PowerCreep)[]
     // 需要维修的建筑，tower 负责维护，为 1 说明建筑均良好

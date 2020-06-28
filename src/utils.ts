@@ -38,7 +38,7 @@ export function doing(hashMap: object, showCpu: string = ''): void {
     })
 
     // 如果有需求的话就显示 cpu 消耗
-    if (showCpu) console.log(`[${showCpu}] 消耗 ${Game.cpu.getUsed() - startCost}`)
+    if (showCpu) log(`消耗 ${Game.cpu.getUsed() - startCost}`, [ showCpu ])
 }
 
 /**
@@ -277,4 +277,26 @@ const creepNameGenerator: CreepNameGenerator = {
 export function getCreepName(role: CreepRoleConstant, roomName: string, index?: number): string {
     if (role in creepNameGenerator) return creepNameGenerator[role](roomName, index)
     else return `${roomName} ${role}${index}`
+}
+
+/**
+ * 全局日志
+ * 
+ * @param content 日志内容
+ * @param prefixes 前缀中包含的内容
+ * @param color 日志前缀颜色
+ * @param notify 是否发送邮件
+ */
+export function log(content: string, prefixes: string[] = [], color: Colors = undefined, notify: boolean = false): OK {
+    // 有前缀就组装在一起
+    let prefix = prefixes.length > 0 ? `[${prefixes.join(' ')}] ` : ''
+    // 指定了颜色
+    if (color) prefix = colorful(prefix, color)
+
+    const logContent = `${prefix}${content}`
+    console.log(logContent)
+    // 转发到邮箱
+    if (notify) Game.notify(logContent)
+
+    return OK
 }

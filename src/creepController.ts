@@ -1,5 +1,5 @@
 import roles from './role'
-import { colorful } from './utils'
+import { colorful, log } from './utils'
 /**
  * creep 控制模块
  * 
@@ -20,7 +20,7 @@ export default function creepNumberListener(): void {
         const creepConfig = Memory.creepConfigs[name]
         // 获取配置项
         if (!creepConfig) {
-            console.log(`死亡 ${name} 未找到对应 creepConfig, 已删除`)
+            log(`死亡 ${name} 未找到对应 creepConfig, 已删除`, [ 'creepController' ])
             delete Memory.creeps[name]
             return
         }
@@ -28,7 +28,7 @@ export default function creepNumberListener(): void {
         // 检查指定的 room 中有没有它的生成任务
         const spawnRoom = Game.rooms[creepConfig.spawnRoom]
         if (!spawnRoom) {
-            console.log(`死亡 ${name} 未找到 ${creepConfig.spawnRoom}`)
+            log(`死亡 ${name} 未找到 ${creepConfig.spawnRoom}`, [ 'creepController' ])
             return
         }
 

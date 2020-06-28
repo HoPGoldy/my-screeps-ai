@@ -202,7 +202,7 @@ class RoomBase extends Room {
         // 没有 id 就进行搜索
         const mineral = this.find(FIND_MINERALS)[0]
         if (!mineral) {
-            console.log(`[${this.name} base] 异常访问，房间内没有找到 mineral`)
+            this.log(`异常访问，房间内没有找到 mineral`, 'roomBase', 'yellow')
             return undefined
         }
 
@@ -230,7 +230,7 @@ class RoomBase extends Room {
         // 没有 id 就进行搜索
         const sources = this.find(FIND_SOURCES)
         if (sources.length <= 0) {
-            console.log(`[${this.name} base] 异常访问，房间内没有找到 source`)
+            this.log(`异常访问，房间内没有找到 source`, 'roomBase', 'yellow')
             return undefined
         }
 
@@ -500,7 +500,7 @@ class CreepControl extends Room {
     public addRemoteHelper(remoteRoomName): void {
         const room = Game.rooms[remoteRoomName]
 
-        if (!room) return console.log(`[${this.name} 拓展] 目标房间没有视野，无法发布支援单位`)
+        if (!room) return this.log(`目标房间没有视野，无法发布支援单位`, '', 'yellow')
 
         // 发布两个 upgrader
         creepApi.add(`${remoteRoomName} RemoteUpgrader0`, 'remoteUpgrader', {
@@ -555,7 +555,6 @@ class CreepControl extends Room {
      * @param healerName 治疗单位名称
      */
     public removePbHarvesteGroup(attackerName: string, healerName: string): void {
-        console.log('移除 pb 采集小组', attackerName, healerName)
         creepApi.remove(attackerName)
         creepApi.remove(healerName)
     }
@@ -568,8 +567,6 @@ class CreepControl extends Room {
      * @param number 孵化几个 transfer
      */
     public spawnPbTransferGroup(flagName: string, number: number): void {
-        console.log("添加 pb 运输小组", flagName, number)
-
         // 如果已经有人发布过了就不再费事了
         if (creepApi.has(`${flagName} transfer0`)) return
         

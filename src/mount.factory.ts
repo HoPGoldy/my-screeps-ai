@@ -61,14 +61,16 @@ export default class FactoryExtension extends StructureFactory {
      * 该阶段会对队列中的任务进行新增（没有任务）或分解（任务无法完成）操作，一旦发现可以生成的任务，则进入下个阶段。
      */
     private prepare(): void {
-        // console.log('准备阶段!')
         // 如果存在废弃进程，则移除所有配置
         if (this.room.memory.factory.remove) {
             delete this.room.memory.factory
             return
         }
 
-        if (!this.room.terminal) console.log(`[${this.room.name} factory] prepare 阶段未找到 terminal，已暂停`)
+        if (!this.room.terminal) {
+            this.gotoBed(10000, '未找到 terminal')
+            return this.log(`prepare 阶段未找到 terminal，已暂停`, 'red')
+        }
 
         // 获取当前任务，没有任务就新增顶级合成任务
         const task = this.getCurrentTask()
@@ -86,7 +88,6 @@ export default class FactoryExtension extends StructureFactory {
             // 底物所需的数量
             // 由于反应可能会生成不止一个产物，所以需要除一下并向上取整
             const subResAmount = this.clacSubResourceAmount(task.target, task.amount, resType as ResourceConstant)
-            // console.log("TCL: FactoryExtension -> subResAmount", resType, subResAmount)
 
             // 所需底物数量不足就拆分任务
             if (this.room.terminal.store[resType] < subResAmount) {
@@ -160,7 +161,6 @@ export default class FactoryExtension extends StructureFactory {
      * 获取资源
      */
     private getResource(): void {
-        // console.log('获取资源!')
         if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
 
         const task = this.getCurrentTask()
@@ -185,11 +185,10 @@ export default class FactoryExtension extends StructureFactory {
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
                     if (this.room.terminal.store[resType] < needAmount) {
                         this.gotoBed(100, `缺少 ${resType}*${needAmount}`)
-                        return console.log(`[${this.room.name} factory] 合成暂停，缺少 ${resType}*${needAmount}`)
+                        return this.log(`合成暂停，缺少 ${resType}*${needAmount}`, 'yellow')
                     }
                 }
 
-                // console.log('发布物流任务', resType, needAmount)
                 // 发布中央物流任务
                 this.room.addCenterTask({
                     submit: STRUCTURE_FACTORY,
@@ -210,8 +209,6 @@ export default class FactoryExtension extends StructureFactory {
      * 执行合成
      */
     private working(): void {
-        // console.log('执行合成!')
-        
         // 没有冷却好就直接跳过
         if (this.cooldown !== 0) {
             if (this.room.memory.factory.produceCheck) {
@@ -237,7 +234,7 @@ export default class FactoryExtension extends StructureFactory {
         // 这里只是个兜底，一般情况下在上面的 this.canContinueProduce() 判断后就已经确定了是否要进入下个阶段
         else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
         else if (actionResult === ERR_INVALID_TARGET || actionResult === ERR_BUSY) this.requirePower()
-        else console.log(`[${this.room.name} factory] working 阶段出现异常，错误码: ${actionResult}`)
+        else this.log(`working 阶段出现异常，错误码: ${actionResult}`, 'red')
     }
 
     /**
@@ -267,7 +264,6 @@ export default class FactoryExtension extends StructureFactory {
      * 移出资源
      */
     private putResource(): void {
-        // console.log('移出资源!')
         if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
 
         const task = this.getCurrentTask()
@@ -321,7 +317,7 @@ export default class FactoryExtension extends StructureFactory {
      */
     private requirePower(): void {
         if (this.room.controller.isPowerEnabled) this.room.addPowerTask(PWR_OPERATE_FACTORY)
-        else console.log(`[${this.room.name} factory] 请求 ${this.room.memory.factory.level} 级 PWR_OPERATE_FACTORY, 但房间并未激活 power`)
+        else this.log(`请求 ${this.room.memory.factory.level} 级 PWR_OPERATE_FACTORY, 但房间并未激活 power`, 'yellow')
     }
 
     /**
@@ -385,14 +381,12 @@ export default class FactoryExtension extends StructureFactory {
         // 没有共享任务的话就按顺序挑选
         // 索引兜底
         if (!memory.targetIndex || memory.targetIndex >= topTargets.length) memory.targetIndex = 0
-        // console.log('添加任务', memory.targetIndex, topTargets.length, topTargets, topTargets[memory.targetIndex])
         
         // 获取预定目标
         let topTarget = topTargets[memory.targetIndex]
 
         // 如果该顶级产物存在并已经超过最大生产上限，则遍历检查是否有未到上限的
         if (this.room.terminal && topTarget in commodityMax && this.room.terminal.store[topTarget] >= commodityMax[topTarget]) {
-            // console.log(`${this.room.name} ${topTarget} 达到生产上限，正在检查其他目标`)
             let targetIndex = 0
             // 修正预定目标
             topTarget = topTargets.find((res, index) => {

@@ -1,6 +1,7 @@
 // 挂载拓展到 PowerCreep 原型
 export default function () {
     if (!PowerCreep.prototype._move) PowerCreep.prototype._move = Creep.prototype._move
+    if (!PowerCreep.prototype.log) PowerCreep.prototype.log = Creep.prototype.log
 
     _.assign(PowerCreep.prototype, PowerCreepExtension.prototype)
 }
@@ -39,7 +40,7 @@ class PowerCreepExtension extends PowerCreep {
             // 还在冷却就等着
             if (!this.spawnCooldownTime) {
                 // 请求指定工作房间
-                if (!this.memory.workRoom) console.log(`[${this.name}] 请使用该命令来指定工作房间（房间名置空以关闭提示）：Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
+                if (!this.memory.workRoom) this.log(`请使用该命令来指定工作房间（房间名置空以关闭提示）：Game.powerCreeps['${this.name}'].setWorkRoom('roomname')`)
                 // 或者直接出生在指定房间
                 else if (this.memory.workRoom != 'hideTip') this.spawnAtRoom(this.memory.workRoom)
             }
@@ -67,7 +68,7 @@ class PowerCreepExtension extends PowerCreep {
         const taskOptioon = PowerTasks[task]
         if (!taskOptioon && task !== PWR_GENERATE_OPS) {
             this.say(`不认识任务 ${task}`)
-            console.log(`[${this.room.name}][powerCreep ${this.name}] 没有和任务 [${task}] 对应的处理逻辑，任务已移除`)
+            this.log(`没有和任务 [${task}] 对应的处理逻辑，任务已移除`, 'yellow')
             return this.finishTask()
         }
 
@@ -104,7 +105,7 @@ class PowerCreepExtension extends PowerCreep {
     private spawnAtRoom(roomName: string): OK | ERR_INVALID_ARGS | ERR_NOT_FOUND {
         const targetRoom = Game.rooms[roomName]
         if (!targetRoom || !targetRoom.powerSpawn) {
-            console.log(`[${this.name}] 找不到指定房间或者房间内没有 powerSpawn，请重新指定工作房间`)
+            this.log(`找不到指定房间或者房间内没有 powerSpawn，请重新指定工作房间`)
             return ERR_NOT_FOUND
         }
 
@@ -112,7 +113,7 @@ class PowerCreepExtension extends PowerCreep {
         
         if (spawnResult === OK) return OK
         else {
-            console.log(`[${this.name}] 孵化异常! 错误码: ${spawnResult}`)
+            this.log(`孵化异常! 错误码: ${spawnResult}`, 'yellow')
             return ERR_INVALID_ARGS
         }
     }
@@ -202,7 +203,7 @@ class PowerCreepExtension extends PowerCreep {
             return ERR_BUSY
         }
         else {
-            console.log(`[${this.room.name} ${this.name}] 执行 getOps 时出错，错误码 ${actionResult}`)
+            this.log(`执行 getOps 时出错，错误码 ${actionResult}`, 'yellow')
             return ERR_BUSY
         }
     }
@@ -253,7 +254,7 @@ const PowerTasks: IPowerTaskConfigs = {
 
             // 如果
             if (actionResult === ERR_INVALID_ARGS) creep.enablePower()
-            else if (actionResult !== OK) console.log(`[${creep.name}] ops 生成异常, 错误码: ${actionResult}`)
+            else if (actionResult !== OK) creep.log(`ops 生成异常, 错误码: ${actionResult}`, 'red')
 
             // 数量够了就 target
             if (creep.store[RESOURCE_OPS] > 5) return OK
@@ -308,7 +309,7 @@ const PowerTasks: IPowerTaskConfigs = {
             if (actionResult === OK) return OK
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(sourceStructure.pos)
             else {
-                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`)
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`, 'red')
                 return OK
             }
         }
@@ -325,7 +326,7 @@ const PowerTasks: IPowerTaskConfigs = {
 
             // 如果自己的 power 等级和工厂等级对不上
             if (creep.powers[PWR_OPERATE_FACTORY].level !== creep.room.memory.factory.level) {
-                console.log(`[${creep.room.name} ${creep.name}] 自身 PWR_OPERATE_FACTORY 等级(${creep.powers[PWR_OPERATE_FACTORY].level})与工厂设置等级(${creep.room.memory.factory.level})不符，拒绝强化，任务已移除`)
+                creep.log(`自身 PWR_OPERATE_FACTORY 等级(${creep.powers[PWR_OPERATE_FACTORY].level})与工厂设置等级(${creep.room.memory.factory.level})不符，拒绝强化，任务已移除`, 'yellow')
                 return OK
             }
 
@@ -334,7 +335,7 @@ const PowerTasks: IPowerTaskConfigs = {
             if (actionResult === OK) return OK
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
             else {
-                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`)
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`, 'red')
                 return OK
             }
         }
@@ -373,7 +374,7 @@ const PowerTasks: IPowerTaskConfigs = {
             }
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(target.pos)
             else {
-                console.log(`[${creep.room.name} ${creep.name}] 执行 PWR_REGEN_SOURCE target 时出错，错误码 ${actionResult}`)
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_REGEN_SOURCE target 时出错，错误码 ${actionResult}`, 'red')
                 return OK
             }
         }
