@@ -621,10 +621,6 @@ interface RoomMemory {
     terminalTasks: {
         [resourceType: string]: TerminalListenerTask
     }
-    // 本房间持有的订单，键为订单资源，值为订单 id
-    holdOrders?: {
-        [res in MarketResourceConstant]: string
-    }
     // 房间内终端缓存的订单id
     targetOrderId: string
     // 当前终端要监听的资源索引

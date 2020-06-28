@@ -67,6 +67,7 @@ export default class TerminalExtension extends StructureTerminal {
     /**
      * 平衡 power
      * 将自己存储的多余 power 转移至其他房间
+     * 只会平衡到执行了 powerSpawn.on() 的房间
      * 
      * @returns ERR_NOT_ENOUGH_RESOURCES power 的资源不足
      * @returns ERR_NAME_EXISTS 房间内已经存在 shareTask
@@ -257,15 +258,15 @@ export default class TerminalExtension extends StructureTerminal {
 
         // 根据交易策略来执行不同的逻辑
         if (resource.supplementAction === 'release') {
-            this.releaseOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount)
+            this.releaseOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, Math.abs(resourceAmount - resource.amount))
         }
         else if (resource.supplementAction === 'take') {
-            this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, resourceAmount - resource.amount, resource.priceLimit)
+            this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, Math.abs(resourceAmount - resource.amount), resource.priceLimit)
         }
         else {
             console.log(`[${this.room.name} Terminal] 未知交易策略 ${resource.supplementAction}`)
             return this.setNextIndex()
-        }        
+        }
     }
 
     /**
@@ -275,31 +276,71 @@ export default class TerminalExtension extends StructureTerminal {
      * @param type 订单类型
      * @param amount 要购买的数量
      */
-    private releaseOrder(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
+    private releaseOrder(resourceType: ResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
         console.log('挂单', this.room.name, resourceType, type, amount)
-        // 检查房间内是否已经有对应资源的订单
-        if (this.room.memory.holdOrders && resourceType in this.room.memory.holdOrders) {
-            const order = Game.market.getOrderById(this.room.memory.holdOrders[resourceType])
-
-            // 订单可用，保证其数量大于需求
-            if (order && order.type === type) {
-                // 数量不足，增大订单数量
-                if (order.amount < amount) {
-                    const actionResult = Game.market.extendOrder(order.id, amount - order.amount)
-                    if (actionResult !== OK) console.log(`[${this.room.name} Terminal] 订单扩容异常, Game.market.extendOrder 返回值 ${actionResult}`) 
-                    else console.log(`[${this.room.name} Terminal] 订单扩容成功 ${order.id}`) 
-                }
-
+        // 检查是否已经有对应资源的订单
+        const order = this.getExistOrder(resourceType, type)
+        
+        // 存在就追加订单
+        if (order) {
+            // 先调整下价格
+            console.log(`[${this.room.name} Terminal] 尝试调整订单价格 ${order.id}`)
+            let result = Game.market.changeOrderPrice(order.id, this.getOrderPrice(resourceType, type))
+            if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                console.log(`[${this.room.name} Terminal] 没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
                 return this.setNextIndex()
             }
-            // 订单不可用，移除缓存
-            else delete this.room.memory.holdOrders[resourceType]
+
+            // 再调整下数量
+            console.log(`[${this.room.name} Terminal] 扩充订单容量 ${order.id}`)
+            result = Game.market.extendOrder(order.id, amount)
+            if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                console.log(`[${this.room.name} Terminal] 没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
+            }
+        }
+        // 不存在就新建订单
+        else {
+            const result = Game.market.createOrder({
+                type,
+                resourceType,
+                price: this.getOrderPrice(resourceType, type),
+                totalAmount: amount,
+                roomName: this.room.name
+            })
+            console.log(`[${this.room.name} Terminal] 创建新订单 ${order.id} 结果 ${result}`)
+
+            if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                console.log(`[${this.room.name} Terminal] 没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
+            }
+            else if (result === ERR_FULL) {
+                console.log(`[${this.room.name} Terminal] 订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`)
+            }
         }
 
-        // 新增订单
-        // const actionResult = Game.market.createOrder({ type, resourceType, })
+        // 无论成功与否都直接下一个，因为挂单之后就不需要自己操作了
+        this.setNextIndex()
+    }
 
-        // 判断返回值
+    /**
+     * 在已有的订单中检查是否有相同类型的订单
+     * 
+     * @param resourceType 要搜索的资源类型
+     * @param type 订单类型
+     * @returns 找到的订单
+     */
+    private getExistOrder(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL): Order | undefined {
+        // 遍历所有自己的订单进行检查
+        for (const orderId in Game.market.orders) {
+            const order = Game.market.orders[orderId]
+
+            if (
+                order.resourceType === resourceType && 
+                order.type === type &&
+                order.roomName === this.room.name
+            ) return order
+        }
+
+        return undefined
     }
 
     /**
@@ -322,8 +363,7 @@ export default class TerminalExtension extends StructureTerminal {
         // console.log(`${this.room.name} 为 ${targetOrder.resourceType} 找到了一个合适的订单 类型: ${targetOrder.type} 单价: ${targetOrder.price}`)
         // 订单合适，写入缓存并要路费
         this.room.memory.targetOrderId = targetOrder.id
-        
-        if (amount < 0) amount *= -1
+
         // 想要卖出的数量有可能比订单数量大，所以计算路费的时候要考虑到
         const cost = Game.market.calcTransactionCost(amount > targetOrder.amount ? amount : targetOrder.amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就问 sotrage 要
@@ -377,7 +417,7 @@ export default class TerminalExtension extends StructureTerminal {
         if (orders.length <= 0) return null
 
         // price 升序找到最适合的订单
-        // 买入找price最低的 卖出找price最高的
+        // 买入找 price 最低的 卖出找 price 最高的
         const sortedOrders = _.sortBy(orders, order => order.price)
         // console.log('订单单价', sortedOrders.map(order => order.price))
         const targetOrder = sortedOrders[filter.type === ORDER_SELL ? 0 : (sortedOrders.length - 1)]
@@ -399,8 +439,29 @@ export default class TerminalExtension extends StructureTerminal {
      * @param resourceType 资源类型
      * @param type 买单还是买单
      */
-    private getOrderPrice(resourceType: MarketResourceConstant, type: ORDER_BUY | ORDER_SELL): void {
-        
+    private getOrderPrice(resourceType: ResourceConstant, type: ORDER_BUY | ORDER_SELL): number | undefined {
+        // 卖单用市场均价
+        if (type === ORDER_SELL) {
+            const history = Game.market.getHistory(resourceType)
+            if (history.length > 0) return history[0].avgPrice
+            else {
+                Game.notify(`[${this.room.name} terminal] 无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`)
+                console.log(`[${this.room.name} terminal] 无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`)
+
+                return undefined
+            }
+        }
+        // 买单挂最高
+        else {
+            // 拉取市场订单作为参考
+            const orders = Game.market.getAllOrders({ resourceType, type })
+            // 降序排列，价高在前，方便下面遍历
+            const sortedOrders = _.sortBy(orders, order => -order.price)
+            // 找到价格合理的订单中售价最高的
+            const targetOrder = sortedOrders.find(order => this.checkPrice(order))
+
+            return targetOrder ? targetOrder.price : undefined
+        }
     }
 
     /**
