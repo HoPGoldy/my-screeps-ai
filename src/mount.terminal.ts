@@ -25,8 +25,8 @@ export default class TerminalExtension extends StructureTerminal {
         // 没有配置监听任务的话就跳过
         if (!resource) return 
 
-        // 只有 dealOrder 下命令了才能继续执行 ResourceListener
-        if (this.dealOrder(resource)) this.ResourceListener(resource)
+        // 只有 dealOrder 下命令了才能继续执行 resourceListener
+        if (this.dealOrder(resource)) this.resourceListener(resource)
     }
 
     /**
@@ -175,7 +175,7 @@ export default class TerminalExtension extends StructureTerminal {
     /**
      * 继续处理之前缓存的订单
      * 
-     * @returns 是否需要继续执行 ResourceListener
+     * @returns 是否需要继续执行 resourceListener
      */
     public dealOrder(resource: TerminalOrderTask): boolean {
         // 没有订单需要处理
@@ -224,7 +224,7 @@ export default class TerminalExtension extends StructureTerminal {
      * 资源监听
      * 检查资源是否符合用户给定的期望
      */
-    public ResourceListener(resource: TerminalOrderTask): void {
+    public resourceListener(resource: TerminalOrderTask): void {
         const resourceAmount = this.store[resource.type]
         // 卖出监听，超过才进行卖出
         if (resource.mod === 'sell') {
@@ -247,12 +247,18 @@ export default class TerminalExtension extends StructureTerminal {
         }
 
         // 根据交易策略来执行不同的逻辑
-        if (resource.supplementAction === 'release') {
-            this.releaseOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, Math.abs(resourceAmount - resource.amount))
-        }
-        else if (resource.supplementAction === 'take') {
-            this.takeOrder(resource.type, (resourceAmount > resource.amount) ? ORDER_BUY : ORDER_SELL, Math.abs(resourceAmount - resource.amount), resource.priceLimit)
-        }
+        if (resource.supplementAction === 'release') this.releaseOrder(
+            resource.type,
+            resource.mod,
+            Math.abs(resourceAmount - resource.amount)
+        )
+        else if (resource.supplementAction === 'take') this.takeOrder(
+            resource.type,
+            // 这里订单类型取反是因为如果我想**买入**一个订单，那我就要拍下一个**卖单**
+            resource.mod === 'buy' ? ORDER_SELL : ORDER_BUY, 
+            Math.abs(resourceAmount - resource.amount),
+            resource.priceLimit
+        )
         else {
             this.log(`未知交易策略 ${resource.supplementAction}`, 'yellow')
             return this.setNextIndex()
@@ -273,19 +279,24 @@ export default class TerminalExtension extends StructureTerminal {
         
         // 存在就追加订单
         if (order) {
-            // 先调整下价格
-            this.log(`尝试调整订单价格 ${order.id}`)
-            let result = Game.market.changeOrderPrice(order.id, this.getOrderPrice(resourceType, type))
-            if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
-                return this.setNextIndex()
+            // 价格有变化就更新价格
+            const price = this.getOrderPrice(resourceType, type)
+            if (price !== order.price) {
+                const result = Game.market.changeOrderPrice(order.id, this.getOrderPrice(resourceType, type))
+
+                if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
+                    return this.setNextIndex()
+                }
             }
 
-            // 再调整下数量
-            this.log(`扩充订单容量 ${order.id}`)
-            result = Game.market.extendOrder(order.id, amount)
-            if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
+            // 如果订单已经吃了一半了就扩容下数量
+            if (order.remainingAmount / amount < 0.5) {
+                const result = Game.market.extendOrder(order.id, amount - order.remainingAmount)
+
+                if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
+                }
             }
         }
         // 不存在就新建订单
@@ -426,14 +437,16 @@ export default class TerminalExtension extends StructureTerminal {
      * @param type 买单还是买单
      */
     private getOrderPrice(resourceType: ResourceConstant, type: ORDER_BUY | ORDER_SELL): number | undefined {
+        // 先查看缓存
+        const cachePrice = global.resourcePrice[`${resourceType}/${type}`]
+        if (cachePrice) return cachePrice
+
+        let price = undefined
         // 卖单用市场均价
         if (type === ORDER_SELL) {
             const history = Game.market.getHistory(resourceType)
-            if (history.length > 0) return history[0].avgPrice
-            else {
-                this.log(`无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`, 'yellow', true)
-                return undefined
-            }
+            if (history.length <= 0) this.log(`无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`, 'yellow', true)
+            else price = history[0].avgPrice
         }
         // 买单挂最高
         else {
@@ -444,8 +457,12 @@ export default class TerminalExtension extends StructureTerminal {
             // 找到价格合理的订单中售价最高的
             const targetOrder = sortedOrders.find(order => this.checkPrice(order))
 
-            return targetOrder ? targetOrder.price : undefined
+            price = targetOrder ? targetOrder.price : undefined
         }
+
+        // 存入缓存并返回
+        global.resourcePrice[`${resourceType}/${type}`] = price
+        return price
     }
 
     /**

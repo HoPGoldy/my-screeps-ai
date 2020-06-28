@@ -267,7 +267,7 @@ class CreepControl extends Room {
 
             return stats.join('\n')
         }
-        
+
         // 有 storage 了，给 harvester 添加目标，并发布额外的 harvester
         stats.push('发现 storage，发布 collector，upgrader，transfer')
         for (let i = 0; i <= 3; i ++) {
@@ -355,7 +355,7 @@ class CreepControl extends Room {
      * @param upgraderName 要询问是否继续孵化的 upgrader 名称
      */
     public needUpgraderRespawn(upgraderName: string): boolean {
-        if (upgraderName === `${this.name} upgrader1`) this.planCreep()
+        if (upgraderName === `${this.name} upgrader1`) this.planUpgrader()
 
         return creepApi.has(upgraderName)
     }
