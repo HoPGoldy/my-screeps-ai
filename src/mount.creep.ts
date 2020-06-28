@@ -452,8 +452,8 @@ class CreepExtension extends Creep {
 
         // 本 creep 的剩余容量
         const creepCapacity = this.store.getFreeCapacity()
-        // 目标建筑的可存放量
-        const targetCapacity = target.store.getFreeCapacity(resourceType)
+        // 目标建筑的可存放量，由于这里的目标建筑限制型和非限制型存储都有，这里一律作为非限制性检查来减少代码量
+        const targetCapacity = (target.store as StoreDefinitionUnlimited).getFreeCapacity(resourceType)
         // 来源建筑的当前存量
         const sourceCapacity = source.store[resourceType]
 
