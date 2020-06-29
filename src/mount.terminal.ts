@@ -273,7 +273,6 @@ export default class TerminalExtension extends StructureTerminal {
      * @param amount 要购买的数量
      */
     private releaseOrder(resourceType: ResourceConstant, type: ORDER_BUY | ORDER_SELL, amount: number) {
-        this.log(`挂单 ${this.room.name} ${resourceType} ${type} ${amount}`)
         // 检查是否已经有对应资源的订单
         const order = this.getExistOrder(resourceType, type)
         

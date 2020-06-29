@@ -1,5 +1,5 @@
 import mountRoomBase from './mount.roomBase'
-import { createHelp, log } from './utils'
+import { createHelp, log, createLink } from './utils'
 import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
 
@@ -23,8 +23,10 @@ class RoomExtension extends Room {
      * @param notify 是否发送邮件
      */
     log(content:string, instanceName: string = '', color: Colors | undefined = undefined, notify: boolean = false): void {
-        const prefixes = instanceName ? [ this.name, instanceName ] : [ this.name ]
-
+        // 为房间名添加超链接
+        const roomName = createLink(this.name, `https://screeps.com/a/#!/room/${Game.shard.name}/${this.name}`, false)
+        // 生成前缀并打印日志
+        const prefixes = instanceName ? [ roomName, instanceName ] : [ roomName ]
         log(content, prefixes, color, notify)
     }
     /**
