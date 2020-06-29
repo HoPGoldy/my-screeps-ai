@@ -518,14 +518,36 @@ class LinkExtension extends StructureLink {
     public work(): void {
         // 冷却好了再执行
         if (this.cooldown != 0) return
-        // 兜底
-        if (!this.room.memory.links) this.room.memory.links = {}
 
-        // 读配置项
-        const linkWorkFunctionName: string = this.room.memory.links[this.id]
-        if (!linkWorkFunctionName) return this.log(`请为 ${this.id} 分配角色`, 'yellow')
-        
-        if (this[linkWorkFunctionName]) this[linkWorkFunctionName]()
+        // 检查内存字段来决定要执行哪种职责的工作
+        if (this.room.memory.centerLinkId && this.room.memory.centerLinkId === this.id) this.centerWork()
+        else if (this.room.memory.upgradeLinkId && this.room.memory.upgradeLinkId === this.id) { }
+        else this.sourceWork()
+    }
+
+    /**
+     * 回调 - 建造完成
+     * 分配默认职责
+     */
+    public onBuildComplete(): void {
+        // 如果附近有 Source 就转换为 SourceLink
+        const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
+        if (inRangeSources.length > 0) {
+            this.asSource()
+            return
+        }
+
+        // 附近有 CT 旗帜就转换为 CenterLink
+        const inRangeCenterTransferFlag = this.pos.findInRange(FIND_FLAGS, 1, {
+            filter: flag => flag.name === `${this.room.name} ct`
+        })
+        if (inRangeCenterTransferFlag.length > 0) {
+            this.asCenter()
+            return
+        }
+
+        // 否则就默认转换为 UpgraderLink
+        this.asUpgrade()
     }
 
     /**
@@ -533,9 +555,6 @@ class LinkExtension extends StructureLink {
      */
     public asSource(): string {
         this.clearRegister()
-        if (!this.room.memory.links) this.room.memory.links = {}
-
-        this.room.memory.links[this.id] = 'sourceWork'
 
         // 两格之内的 source 都可以用自己来传递能量
         const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
@@ -559,9 +578,6 @@ class LinkExtension extends StructureLink {
      */
     public asCenter(): string {
         this.clearRegister()
-        if (!this.room.memory.links) this.room.memory.links = {}
-
-        this.room.memory.links[this.id] = 'centerWork'
         this.room.memory.centerLinkId = this.id
 
         // 注册中央 link 的同时发布 centerTransfer
@@ -577,9 +593,6 @@ class LinkExtension extends StructureLink {
     public asUpgrade(): string {
         this.clearRegister()
 
-        if (!this.room.memory.links) this.room.memory.links = {}
-        // upgradeWork 方法不存在 所以它什么也不做
-        this.room.memory.links[this.id] = 'upgradeWork'
         this.room.memory.upgradeLinkId = this.id
         return `${this} 已注册为升级 link`
     }
@@ -611,13 +624,12 @@ class LinkExtension extends StructureLink {
     private clearRegister() {
         if (this.room.memory.centerLinkId == this.id) delete this.room.memory.centerLinkId
         if (this.room.memory.upgradeLinkId == this.id) delete this.room.memory.upgradeLinkId
-        if (this.room.memory.links && this.room.memory.links.hasOwnProperty(this.id)) delete this.room.memory.links[this.id]
     }
 
     /**
      * 扮演中央 link
      * 
-     * 否则向房间中的资源转移队列推送任务
+     * 能量快满时向房间中的资源转移队列推送任务
      */
     private centerWork(): void {
         // 能量为空则待机
@@ -676,7 +688,6 @@ class LinkExtension extends StructureLink {
         // 不存在说明 link 已经被摧毁了 清理并退出
         if (!link) {
             delete this.room.memory[memoryKey]
-            delete this.room.memory.links[linkId]
             return null
         }
         else return link

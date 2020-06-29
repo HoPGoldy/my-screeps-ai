@@ -679,14 +679,9 @@ interface RoomMemory {
     observerId: string
     sourceIds: string[]
     
-    // Link 的专用内存字段
-    links?: {
-        // 使用 link id 来标注其角色
-        [linkId: string]: string
-    }
-    // 中央 link 的 id，source Link 会通过这个字段进行查找
+    // 中央 link 的 id
     centerLinkId?: string
-    // 升级 link 的 id，source / center Link 会通过这个字段进行查找
+    // 升级 link 的 id
     upgradeLinkId?: string
 
     // 一个游戏时间，标注了 mineral 什么时候会回满
