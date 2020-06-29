@@ -292,7 +292,7 @@ export function getCreepName(role: CreepRoleConstant, roomName: string, index?: 
  */
 export function log(content: string, prefixes: string[] = [], color: Colors = null, notify: boolean = false): OK {
     // 有前缀就组装在一起
-    let prefix = prefixes.length > 0 ? `【${prefixes.join(' ')}】` : ''
+    let prefix = prefixes.length > 0 ? `【${prefixes.join(' ')}】 ` : ''
     // 指定了颜色
     prefix = colorful(prefix, color, true)
 

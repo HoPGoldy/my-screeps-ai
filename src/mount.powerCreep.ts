@@ -1,9 +1,9 @@
 import { maxOps } from './setting'
+import { log } from './utils'
 
 // 挂载拓展到 PowerCreep 原型
 export default function () {
     if (!PowerCreep.prototype._move) PowerCreep.prototype._move = Creep.prototype._move
-    if (!PowerCreep.prototype.log) PowerCreep.prototype.log = Creep.prototype.log
 
     _.assign(PowerCreep.prototype, PowerCreepExtension.prototype)
 }
@@ -25,6 +25,20 @@ class PowerCreepExtension extends PowerCreep {
         if (!powerTask) return
 
         this.executeTask(powerTask as PowerConstant)
+    }
+
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param instanceName 发送日志的实例名
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    log(content: string, color: Colors = undefined, notify: boolean = false): void {
+        // 因为 pc 可能未孵化，所以这里需要特别判断一下
+        if (!this.room) log(content, [ this.name ], color, notify)
+        else this.room.log(content, this.name, color, notify)
     }
 
     /**

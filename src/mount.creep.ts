@@ -79,7 +79,7 @@ class CreepExtension extends Creep {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content:string, color: Colors = undefined, notify: boolean = false): void {
+    log(content: string, color: Colors = undefined, notify: boolean = false): void {
         this.room.log(content, this.name, color, notify)
     }
 
