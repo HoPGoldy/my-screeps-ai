@@ -535,3 +535,6 @@ export const DEAL_RATIO = {
 
 // 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
 export const minWallHits = 8000
+
+// pc 空闲时会搓 ops，下面是搓的上限
+export const maxOps = 50000

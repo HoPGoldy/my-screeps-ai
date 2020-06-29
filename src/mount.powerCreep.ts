@@ -1,3 +1,5 @@
+import { maxOps } from './setting'
+
 // 挂载拓展到 PowerCreep 原型
 export default function () {
     if (!PowerCreep.prototype._move) PowerCreep.prototype._move = Creep.prototype._move
@@ -16,7 +18,12 @@ class PowerCreepExtension extends PowerCreep {
 
         // 获取队列中的第一个任务并执行
         // 没有任务的话就搓 ops
-        const powerTask = this.room.getPowerTask() || PWR_GENERATE_OPS
+        let powerTask = this.room.getPowerTask()
+        
+        // 没有任务，并且 ops 不够，就搓 ops
+        if (!powerTask && this.room.terminal && this.room.terminal.store[RESOURCE_OPS] < maxOps) powerTask = PWR_GENERATE_OPS
+        if (!powerTask) return
+
         this.executeTask(powerTask as PowerConstant)
     }
 
