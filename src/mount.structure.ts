@@ -563,7 +563,7 @@ class LinkExtension extends StructureLink {
 
         // 两格之内的 source 都可以用自己来传递能量
         const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
-        inRangeSources.forEach(source => {
+        const changedCreepNames = inRangeSources.map(source => {
             const index = this.room.memory.sourceIds.indexOf(source.id)
 
             // 根据对应的索引修改对应采集单位的目标建筑
@@ -572,10 +572,10 @@ class LinkExtension extends StructureLink {
                 targetId: this.id
             }, this.room.name)
 
-            this.log(`已将 harvester${index} 的目标修改为该 sourceLink`)
+            return `harvester${index}`
         })
 
-        return `${this} 已注册为源 link`
+        return `${this} 已注册为源 link，${changedCreepNames.join(', ')} 的目标已重定向为该 sourceLink`
     }
 
     /**
