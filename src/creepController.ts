@@ -106,12 +106,12 @@ export const creepApi = {
      * @param creepNamePart creep 名称关键字
      */
     batchRemove(creepNamePart: string): OK | ERR_INVALID_ARGS {
-        if (creepNamePart) return ERR_INVALID_ARGS
+        if (!creepNamePart) return ERR_INVALID_ARGS
 
         Object.keys(Memory.creepConfigs).map(configName => {
             if (configName.includes(creepNamePart)) {
                 delete Memory.creepConfigs[configName]
-               Game.creeps[configName] && Game.creeps[configName].suicide()
+                Game.creeps[configName] && Game.creeps[configName].suicide()
             }
         })
 

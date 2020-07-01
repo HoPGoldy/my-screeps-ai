@@ -333,7 +333,7 @@ class CreepControl extends Room {
             numberConfig.find(config => {
                 if (energy > config.energy) {
                     // 房间等级大于 8 就不发布了，不然后期 cpu 撑不住
-                    if (this.controller.level >= 8) addUpgrader(config.upgraderNum, this.storage.id)
+                    if (this.controller.level < 8) addUpgrader(config.upgraderNum, this.storage.id)
                     return true
                 }
                 return false
