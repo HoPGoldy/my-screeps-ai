@@ -71,34 +71,29 @@ const funcAlias = [
             if (!Memory.commodities) return '未启动商品生产线'
 
             let stateStr = [ ]
-            // 遍历所有生产线
-            for (const deopsitType in Memory.commodities) {
-                stateStr.push(`[${deopsitType} 商品合成]`)
+            // 遍历所有等级的房间
+            for (const level in Memory.commodities) {
+                stateStr.push(`[${level} 级工厂]`)
+                const nodeNames = Memory.commodities[level]
+                if (nodeNames.length <= 0) {
+                    stateStr.push('    - 无')
+                    continue
+                }
 
-                // 遍历该生产线所有等级
-                for (const level in Memory.commodities[deopsitType].node) {
-                    stateStr.push(`  [${level} 级工厂]`)
-                    const nodeNames = Memory.commodities[deopsitType].node[level]
-                    if (nodeNames.length <= 0) {
-                        stateStr.push('    - 无')
-                        continue
+                // 遍历所有房间
+                // 这里返回的是筛选过的房间名
+                // 所有访问不到的房间会被替换成 false
+                const currentRoomNames = nodeNames.map(roomName => {
+                    if (!Game.rooms[roomName] || !Game.rooms[roomName].factory) {
+                        stateStr.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
+                        return false
                     }
 
-                    // 遍历所有房间
-                    // 这里返回的是筛选过的房间名
-                    // 所有访问不到的房间会被替换成 false
-                    const currentRoomNames = nodeNames.map(roomName => {
-                        if (!Game.rooms[roomName] || !Game.rooms[roomName].factory) {
-                            stateStr.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
-                            return false
-                        }
+                    stateStr.push(getRoomFactoryState(Game.rooms[roomName]))
+                })
 
-                        stateStr.push(getRoomFactoryState(Game.rooms[roomName]))
-                    })
-
-                    // 剔除所有 false 并回填
-                    Memory.commodities[deopsitType][level] = currentRoomNames.filter(roomName => !_.isUndefined(roomName))
-                }
+                // 剔除所有 false 并回填
+                Memory.commodities[level] = currentRoomNames.filter(roomName => !_.isUndefined(roomName))
             }
 
             return stateStr.join('\n')
@@ -596,9 +591,12 @@ function getRoomFactoryState(room: Room): string {
     }
 
     // 统计顶级产物数量
-    if (room.terminal) logs.push('[产物数量]', ...factoryTopTargets[memory.depositType][memory.level].map(res => {
-        return `${res}*${room.terminal.store[res]}`
-    }))
+    if (room.terminal) {
+        const topResource = _.flatten(memory.depositTypes.map<string[]>(type => {
+            return factoryTopTargets[type][memory.level].map<string>(res => `${res}*${room.terminal.store[res]}`)
+        }))
+        logs.push('[产物数量]', ...topResource)
+    }
     else logs.push('异常!未发现终端')
 
     // 组装统计信息

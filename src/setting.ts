@@ -225,6 +225,7 @@ export const LAB_STATE = {
 
 /**
  * lab 集群的目标产物及其数量列表
+ * 更新此表后所有工作中的 lab 集群都会自动合成新增的产物
  */
 export const labTarget = [
     // 基础
@@ -260,15 +261,6 @@ export const labTarget = [
  * 超过该时长则不会再进行挖掘
  */
 export const DEPOSIT_MAX_COOLDOWN = 100
-
-/**
- *【废弃】 observer 的资源查找数量上限
- * 单个房间找到这么多数量的资源后就不会再进行查找
- */
-export const OBSERVER_RESOURCE_LIMIT = {
-    POWER_BANK: 1,
-    DEPOSIT: 1
-}
 
 /**
  * observer 房间扫描间隔
@@ -439,6 +431,8 @@ export const FACTORY_STATE = {
 /**
  * factory 合成黑名单
  * 工厂在合成时不会将下属材料设置为任务目标
+ * 因为工厂会自行分级大型任务，当出现互为底物的产品时，就会出现下面的循环问题：
+ * 需要合成电池 > 检查发现需要能量 > 添加合成能量任务 > 检查原料发现需要电池 > 推送合成电池任务 > ...
  */
 export const factoryBlacklist = [
     RESOURCE_ENERGY,
@@ -498,16 +492,32 @@ export const factoryTopTargets: {
 /**
  * 商品的最大生产数量
  * 为了避免低级工厂一直抢夺更低级工厂的资源导致高级工厂无法合成，引入该配置项（例如 3 级工厂一直吃 2 级商品，导致 4 级工厂停工）
- * 未在该配置项中出现的资源将一直生产
+ * 一旦工厂发现目标产物数量已经超过下面设置的上限，就会选择其他的顶级产物，未在该配置项中出现的资源将一直生产。
  * 只有上面 factoryTopTargets 中规定的商品才会受此约束
  */
 export const commodityMax = {
     [RESOURCE_COMPOSITE]: 3000,
     [RESOURCE_LIQUID]: 1000,
+    // metal
     [RESOURCE_TUBE]: 700,
     [RESOURCE_FIXTURES]: 500,
     [RESOURCE_FRAME]: 200,
-    [RESOURCE_HYDRAULICS]: 50
+    [RESOURCE_HYDRAULICS]: 50,
+    // biomass
+    [RESOURCE_PHLEGM]: 700,
+    [RESOURCE_TISSUE]: 500,
+    [RESOURCE_MUSCLE]: 200,
+    [RESOURCE_ORGANOID]: 50,
+    // silicon
+    [RESOURCE_SWITCH]: 700,
+    [RESOURCE_TRANSISTOR]: 500,
+    [RESOURCE_MICROCHIP]: 200,
+    [RESOURCE_CIRCUIT]: 50,
+    // mist
+    [RESOURCE_CONCENTRATE]: 700,
+    [RESOURCE_EXTRACT]: 500,
+    [RESOURCE_SPIRIT]: 200,
+    [RESOURCE_EMANATION]: 50
 }
 
 /**

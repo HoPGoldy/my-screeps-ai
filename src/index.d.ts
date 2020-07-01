@@ -629,17 +629,14 @@ interface RoomMemory {
     // 建筑工地的坐标，用于在建造完成后进行 lookFor 来确认其是否成功修建了建筑
     constructionSitePos: number[]
     
-    // 房间内工厂生产的目标
-    factoryTarget: ResourceConstant
+    // 工厂内存
     factory: {
         // 当前房间的等级，由用户指定
-        level?: number
+        level?: 1 | 2 | 3 | 4 | 5
         // 下个顶级产物索引
         targetIndex: number
         // 本工厂参与的生产线类型
-        depositType?: DepositConstant
-        // 当前正在制作的顶级产品
-        topTarget?: CommodityConstant
+        depositTypes?: DepositConstant[]
         // 当该字段为真并且工厂在冷却时，就会执行一次底物是否充足的检查，执行完就会直接将该值移除
         produceCheck?: boolean
         // 当前工厂所处的阶段
@@ -854,18 +851,12 @@ interface Memory {
     },
     // 商品生产线配置
     commodities: {
-        // 不同的生产线有不同的配置项
-        [depositType: string]: {
-            // 生成线中的所有参与房间
-            // 以下键为等级，值为房间名称数组
-            node: {
-                1: string[]
-                2: string[]
-                3: string[]
-                4: string[]
-                5: string[]
-            }
-        }
+        // 键为工厂等级，值为被设置成对应等级的工厂所在房间名
+        1: string[]
+        2: string[]
+        3: string[]
+        4: string[]
+        5: string[]
     }
     // 所有 creep 的配置项，每次 creep 死亡或者新增时都会通过这个表来完成初始化
     creepConfigs: {
