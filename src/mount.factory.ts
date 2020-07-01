@@ -214,7 +214,7 @@ export default class FactoryExtension extends StructureFactory {
             if (this.room.memory.factory.produceCheck) {
                 // 发现材料不足了就进入下个阶段
                 if (!this.canContinueProduce()) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
-                // 移除标志位，每个冷却阶段只坚持一次材料是否充足就够了
+                // 移除标志位，每个冷却阶段只检查一次材料是否充足就够了
                 delete this.room.memory.factory.produceCheck
             }
             return
@@ -367,7 +367,9 @@ export default class FactoryExtension extends StructureFactory {
         }
 
         const shareTask = this.room.memory.shareTask
-        const topTargets: CommodityConstant[] = factoryTopTargets[memory.depositType][memory.level]
+        // 遍历自己内存中的所有生产线类型，从 factoryTopTargets 取出对应的顶级产物，然后展平为一维数组
+        const depositTypes = memory.depositTypes || []
+        const topTargets: CommodityConstant[] = _.flatten(depositTypes.map(type => factoryTopTargets[type][memory.level]))
         
         // 如果房间有共享任务并且任务目标需要自己生产的话
         if (shareTask && topTargets.includes(shareTask.resourceType as CommodityConstant)) {
@@ -429,66 +431,133 @@ export default class FactoryExtension extends StructureFactory {
     /**
      * 设置工厂等级
      * 
-     * @param depositType 生产线类型
      * @param level 等级
      * @returns ERR_INVALID_ARGS 生产线类型异常或者等级小于 1 或者大于 5
      * @returns ERR_NAME_EXISTS 工厂已经被 Power 强化，无法修改等级
      */
-    private setLevel(depositType: DepositConstant, level: number): OK | ERR_INVALID_ARGS | ERR_NAME_EXISTS {
+    private setLevel(level: 1 | 2 | 3 | 4 | 5): OK | ERR_INVALID_ARGS | ERR_NAME_EXISTS {
         if (!this.room.memory.factory) this.initMemory()
         const memory = this.room.memory.factory
 
-        // 类型不对返回异常
-        if (!(depositType in factoryTopTargets)) return ERR_INVALID_ARGS
         // 等级异常就返回错误
         if (level > 5 || level < 1) return ERR_INVALID_ARGS
 
         // 已经被 power 强化并且等级不符，无法设置等级
-        if (this.effects && this.effects[PWR_OPERATE_FACTORY] && (this.effects[PWR_OPERATE_FACTORY] as PowerEffect).level !== level) return ERR_NAME_EXISTS
+        if (
+            this.effects &&
+            this.effects[PWR_OPERATE_FACTORY] &&
+            (this.effects[PWR_OPERATE_FACTORY] as PowerEffect).level !== level
+        ) return ERR_NAME_EXISTS
 
-        // 如果之前注册过的话
-        if (!_.isUndefined(memory.level) && memory.depositType) {
-            // 移除过期的全局 comm 注册
-            if (memory.depositType in Memory.commodities) {
-                _.pull(Memory.commodities[memory.depositType].node[memory.level], this.room.name)
-            }
-            // 移除过期共享协议注册
-            factoryTopTargets[memory.depositType][memory.level].forEach(resType => {
-                this.room.shareRemoveSource(resType)
-            })
+        // 如果之前注册过的话，就取消注册
+        if (!_.isUndefined(memory.level) && memory.depositTypes) {
+            this.interactWithOutside('unregister', memory.depositTypes, level)
         }
 
         // 注册新的共享协议
-        factoryTopTargets[depositType][level].forEach(resType => {
-            this.room.shareAddSource(resType)
-        })
-        // 注册新的全局 comm
-        if (!Memory.commodities) Memory.commodities = {}
-        if (!Memory.commodities[depositType]) Memory.commodities[depositType] = {
-            node: {
-                1: [], 2: [], 3: [], 4: [], 5: []
-            }
-        }
-        Memory.commodities[depositType].node[level].push(this.room.name)
+        this.interactWithOutside('register', memory.depositTypes, level)
 
         // 更新内存属性
         this.room.memory.factory.level = level
-        this.room.memory.factory.depositType = depositType
         return OK
     }
 
     /**
      * 用户操作：设置工厂等级
      * 
-     * @param depositType 生产线类型
      * @param level 等级
      */
-    public setlevel(depositType: DepositConstant, level: number): string {
-        const result = this.setLevel(depositType, level)
+    public setlevel(level: 1 | 2 | 3 | 4 | 5): string {
+        const result = this.setLevel(level)
 
-        if (result === OK) return `[${this.room.name} factory] 设置成功，${depositType} 生产线 ${level} 级`
+        if (result === OK) return `[${this.room.name} factory] 已成功设置为 ${level} 级`
         else if (result === ERR_INVALID_ARGS) return `[${this.room.name} factory] 设置失败，请检查参数是否正确`
-        else if (result === ERR_NAME_EXISTS) return `[${this.room.name} factory] 等级已锁定，请指定正确等级或重建工厂后再次指定`
+        else if (result === ERR_NAME_EXISTS) return `[${this.room.name} factory] 等级已锁定，请重建工厂后再次指定`
+    }
+
+    /**
+     * 设置生产线
+     * 可以指定多个，会直接覆盖之前的配置，所以需要包含所有要进行的生产线类别
+     * @param depositTypes 要生成的生产线类型
+     * @returns ERR_INVALID_TARGET 尚未等级工厂等级
+     */
+    private setChain(...depositTypes: DepositConstant[]): ERR_INVALID_TARGET | OK {
+        const memory = this.room.memory.factory
+        if (!memory || !memory.level) return ERR_INVALID_TARGET
+        
+        // 移除老的注册
+        this.interactWithOutside('unregister', memory.depositTypes, memory.level)
+        // 进行新的注册
+        this.interactWithOutside('register', depositTypes, memory.level)
+        
+        this.room.memory.factory.depositTypes = depositTypes
+        return OK
+    }
+
+    /**
+     * 用户操作 - 批量设置生产线
+     * 
+     * @param depositTypes 要设置的生产线类型
+     */
+    public setchain(...depositTypes: DepositConstant[]): string {
+        const result = this.setChain(...depositTypes)
+        
+        if (result === OK) return `[${this.room.name} factory] 已成功设置为 ${depositTypes.join(', ')} 生产线`
+        else if (result === ERR_INVALID_TARGET) {
+            const command = colorful(`Game.rooms.${this.room.name}.factory.setlevel`, 'yellow')
+            const help = colorful(`Game.rooms.${this.room.name}.factory.help`, 'yellow') + '()'
+            return `[${this.room.name} factory] 设置失败，请先执行 ${command}, 查看 ${help} 获取更多帮助`
+        }
+    }
+
+    /**
+     * 清空当前配置的生产线
+     * 
+     * @returns 没有找到有效的配置项
+     */
+    private clearChain(): ERR_NOT_FOUND | OK {
+        const memory = this.room.memory.factory
+        if (!memory || !memory.level || !memory.depositTypes) return ERR_NOT_FOUND
+
+        // 移除老的注册
+        this.interactWithOutside('unregister', memory.depositTypes, memory.level)
+        delete this.room.memory.factory.depositTypes
+        return OK
+    }
+
+    /**
+     * 用户操作 - 清空当前配置的生产线
+     */
+    public clearchain(): string {
+        const result = this.clearChain()
+
+        if (result === OK) return `[${this.room.name} factory] 生产线已清空`
+        else if (result === ERR_NOT_FOUND) return `[${this.room.name} factory] 尚未进行生产线配置`
+    }
+
+    /**
+     * 与外界交互
+     * 包含了对 Memory.commodities 和资源共享协议的注册与取消注册
+     * 
+     * @param action register 执行注册，unregister 取消注册
+     * @param depositTypes 生产线类型，可以为 undefined
+     * @param level 工厂等级
+     */
+    private interactWithOutside(action: 'register' | 'unregister', depositTypes: DepositConstant[], level: 1 | 2 | 3 | 4 | 5) {
+        // 兜个底
+        if (!Memory.commodities) Memory.commodities = { 1: [], 2: [], 3: [], 4: [], 5: [] }
+        // 与 Memory.commodities 交互
+        if (action === 'register') _.pull(Memory.commodities[level], this.room.name)
+        else Memory.commodities[level].push(this.room.name)
+        
+        // 与资源共享协议交互
+        depositTypes = depositTypes || []
+        depositTypes.forEach(type => {
+            factoryTopTargets[type][level].forEach(resType => {
+                if (action === 'register') this.room.shareAddSource(resType)
+                else this.room.shareRemoveSource(resType)
+            })
+        })
     }
 
     /**
@@ -516,7 +585,10 @@ export default class FactoryExtension extends StructureFactory {
         const actionResult = this.execRemove()
 
         if (actionResult === ERR_NOT_FOUND) return `[${this.room.name} factory] 尚未启用`
-        if (actionResult === OK) return `[${this.room.name} factory] 已启动废弃进程，正在搬出所有资源，手动移除 Room.memory.factory.remove 字段可以终止该进程`
+        if (actionResult === OK) {
+            const stopCommand = colorful(`delete Game.rooms.${this.room.name}.memory.factory.remove`, 'yellow')
+            return `[${this.room.name} factory] 已启动废弃进程，正在搬出所有资源，执行 ${stopCommand} 以终止进程`
+        }
     }
 
     /**
@@ -532,7 +604,7 @@ export default class FactoryExtension extends StructureFactory {
 
         // 工厂基本信息
         let logs = [
-            `生产线类型: ${memory.depositType || '未指定'} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
+            `生产线类型: ${memory.depositTypes.join(', ') || '未指定'} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
             `生产状态: ${workStats} 当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
@@ -556,7 +628,7 @@ export default class FactoryExtension extends StructureFactory {
 
     /**
      * 用户操作：重启 factory
-     * 会同时将工厂从休眠中唤醒
+     * 会同时将工厂从停工中唤醒
      */
     public on(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
@@ -583,6 +655,7 @@ export default class FactoryExtension extends StructureFactory {
 
     /**
      * 用户操作 - 清除上面设置的特定目标
+     * 如果之前设置过工厂状态的话（setlevel），将会恢复到对应的自动生产状态
      */
     public clear(): string {
         if (!this.room.memory.factory) return `[${this.room.name} factory] 未启用`
@@ -603,12 +676,23 @@ export default class FactoryExtension extends StructureFactory {
     public help(): string {
         return createHelp([
             {
-                title: '设置工厂生产线及等级',
+                title: '设置工厂等级（新工厂请首先执行该方法）',
                 params: [
                     { name: 'depositType', desc: '生产线类型，必须为 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON 之一' },
                     { name: 'level', desc: '该工厂的生产等级， 1~5 之一'}
                 ],
                 functionName: 'setlevel'
+            },
+            {
+                title: '设置生产线（setlevel 之后再执行这个），会覆盖之前的设置',
+                params: [
+                    { name: '...depositTypes', desc: '生产线类型，必须为下列常量 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON，可以指定多个' },
+                ],
+                functionName: 'setchain'
+            },
+            {
+                title: '清空所有生产线',
+                functionName: 'clearchain'
             },
             {
                 title: '显示工厂详情',

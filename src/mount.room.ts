@@ -587,11 +587,10 @@ class RoomExtension extends Room {
         if (!(resourceType in Memory.resourceSourceMap)) Memory.resourceSourceMap[resourceType] = []
         
         const alreadyRegister = Memory.resourceSourceMap[resourceType].find(name => name == this.name)
+        // 如果已经被添加过了就返回 false
+        if (alreadyRegister) return false
 
-        // 如果没有被添加的话就添加，有的话直接返回 false
-        if (!alreadyRegister) Memory.resourceSourceMap[resourceType].push(this.name)
-        else return false
-
+        Memory.resourceSourceMap[resourceType].push(this.name)
         return true
     }
 
