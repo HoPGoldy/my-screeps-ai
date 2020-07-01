@@ -64,7 +64,7 @@ export default class FactoryExtension extends StructureFactory {
         // 如果存在废弃进程，则移除所有配置
         if (this.room.memory.factory.remove) {
             delete this.room.memory.factory
-            return
+            return this.log(`工厂已废弃，重新初始化以开始生产`, 'green')
         }
 
         if (!this.room.terminal) {
@@ -412,6 +412,7 @@ export default class FactoryExtension extends StructureFactory {
         else this.room.memory.factory.targetIndex = (memory.targetIndex + 1 >= topTargets.length) ?
             0 : memory.targetIndex + 1
 
+        if (!topTarget) return 0
         // 添加任务，一次只合成两个顶级产物
         return this.room.memory.factory.taskList.push({
             target: topTarget,
@@ -450,8 +451,8 @@ export default class FactoryExtension extends StructureFactory {
         ) return ERR_NAME_EXISTS
 
         // 如果之前注册过的话，就取消注册
-        if (!_.isUndefined(memory.level) && memory.depositTypes) {
-            this.interactWithOutside('unregister', memory.depositTypes, level)
+        if (!_.isUndefined(memory.level)) {
+            this.interactWithOutside('unregister', memory.depositTypes, memory.level)
         }
 
         // 注册新的共享协议
@@ -502,37 +503,15 @@ export default class FactoryExtension extends StructureFactory {
     public setchain(...depositTypes: DepositConstant[]): string {
         const result = this.setChain(...depositTypes)
         
-        if (result === OK) return `[${this.room.name} factory] 已成功设置为 ${depositTypes.join(', ')} 生产线`
+        if (result === OK) {
+            const log = depositTypes.length > 0 ? `已成功设置为 ${depositTypes.join(', ')} 生产线` : '已清空生产线'
+            return `[${this.room.name} factory] ${log}`
+        }
         else if (result === ERR_INVALID_TARGET) {
             const command = colorful(`Game.rooms.${this.room.name}.factory.setlevel`, 'yellow')
             const help = colorful(`Game.rooms.${this.room.name}.factory.help`, 'yellow') + '()'
             return `[${this.room.name} factory] 设置失败，请先执行 ${command}, 查看 ${help} 获取更多帮助`
         }
-    }
-
-    /**
-     * 清空当前配置的生产线
-     * 
-     * @returns 没有找到有效的配置项
-     */
-    private clearChain(): ERR_NOT_FOUND | OK {
-        const memory = this.room.memory.factory
-        if (!memory || !memory.level || !memory.depositTypes) return ERR_NOT_FOUND
-
-        // 移除老的注册
-        this.interactWithOutside('unregister', memory.depositTypes, memory.level)
-        delete this.room.memory.factory.depositTypes
-        return OK
-    }
-
-    /**
-     * 用户操作 - 清空当前配置的生产线
-     */
-    public clearchain(): string {
-        const result = this.clearChain()
-
-        if (result === OK) return `[${this.room.name} factory] 生产线已清空`
-        else if (result === ERR_NOT_FOUND) return `[${this.room.name} factory] 尚未进行生产线配置`
     }
 
     /**
@@ -547,8 +526,8 @@ export default class FactoryExtension extends StructureFactory {
         // 兜个底
         if (!Memory.commodities) Memory.commodities = { 1: [], 2: [], 3: [], 4: [], 5: [] }
         // 与 Memory.commodities 交互
-        if (action === 'register') _.pull(Memory.commodities[level], this.room.name)
-        else Memory.commodities[level].push(this.room.name)
+        if (action === 'register') Memory.commodities[level].push(this.room.name)
+        else _.pull(Memory.commodities[level], this.room.name)
         
         // 与资源共享协议交互
         depositTypes = depositTypes || []
@@ -601,10 +580,12 @@ export default class FactoryExtension extends StructureFactory {
         const workStats = memory.pause ? colorful('[暂停中]', 'yellow') :
         memory.sleep ? colorful(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`, 'yellow') : colorful('工作中', 'green')
 
+        // 自己加入的生产线
+        const joinedChain = memory.depositTypes ? memory.depositTypes.join(', ') : '未指定'
 
         // 工厂基本信息
         let logs = [
-            `生产线类型: ${memory.depositTypes.join(', ') || '未指定'} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
+            `生产线类型: ${joinedChain} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
             `生产状态: ${workStats} 当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
         ]
@@ -689,10 +670,6 @@ export default class FactoryExtension extends StructureFactory {
                     { name: '...depositTypes', desc: '生产线类型，必须为下列常量 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON，可以指定多个' },
                 ],
                 functionName: 'setchain'
-            },
-            {
-                title: '清空所有生产线',
-                functionName: 'clearchain'
             },
             {
                 title: '显示工厂详情',

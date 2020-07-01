@@ -70,13 +70,13 @@ const funcAlias = [
         exec: function(): string {
             if (!Memory.commodities) return '未启动商品生产线'
 
-            let stateStr = [ ]
+            let statsStr = [ ]
             // 遍历所有等级的房间
             for (const level in Memory.commodities) {
-                stateStr.push(`[${level} 级工厂]`)
+                statsStr.push(`[${level} 级工厂]`)
                 const nodeNames = Memory.commodities[level]
                 if (nodeNames.length <= 0) {
-                    stateStr.push('    - 无')
+                    statsStr.push('    - 无')
                     continue
                 }
 
@@ -85,18 +85,19 @@ const funcAlias = [
                 // 所有访问不到的房间会被替换成 false
                 const currentRoomNames = nodeNames.map(roomName => {
                     if (!Game.rooms[roomName] || !Game.rooms[roomName].factory) {
-                        stateStr.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
+                        statsStr.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
                         return false
                     }
 
-                    stateStr.push(getRoomFactoryState(Game.rooms[roomName]))
+                    statsStr.push(getRoomFactoryState(Game.rooms[roomName]))
+                    return roomName
                 })
 
                 // 剔除所有 false 并回填
                 Memory.commodities[level] = currentRoomNames.filter(roomName => !_.isUndefined(roomName))
             }
 
-            return stateStr.join('\n')
+            return statsStr.join('\n')
         }
     },
     // 移除过期旗帜
@@ -570,14 +571,15 @@ export const globalExtension = {
  */
 function getRoomFactoryState(room: Room): string {
     const memory = room.memory.factory
-    if (!memory) return `    - [${room.name}] 工厂未设置等级`
+    if (!memory) return `  - [${room.name}] 工厂未设置等级`
+    if (!memory.depositTypes) return `  - [${room.name}] 工厂未设置生产线`
 
     const workStats = memory.pause ? colorful('暂停中', 'yellow') :
         memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, 'yellow') : colorful('工作中', 'green')
 
     // 基本信息
     let logs = [ 
-        `    - [${room.name}] ${workStats}`,
+        `  - [${room.name}] ${workStats}`,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`
     ]
