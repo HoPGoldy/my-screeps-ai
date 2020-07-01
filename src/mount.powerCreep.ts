@@ -6,6 +6,21 @@ export default function () {
     if (!PowerCreep.prototype._move) PowerCreep.prototype._move = Creep.prototype._move
 
     _.assign(PowerCreep.prototype, PowerCreepExtension.prototype)
+
+    // 更新 pc 能力到房间
+    updatePowerCreepAbility()
+}
+
+
+/**
+ * 注册 pc 能力
+ * 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
+ */
+function updatePowerCreepAbility() {
+    Object.values(Game.powerCreeps).forEach(pc => {
+        if (!pc.room) return
+        pc.updatePowerToRoom()
+    })
 }
 
 /**
@@ -77,7 +92,10 @@ class PowerCreepExtension extends PowerCreep {
      */
     private executeTask(task: PowerConstant): void {
         // 没有该 power 就直接移除任务
-        if (!this.powers[task]) return this.finishTask()
+        if (!this.powers[task]) {
+            this.say(`无法处理任务 ${task}`)
+            return this.finishTask()
+        }
         // 没冷却好就暂时挂起任务
         if (this.powers[task].cooldown > 0) {
             // 任务是搓 ops 的话就不用挂起
@@ -182,10 +200,25 @@ class PowerCreepExtension extends PowerCreep {
     private renewSelf(): OK | ERR_NOT_FOUND {
         if (!this.room.powerSpawn) return ERR_NOT_FOUND
 
-        if (this.renew(this.room.powerSpawn) === ERR_NOT_IN_RANGE) {
+        const result = this.renew(this.room.powerSpawn)
+
+        if (result === ERR_NOT_IN_RANGE) {
             this.goTo(this.room.powerSpawn.pos)
         }
+
         return OK
+    }
+
+    /**
+     * 把自己的 power 能力信息更新到房间
+     */
+    public updatePowerToRoom(): void {
+        const powers = Object.keys(this.powers)
+        // 把房间内已有的 powers 取出来并进行去重操作，放置房间内有多个 Pc 时互相覆盖彼此的能力
+        const existPowers = this.room.memory.powers ? this.room.memory.powers.split(' ') : []
+        const uniqePowers = _.uniq([ ...powers, ...existPowers])
+
+        this.room.memory.powers = uniqePowers.join(' ')
     }
 
     /**
