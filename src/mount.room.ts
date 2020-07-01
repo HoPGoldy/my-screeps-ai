@@ -605,6 +605,8 @@ class RoomExtension extends Room {
 
         // 获取该房间在资源来源表中的索引
         _.pull(Memory.resourceSourceMap[resourceType], this.name)
+        // 列表为空了就直接移除
+        if (Memory.resourceSourceMap[resourceType].length <= 0) delete Memory.resourceSourceMap[resourceType]
     }
 
     /**
