@@ -1,4 +1,4 @@
-import { colorful, resourcesHelp, globalHelp, createHelp, clearFlag } from './utils'
+import { colorful, resourcesHelp, globalHelp, createHelp, clearFlag, createRoomLink } from './utils'
 import { factoryTopTargets } from './setting'
 import { creepApi } from './creepController'
 
@@ -571,15 +571,18 @@ export const globalExtension = {
  */
 function getRoomFactoryState(room: Room): string {
     const memory = room.memory.factory
-    if (!memory) return `  - [${room.name}] 工厂未设置等级`
-    if (!memory.depositTypes) return `  - [${room.name}] 工厂未设置生产线`
+    // 给房间名添加跳转链接
+    const prefix = colorful(`  - [${createRoomLink(room.name)}] `, null, true)
+
+    if (!memory) return prefix + `工厂未设置等级`
+    if (!memory.depositTypes) return prefix + `工厂未设置生产线`
 
     const workStats = memory.pause ? colorful('暂停中', 'yellow') :
         memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, 'yellow') : colorful('工作中', 'green')
 
     // 基本信息
     let logs = [ 
-        `  - [${room.name}] ${workStats}`,
+        prefix + workStats,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`
     ]
