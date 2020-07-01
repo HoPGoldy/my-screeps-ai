@@ -377,6 +377,7 @@ interface PowerCreep {
      */
     log(content:string, color?: Colors, notify?: boolean): void
     
+    updatePowerToRoom(): void
     _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
@@ -441,8 +442,9 @@ interface CreepMemory {
     squad?: number
     // 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用 pos.isEqualTo()
     isStanBy?: boolean
-    // collector 上次发送 regen_source 的时间，该时间小于 300t 将不会重复发布 power 任务
-    sendRegenSource?: number
+    // collector 允许自己再次尝试发布 power 强化 Soruce 任务的时间
+    // 在 Game.time 小于该值时不会尝试发布强化任务
+    regenSource?: number
 
     // 移动到某位置需要的时间
     // 例如：miner 会用它来保存移动到 mineral 的时间
@@ -589,6 +591,10 @@ interface IFactoryTask {
  * 房间内存
  */
 interface RoomMemory {
+    // 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
+    // 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
+    powers?: string
+
     // 该房间的生产队列，元素为 creepConfig 的键名
     spawnList?: string[]
     // 该房间禁止通行点的存储
