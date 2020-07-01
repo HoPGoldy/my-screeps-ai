@@ -96,18 +96,19 @@ const roles: {
             else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) {
                 // 如果满足下列条件就重新发送 regen_source 任务
                 if (
-                    // Source 上没有 power 效果
-                    !source.effects &&
-                    // 并且 Creep 的内存字段显示自己可以再次尝试发布 power 任务了
+                    // creep 允许重新发布任务
                     (!creep.memory.regenSource || creep.memory.regenSource < Game.time) &&
-                    // 并且房间内的 pc 支持这个任务
-                    creep.room.memory.powers && creep.room.memory.powers.includes(String(PWR_REGEN_SOURCE))
+                    // source 上没有效果
+                    (!source.effects || !source.effects[PWR_REGEN_SOURCE])
                 ) {
-                    // 如果任务添加成功则更新任务发布时间
-                    if (creep.room.addPowerTask(PWR_REGEN_SOURCE) === OK) creep.memory.regenSource = Game.time + 300
+                    // 并且房间内的 pc 支持这个任务
+                    if (creep.room.memory.powers && creep.room.memory.powers.split(' ').includes(String(PWR_REGEN_SOURCE))) {
+                        // 添加 power 任务，设置重新尝试时间
+                        creep.room.addPowerTask(PWR_REGEN_SOURCE)
+                        creep.memory.regenSource = Game.time + 300
+                    }
+                    else creep.memory.regenSource = Game.time + 1000
                 }
-                // 尝试失败，300 tick 后重试
-                else creep.memory.regenSource = Game.time + 300
             }
 
             // 快死了就把能量移出去
