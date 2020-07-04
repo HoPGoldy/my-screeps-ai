@@ -1169,3 +1169,77 @@ interface BoostTask {
     // 本次强化任务所用的类型
     type: BoostType
 }
+
+// 战斗小队的基础信息
+interface SquadBase<IN_MEMORY extends boolean> {
+    // 是否准备就绪
+    ready: boolean
+    // 小队路径
+    path: string
+    // 小队前进方向
+    direction: DirectionConstant
+    // 目标建筑
+    targetStructures: IN_MEMORY extends true ? string[] : Structure[]
+    // 目标 creep
+    targetCreep: IN_MEMORY extends true ? string[] : (Creep | PowerCreep)[]
+}
+
+// 小队内存
+type SquadMemory = SquadBase<true>
+
+/**
+ * 小队中允许执行的战术动作
+ * @type back 掉头，后队变前队
+ * @type left 左转（逆时针）
+ * @type right 右转（顺时针）
+ * @type cross 对穿（左上到右下，右上到左下） 
+ */
+type SquadTacticalActions = 'back' | 'left' | 'right' | 'cross'
+
+// 小队类型，要新增其他种类小队就在后面追加类型
+type SquadTypes = Apocalypse4 /** | ... */
+
+// 四个一体机
+type Apocalypse4 = 'apocalypse4'
+
+// 小队的具体配置
+interface SquadStrategy {
+    // 小队的组成，键为角色，值为需要的数量
+    member: {
+        [role in CreepRoleConstant]?: number
+    }
+
+    // 小队战术动作
+    tactical: {
+        /**
+         * 每个战术动作都有一套对应的位置交换 map，例如：
+         * ↖ : ↗（左上队员移动到右上）
+         * ↙ : ↘（坐下队员移动到右下）
+         * ...
+         * 这个 map 必须包含所有的队员
+         */
+        [type in SquadTacticalActions]: {
+            [memberName: string]: string
+        }
+    }
+
+    // 小队指令 - 治疗
+    heal: (squad: SquadMember) => any
+    // 小队指令 - 攻击敌方单位
+    attackCreep: (squad: SquadMember) => any
+    // 小队指令 - 攻击敌方建筑
+    attackStructure: (squad: SquadMember) => any
+    // 检查队形，返回是否需要重新整队
+    checkFormation: (squad: SquadMember) => boolean
+    // 重新整队，让小队成员重新集结成标准对象，返回是否集结完成
+    regroup: (squad: SquadMember) => boolean
+    // 寻路回调，在小队 getPath 中 PathFinder 的 roomCallback 中调用，用于添加小队自定义 cost
+    findPathCallback: (roomName: string, costs: CostMatrix) => CostMatrix
+    // 决定移动策略，参数是三个小队指令的返回值，返回是否继续前进（为 false 则后撤）
+    getMoveStrategy: (healResult: any, attackCreepResult: any, attackStructureResult: any) => boolean
+}
+
+// 小队成员对象，键为小队成员在小队内存中的键，值为其本人，常用作参数
+interface SquadMember {
+    [memberName: string]: Creep
+}
