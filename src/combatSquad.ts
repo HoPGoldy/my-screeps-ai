@@ -103,11 +103,31 @@ const squadStrategies: {
 
         /**
          * 小队进行治疗
+         * 会计算血量最低的队员需要多少个队员治疗才能奶满，剩下的队友会自己奶自己
          * 
          * @param squad 小队成员
+         * @returns OK 小队可以奶回自己
+         * @returns ERR_FULL 小队已经无法拉回自己的血量了
          */
-        heal(squad: SquadMember) {
+        heal(squad: SquadMember): OK | ERR_FULL {
+            // 进行血量降序排列
+            const hitsSortedSquad = _.sortBy(Object.values(squad), creep => -creep.hits)
+            // 计算每个队员能造成的治疗量，后面 * 3 是默认 HEAL 被 T3 强化过了
+            const healValue = hitsSortedSquad[0].getActiveBodyparts(HEAL) * 12 * 3
+            
+            // 计算一下血量最少的队员需要多少个队友治疗才能奶满
+            const needHealNumber = Math.ceil((5000 - hitsSortedSquad[0].hits) / healValue)
 
+            // 从血量最高的开始，弹出需要的 creep 对血量最低的进行治疗
+            for (let i = 0; i < needHealNumber; i++) {
+                const creep = hitsSortedSquad.shift()
+                creep.heal(hitsSortedSquad[hitsSortedSquad.length - 1])
+            }
+
+            // 剩下的队员就奶自己
+            hitsSortedSquad.forEach(creep => creep.heal(creep))
+
+            return needHealNumber >= 3 ? ERR_FULL : OK
         },
 
         /**
@@ -115,8 +135,50 @@ const squadStrategies: {
          * 
          * @param squad 小队成员
          */
-        attackCreep(squad: SquadMember) {
+        attackCreep(squad: SquadMember, memory: SquadMemory): OK | ERR_NOT_FOUND {
+            const leader = squad['↖']
 
+            /**
+             * 搜索小队攻击范围内（3格）的 creep
+             * 注意下面的范围做了超出检测
+             * 右侧的范围 +4 的原因是因为这个范围是以队长（左上角）为原点进行查找的，而小队是宽两格的
+             */
+            const nearCreeps = leader.room.lookForAtArea(LOOK_CREEPS,
+                leader.pos.x < 3 ? 0 : leader.pos.x - 3,
+                leader.pos.y < 3 ? 0 : leader.pos.y - 3,
+                leader.pos.x > 45 ? 49 : leader.pos.x + 4,
+                leader.pos.y > 45 ? 49 : leader.pos.y + 4,
+                true
+            )
+
+            // 筛选出敌对 creep
+            const hostileCreeps = nearCreeps.filter(item => !item.creep.my)
+
+            if (hostileCreeps.length <= 0) return ERR_NOT_FOUND
+            
+            // 找到血量最低且不在 rampart 里的敌方 creep
+            const target = _.max(hostileCreeps, item => {
+                // 该 creep 是否在 rampart 中
+                const inRampart = item.creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_RAMPART)
+
+                // 在 rampart 里就不会作为进攻目标
+                if (inRampart) return Infinity
+                // 找到血量最低的
+                else return -item.creep.hits
+            })
+
+            if (target) {
+                Object.values(squad).forEach(creep => {
+                    const range = creep.pos.getRangeTo(target.creep)
+
+                    if (range === 1) creep.rangedMassAttack()
+                    else if (range <= 3) creep.rangedAttack(target.creep)
+                    else rangedAttackNearHostile(creep, hostileCreeps.map(item => item.creep))
+                })
+            }
+            else {
+
+            }
         },
 
         /**
@@ -124,7 +186,7 @@ const squadStrategies: {
          * 
          * @param squad 小队成员
          */
-        attackStructure(squad: SquadMember) {
+        attackStructure(squad: SquadMember, memory: SquadMemory) {
 
         },
 
@@ -134,7 +196,7 @@ const squadStrategies: {
          * @param squad 小队成员
          * @returns 是否需要重整队伍
          */
-        checkFormation(squad: SquadMember): boolean {
+        checkFormation(squad: SquadMember, memory: SquadMemory): boolean {
             return true
         },
 
@@ -144,7 +206,7 @@ const squadStrategies: {
          * @param squad 小队成员
          * @returns 是否集结完成
          */
-        regroup(squad: SquadMember): boolean {
+        regroup(squad: SquadMember, memory: SquadMemory): boolean {
             return true
         },
 
@@ -170,4 +232,19 @@ const squadStrategies: {
             return true
         }
     }
+}
+
+/**
+ * RA 攻击最近的敌方单位
+ * 
+ * @param creep 执行攻击的 creep
+ * @param hostils 地方目标
+ */
+function rangedAttackNearHostile(creep: Creep, hostils: Creep[]): OK {
+    const targets = creep.pos.findInRange(hostils, 3)
+
+    if (targets.length > 0) creep.rangedAttack(targets[0])
+    else creep.rangedMassAttack()
+
+    return OK
 }

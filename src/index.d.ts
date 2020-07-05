@@ -1216,23 +1216,23 @@ interface SquadStrategy {
          * ↖ : ↗（左上队员移动到右上）
          * ↙ : ↘（坐下队员移动到右下）
          * ...
-         * 这个 map 必须包含所有的队员
+         * 如果某些动作不需要进行队员换位，则可以空缺，但是一旦要定义，就要为小队中所有队员分配换位规则
          */
-        [type in SquadTacticalActions]: {
+        [type in SquadTacticalActions]?: {
             [memberName: string]: string
         }
     }
 
     // 小队指令 - 治疗
-    heal: (squad: SquadMember) => any
+    heal: (squad: SquadMember, memory: SquadMemory) => any
     // 小队指令 - 攻击敌方单位
-    attackCreep: (squad: SquadMember) => any
+    attackCreep: (squad: SquadMember, memory: SquadMemory) => any
     // 小队指令 - 攻击敌方建筑
-    attackStructure: (squad: SquadMember) => any
+    attackStructure: (squad: SquadMember, memory: SquadMemory) => any
     // 检查队形，返回是否需要重新整队
-    checkFormation: (squad: SquadMember) => boolean
+    checkFormation: (squad: SquadMember, memory: SquadMemory) => boolean
     // 重新整队，让小队成员重新集结成标准对象，返回是否集结完成
-    regroup: (squad: SquadMember) => boolean
+    regroup: (squad: SquadMember, memory: SquadMemory) => boolean
     // 寻路回调，在小队 getPath 中 PathFinder 的 roomCallback 中调用，用于添加小队自定义 cost
     findPathCallback: (roomName: string, costs: CostMatrix) => CostMatrix
     // 决定移动策略，参数是三个小队指令的返回值，返回是否继续前进（为 false 则后撤）
