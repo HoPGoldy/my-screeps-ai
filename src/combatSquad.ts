@@ -135,7 +135,7 @@ const squadStrategies: {
          * 
          * @param squad 小队成员
          */
-        attackCreep(squad: SquadMember, memory: SquadMemory): OK | ERR_NOT_FOUND {
+        attackCreep(squad: SquadMember): OK | ERR_NOT_FOUND {
             const leader = squad['↖']
 
             /**
@@ -152,42 +152,69 @@ const squadStrategies: {
             )
 
             // 筛选出敌对 creep
-            const hostileCreeps = nearCreeps.filter(item => !item.creep.my)
+            const hostileCreeps = nearCreeps.filter(item => !item.creep.my).map(item => item.creep)
 
             if (hostileCreeps.length <= 0) return ERR_NOT_FOUND
             
             // 找到血量最低且不在 rampart 里的敌方 creep
-            const target = _.max(hostileCreeps, item => {
+            const target = _.max(hostileCreeps, creep => {
                 // 该 creep 是否在 rampart 中
-                const inRampart = item.creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_RAMPART)
+                const inRampart = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_RAMPART)
 
                 // 在 rampart 里就不会作为进攻目标
                 if (inRampart) return Infinity
                 // 找到血量最低的
-                else return -item.creep.hits
+                else return -creep.hits
             })
 
             if (target) {
+                // 遍历小队成员进行攻击
                 Object.values(squad).forEach(creep => {
-                    const range = creep.pos.getRangeTo(target.creep)
+                    const range = creep.pos.getRangeTo(creep)
 
                     if (range === 1) creep.rangedMassAttack()
-                    else if (range <= 3) creep.rangedAttack(target.creep)
-                    else rangedAttackNearHostile(creep, hostileCreeps.map(item => item.creep))
+                    else if (range <= 3) creep.rangedAttack(creep)
+                    else rangedAttackNearHostile(creep, hostileCreeps)
                 })
             }
-            else {
-
-            }
+            // 没找到目标就自行攻击
+            else Object.values(squad).forEach(creep => rangedAttackNearHostile(creep, hostileCreeps))
         },
 
         /**
          * 小队攻击敌方建筑
          * 
          * @param squad 小队成员
+         * @returns OK 攻击敌方建筑
+         * @returns ERR_NOT_FOUND 未找到建筑
          */
-        attackStructure(squad: SquadMember, memory: SquadMemory) {
+        attackStructure(squad: SquadMember, memory: SquadMemory): OK | ERR_NOT_FOUND {
+            // 从内存中加载缓存建筑
+            let targets = memory.targetStructures.map(id => Game.getObjectById<Structure>(id))
+            targets = targets.filter(s => s)
 
+            // 都杀光了，重新搜索
+            if (targets.length <= 0) {
+                targets = squad['↖'].room.find(FIND_HOSTILE_STRUCTURES, {
+                    filter: s => s.structureType !== STRUCTURE_KEEPER_LAIR && s.structureType !== STRUCTURE_CONTROLLER
+                })
+            }
+
+            // 还没搜到，就真都杀光了
+            if (targets.length <= 0) return ERR_NOT_FOUND
+
+            // 找到血量最低的建筑
+            const target = _.max(targets, s => -s.hits)
+
+            // 遍历所有队友执行攻击
+            Object.values(squad).forEach(creep => {
+                const range = creep.pos.getRangeTo(target)
+
+                if (range === 1 || range > 3) creep.rangedMassAttack()
+                else creep.rangedAttack(target)
+            })
+
+            return OK
         },
 
         /**
@@ -197,7 +224,27 @@ const squadStrategies: {
          * @returns 是否需要重整队伍
          */
         checkFormation(squad: SquadMember, memory: SquadMemory): boolean {
-            return true
+            const leaderPos = squad['↖'].pos
+            /**
+             * 队员和队长（左上角）之间的相对定位
+             * 键为队员的名字，值为其坐标偏移量: [0] 为 x 坐标，[1] 为 y 坐标
+             */
+            const relativePos = { '↗': [ 1, 0 ], '↙': [ 0, 1 ], '↘': [ 1, 1 ] }
+
+            // 遍历所有队友位置进行检查
+            for (const name in squad) {
+                // 如果不包含就跳过（一般都是队长）
+                if (!(name in relativePos)) continue
+
+                // 检查其位置和队长的相对位置是否不正确
+                if (!squad[name].pos.isEqualTo(
+                    leaderPos.x + relativePos[name][0],
+                    leaderPos.y + relativePos[name][1]
+                )) return true
+            }
+
+            // 都正确
+            return false
         },
 
         /**
@@ -207,6 +254,21 @@ const squadStrategies: {
          * @returns 是否集结完成
          */
         regroup(squad: SquadMember, memory: SquadMemory): boolean {
+            const leaderPos = squad['↖'].pos
+            const relativePos = { '↗': [ 1, 0 ], '↙': [ 0, 1 ], '↘': [ 1, 1 ] }
+
+            for (const name in squad) {
+                // 如果不包含就跳过（一般都是队长）
+                if (!(name in relativePos)) continue
+
+                // 检查其位置和队长的相对位置是否不正确
+                squad[name].moveTo(
+                    leaderPos.x + relativePos[name][0],
+                    leaderPos.y + relativePos[name][1],
+                    { reusePath: 1 }
+                )
+            }
+
             return true
         },
 
