@@ -1,6 +1,6 @@
-import { stateScanInterval, DEAL_RATIO } from './setting'
+import { stateScanInterval, DEAL_RATIO, terminalModes, terminalChannels } from './setting'
 import { creepApi } from './creepController'
-import { createHelp } from './utils'
+import { createHelp, colorful } from './utils'
 
 /**
  * Terminal 原型拓展
@@ -43,7 +43,7 @@ export default class TerminalExtension extends StructureTerminal {
 
         // 当已经有房间 8 级（保证有人能提供能量）并且自己不足 8 级时的时候才会添加能量共享请求
         if (Object.keys(Game.spawns).length > 3 && this.room.controller.level != 8) {
-            this.add(RESOURCE_ENERGY, 20000, 'buy', 'share')
+            this.add(RESOURCE_ENERGY, 20000, terminalModes.get, terminalChannels.share)
             this.room.addUpgradeGroup()
 
             // 调整远程支援单位的能量来源
@@ -177,7 +177,7 @@ export default class TerminalExtension extends StructureTerminal {
      * 
      * @returns 是否需要继续执行 resourceListener
      */
-    public dealOrder(resource: TerminalOrderTask): boolean {
+    public dealOrder(resource: TerminalListenerTask): boolean {
         // 没有订单需要处理
         if (!this.room.memory.targetOrderId) return true
         // 获取订单
@@ -224,44 +224,57 @@ export default class TerminalExtension extends StructureTerminal {
      * 资源监听
      * 检查资源是否符合用户给定的期望
      */
-    public resourceListener(resource: TerminalOrderTask): void {
+    public resourceListener(resource: TerminalListenerTask): void {
         const resourceAmount = this.store[resource.type]
-        // 卖出监听，超过才进行卖出
-        if (resource.mod === 'sell') {
+        // 资源移出监听，超过才进行移出（卖出或共享资源）
+        if (resource.mod === terminalModes.put) {
             if (resourceAmount <= resource.amount) return this.setNextIndex()
         }
-        // 买入监听，再判断是从市场买入还是从其他房间共享
-        else if (resource.mod === 'buy') {
+        // 资源获取监听，低于标准才进行获取
+        else if (resource.mod === terminalModes.get) {
             if (resourceAmount >= resource.amount) return this.setNextIndex()
-            else {
-                // 从其他房间共享
-                if (resource.supplementAction == 'share') {
-                    const getShareRequest = this.room.shareRequest(resource.type, resource.amount - resourceAmount)
-                    return this.setNextIndex()
-                }
-            }
         }
         else {
             this.log(`未知监听类型 ${resource.mod}`, 'yellow')
             return this.setNextIndex()
         }
 
-        // 根据交易策略来执行不同的逻辑
-        if (resource.supplementAction === 'release') this.releaseOrder(
-            resource.type,
-            resource.mod,
-            Math.abs(resourceAmount - resource.amount)
-        )
-        else if (resource.supplementAction === 'take') this.takeOrder(
-            resource.type,
-            // 这里订单类型取反是因为如果我想**买入**一个订单，那我就要拍下一个**卖单**
-            resource.mod === 'buy' ? ORDER_SELL : ORDER_BUY, 
-            Math.abs(resourceAmount - resource.amount),
-            resource.priceLimit
-        )
-        else {
-            this.log(`未知交易策略 ${resource.supplementAction}`, 'yellow')
-            return this.setNextIndex()
+        // 能通过上面的检查说明没有满足条件，根据交易策略来执行不同的逻辑
+        switch (resource.channel) {
+
+            // 需要挂单
+            case terminalChannels.release:
+                this.releaseOrder(
+                    resource.type,
+                    resource.mod === terminalModes.get ? ORDER_BUY : ORDER_SELL,
+                    Math.abs(resourceAmount - resource.amount)
+                )
+            break
+
+            // 需要拍单
+            case terminalChannels.take:
+                this.takeOrder(
+                    resource.type,
+                    // 这里订单类型取反是因为如果我想**买入**一个订单，那我就要拍下一个**卖单**
+                    resource.mod === terminalModes.get ? ORDER_SELL : ORDER_BUY, 
+                    Math.abs(resourceAmount - resource.amount),
+                    resource.priceLimit
+                )
+            break
+
+            // 进行共享
+            case terminalChannels.share:
+                if (resource.mod === terminalModes.get) this.room.shareRequest(resource.type, resource.amount - resourceAmount)
+                else this.room.shareAddSource(resource.type)
+                
+                return this.setNextIndex()
+            break
+
+            // 找不到对应的渠道
+            default:
+                this.log(`未知渠道 ${resource.channel}`, 'yellow')
+                return this.setNextIndex()
+            break
         }
     }
 
@@ -375,7 +388,7 @@ export default class TerminalExtension extends StructureTerminal {
      */
     private setNextIndex(): void {
         let index = this.room.memory.terminalIndex | 0
-        const tasksLength = Object.keys(this.room.memory.terminalTasks).length
+        const tasksLength = this.room.memory.terminalTasks.length
         // 循环设置索引
         this.room.memory.terminalIndex = (index + 1 >= tasksLength) ? 0 : index + 1
     }
@@ -387,18 +400,17 @@ export default class TerminalExtension extends StructureTerminal {
      *   @property {} type 资源类型
      *   @property {} amount 期望数量
      */
-    private getResourceByIndex(): TerminalOrderTask | null {
+    private getResourceByIndex(): TerminalListenerTask | null {
         if (!this.room.memory.terminalTasks) return null
-        const resources = Object.keys(this.room.memory.terminalTasks)
-        if (!resources || resources.length == 0) return null
-        const index = this.room.memory.terminalIndex | 0
+        let index = this.room.memory.terminalIndex | 0
 
-        const resourceType = resources[index]
-
-        return {
-            type: <ResourceConstant>resourceType,
-            ...this.room.memory.terminalTasks[resourceType]
+        // 做个兜底，防止玩家手动移除任务后指针指向 undefined
+        if (index >= this.room.memory.terminalTasks.length) {
+            this.room.memory.terminalIndex = index = 0
         }
+
+        // 对序列化的任务进行重建
+        return this.unstringifyTask(this.room.memory.terminalTasks[index])
     }
 
     /**
@@ -512,21 +524,48 @@ export default class TerminalExtension extends StructureTerminal {
      * @param supplementAction 交易策略
      * @param priceLimit 价格限制
      */
-    public add(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take', priceLimit: number = undefined): void {
-        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = {}
+    public addTask(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined): void {
+        // 先移除同类型的监听任务
+        this.removeByType(resourceType, mod, channel)
 
-        this.room.memory.terminalTasks[resourceType] = { amount, mod, supplementAction, priceLimit }
+        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = []
+
+        // 再保存任务
+        this.room.memory.terminalTasks.push(this.stringifyTask({ mod, channel, type: resourceType, amount, priceLimit }))
+    }
+
+    /**
+     * 用户操作 - 添加资源监听
+     */
+    public add(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined) {
+        this.addTask(resourceType, amount, mod, channel, priceLimit)
+        return `已添加，当前监听任务如下: \n${this.show()}`
     }
 
     /**
      * 移除终端矿物监控
      * 
-     * @param resourceType 要停止监控的资源类型
+     * @param index 要移除的任务索引
+     * @return OK 移除完成
+     * @returns ERR_INVALID_ARGS 传入了错误的索引
+     * @returns ERR_NOT_FOUND 该房间暂无监听任务
      */
-    public remove(resourceType: ResourceConstant): void {
-        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = {}
+    public removeTask(index: number): OK | ERR_INVALID_ARGS | ERR_NOT_FOUND {
+        if (!this.room.memory.terminalTasks) return OK
+        if (_.isUndefined(index) || index >= this.room.memory.terminalTasks.length) return ERR_INVALID_ARGS
 
-        delete this.room.memory.terminalTasks[resourceType]
+        this.room.memory.terminalTasks.splice(index, 1)
+        if (this.room.memory.terminalTasks.length <= 0) delete this.room.memory.terminalTasks
+
+        return OK
+    }
+
+    /**
+     * 用户操作 - 移除资源监听任务
+     */
+    public remove(index: number): string {
+        this.removeTask(index) 
+        return `已移除，当前监听任务如下:\n${this.show()}`
     }
 
     /**
@@ -535,35 +574,15 @@ export default class TerminalExtension extends StructureTerminal {
      * @param hard 设为 true 来移除其默认值中不包含的监听资源
      */
     public reset(hard: boolean = false): string {
-        // 模板任务
-        const templateTask: TerminalListenerTask = {
-            amount: 5000,
-            mod: 'buy',
-            supplementAction: 'share'
-        }
+        // 要添加的默认资源
+        const defaultResource = [ RESOURCE_OXYGEN, RESOURCE_HYDROGEN, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM, RESOURCE_UTRIUM, RESOURCE_ZYNTHIUM, RESOURCE_CATALYST]
 
-        // 重置任务
-        if (hard) this.room.memory.terminalTasks = {
-            [RESOURCE_OXYGEN]: templateTask,
-            [RESOURCE_HYDROGEN]: templateTask,
-            [RESOURCE_KEANIUM]: templateTask,
-            [RESOURCE_LEMERGIUM]: templateTask,
-            [RESOURCE_ZYNTHIUM]: templateTask,
-            [RESOURCE_UTRIUM]: templateTask,
-            [RESOURCE_CATALYST]: templateTask
-        }
-        else {
-            this.room.memory.terminalTasks[RESOURCE_OXYGEN] = templateTask
-            this.room.memory.terminalTasks[RESOURCE_HYDROGEN] = templateTask
-            this.room.memory.terminalTasks[RESOURCE_KEANIUM] = templateTask
-            this.room.memory.terminalTasks[RESOURCE_LEMERGIUM] = templateTask
-            this.room.memory.terminalTasks[RESOURCE_ZYNTHIUM] = templateTask
-            this.room.memory.terminalTasks[RESOURCE_UTRIUM] = templateTask
-            this.room.memory.terminalTasks[RESOURCE_CATALYST] = templateTask
-        }
-        
+        if (hard) this.room.memory.terminalTasks = []
         this.room.memory.terminalIndex = 0
-        
+
+        // 默认选项为从资源共享协议获取所有的基础元素各 5000
+        defaultResource.forEach(res => this.add(res, 5000, terminalModes.get, terminalChannels.share))
+
         return `已重置，当前监听任务如下:\n${this.show()}`
     }
 
@@ -571,24 +590,93 @@ export default class TerminalExtension extends StructureTerminal {
      * 显示所有终端监听任务
      */
     public show(): string {
-        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = {}
+        if (!this.room.memory.terminalTasks) return '该房间暂无终端监听任务'
 
-        const resources = Object.keys(this.room.memory.terminalTasks)
-        if (resources.length == 0) return '该房间暂无终端监听任务'
+        const tasks = this.room.memory.terminalTasks
+        const currentIndex = this.room.memory.terminalIndex
 
-        const supplementActionIntroduce: { [action in SupplementActions]: string } = {
-            release: '挂单',
-            take: '拍单',
-            share: '共享'
+        // 从 code 转换为介绍，提高可读性
+        const channelIntroduce: { [action in TerminalChannels]: string } = {
+            [terminalChannels.take]: '拍单',
+            [terminalChannels.release]: '挂单',
+            [terminalChannels.share]: '共享'
+        }
+        const modeIntroduce: { [action in TerminalModes]: string } = {
+            [terminalModes.get]: 'get',
+            [terminalModes.put]: 'put'
         }
 
-        return resources.map(res => {
-            const task = this.room.memory.terminalTasks[res]
-            let result = `  ${res} [当前/期望] ${this.room.terminal.store[res]}/${task.amount} [监听类型] ${task.mod}`
-            result += ` [资源来源] ${supplementActionIntroduce[task.supplementAction]}`
-            if (task.priceLimit) result += ` [价格${task.mod === 'buy' ? '上限' : '下限'}] ${task.priceLimit}`
-            return result
+        // 遍历所有任务绘制结果
+        return tasks.map((taskStr, index) => {
+            const task = this.unstringifyTask(taskStr)
+            let logs = [
+                `[${index}] ${colorful(task.type, 'blue')}`,
+                `[当前/期望] ${this.room.terminal.store[task.type]}/${task.amount}`,
+                `[类型] ${modeIntroduce[task.mod]}`,
+                `[渠道] ${channelIntroduce[task.channel]}`
+            ]
+            if (task.priceLimit) logs.push(`[价格${task.mod === terminalModes.get ? '上限' : '下限'}] ${task.priceLimit}`)
+            if (index === currentIndex) logs.push(`< 正在检查`)
+            return '  ' + logs.join(' ')
         }).join('\n')
+    }
+
+    /**
+     * @danger 注意，下面三个方法都涉及到了任务到字符串的解析与反解析，如果要进行修改的话需要同时对下面三个任务都进行修改
+     * stringifyTask unstringifyTask matchTask
+     */
+
+    /**
+     * 将任务序列化成字符串
+     * 
+     * @danger 注意，这个序列化格式是固定的，单独修改将会导致任务读取时出现问题
+     * @param task 要序列化的任务
+     */
+    private stringifyTask({ mod, channel, type, amount, priceLimit }: TerminalListenerTask): string {
+        let stringifyTask = `${mod} ${channel} ${type} ${amount}`
+        if (priceLimit) stringifyTask += ` ${priceLimit}`
+
+        return stringifyTask
+    }
+
+    /**
+     * 把字符串解析为任务
+     * 
+     * @danger 注意，这个序列化格式是固定的，单独修改将会导致无法读取已保存任务
+     * @param taskStr 要反序列化的任务
+     */
+    private unstringifyTask(taskStr: string): TerminalListenerTask {
+        // 对序列化的任务进行重建
+        const [ mod, channel, type, amount, priceLimit ] = taskStr.split(' ')
+
+        return {
+            mod: (Number(mod) as TerminalModes),
+            channel: (Number(channel) as TerminalChannels),
+            type: (type as ResourceConstant),
+            amount: Number(amount),
+            priceLimit: priceLimit ? Number(priceLimit) : undefined
+        }
+    }
+
+    /**
+     * 通过条件匹配任务
+     * 
+     * @param type 资源类型
+     * @param mod 物流类型
+     * @param channel 交易渠道
+     * @returns 成功匹配的任务在内存 terminalTasks 中的索引，未找到返回 ERR_NOT_FOUND
+     */
+    public removeByType(type: ResourceConstant, mod: TerminalModes, channel: TerminalChannels): void {
+        if (!this.room.memory.terminalTasks) return
+
+        const matchKey = `${mod} ${channel} ${type}`
+        this.room.memory.terminalTasks.find((task, index) => {
+            if (!task.includes(matchKey)) return false
+
+            // 移除找到的任务
+            this.remove(index)
+            return true
+        })
     }
 
     public help(): string {
@@ -598,8 +686,8 @@ export default class TerminalExtension extends StructureTerminal {
                 params: [
                     { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
                     { name: 'amount', desc: '指定类型的期望数量' },
-                    { name: 'mod', desc: '[可选] 监听类型，分为 sell(卖出), buy(购买，默认)' },
-                    { name: 'supplementAction', desc: '[可选] 补货来源，分为 share(共享), release(挂单), take(拍单，默认)'},
+                    { name: 'mod', desc: '[可选] 监听类型，分为 0(获取，默认), 1(对外提供)' },
+                    { name: 'channel', desc: '[可选] 渠道，分为 0(拍单，默认), 1(挂单), 2(共享)'},
                     { name: 'priceLimit', desc: '[可选] 价格限制，若不填则通过历史平均价格检查'}
                 ],
                 functionName: 'add'
@@ -607,7 +695,7 @@ export default class TerminalExtension extends StructureTerminal {
             {
                 title: '移除资源监听',
                 params: [
-                    { name: 'resourceType', desc: '移除监听的资源类型' }
+                    { name: 'index', desc: '移除监听的任务索引' }
                 ],
                 functionName: 'remove'
             },
