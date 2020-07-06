@@ -19,7 +19,10 @@ import {
     DEPOSIT_MAX_COOLDOWN,
     // 挂载内存相关
     structureWithMemory,
-    minerHervesteLimit
+    minerHervesteLimit,
+    // terminl 相关
+    terminalModes,
+    terminalChannels
 } from './setting'
 
 import LabExtension from './mount.lab'
@@ -850,7 +853,7 @@ class ControllerExtension extends StructureController {
             break
             // 到 8 级之后就不再需要其他房间的能量共享
             case 8:
-                if (this.room.terminal) this.room.terminal.remove(RESOURCE_ENERGY)
+                if (this.room.terminal) this.room.terminal.removeByType(RESOURCE_ENERGY, terminalModes.get, terminalChannels.share)
                 this.room.removeUpgradeGroup()
             break
         }

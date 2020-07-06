@@ -548,3 +548,28 @@ export const minWallHits = 8000
 
 // pc 空闲时会搓 ops，下面是搓的上限
 export const maxOps = 50000
+
+// 终端支持的物流模式
+export const terminalModes: {
+    get: ModeGet
+    put: ModePut
+} = {
+    // 获取资源
+    get: 0,
+    // 提供资源
+    put: 1
+}
+
+// 终端支持的物流渠道
+export const terminalChannels: {
+    take: ChannelTake
+    release: ChannelRelease
+    share: ChannelShare
+} = {
+    // 拍单
+    take: 0,
+    // 挂单
+    release: 1,
+    // 资源共享
+    share: 2
+}

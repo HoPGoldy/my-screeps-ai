@@ -528,7 +528,7 @@ class RoomExtension extends Room {
     /**
      * 用户操作 - 查看房间工作状态
      */
-    public fshow(): string {
+    public fs(): string {
         if (!this.factory) return `[${this.name}] 未建造工厂`
         return this.factory.stats()
     }
@@ -536,29 +536,25 @@ class RoomExtension extends Room {
     /**
      * 用户操作：addTerminalTask
      */
-    public tadd(resourceType: ResourceConstant, amount: number, mod: TerminalListenerModes = 'buy', supplementAction: SupplementActions = 'take', priceLimit: number = undefined): string { 
+    public ta(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined): string { 
         if (!this.terminal) return `[${this.name}] 未找到终端`
 
-        this.terminal.add(resourceType, amount, mod, supplementAction, priceLimit)
-        return `已添加，当前监听任务如下: \n${this.terminal.show()}`
+        return this.terminal.add(resourceType, amount, mod, channel, priceLimit)
     }
-
-    
 
     /**
      * 用户操作：removeTerminalTask
      */
-    public tremove(resourceType: ResourceConstant): string { 
+    public tr(index: number): string { 
         if (!this.terminal) return `[${this.name}] 未找到终端`
 
-        this.terminal.remove(resourceType) 
-        return `已移除，当前监听任务如下:\n${this.terminal.show()}`
+        return this.terminal.remove(index)
     }
 
     /**
      * 用户操作：showTerminalTask
      */
-    public tshow(): string {
+    public ts(): string {
         if (!this.terminal) return `[${this.name}] 未找到终端`
 
         return this.terminal.show()
@@ -1161,19 +1157,19 @@ class RoomExtension extends Room {
             },
             {
                 title: 'factory.stats 的别名',
-                functionName: 'fshow'
+                functionName: 'fs'
             },
             {
                 title: 'terminal.add 的别名',
-                functionName: 'tadd'
+                functionName: 'ta'
             },
             {
                 title: 'terminal.remove 的别名',
-                functionName: 'tremove'
+                functionName: 'tr'
             },
             {
                 title: 'terminal.show 的别名',
-                functionName: 'tshow'
+                functionName: 'ts'
             },
             {
                 title: '给该房间新增 BUY 单',

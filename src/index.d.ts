@@ -6,11 +6,6 @@ type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 // 本项目中出现的颜色常量
 type Colors = 'green' | 'blue' | 'yellow' | 'red'
 
-// 终端监听规则类型
-type TerminalListenerModes = 'sell' | 'buy'
-// 终端监听规则的资源来源
-type SupplementActions = 'release' | 'take' | 'share'
-
 // 函数介绍构造函数的参数对象
 interface IFunctionDescribe {
     // 该函数的用法
@@ -664,10 +659,8 @@ interface RoomMemory {
     }
     
     // 终端监听矿物列表
-    // 键为资源名称，值为资源期望数量
-    terminalTasks: {
-        [resourceType: string]: TerminalListenerTask
-    }
+    // 数组中每一个字符串都代表了一个监听任务，形如 "0 0 power"，第一位对应 TerminalModes，第二位对应 TerminalChannels，第三位对应资源类型
+    terminalTasks: string[]
     // 房间内终端缓存的订单id
     targetOrderId: string
     // 当前终端要监听的资源索引
@@ -1027,28 +1020,42 @@ type IBodyConfigs = {
 }
 
 interface StructureTerminal {
-    add(resourceType: ResourceConstant, amount: number, mod?: TerminalListenerModes, supplementAction?: SupplementActions, priceLimit?: number): void
-    remove(resourceType: ResourceConstant): void
+    addTask(resourceType: ResourceConstant, amount: number, mod?: TerminalModes, channel?: TerminalChannels, priceLimit?: number): void
+    add(resourceType: ResourceConstant, amount: number, mod?: TerminalModes, channel?: TerminalChannels, priceLimit?: number): string
+    removeByType(type: ResourceConstant, mod: TerminalModes, channel: TerminalChannels): void
+    remove(index: number): string
     show(): string
 }
 
+/**
+ * 终端监听规则类型
+ * 具体值详见 ./setting.ts > terminalModes
+ */
+type ModeGet = 0
+type ModePut = 1
+type TerminalModes = ModeGet | ModePut
+
+/**
+ * 终端监听规则的资源渠道
+ * 具体值详见 ./setting.ts > terminalChannels
+ */
+type ChannelTake = 0
+type ChannelRelease = 1
+type ChannelShare = 2
+type TerminalChannels = ChannelTake | ChannelRelease | ChannelShare
+
 // 终端监听任务，详见 doc/终端设计案
 interface TerminalListenerTask {
+    // 要监听的资源类型
+    type: ResourceConstant
     // 期望数量 
     amount: number
     // 监听类型
-    mod: TerminalListenerModes
-    // 补充来源: market, share
-    supplementAction: SupplementActions
+    mod: TerminalModes
+    // 渠道: market, share
+    channel: TerminalChannels
     // 价格限制
     priceLimit?: number
-}
-
-// terminal 内部逻辑使用的任务对象
-// 之所以比 TerminalListenerTask 多了个 type，是因为 TerminalListenerTask 的资源类型是它的键，详见 RoomMemory
-interface TerminalOrderTask extends TerminalListenerTask { 
-    // 要监听的资源类型
-    type: ResourceConstant
 }
 
 // 反应底物表接口
