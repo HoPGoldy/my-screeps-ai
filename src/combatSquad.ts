@@ -2,23 +2,46 @@
  * 战斗小队模块
  * 实现了两人以上 creep 组成小组后的战斗逻辑，详见 doc/战斗小队设计案.md
  */
-export default {
+export class Squad4 {
+    /**
+     * 小队战术动作
+     * 每个战术动作都有一套对应的位置交换 map，例如：
+     * ↖ : ↗（左上队员移动到右上）
+     * ↙ : ↘（坐下队员移动到右下）
+     */
+    static tactical: {
+        back: { '↖': '↘', '↗': '↙', '↙': '↗', '↘': '↖' },
+        cross: { '↖': '↘', '↗': '↙', '↙': '↗', '↘': '↖' },
+        right: { '↖': '↗', '↗': '↘', '↘': '↙', '↙': '↖' },
+        left: { '↗': '↖', '↘': '↗', '↙': '↘', '↖': '↙' }
+    }
+
+    /**
+     * 小队成员到队长（左上角 creep）的相对定位
+     * 键为队员的名字，值为其坐标偏移量: [0] 为 x 坐标，[1] 为 y 坐标
+     */
+    static relativePos: {
+        '↗': [ 1, 0 ],
+        '↙': [ 0, 1 ],
+        '↘': [ 1, 1 ]
+    }
+
     /**
      * 执行指定小队逻辑
      * @param squadName 小队名称
      */
-    main(squadName: string) {
+    static main(squadName: string) {
 
-    },
+    }
 
     /**
      * 建立小队
      * 
      * @param roomName 在哪个房间里查找队友
      */
-    buildSquad(roomName: string) {
-
-    },
+    static buildSquad(roomName: string) {
+        
+    }
 
     /**
      * 搜索路径
@@ -27,9 +50,9 @@ export default {
      * @param pathLength 要搜索的路径长度
      * @param flee 是否逃跑
      */
-    getPath(squad: SquadMember, pathLength: number, flee: boolean) {
+    static getPath(squad: SquadMember, pathLength: number, flee: boolean) {
 
-    },
+    }
 
     /**
      * 按路径移动
@@ -37,9 +60,9 @@ export default {
      * @param squad 小队成员
      * @param squadMemory 小队内存
      */
-    moveByPath(squad: SquadMember, squadMemory: SquadMemory) {
+    static moveByPath(squad: SquadMember, squadMemory: SquadMemory) {
 
-    },
+    }
 
     /**
      * 检查小队方向和当前方向是否一致
@@ -47,18 +70,18 @@ export default {
      * @param squadMemory 小队内存
      * @param direction 当前方向
      */
-    checkDirection(squadMemory: SquadMemory, direction: DirectionConstant) {
+    static checkDirection(squadMemory: SquadMemory, direction: DirectionConstant) {
 
-    },
+    }
 
     /**
      * 执行战术动作
      * 
      * @param action 要执行的战术动作
      */
-    tacticalAction(action: SquadTacticalActions) {
+    static tacticalAction(action: SquadTacticalActions) {
 
-    },
+    }
 
     /**
      * 解散小队
@@ -66,17 +89,74 @@ export default {
      * @param squad 小队成员
      * @param squadMemory 小队内存
      */
-    dismiss(squad: SquadMember, squadMemory: SquadMemory) {
+    static dismiss(squad: SquadMember, squadMemory: SquadMemory) {
 
-    },
+    }
 
     /**
      * 小队前进至指定房间
      * 
      * @param squad 小队成员
      */
-    moveToRoom(squad: SquadMember) {
+    static moveToRoom(squad: SquadMember) {
 
+    }
+
+
+    /**
+     * 检查队形
+     * 
+     * @param squad 小队成员
+     * @returns 是否需要重整队伍
+     */
+    static checkFormation(squad: SquadMember): boolean {
+        const leaderPos = squad['↖'].pos
+
+        // 遍历所有队友位置进行检查
+        for (const name in squad) {
+            // 如果不包含就跳过（一般都是队长）
+            if (!(name in this.relativePos)) continue
+
+            // 检查其位置和队长的相对位置是否不正确
+            if (!squad[name].pos.isEqualTo(
+                leaderPos.x + this.relativePos[name][0],
+                leaderPos.y + this.relativePos[name][1]
+            )) return true
+        }
+
+        // 位置都正确，不需要重新组队
+        return false
+    }
+
+    /**
+     * 重新整队
+     * 
+     * @param squad 小队成员
+     * @returns 是否集结完成
+     */
+    static regroup(squad: SquadMember): boolean {
+        const leaderPos = squad['↖'].pos
+        // 是否集结完成
+        let complete = true
+
+        for (const name in squad) {
+            // 如果不包含就跳过（一般都是队长）
+            if (!(name in this.relativePos)) continue
+
+            // 该队员应在的正确位置
+            const correctPos: [ number, number ] = [
+                leaderPos.x + this.relativePos[name][0],
+                leaderPos.y + this.relativePos[name][1]
+            ]
+
+            // 如果位置不对的话，就移动到正确的位置上
+            if (!squad[name].pos.isEqualTo(...correctPos)) {
+                squad[name].moveTo(correctPos[0], correctPos[1], { reusePath: 1 })
+                complete = false
+            }
+        }
+
+        return complete
     }
 }
 
@@ -91,14 +171,6 @@ const squadStrategies: {
         // 小队组成
         member: {
             apocalypse: 4
-        },
-
-        // 小队战术动作
-        tactical: {
-            back: { '↖': '↘', '↗': '↙', '↙': '↗', '↘': '↖' },
-            cross: { '↖': '↘', '↗': '↙', '↙': '↗', '↘': '↖' },
-            right: { '↖': '↗', '↗': '↘', '↘': '↙', '↙': '↖' },
-            left: { '↗': '↖', '↘': '↗', '↙': '↘', '↖': '↙' }
         },
 
         /**
@@ -215,61 +287,6 @@ const squadStrategies: {
             })
 
             return OK
-        },
-
-        /**
-         * 检查队形
-         * 
-         * @param squad 小队成员
-         * @returns 是否需要重整队伍
-         */
-        checkFormation(squad: SquadMember, memory: SquadMemory): boolean {
-            const leaderPos = squad['↖'].pos
-            /**
-             * 队员和队长（左上角）之间的相对定位
-             * 键为队员的名字，值为其坐标偏移量: [0] 为 x 坐标，[1] 为 y 坐标
-             */
-            const relativePos = { '↗': [ 1, 0 ], '↙': [ 0, 1 ], '↘': [ 1, 1 ] }
-
-            // 遍历所有队友位置进行检查
-            for (const name in squad) {
-                // 如果不包含就跳过（一般都是队长）
-                if (!(name in relativePos)) continue
-
-                // 检查其位置和队长的相对位置是否不正确
-                if (!squad[name].pos.isEqualTo(
-                    leaderPos.x + relativePos[name][0],
-                    leaderPos.y + relativePos[name][1]
-                )) return true
-            }
-
-            // 都正确
-            return false
-        },
-
-        /**
-         * 重新整队
-         * 
-         * @param squad 小队成员
-         * @returns 是否集结完成
-         */
-        regroup(squad: SquadMember, memory: SquadMemory): boolean {
-            const leaderPos = squad['↖'].pos
-            const relativePos = { '↗': [ 1, 0 ], '↙': [ 0, 1 ], '↘': [ 1, 1 ] }
-
-            for (const name in squad) {
-                // 如果不包含就跳过（一般都是队长）
-                if (!(name in relativePos)) continue
-
-                // 检查其位置和队长的相对位置是否不正确
-                squad[name].moveTo(
-                    leaderPos.x + relativePos[name][0],
-                    leaderPos.y + relativePos[name][1],
-                    { reusePath: 1 }
-                )
-            }
-
-            return true
         },
 
         /**
