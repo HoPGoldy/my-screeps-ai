@@ -1,5 +1,5 @@
 import mountRoomBase from './mount.roomBase'
-import { createHelp, log, createRoomLink } from './utils'
+import { createHelp, log, createRoomLink, createElement } from './utils'
 import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
 
@@ -531,6 +531,29 @@ class RoomExtension extends Room {
     public fs(): string {
         if (!this.factory) return `[${this.name}] 未建造工厂`
         return this.factory.stats()
+    }
+
+    /**
+     * 可视化用户操作 - 添加终端监听任务
+     */
+    public tadd(): string { 
+        return createElement.form('terminalAdd', [
+            { name: 'resourceType', label: '资源类型', type: 'input', placeholder: '资源的实际值' },
+            { name: 'amount', label: '期望值', type: 'input', placeholder: '交易策略的触发值' },
+            { name: 'priceLimit', label: '[可选]价格限制', type: 'input', placeholder: '置空该值以启动价格检查' },
+            { name: 'mod', label: '物流方向', type: 'select', options: [
+                { value: 0, label: '获取' },
+                { value: 1, label: '提供' }
+            ]},
+            { name: 'channel', label: '物流渠道', type: 'select', options: [
+                { value: 0, label: '拍单' },
+                { value: 1, label: '挂单' },
+                { value: 2, label: '共享' }
+            ]}
+        ], {
+            content: '提交',
+            command: `({resourceType, amount, mod, channel, priceLimit}) => Game.rooms['${this.name}'].terminal.add(resourceType, amount, mod, channel, priceLimit)`
+        })
     }
 
     /**

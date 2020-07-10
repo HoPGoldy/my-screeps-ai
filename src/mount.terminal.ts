@@ -538,6 +538,8 @@ export default class TerminalExtension extends StructureTerminal {
      * 用户操作 - 添加资源监听
      */
     public add(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined) {
+        if (!_.isNumber(priceLimit)) priceLimit = undefined
+        
         this.addTask(resourceType, amount, mod, channel, priceLimit)
         return `已添加，当前监听任务如下: \n${this.show()}`
     }
