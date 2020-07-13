@@ -1005,15 +1005,19 @@ interface IPathMap {
  * 300 就代表房间能量为 0 ~ 300 时应该使用的身体部件，该区间前开后闭
  * 例如：房间的 energyAvailable 为 600，则就会去使用 800 的身体部件，
  */
-interface BodyConfig {
-    300: BodyPartConstant[]
-    550: BodyPartConstant[]
-    800: BodyPartConstant[]
-    1300: BodyPartConstant[]
-    1800: BodyPartConstant[]
-    2300: BodyPartConstant[]
-    5600: BodyPartConstant[]
-    10000: BodyPartConstant[]
+type BodyConfig = {
+    [energyLevel in 300 | 550 | 800 | 1300 | 1800 | 2300 | 5600 | 10000 ]: BodyPartConstant[]
+}
+
+/**
+ * 基地布局信息
+ */
+type BaseLayout = {
+    // 不同等级下应建造的建筑
+    [controllerLevel in 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 ]: {
+        // 该类型建筑应该被放置在什么地方
+        [structureType in StructureConstant]?: [ number, number ][]
+    }
 }
 
 /**

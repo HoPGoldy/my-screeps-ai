@@ -1,3 +1,5 @@
+import { baseLayout } from './setting'
+
 // dp 节点
 interface DpNode {
     // 以坐标 [i][j]（i 为纵坐标，j 为横坐标，下同）为右下角时所能生成的最大正方形的边长
@@ -134,5 +136,52 @@ export function setBaseCenter(room: Room, centerPos: RoomPosition): OK | ERR_INV
     if (!centerPos) return ERR_INVALID_ARGS
 
     room.memory.center = [ centerPos.x, centerPos.y ]
+    return OK
+}
+
+/**
+ * 获取基地的布局信息
+ * 每个建筑到基准点的相对位置和建筑类型
+ * 
+ * @param centerFlagName 基准点（中心点）旗帜名称
+ * @param baseSize 基地尺寸，将忽略该尺寸以外的建筑
+ */
+export function getBaseLayout(centerFlagName: string, baseSize: number = 11): string {
+    const flag = Game.flags[centerFlagName]
+    if (!flag) return `未找到基准点旗帜`
+
+    // 获取范围内的建筑
+    const inRangeStructure = flag.pos.findInRange(FIND_MY_STRUCTURES, (baseSize / 2 - 0.5))
+
+    let layout = {}
+    // 遍历所有范围内建筑，统计相对位置
+    inRangeStructure.forEach(s => {
+        if (!layout[s.structureType]) layout[s.structureType] = []
+        layout[s.structureType].push([ s.pos.x, s.pos.y ])
+    })
+
+    return JSON.stringify(layout, null, 4)
+}
+
+/**
+ * 对指定房间运行自定建筑摆放
+ * 会自动放置建筑工地并发布建造者
+ * 
+ * @param room 要运行规划的房间
+ */
+export function planLayout(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
+    if (!room.controller || !room.controller.my) return ERR_NOT_OWNER
+
+    // 当前需要检查那几个等级的布局
+    const planLevel = Array(room.controller.level).fill(undefined).map((_, index) => index + 1)
+
+    // 从 1 级开始检查
+    planLevel.forEach((level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) => {
+        // 当前等级的布局
+        const currentLevelLayout = baseLayout[level]
+
+        // ...
+    })
+
     return OK
 }

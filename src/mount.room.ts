@@ -30,6 +30,7 @@ class RoomExtension extends Room {
         const prefixes = instanceName ? [ roomName, instanceName ] : [ roomName ]
         log(content, prefixes, color, notify)
     }
+
     /**
      * 添加任务
      * 
