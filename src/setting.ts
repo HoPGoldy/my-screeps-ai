@@ -142,6 +142,37 @@ export const bodyConfigs: IBodyConfigs = {
 }
 
 /**
+ * 当前使用的基地布局信息
+ * 描述了在不同等级时应该将不同建筑放置在何处
+ */
+export const baseLayout: BaseLayout = {
+    1: {
+
+    },
+    2: {
+
+    },
+    3: {
+
+    },
+    4: {
+
+    },
+    5: {
+
+    },
+    6: {
+
+    },
+    7: {
+
+    },
+    8: {
+
+    }
+}
+
+/**
  * 在绘制控制台信息时使用的颜色
  */
 export const colors: { [name in Colors]: string } = {
