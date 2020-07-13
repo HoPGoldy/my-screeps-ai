@@ -174,14 +174,31 @@ export function planLayout(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
 
     // 当前需要检查那几个等级的布局
     const planLevel = Array(room.controller.level).fill(undefined).map((_, index) => index + 1)
+    // 房间保存的中心位置
+    const center = room.memory.center
+    if (!center) return ERR_NOT_FOUND
 
+    let needBuild = false
     // 从 1 级开始检查
     planLevel.forEach((level: 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8) => {
         // 当前等级的布局
         const currentLevelLayout = baseLayout[level]
 
-        // ...
+        // 遍历布局中所有建筑，检查是否又可建造的
+        Object.keys(currentLevelLayout).map((structureType: BuildableStructureConstant) => {
+            currentLevelLayout[structureType].map(pos => {
+                // 直接发布工地，通过返回值检查是否需要建造
+                const result = room.createConstructionSite(center[0] + pos[0], center[1] + pos[1], structureType)
+
+                // 存在需要建造的建筑
+                if (result === OK) needBuild = true
+            })
+        })
+        
     })
+
+    // 有需要建造的，发布建造者
+    if (needBuild) room.addBuilder()
 
     return OK
 }
