@@ -493,6 +493,18 @@ class CreepControl extends Room {
     }
 
     /**
+     * 给该房间发布建造者
+     */
+    public addBuilder(): void {
+        const builderName = `${this.name} builder`
+        if (creepApi.has(builderName)) return
+
+        creepApi.add(builderName, 'builder', {
+            sourceId: this.storage ? this.storage.id : this.sources[0].id
+        }, this.name)
+    }
+
+    /**
      * 发布支援角色组
      * 
      * @param remoteRoomName 要支援的房间名

@@ -563,6 +563,8 @@ interface Room {
 
     // 指定 upgrader 是否可以继续孵化
     needUpgraderRespawn(upgraderName: string): boolean
+
+    addBuilder(): void
 }
 
 interface RoomPosition {
