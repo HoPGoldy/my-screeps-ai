@@ -151,13 +151,13 @@ export function getBaseLayout(centerFlagName: string, baseSize: number = 11): st
     if (!flag) return `未找到基准点旗帜`
 
     // 获取范围内的建筑
-    const inRangeStructure = flag.pos.findInRange(FIND_MY_STRUCTURES, (baseSize / 2 - 0.5))
+    const inRangeStructure = flag.pos.findInRange(FIND_STRUCTURES, (baseSize / 2 - 0.5))
 
     let layout = {}
     // 遍历所有范围内建筑，统计相对位置
     inRangeStructure.forEach(s => {
         if (!layout[s.structureType]) layout[s.structureType] = []
-        layout[s.structureType].push([ s.pos.x, s.pos.y ])
+        layout[s.structureType].push([ flag.pos.x - s.pos.x, flag.pos.y - s.pos.y ])
     })
 
     return JSON.stringify(layout, null, 4)
