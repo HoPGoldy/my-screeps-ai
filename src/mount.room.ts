@@ -1,7 +1,8 @@
 import mountRoomBase from './mount.roomBase'
-import { createHelp, log, createRoomLink, createElement } from './utils'
+import { createHelp, log, createRoomLink, createElement, getName } from './utils'
 import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
 import { creepApi } from './creepController'
+import { setBaseCenter } from './autoPlanning'
 
 // 挂载拓展到 Room 原型
 export default function () {
@@ -526,6 +527,20 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 用户操作 - 设置中心点
+     * @param flagName 中心点旗帜名
+     */
+    public setcenter(flagName: string): string {
+        if (!flagName) flagName = getName.flagBaseCenter(this.name)
+        const flag = Game.flags[flagName]
+
+        if (!flag) return `[${this.name}] 未找到名为 ${flagName} 的旗帜`
+
+        setBaseCenter(this, flag.pos)
+        return `[${this.name}] 已将 ${flagName} 设置为中心点`
+    }
+
+    /**
      * 用户操作 - 查看房间工作状态
      */
     public fs(): string {
@@ -1000,7 +1015,7 @@ class RoomExtension extends Room {
     public claim(targetRoomName: string, signText: string = ''): string {
         this.claimRoom(targetRoomName, signText)
 
-        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布`
+        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。\n 你可以在目标房间中新建名为 ${getName.flagBaseCenter(this.name)} 的旗帜来指定基地中心。否则 claimer 将运行自动规划。`
     }
 
     /**

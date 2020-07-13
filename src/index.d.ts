@@ -598,6 +598,11 @@ interface RoomMemory {
         [creepName: string]: string
     }
 
+    // 基地中心点坐标, [0] 为 x 坐标, [1] 为 y 坐标
+    center: [ number, number ]
+    // 基地中心的待选位置, [0] 为 x 坐标, [1] 为 y 坐标
+    centerCandidates?: [ number, number ][]
+
     // observer 内存
     observer: {
         // 上个 tick 已经 ob 过的房间名
