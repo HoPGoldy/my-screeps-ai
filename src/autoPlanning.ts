@@ -9,8 +9,16 @@ interface DpNode {
 // 房间的边长
 const ROOM_MAX_SIZE = 50
 
-export function findBaseCenterPos(roomName: string, baseSize: number = 11): RoomPosition[] {
-    const terrain = new Room.Terrain(roomName)
+/**
+ * 在房间中找到所有可以放下基地的点
+ * 会尽可能的挑选沼泽数量少的区域
+ * 
+ * @param room 运行规划的房间
+ * @param baseSize 正方形基地的尺寸
+ * @returns 所有满足条件的房间位置
+ */
+export function findBaseCenterPos(room: Room, baseSize: number = 11): RoomPosition[] {
+    const terrain = new Room.Terrain(room.name)
 
     let dp: DpNode[][] = Array().fill(ROOM_MAX_SIZE).map(_ => [])
     // 合适的结果集
@@ -40,9 +48,9 @@ export function findBaseCenterPos(roomName: string, baseSize: number = 11): Room
 
                 // 沼泽数量不是最小的
                 if (currentSwamp > minSwamp) continue
-                
+
                 const pos = getCenterBybottomRight(i, j, baseSize)
-                const centerPos = new RoomPosition(pos[1], pos[0], roomName)
+                const centerPos = new RoomPosition(pos[1], pos[0], room.name)
 
                 // 对比沼泽数量并更新结果
                 if (currentSwamp < minSwamp) {
@@ -89,4 +97,42 @@ function getCenterBybottomRight(i: number, j: number, len: number): [ number, nu
         i - (len / 2) + 0.5,
         j - (len / 2) + 0.5,
     ]
+}
+
+/**
+ * 确定唯一的基地中心点
+ * 
+ * @param room 运行规划的房间
+ * @param targetPos 待选的中心点数组
+ * @returns 基地中心点
+ */
+export function confirmBasePos(room: Room, targetPos: RoomPosition[]): RoomPosition {
+    if (!targetPos || targetPos.length <= 0) return undefined
+
+    const controller = room.controller
+    const mineral = room.mineral
+    if (!controller || !mineral) return undefined
+
+    // 所有待选点到 controller 和 mineral 的距离总和
+    const totalDistances = targetPos.map((pos, index) => ({
+        distance: pos.findPathTo(controller).length + pos.findPathTo(mineral).length,
+        index
+    }))
+
+    // 找到最小值并返回对应的位置
+    const target = _.min(totalDistances, item => item.distance)
+    return targetPos[target.index]
+}
+
+/**
+ * 给指定房间设置中心点
+ * 
+ * @param room 要设置中心点的房间
+ * @param centerPos 中心点坐标
+ */
+export function setBaseCenter(room: Room, centerPos: RoomPosition): OK | ERR_INVALID_ARGS {
+    if (!centerPos) return ERR_INVALID_ARGS
+
+    room.memory.center = [ centerPos.x, centerPos.y ]
+    return OK
 }
