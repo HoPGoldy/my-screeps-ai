@@ -1286,3 +1286,37 @@ interface ButtonDetail {
     // 按钮会执行的命令（可以访问游戏对象）
     command: string
 }
+
+/**
+ * creep 发布计划职责链上的一个节点
+ * 
+ * @param detail 该 creep 发布所需的房间信息
+ * @returns 代表该发布计划是否适合房间状态
+ */
+type PlanNodeFunction = (detail: UpgraderPlanStats | HarvesterPlanStats) => boolean
+
+// 房间中用于发布 upgrader 所需要的信息
+interface UpgraderPlanStats {
+    // 房间名称
+    roomName: string
+    // 房间内 storage 的 id，房间没 storage 时该值为空，下同
+    storageId?: string
+    // 房间内 terminal 的 id，房间没 terminal 时该值为空，下同
+    terminalId?: string
+    // storage 中有多少能量
+    storageEnergy?: number
+    // terminal 中有多少能量
+    terminalEnergy?: number
+}
+
+// 房间中用于发布 harvester 所需要的信息
+interface HarvesterPlanStats {
+    // 房间名称
+    roomName: string
+    // 房间内 storage 的 id，房间没 storage 时该值为空，下同
+    storageId?: string
+    // 房间内中央 link 的 id
+    centerLinkId?: string
+    // 房间内来源 link 的 id
+    sourceLinkIds?: string[]
+}
