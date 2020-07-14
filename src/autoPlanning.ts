@@ -1,5 +1,6 @@
 import { baseLayout } from './setting'
 import { getFreeSpace } from './utils'
+import { creepApi } from './creepController'
 
 // dp 节点
 interface DpNode {
@@ -141,6 +142,10 @@ export const setBaseCenter = function(room: Room, centerPos: RoomPosition): OK |
 }
 
 /**
+ * -------------------------------------------------------------- 以下是自动布局部分 --------------------------------------------------------------
+ */
+
+/**
  * 获取基地的布局信息
  * 每个建筑到基准点的相对位置和建筑类型
  * 
@@ -239,4 +244,235 @@ const placeOutsideConstructionSite = function(room: Room, type: StructureConstan
     else if (type === STRUCTURE_EXTRACTOR) {
         room.mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR)
     }
+}
+
+/**
+ * -------------------------------------------------------------- 以下是自动 creep 发布部分 --------------------------------------------------------------
+ */
+
+// 在 Function 原型上挂载 setNextPlan 方法来完成 creep 发布的职责链
+declare global { interface Function { setNextPlan(nextPlan: PlanNodeFunction): PlanNodeFunction }}
+
+/**
+ * AOP 创建切面
+ * 在发布计划返回 false 时执行下一个计划
+ * 
+ * @param nextPlan 该发布计划不适用时要执行的下一个计划
+ */
+Function.prototype.setNextPlan = function(nextPlan): PlanNodeFunction {
+    return (args) => {
+        const canExec = this(args)
+        if (!canExec) return nextPlan(args)
+
+        return canExec
+    }
+}
+
+/**
+ * 从指定房间搜集发布 upgrader 的状态
+ * @param room 要搜集状态的房间
+ */
+const getStatsForUpgrader = function(room: Room): UpgraderPlanStats {
+    let stats: UpgraderPlanStats = {
+        roomName: room.name
+    }
+
+    if (room.storage) {
+        stats.storageId = room.storage.id
+        stats.storageEnergy = room.storage.store[RESOURCE_ENERGY]
+    }
+
+    if (room.terminal) {
+        stats.terminalId = room.terminal.id
+        stats.terminalEnergy = room.terminal.store[RESOURCE_ENERGY]
+    }
+
+    return stats
+}
+
+/**
+ * 从指定房间搜集发布 harvester 的状态
+ * @param room 要搜集状态的房间
+ */
+const getStatsForHarvester = function(room: Room): HarvesterPlanStats {
+    let stats: HarvesterPlanStats = {
+        roomName: room.name,
+        sourceLinkIds: []
+    }
+
+    // 获取房间内所有 link
+    const roomLinks = room.find(FIND_MY_STRUCTURES, {
+        filter: s => s.structureType === STRUCTURE_LINK
+    })
+
+    // 根据其种类放入状态对象
+    roomLinks.forEach(link => {
+        if (link.id === room.memory.centerLinkId) stats.centerLinkId = link.id
+        else if (link.id !== room.memory.upgradeLinkId) stats.sourceLinkIds.push(link.id)
+    })
+    
+    return stats
+}
+
+/**
+ * upgrader 所有的发布计划
+ * 在调用时会按照顺序依次向下检查，直到发现适合的计划方案
+ */
+const upgraderPlans: PlanNodeFunction[] = [
+    // 没终端也没存储，最原始状态，手动采集能量
+    ({ storageId, terminalId }: UpgraderPlanStats) => {
+        if (!(storageId && terminalId)) return false
+
+        console.log('手动采集能量')
+        return true
+    },
+    // 终端里的能量多，优先用终端能量
+    ({ terminalId, terminalEnergy }: UpgraderPlanStats) => {
+        if (!terminalId || terminalEnergy < 10000 ) return false
+
+        console.log('从 terminal 获取能量，发布 2 个 upgrader')
+        return true
+    },
+    // 根据 storage 里的能量发布对应数量的 upgrader
+    ({ storageId, storageEnergy }: UpgraderPlanStats) => {
+        if (!storageId || storageEnergy < 90000 ) return false
+
+        console.log('从 storage 获取能量，发布 4 个 upgrader')
+        return true
+    },
+    // 同上
+    ({ storageId, storageEnergy }: UpgraderPlanStats) => {
+        if (!storageId || storageEnergy < 50000 ) return false
+
+        console.log('从 storage 获取能量，发布 3 个 upgrader')
+        return true
+    },
+    // 同上
+    ({ storageId, storageEnergy }: UpgraderPlanStats) => {
+        if (!storageId || storageEnergy < 30000 ) return false
+
+        console.log('从 storage 获取能量，发布 2 个 upgrader')
+        return true
+    },
+    // 兜底，手动采集能量
+    () => {
+        console.log('兜底 手动采集能量')
+        return true
+    }
+]
+
+/**
+ * harvester 所有的发布计划
+ * 在调用时会按照顺序依次向下检查，直到发现适合的计划方案
+ */
+const harvesterPlans: PlanNodeFunction[] = [
+    // ...
+]
+
+// 按照对应 plans 列表的顺序把所有发布计划串成职责链
+const upgraderPlanChain = upgraderPlans.reduce((pre, next) => pre.setNextPlan(next))
+const harvesterPlanChain = harvesterPlans.reduce((pre, next) => pre.setNextPlan(next))
+
+/**
+ * 发布升级者
+ * @param room 要发布角色的房间
+ */
+const releaseUpgrader = function(room: Room): OK {
+    upgraderPlanChain(getStatsForUpgrader(room))
+    return OK
+}
+
+/**
+ * 发布采集者
+ * @param room 要发布角色的房间
+ */
+const releaseHarvester = function(room: Room): OK {
+    harvesterPlanChain(getStatsForHarvester(room))
+    return OK
+}
+
+/**
+ * 房间运营角色名对应的发布逻辑
+ */
+const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room: Room) => OK | ERR_NOT_FOUND } = {
+    'harvester': releaseHarvester,
+    'collector': releaseHarvester,
+    'upgrader': releaseUpgrader,
+    /**
+     * 发布矿工
+     * @param room 要发布角色的房间
+     */
+    'miner': function(room: Room): OK | ERR_NOT_FOUND {
+        if (!room.terminal) return ERR_NOT_FOUND
+    
+        creepApi.add(`${room.name} miner`, 'miner', {
+            sourceId: room.mineral.id,
+            targetId: room.terminal.id
+        }, room.name)
+    
+        return OK
+    },
+    /**
+     * 发布运输者
+     * @param room 要发布角色的房间
+     */
+    'transfer': function(room: Room): OK | ERR_NOT_FOUND {
+        if (!room.storage) return ERR_NOT_FOUND
+    
+        creepApi.add(`${room.name} transfer`, 'transfer', {
+            sourceId: room.storage.id
+        }, room.name)
+    
+        return OK
+    },
+    /**
+     * 发布中央运输者
+     * @param room 要发布角色的房间
+     */
+    'centerTransfer': function(room: Room): OK | ERR_NOT_FOUND {
+        if (!room.memory.center) return ERR_NOT_FOUND
+    
+        creepApi.add(`${this.name} centerTransfer`, 'centerTransfer', {
+            x: room.memory.center[0],
+            y: room.memory.center[1]
+        }, this.name)
+    
+        return OK
+    },
+    /**
+     * 发布刷墙工
+     * @param room 要发布角色的房间
+     * @param num 要发布的刷墙工数量
+     */
+    'repairer': function(room: Room, num: number = 1): OK {
+        Array(num).fill(undefined).forEach((_, index) => {
+            creepApi.add(`${room.name} repair${index}`, 'repairer', {
+                sourceId: room.storage ? room.storage.id : '',
+            }, room.name)
+        })
+    
+        return OK
+    },
+    /**
+     * 发布建造者
+     * @param room 要发布角色的房间
+     */
+    'builder': function(room: Room) {
+        creepApi.add(`${room.name} builder`, 'builder', {
+            sourceId: room.storage ? room.storage.id : room.sources[0].id
+        }, room.name)
+
+        return OK
+    }
+}
+
+/**
+ * 在指定房间发布 creep
+ * 本函数的发布会控制房间内的所有同种类 creep，所以对于某些角色来说调用一次本函数可能会新增或删除多个 creep
+ * 
+ * @param room 要发布 creep 的房间
+ * @param role 要发布的角色名
+ */
+export const releaseCreep = function(room: Room, role: BaseRoleConstant | AdvancedRoleConstant): OK | ERR_NOT_FOUND {
+    return roleToRelease[role](room)
 }
