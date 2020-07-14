@@ -144,6 +144,7 @@ export const bodyConfigs: IBodyConfigs = {
 /**
  * 当前使用的基地布局信息
  * 描述了在不同等级时应该将不同建筑放置在何处（相对于基地中心点）
+ * 值为 null 代表在集中式布局之外，会自动选择其放置点
  */
 export const baseLayout: BaseLayout = {
     1: {
@@ -165,13 +166,15 @@ export const baseLayout: BaseLayout = {
     5: {
         [STRUCTURE_EXTENSION]: [[5,-3],[5,-2],[4,-1],[3,-1],[3,1],[4,1],[3,2],[2,3],[3,4],[4,3]],
         [STRUCTURE_TOWER]: [[0,-2]],
-        [STRUCTURE_LINK]: [[-1,0]],
+        [STRUCTURE_LINK]: [[-1,0], null],
         [STRUCTURE_ROAD]: [[1,-1],[2,0],[1,1],[1,2],[2,2],[3,3],[2,4],[4,2],[4,4]]
     },
     6: {
         [STRUCTURE_EXTENSION]: [[5,4],[5,3],[5,2],[5,1],[4,5],[3,5],[2,5],[1,5],[1,4],[1,3]],
         [STRUCTURE_LAB]: [[-3,4],[-4,3],[-3,2]],
         [STRUCTURE_TERMINAL]: [[1,0]],
+        [STRUCTURE_EXTRACTOR]: [null],
+        [STRUCTURE_LINK]: [null],
         [STRUCTURE_ROAD]: [[0,3],[-1,2],[-1,1],[-2,0],[-2,2],[-3,3],[-4,4],[-4,2]]
     },
     7: {
