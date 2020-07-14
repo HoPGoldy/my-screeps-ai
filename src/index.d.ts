@@ -1018,7 +1018,7 @@ type BaseLayout = {
     // 不同等级下应建造的建筑
     [controllerLevel in 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 ]: {
         // 该类型建筑应该被放置在什么地方
-        [structureType in StructureConstant]?: [ number, number ][]
+        [structureType in StructureConstant]?: [ number, number ][] | null
     }
 }
 

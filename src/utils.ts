@@ -437,3 +437,30 @@ export const createElement = {
 export const getName = {
     flagBaseCenter: (roomName: string): string => `${roomName} center`
 }
+
+/**
+ * 获取目标位置周围的空位
+ * 只会检查静态地形
+ * 
+ * @param pos 目标位置
+ * @param getOne 该值为 true 时只会返回第一个找到的空余位置
+ */
+export const getFreeSpace = function(pos: RoomPosition, getOne: boolean = false): RoomPosition[] {
+    const terrain = new Room.Terrain(pos.roomName)
+    const result: RoomPosition[] = []
+
+    // 遍历周围的 8 个坐标
+    for (const x of [pos.x - 1, pos.x, pos.x + 1]) {
+        for (const y of [pos.y - 1, pos.y, pos.y + 1]) {
+
+            // 如果是非墙体的话就属于空位
+            const currentTerrain = terrain.get(x, y)
+            if (!_.isUndefined(currentTerrain) && currentTerrain !== TERRAIN_MASK_WALL) {
+                if (getOne) return [ new RoomPosition(x, y, pos.roomName) ]
+                else result.push(new RoomPosition(x, y, pos.roomName))
+            }
+        }
+    }
+
+    return result
+}

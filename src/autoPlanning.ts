@@ -1,4 +1,5 @@
 import { baseLayout } from './setting'
+import { getFreeSpace } from './utils'
 
 // dp 节点
 interface DpNode {
@@ -19,7 +20,7 @@ const ROOM_MAX_SIZE = 50
  * @param baseSize 正方形基地的尺寸
  * @returns 所有满足条件的房间位置
  */
-export function findBaseCenterPos(room: Room, baseSize: number = 11): RoomPosition[] {
+export const findBaseCenterPos = function(room: Room, baseSize: number = 11): RoomPosition[] {
     const terrain = new Room.Terrain(room.name)
 
     let dp: DpNode[][] = Array().fill(ROOM_MAX_SIZE).map(_ => [])
@@ -75,7 +76,7 @@ export function findBaseCenterPos(room: Room, baseSize: number = 11): RoomPositi
  * @param j 目标正方形右下角的 x 坐标
  * @param len 正方形的边长
  */
-function getOtherArea(dp: DpNode[][], i: number, j: number, len: number): { topLeft: DpNode, top: DpNode, left: DpNode } {
+const getOtherArea = function(dp: DpNode[][], i: number, j: number, len: number): { topLeft: DpNode, top: DpNode, left: DpNode } {
     // 越界时的默认值
     const nullNode: DpNode = { len: 0, swamp: 0 }
     // 检查索引是否小于零，小于零就返回默认值
@@ -94,7 +95,7 @@ function getOtherArea(dp: DpNode[][], i: number, j: number, len: number): { topL
  * @param len 正方形的边长
  * @returns [0] 为中央点 x 坐标，[1] 为 y 坐标
  */
-function getCenterBybottomRight(i: number, j: number, len: number): [ number, number ] {
+const getCenterBybottomRight = function(i: number, j: number, len: number): [ number, number ] {
     return [
         i - (len / 2) + 0.5,
         j - (len / 2) + 0.5,
@@ -108,7 +109,7 @@ function getCenterBybottomRight(i: number, j: number, len: number): [ number, nu
  * @param targetPos 待选的中心点数组
  * @returns 基地中心点
  */
-export function confirmBasePos(room: Room, targetPos: RoomPosition[]): RoomPosition {
+export const confirmBasePos = function(room: Room, targetPos: RoomPosition[]): RoomPosition {
     if (!targetPos || targetPos.length <= 0) return undefined
 
     const controller = room.controller
@@ -132,7 +133,7 @@ export function confirmBasePos(room: Room, targetPos: RoomPosition[]): RoomPosit
  * @param room 要设置中心点的房间
  * @param centerPos 中心点坐标
  */
-export function setBaseCenter(room: Room, centerPos: RoomPosition): OK | ERR_INVALID_ARGS {
+export const setBaseCenter = function(room: Room, centerPos: RoomPosition): OK | ERR_INVALID_ARGS {
     if (!centerPos) return ERR_INVALID_ARGS
 
     room.memory.center = [ centerPos.x, centerPos.y ]
@@ -146,7 +147,7 @@ export function setBaseCenter(room: Room, centerPos: RoomPosition): OK | ERR_INV
  * @param centerFlagName 基准点（中心点）旗帜名称
  * @param baseSize 基地尺寸，将忽略该尺寸以外的建筑
  */
-export function getBaseLayout(centerFlagName: string, baseSize: number = 11): string {
+export const getBaseLayout = function(centerFlagName: string, baseSize: number = 11): string {
     const flag = Game.flags[centerFlagName]
     if (!flag) return `未找到基准点旗帜`
 
@@ -169,7 +170,7 @@ export function getBaseLayout(centerFlagName: string, baseSize: number = 11): st
  * 
  * @param room 要运行规划的房间
  */
-export function planLayout(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
+export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
     if (!room.controller || !room.controller.my) return ERR_NOT_OWNER
 
     // 当前需要检查那几个等级的布局
@@ -185,8 +186,11 @@ export function planLayout(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
         const currentLevelLayout = baseLayout[level]
 
         // 遍历布局中所有建筑，检查是否又可建造的
-        Object.keys(currentLevelLayout).map((structureType: BuildableStructureConstant) => {
-            currentLevelLayout[structureType].map(pos => {
+        Object.keys(currentLevelLayout).forEach((structureType: BuildableStructureConstant) => {
+            currentLevelLayout[structureType].forEach(pos => {
+                // 为 null 说明在集中布局之外
+                if (pos == null) return placeOutsideConstructionSite(room, structureType)
+
                 // 直接发布工地，通过返回值检查是否需要建造
                 const result = room.createConstructionSite(center[0] + pos[0], center[1] + pos[1], structureType)
 
@@ -194,11 +198,45 @@ export function planLayout(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
                 if (result === OK) needBuild = true
             })
         })
-        
     })
 
     // 有需要建造的，发布建造者
     if (needBuild) room.addBuilder()
 
     return OK
+}
+
+/**
+ * 放置集中布局之外的建筑
+ * Link、Extractor 之类的
+ * 
+ * @param room 要放置工地的房间
+ * @param type 要放置的建筑类型
+ */
+const placeOutsideConstructionSite = function(room: Room, type: StructureConstant): void {
+    if (type === STRUCTURE_LINK) {
+        // 给 source 旁边造 link
+        for (const source of room.sources) {
+            // 旁边已经造好了 link，就检查下一个 source
+            if (source.pos.findInRange(FIND_MY_STRUCTURES, 2, {
+                filter: s => s.structureType === STRUCTURE_LINK
+            })) continue
+
+            // 获取 source 旁边的开采单位位置
+            const harvesterPos = getFreeSpace(source.pos, true)[0]
+            if (!harvesterPos) continue
+            // 以开采单位为基础寻找 link 的位置
+            const targetPos = getFreeSpace(harvesterPos, true)[0]
+            if (!targetPos) continue
+
+            // 建造 link
+            targetPos.createConstructionSite(STRUCTURE_LINK)
+            // 一次只会建造一个 link
+            break
+        }
+    }
+    // 是 EXTRACTOR 就直接点下去
+    else if (type === STRUCTURE_EXTRACTOR) {
+        room.mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR)
+    }
 }

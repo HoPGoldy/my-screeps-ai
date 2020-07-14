@@ -1,5 +1,6 @@
 import roles from './role'
 import { creepApi } from './creepController'
+import { planLayout } from './autoPlanning'
 import { createHelp, colorful, whiteListFilter } from './utils'
 import { 
     // spawn 孵化相关
@@ -794,7 +795,7 @@ class ControllerExtension extends StructureController {
         if (Game.time % stateScanInterval) return
 
         // 如果等级发生变化了就运行 creep 规划
-        if (this.stateScanner()) this.planCreep()
+        if (this.stateScanner()) this.onLevelChange(this.level)
 
         // 8 级并且快掉级了就孵化 upgrader
         if (this.level === 8 && this.ticksToDowngrade <= 100000) creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
@@ -810,6 +811,36 @@ class ControllerExtension extends StructureController {
                     this.room.addRemoteCreepGroup(remoteRoomName)
                 }
             }
+        }
+    }
+
+    /**
+     * 当等级发生变化时的回调函数
+     * 
+     * @param level 当前的等级
+     */
+    public onLevelChange(level: number): void {
+        // 规划布局
+        planLayout(this.room)
+
+        switch (level) {
+            // 添加最基本的 creep
+            case 1:
+                this.room.planCreep()
+            break
+            // 到 7 级了就不再需要支援单位
+            case 7:
+                if (creepApi.has(`${this.room.name} RemoteUpgrader0`)) {
+                    creepApi.remove(`${this.room.name} RemoteUpgrader0`)
+                    creepApi.remove(`${this.room.name} RemoteUpgrader1`)
+                    creepApi.remove(`${this.room.name} RemoteBuilder0`)
+                }
+            break
+            // 到 8 级之后就不再需要其他房间的能量共享
+            case 8:
+                if (this.room.terminal) this.room.terminal.removeByType(RESOURCE_ENERGY, terminalModes.get, terminalChannels.share)
+                this.room.removeUpgradeGroup()
+            break
         }
     }
 
@@ -830,33 +861,6 @@ class ControllerExtension extends StructureController {
         Memory.stats.rooms[this.room.name].controllerLevel = this.level
 
         return hasLevelChange
-    }
-
-    /**
-     * 维持房间运营的 creep 规划
-     */
-    private planCreep(): void {
-        // this.log(`creep 规划运行！等级 ${this.level}`)
-
-        switch (this.level) {
-            // 添加最基本的 creep
-            case 1:
-                this.room.planCreep()
-            break
-            // 到 7 级了就不再需要支援单位
-            case 7:
-                if (creepApi.has(`${this.room.name} RemoteUpgrader0`)) {
-                    creepApi.remove(`${this.room.name} RemoteUpgrader0`)
-                    creepApi.remove(`${this.room.name} RemoteUpgrader1`)
-                    creepApi.remove(`${this.room.name} RemoteBuilder0`)
-                }
-            break
-            // 到 8 级之后就不再需要其他房间的能量共享
-            case 8:
-                if (this.room.terminal) this.room.terminal.removeByType(RESOURCE_ENERGY, terminalModes.get, terminalChannels.share)
-                this.room.removeUpgradeGroup()
-            break
-        }
     }
 
     /**
