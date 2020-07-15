@@ -20,10 +20,7 @@ import {
     DEPOSIT_MAX_COOLDOWN,
     // 挂载内存相关
     structureWithMemory,
-    minerHervesteLimit,
-    // terminl 相关
-    terminalModes,
-    terminalChannels
+    minerHervesteLimit
 } from './setting'
 
 import LabExtension from './mount.lab'
@@ -56,7 +53,7 @@ export default function () {
 }
 
 /**
- * 给指定建筑挂载内存
+ * 给指定建筑挂载内存【暂未使用】
  * 要挂载内存的建筑定义在 setting.ts 中的 structureWithMemory 里
  */
 function mountMemory(): void {
@@ -560,41 +557,33 @@ class LinkExtension extends StructureLink {
     }
 
     /**
-     * 用户操作: 注册为源 link
+     * 注册为源 link
      */
     public asSource(): string {
         this.clearRegister()
 
-        // 两格之内的 source 都可以用自己来传递能量
-        const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
-        const changedCreepNames = inRangeSources.map(source => {
-            const index = this.room.memory.sourceIds.indexOf(source.id)
+        // 更新 harvester
+        this.room.releaseCreep('harvester')
 
-            // 根据对应的索引修改对应采集单位的目标建筑
-            creepApi.add(`${this.room.name} harvester${index}`, 'collector', {
-                sourceId: this.room.sources[index].id,
-                targetId: this.id
-            }, this.room.name)
-
-            return `harvester${index}`
-        })
-
-        return `${this} 已注册为源 link，${changedCreepNames.join(', ')} 的目标已重定向为该 sourceLink`
+        return `${this} 已注册为源 link，已重定向对应 harvester 的存放目标`
     }
 
     /**
-     * 用户操作: 注册为中央 link
+     * 注册为中央 link
      */
     public asCenter(): string {
         this.clearRegister()
         this.room.memory.centerLinkId = this.id
 
         // 注册中央 link 的同时发布 centerTransfer
-        return `${this} 已注册为中央 link\n` + this.room.addCenterTransfer()
+        this.room.releaseCreep('centerTransfer')
+        this.room.releaseCreep('harvester')
+
+        return `${this} 已注册为中央 link，发布 centerTransfer 并调整采集单位`
     }
 
     /**
-     * 用户操作: 注册为升级 link
+     * 注册为升级 link
      * 
      * 自己被动的给 upgrader 角色提供能量，所以啥也不做
      * 只是在房间内存里注册来方便其他 link 找到自己
@@ -724,32 +713,15 @@ class ExtractorExtension extends StructureExtractor {
             else this.room.memory.mineralCooldown = Game.time + 10000
         }
     }
+
     /**
      * 更新 mineral id
-     * 在共享协议中注册自己
-     * 发布 miner
      */
     public onBuildComplete(): void {
         this.room.memory.extractorId = this.id
 
-        // 获取 mineral 并将其 id 保存至房间内存
-        const targets = this.room.find(FIND_MINERALS)
-        const mineral = targets[0]
-        this.room.memory.mineralId = mineral.id
-
-        // 兜底
-        if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
-        if (!Memory.resourceSourceMap[mineral.mineralType]) Memory.resourceSourceMap[mineral.mineralType] = []
-        
-        // 在资源来源表里进行注册
-        this.room.shareAddSource(mineral.mineralType)
-
-        // 添加 miner，如果这时候 terminal 还没造起来的话，元素矿会被先放在 storage 里
-        // terminal 造好时会检查是否有该角色，有的话会自动修改 targetId
-        creepApi.add(`${this.room.name} miner`, 'miner', {
-            sourceId: mineral.id,
-            targetId: this.room.terminal ? this.room.terminal.id : this.room.storage.id
-        }, this.room.name)
+        // 如果终端造好了就发布矿工
+        if (this.room.terminal) this.room.releaseCreep('miner')
     }
 }
 
@@ -764,7 +736,9 @@ class StorageExtension extends StructureStorage {
         this.stateScanner()
 
         if (Game.time % 10000) return
-
+        // 定时运行规划
+        this.room.releaseCreep('upgrader')
+        // 能量太多就提供资源共享
         if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.shareAddSource(RESOURCE_ENERGY)
     }
 
@@ -782,7 +756,9 @@ class StorageExtension extends StructureStorage {
      * 建筑完成时以自己为中心发布新的 creep 运维组
      */
     public onBuildComplete(): void {
-        this.room.planCreep()
+        this.room.releaseCreep('harvester')
+        this.room.releaseCreep('transfer')
+        this.room.releaseCreep('upgrader')
     }
 }
 
@@ -823,24 +799,10 @@ class ControllerExtension extends StructureController {
         // 规划布局
         planLayout(this.room)
 
-        switch (level) {
-            // 添加最基本的 creep
-            case 1:
-                this.room.planCreep()
-            break
-            // 到 7 级了就不再需要支援单位
-            case 7:
-                if (creepApi.has(`${this.room.name} RemoteUpgrader0`)) {
-                    creepApi.remove(`${this.room.name} RemoteUpgrader0`)
-                    creepApi.remove(`${this.room.name} RemoteUpgrader1`)
-                    creepApi.remove(`${this.room.name} RemoteBuilder0`)
-                }
-            break
-            // 到 8 级之后就不再需要其他房间的能量共享
-            case 8:
-                if (this.room.terminal) this.room.terminal.removeByType(RESOURCE_ENERGY, terminalModes.get, terminalChannels.share)
-                this.room.removeUpgradeGroup()
-            break
+        // 刚占领，添加最基础的角色组
+        if (level === 1) {
+            this.room.releaseCreep('harvester')
+            this.room.releaseCreep('upgrader')
         }
     }
 

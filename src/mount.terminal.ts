@@ -1,5 +1,4 @@
 import { stateScanInterval, DEAL_RATIO, terminalModes, terminalChannels } from './setting'
-import { creepApi } from './creepController'
 import { createHelp, colorful } from './utils'
 
 /**
@@ -34,22 +33,10 @@ export default class TerminalExtension extends StructureTerminal {
      * 修改 miner 的存放位置
      */
     public onBuildComplete(): void {
-        // 调整 miner 的目标存放建筑为 terminal
-        const minerName = `${this.room.name} miner`
-        if (creepApi.has(minerName)) creepApi.add(minerName, 'miner', {
-            sourceId: this.room.mineral.id,
-            targetId: this.id
-        }, this.room.name)
-
-        // 当已经有房间 8 级（保证有人能提供能量）并且自己不足 8 级时的时候才会添加能量共享请求
-        if (Object.keys(Game.spawns).length > 3 && this.room.controller.level != 8) {
-            this.add(RESOURCE_ENERGY, 20000, terminalModes.get, terminalChannels.share)
-            this.room.addUpgradeGroup()
-
-            // 调整远程支援单位的能量来源
-            creepApi.edit(`${this.room.name} RemoteUpgrader0`, { sourceId: this.id })
-            creepApi.edit(`${this.room.name} RemoteUpgrader1`, { sourceId: this.id })
-            creepApi.edit(`${this.room.name} RemoteBuilder1`, { sourceId: this.id })
+        // 有 extractor 了，发布矿工并添加对应的共享协议
+        if (this.room.extractor) {
+            this.room.releaseCreep('miner')
+            this.addTask(this.room.mineral.mineralType, 30000, terminalModes.put, terminalChannels.share)
         }
     }
 

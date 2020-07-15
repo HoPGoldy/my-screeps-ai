@@ -582,11 +582,6 @@ export const commodityMax = {
 export const minerHervesteLimit = 200000
 
 /**
- * 当 terminal 中能量超过该值则优先使用 terminal 作为 Upgrader 的能量来源
- */
-export const useTerminalUpraderLimit = 50000
-
-/**
  * 交易时的购买区间限制
  * 用于防止过贵的卖单或者太便宜的买单
  * 在进行交易时会通过该资源的昨日历史价格配合下面的比例来确定合适的交易价格区间
@@ -628,3 +623,31 @@ export const terminalChannels: {
     // 资源共享
     share: 2
 }
+
+// 每个房间最多同时存在多少 upgrader 和 harvester
+export const MAX_UPGRADER_NUM = 8
+export const MAX_HARVESTER_NUM = 4
+
+/**
+ * terminal 中能量和对应发布的 upgrader 数量
+ * upgrader 自动发布时会优先使用 terminal 中的能量，不满足下表 [0] 的能量标准时才会去使用 storage 里的能量
+ * 请确保最少有一条内容
+ */
+export const UPGRADE_WITH_TERMINAL = [
+    { energy: 20000, num: 2 },
+    { energy: 30000, num: 3 },
+    { energy: 40000, num: 4 },
+    { energy: 50000, num: 5 },
+    { energy: 60000, num: 6 },
+    { energy: 70000, num: 7 },
+    { energy: 80000, num: 8 },
+]
+
+/**
+ * storage 中的能量和对应发布的 upgrader 数量
+ */
+export const UPGRADE_WITH_STORAGE = [
+    { energy: 700000, num: 3 },
+    { energy: 500000, num: 2 },
+    { energy: 100000, num: 1 }
+]

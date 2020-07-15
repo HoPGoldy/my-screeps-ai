@@ -115,9 +115,12 @@ const roles: {
             if (creep.ticksToLive <= 3) return true
         },
         target: creep => {
-            const target: Structure = data.targetId ? Game.getObjectById(data.targetId) : creep.room.storage
+            const target: Structure = Game.getObjectById(data.targetId)
+            // 找不到目标了，自杀并重新运行发布规划
             if (!target) {
                 creep.say('目标找不到!')
+                creep.room.releaseCreep('harvester')
+                creep.suicide()
                 return false
             }
 
@@ -195,10 +198,15 @@ const roles: {
      * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
      */
     upgrader: (data: WorkerData): ICreepConfig => ({
-        isNeed: (room, creepName) => room.needUpgraderRespawn(creepName),
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+            const source: StructureTerminal | StructureStorage | Source = Game.getObjectById(data.sourceId)
+
+            // 如果发现能量来源（建筑）里没有能量了，就自杀并重新运行 upgrader 发布规划
+            if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) {
+                creep.room.releaseCreep('upgrader')
+                creep.suicide()
+            }
         },
         target: creep => {
             creep.upgrade()

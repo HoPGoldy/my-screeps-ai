@@ -427,7 +427,7 @@ interface CreepMemory {
     fillStructureId?: string
     // 建筑工特有，当前缓存的建筑工地（目前只有外矿采集者在用）
     constructionSiteId?: string
-    // 外矿采集者特有, 该字段为 true 时, 每 tick 都会尝试检查工地并建造
+    // 可以执行建筑的单位特有，当该值为 true 时将不会尝试建造
     dontBuild?: boolean
     // transfer 特有，当前任务正在转移的资源类型
     taskResource?: ResourceConstant
@@ -489,6 +489,7 @@ interface Room {
     nuker: StructureNuker
     observer: StructureObserver
     centerLink: StructureLink
+    extractor: StructureExtractor
     mineral: Mineral
     sources: Source[]
 
@@ -503,15 +504,12 @@ interface Room {
     hangPowerTask(): void
 
     // creep 发布 api
-    planCreep(): string
-    addCenterTransfer(): string
+    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant): ScreepsReturnCode
     addRemoteCreepGroup(remoteRoomName: string)
     addRemoteReserver(remoteRoomName): void
     addRemoteHelper(remoteRoomName): void
     removePbHarvesteGroup(attackerName: string, healerName: string): void
     spawnPbTransferGroup(flagName: string, number: number): void
-    addUpgradeGroup(creepNum?: number): OK | ERR_NOT_FOUND
-    removeUpgradeGroup(creepNum?: number): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -561,10 +559,8 @@ interface Room {
     startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET
     stopWar(): OK | ERR_NOT_FOUND
 
-    // 指定 upgrader 是否可以继续孵化
-    needUpgraderRespawn(upgraderName: string): boolean
-
-    addBuilder(): void
+    // 获取房间中的有效能量来源
+    getAvailableSource(): StructureTerminal | StructureStorage | Source
 }
 
 interface RoomPosition {
@@ -1297,8 +1293,12 @@ type PlanNodeFunction = (detail: UpgraderPlanStats | HarvesterPlanStats) => bool
 
 // 房间中用于发布 upgrader 所需要的信息
 interface UpgraderPlanStats {
-    // 房间名称
-    roomName: string
+    // 房间对象
+    room: Room
+    // 房间内的控制器等级
+    controllerLevel: number
+    // 控制器还有多久降级
+    ticksToDowngrade: number
     // 房间内 storage 的 id，房间没 storage 时该值为空，下同
     storageId?: string
     // 房间内 terminal 的 id，房间没 terminal 时该值为空，下同
@@ -1311,12 +1311,15 @@ interface UpgraderPlanStats {
 
 // 房间中用于发布 harvester 所需要的信息
 interface HarvesterPlanStats {
-    // 房间名称
-    roomName: string
+    // 房间对象
+    room: Room
+    // 房间内 source 的 id 和其配套的 link id
+    sources: {
+        id: string
+        linkId: string
+    }[]
     // 房间内 storage 的 id，房间没 storage 时该值为空，下同
     storageId?: string
     // 房间内中央 link 的 id
     centerLinkId?: string
-    // 房间内来源 link 的 id
-    sourceLinkIds?: string[]
 }

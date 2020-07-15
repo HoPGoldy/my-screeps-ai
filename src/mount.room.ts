@@ -327,6 +327,18 @@ class RoomExtension extends Room {
     }
 
     /**
+     * 查找房间中的有效能量来源
+     */
+    public getAvailableSource(): StructureTerminal | StructureStorage | Source {
+        // terminal 或 storage 里有能量就优先用
+        if (this.terminal && this.terminal.store[RESOURCE_ENERGY] > 10000) return this.terminal
+        if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) return this.storage
+
+        // 没有就使用能量最多的 source
+        return _.max(this.sources, s => s.energy)
+    }
+
+    /**
      * 用户操作：向指定房间发送资源
      * 注意，请保证资源就在 Terminal 中
      * 
