@@ -152,6 +152,7 @@ const roles: {
         },
         bodys: 'transfer'
     }),
+
     /**
      * 占领者
      * target: 占领指定房间
@@ -306,6 +307,13 @@ const roles: {
      * 如果都造好的话就升级控制器
      */
     remoteBuilder: (data: RemoteHelperData): ICreepConfig => ({
+        isNeed: () => {
+            const targetRoom = Game.rooms[data.targetRoomName]
+            // 如果房间造好了 terminal，自己的使命就完成了
+            if (!targetRoom || targetRoom.terminal) return false
+
+            return true
+        },
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
@@ -321,11 +329,22 @@ const roles: {
         // 下面是正常的建造者逻辑
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+
+            // 获取有效的能量来源
+            let source: StructureStorage | StructureTerminal | Source
+            if (!creep.memory.sourceId) {
+                source = creep.room.getAvailableSource()
+                creep.memory.sourceId = source.id
+            }
+            else source = Game.getObjectById(creep.memory.sourceId)
+
+            // 之前用的能量来源没能量了就更新来源（如果来源已经是 source 的话就改了）
+            if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) delete creep.memory.sourceId
         },
         target: creep => {
-            if (creep.buildStructure() !== ERR_NOT_FOUND) { }
-            else if (creep.upgrade()) { }
+            // 执行建造之后检查下是不是都造好了，如果是的话这辈子就不会再建造了，等下辈子出生后再检查
+            if (creep.memory.dontBuild) creep.upgrade()
+            else if (creep.buildStructure() === ERR_NOT_FOUND) creep.memory.dontBuild = true
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
@@ -337,6 +356,13 @@ const roles: {
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      */
     remoteUpgrader: (data: RemoteHelperData): ICreepConfig => ({
+        isNeed: () => {
+            const targetRoom = Game.rooms[data.targetRoomName]
+            // 如果房间到 6 级了就任务完成
+            if (!targetRoom || targetRoom.controller.level >= 6) return false
+
+            return true
+        },
         // 向指定房间移动
         prepare: creep => {
             // 只要进入房间则准备结束
@@ -352,7 +378,17 @@ const roles: {
         // 下面是正常的升级者逻辑
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+
+            // 获取有效的能量来源
+            let source: StructureStorage | StructureTerminal | Source
+            if (!creep.memory.sourceId) {
+                source = creep.room.getAvailableSource()
+                creep.memory.sourceId = source.id
+            }
+            else source = Game.getObjectById(creep.memory.sourceId)
+
+            // 之前用的能量来源没能量了就更新来源（如果来源已经是 source 的话就改了）
+            if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) delete creep.memory.sourceId
         },
         target: creep => {
             creep.upgrade()
@@ -900,7 +936,7 @@ const roles: {
  * @param spawnRoomName 出生房间名
  * @returns 是否移除成功
  */
-function removeSelfGroup(creep: Creep, healerName: string, spawnRoomName: string): boolean {
+const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName: string): boolean {
     // 移除自己和 heal 的配置项
     const spawnRoom = Game.rooms[spawnRoomName]
     if (!spawnRoom) {

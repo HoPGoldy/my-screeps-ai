@@ -20,9 +20,6 @@ module.exports.loop = function (): void {
     // 所有 powerCreep 工作
     doing(Game.powerCreeps)
 
-    // 所有建筑工地工作
-    if (!(Game.time % 100)) doing(Game.constructionSites)
-
     // 搓 pixel
     generatePixel()
 

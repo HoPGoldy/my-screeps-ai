@@ -1,5 +1,6 @@
 import { creepApi } from './creepController'
-import { DEFAULT_FLAG_NAME, useTerminalUpraderLimit } from './setting'
+import { releaseCreep } from './autoPlanning'
+import { DEFAULT_FLAG_NAME } from './setting'
 
 /**
  * 将所有的房间基础服务挂载至 Room 原型上
@@ -24,7 +25,6 @@ export default function () {
         })
     }
 
-    _.assign(ConstructionSite.prototype, ConstructionSiteExtension.prototype)
     _.assign(Room.prototype, CreepControl.prototype)
 }
 
@@ -44,6 +44,7 @@ class RoomBase extends Room {
     private _sources: Source[]
     private _centerLink: StructureLink
     private _observer: StructureObserver
+    private _extractor: StructureExtractor
 
     /**
      * factory 访问器
@@ -213,6 +214,34 @@ class RoomBase extends Room {
     }
 
     /**
+     * Extractor 访问器
+     * 
+     * 读取房间内存中的 mineralId 重建 Mineral 对象。
+     * 如果没有该字段的话会自行搜索并保存至房间内存
+     */
+    public extractorGetter(): StructureExtractor | undefined {
+        if (this._extractor) return this._extractor
+
+        // 如果没有缓存就检查内存中是否存有 id
+        if (this.memory.centerLinkId) {
+            const extractor: StructureExtractor = Game.getObjectById(this.memory.extractorId)
+
+            // 如果保存的 id 失效的话，就移除缓存
+            if (!extractor) {
+                delete this.memory.extractorId
+                return undefined
+            }
+
+            // 否则就暂存对象并返回
+            this._extractor = extractor
+            return extractor
+        }
+
+        // 内存中没有 id 就说明没有 centerLink
+        return undefined
+    }
+
+    /**
      * Source 访问器
      * 
      * 工作机制同上 mineral 访问器
@@ -242,196 +271,15 @@ class RoomBase extends Room {
 }
 
 /**
- * 用于对房间内的运营 creep 进行管理
+ * 用于对房间内的 creep 进行管理
  */
 class CreepControl extends Room {
     /**
-     * 重新根据房间情况规划 creep 角色
-     * 一般不需要调用，房间会自动发布需要的角色
-     * 该方法在房间运营角色因某种故障不健全时手动调用来恢复正常的角色
-     * 
-     * @returns 规划详情
+     * 给本房间发布或重新规划指定的 creep 角色
+     * @param role 要发布的 creep 角色
      */
-    public planCreep(): string {
-        const secondSource = this.sources.length >= 2 ? this.sources[1] : this.sources[0]
-        let stats = [ `[${this.name}] 正在执行 creep 角色规划` ]
-        // 如果没有 storage 的话说明房间还在初级阶段，发布几个小 creep
-        if (!this.storage) {
-            stats.push('未发现 storage，发布基础角色：harvester，upgrader')
-            creepApi.add(`${this.name} harvester0`, 'harvester', {
-                sourceId: this.sources[0].id
-            }, this.name)
-            creepApi.add(`${this.name} upgrader1`, 'upgrader', {
-                sourceId: secondSource.id
-            }, this.name)
-
-            return stats.join('\n')
-        }
-
-        // 有 storage 了，给 harvester 添加目标，并发布额外的 harvester
-        stats.push('发现 storage，发布 collector，upgrader，transfer')
-        for (let i = 0; i <= 3; i ++) {
-            creepApi.add(`${this.name} harvester${i}`, 'harvester', {
-                // 根据 i 来把 creep 平均分配到两个 source（如果有两个的话）
-                sourceId: i % 2 ? this.sources[0].id : secondSource.id,
-                targetId: this.storage.id
-            }, this.name)
-        }
-
-        // RCL 大于 5 再发布 transfer
-        if (this.controller.level >= 5) {
-            creepApi.add(`${this.name} upgrader1`, 'upgrader', {
-                sourceId: this.storage.id
-            }, this.name)
-            creepApi.add(`${this.name} transfer`, 'transfer', {
-                sourceId: this.storage.id
-            }, this.name)
-        }
-
-        // 如果有 centerLink 或者工厂或者终端，就说明中央集群已经出现，发布 centerTransfer
-        if (!creepApi.has(`${this.name} centerTransfer`) && (this.memory.centerLinkId || this.factory || this.terminal)) stats.push(this.addCenterTransfer())
-
-        return stats.join('\n')
-    }
-
-    /**
-     * 规划 upgrader
-     * 负责发布、移除、修改 upgrader 的能量来源
-     */
-    public planUpgrader() {
-        // 可用的 upgrader 索引，重新规划后剩余的 upgrader 会被移除
-        const availableIndex = [ 1, 2, 3, 4 ]
-        // 快捷发布 upgrader
-        const addUpgrader = (num: number, sourceId: string) => {
-            for (let i = 0; i < num; i++) {
-                creepApi.add(`${this.name} upgrader${availableIndex.shift()}`, 'upgrader', { sourceId }, this.name)
-            }
-        }
-
-        // terminal 中能量足够
-        if (this.terminal && this.terminal.store[RESOURCE_ENERGY] >= useTerminalUpraderLimit) {
-            addUpgrader(this.controller.level >= 8 ? 1 : 2, this.terminal.id)
-        }
-        // 根据 storage 中能量余额进行发布
-        else if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) {
-            const energy = this.storage.store[RESOURCE_ENERGY]
-
-            /**
-             * 数量配置项
-             * @property {} energy 能量大于该值时启用本行配置
-             * @property {} level8 房间等级8时发布的 upgrader 数量
-             * @property {} levelOther 其他等级时发布的数量
-             */
-            const numberConfig = [
-                { energy: 700000, upgraderNum: 4 },
-                { energy: 500000, upgraderNum: 3 },
-                { energy: 300000, upgraderNum: 2 },
-                { energy: 100000, upgraderNum: 1 }
-            ]
-
-            // 遍历配置项进行 upgrader 发布
-            numberConfig.find(config => {
-                if (energy > config.energy) {
-                    // 房间等级大于 8 就不发布了，不然后期 cpu 撑不住
-                    if (this.controller.level < 8) addUpgrader(config.upgraderNum, this.storage.id)
-                    return true
-                }
-                return false
-            })
-        }
-        // 从 source 里取
-        else {
-            addUpgrader(1, this.sources[0].id)
-            const secondSource = this.sources.length >= 2 ? this.sources[1] : this.sources[0]
-            addUpgrader(1, secondSource.id)
-        }
-
-        // 移除未使用的 upgrader
-        availableIndex.map(unuseIndex => creepApi.remove(`${this.name} upgrader${unuseIndex}`))
-    }
-
-    /**
-     * 
-     * @param upgraderName 要询问是否继续孵化的 upgrader 名称
-     */
-    public needUpgraderRespawn(upgraderName: string): boolean {
-        if (upgraderName === `${this.name} upgrader1`) this.planUpgrader()
-
-        return creepApi.has(upgraderName)
-    }
-
-    /**
-     * 添加额外的初始房间工作队伍
-     * 
-     * @param upgrader 添加的升级单位数量
-     * @param harvester 添加的填充单位数量
-     */
-    public addRise(upgrader: number = 5, harvester: number = 2): string {
-        let creepNames = []
-        /**
-         * 要添加的角色配置项
-         * @property roleName 角色名
-         * @property number 要发布的角色数量
-         * @property sourceIndex 要采集的 Source 索引
-         */
-        const RiseRoleConfigs = [
-            { roleName: 'upgrader' as CreepRoleConstant, number: upgrader, sourceIndex: 0 },
-            { roleName: 'harvester' as CreepRoleConstant, number: harvester, sourceIndex: this.sources.length > 1 ? 1 : 0 }
-        ]
-        
-        // 遍历配置项，并用配置发布 Creep
-        RiseRoleConfigs.forEach(roleConfig => {
-            for (let i = 0; i < roleConfig.number; i++) {
-                // 生成名字
-                const creepName = `${this.name} rise${roleConfig.roleName} ${Game.time}-${i}`
-
-                // 发布 creep
-                creepApi.add(creepName, roleConfig.roleName, {
-                    sourceId: this.sources[roleConfig.sourceIndex].id
-                }, this.name)
-    
-                creepNames.push(creepName)
-            }
-        })
-
-        return `[${this.name}] 已添加额外的工作 creep: 升级单位 ${upgrader} 个，填充单位 ${harvester} 个，名称如下：\n ${creepNames.join(', ')}`
-    }
-
-    /**
-     * 移除额外的初始房间工作队伍
-     */
-    public removeRise() {
-        // 额外的工作 creep 名称中都包含的关键字
-        // 也就是说名字里有这个的 creep 都会被移除
-        const RiseCreepKey = 'rise'
-
-        if (!Memory.creepConfigs) return `未发现任何 creep 配置项`
-
-        // 找到所有包含关键字的 creep 名称，并且在本房间中孵化
-        const needRemoveCreeps: string[] = Object.keys(Memory.creepConfigs).filter(name => name.includes(RiseCreepKey) && Memory.creepConfigs[name].spawnRoom === this.name)
-        // 将其移除
-        needRemoveCreeps.forEach(name => creepApi.remove(name))
-
-        return `[${this.name}] 已移除 ${needRemoveCreeps.length} 个额外的支援单位：${needRemoveCreeps.join(', ')}`
-    }
-
-    /**
-     * 发布中央物流管理员
-     * 因为发布这个需要手动指定站桩位置，所以特地抽取出来方便手动执行
-     */
-    public addCenterTransfer(): string {
-        const flagName = `${this.name} ct`
-        const flag = Game.flags[flagName]
-        if (!flag) return `[${this.name}] centerTransfer 发布失败，未找到名称为 [${flagName}] 的旗帜，请将其插在 centerTransfer 要站立的位置并重新执行 ${this.name}.addCenterTransfer()`
-
-        // 发布 creep
-        creepApi.add(`${this.name} centerTransfer`, 'centerTransfer', {
-            x: flag.pos.x,
-            y: flag.pos.y
-        }, this.name)
-
-        flag.remove()
-        return `centerTransfer 添加成功，旗帜已移除`
+    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant): ScreepsReturnCode { 
+        return releaseCreep(this, role)
     }
 
     /**
@@ -493,18 +341,6 @@ class CreepControl extends Room {
     }
 
     /**
-     * 给该房间发布建造者
-     */
-    public addBuilder(): void {
-        const builderName = `${this.name} builder`
-        if (creepApi.has(builderName)) return
-
-        creepApi.add(builderName, 'builder', {
-            sourceId: this.storage ? this.storage.id : this.sources[0].id
-        }, this.name)
-    }
-
-    /**
      * 发布支援角色组
      * 
      * @param remoteRoomName 要支援的房间名
@@ -514,61 +350,15 @@ class CreepControl extends Room {
 
         if (!room) return this.log(`目标房间没有视野，无法发布支援单位`, '', 'yellow')
 
-        // 发布两个 upgrader
-        creepApi.add(`${remoteRoomName} RemoteUpgrader0`, 'remoteUpgrader', {
+        // 发布 upgrader 和 builder
+        creepApi.add(`${remoteRoomName} RemoteUpgrader`, 'remoteUpgrader', {
             targetRoomName: remoteRoomName,
             sourceId: room.sources[0].id
         }, this.name)
-        if (room.sources.length >= 2) creepApi.add(`${remoteRoomName} RemoteUpgrader1`, 'remoteUpgrader', {
-            targetRoomName: remoteRoomName,
-            sourceId: room.sources[0].id
-        }, this.name)
-
-        // 和一个 builder
-        creepApi.add(`${remoteRoomName} RemoteBuilder1`, 'remoteBuilder', {
+        creepApi.add(`${remoteRoomName} RemoteBuilder`, 'remoteBuilder', {
             targetRoomName: remoteRoomName,
             sourceId: room.sources.length >= 2 ? room.sources[1].id : room.sources[0].id
         }, this.name)
-    }
-
-    /**
-     * 发布房间升级组
-     * 升级组依靠 terminal 中传递来的能量进行升级
-     * 
-     * @param creepNum 新增升级组的 creep 数量
-     * @returns ERR_NOT_FOUND 没有找到 terminal
-     */
-    public addUpgradeGroup(creepNum: number = 4): OK | ERR_NOT_FOUND {
-        if (!this.terminal) return ERR_NOT_FOUND
-
-        for (let i = 0; i < creepNum; i ++) {
-            creepApi.add(`${this.name} terminalUpgrader ${i}`, 'upgrader', {
-                sourceId: this.terminal.id
-            }, this.name)
-        }
-
-        return OK
-    }
-
-    /**
-     * 移除房间升级组
-     * 
-     * @param creepNum 要移除的升级组数量
-     */
-    public removeUpgradeGroup(creepNum: number = 4): void {
-        for (let i = 0; i < creepNum; i ++) {
-            creepApi.remove(`${this.name} terminalUpgrader ${i}`)
-        }
-    }
-
-    /**
-     * 移除 pb 采集小组配置项
-     * @param attackerName 攻击单位名称
-     * @param healerName 治疗单位名称
-     */
-    public removePbHarvesteGroup(attackerName: string, healerName: string): void {
-        creepApi.remove(attackerName)
-        creepApi.remove(healerName)
     }
 
     /**
@@ -588,6 +378,16 @@ class CreepControl extends Room {
                 spawnRoom: this.name
             }, this.name)
         }
+    }
+
+    /**
+     * 移除 pb 采集小组配置项
+     * @param attackerName 攻击单位名称
+     * @param healerName 治疗单位名称
+     */
+    public removePbHarvesteGroup(attackerName: string, healerName: string): void {
+        creepApi.remove(attackerName)
+        creepApi.remove(healerName)
     }
 
     /**
@@ -670,25 +470,5 @@ class CreepControl extends Room {
         }, this.name)
 
         return `[${this.name}] 掠夺者 ${reiverName} 已发布, 目标旗帜名称 ${sourceFlagName || DEFAULT_FLAG_NAME.REIVER}, 将搬运至 ${targetStructureId ? targetStructureId : this.name + ' Terminal'}`
-    }
-}
-
-/**
- * 建筑工地拓展，主要作用就是发布 builder 来建造自己
- */
-class ConstructionSiteExtension extends ConstructionSite {
-    public work(): void {
-        if (!this.room || this.room._hasRunConstructionSite) return
-        this.room._hasRunConstructionSite = true
-        // 如果房间自己没 claim 的话就不发布 builder
-        if (!this.room.controller.owner || this.room.controller.owner.username !== this.owner.username) return
-
-        const builderName = `${this.room.name} builder`
-        if (creepApi.has(builderName)) return
-
-        // 发布建筑工，有 storage 就优先用
-        creepApi.add(builderName, 'builder', {
-            sourceId: this.room.storage ? this.room.storage.id : this.room.sources[0].id
-        }, this.room.name)
     }
 }
