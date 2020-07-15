@@ -194,6 +194,13 @@ export const globalHelp = [
             functionName: 'seeres'
         },
         {
+            title: '运行自动选址',
+            params: [
+                { name: 'roomName', desc: '要搜索的房间' }
+            ],
+            functionName: 'base'
+        },
+        {
             title: '欢呼',
             params: [
                 { name: 'content', desc: '欢呼内容' },

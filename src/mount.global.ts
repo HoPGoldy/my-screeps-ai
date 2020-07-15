@@ -1,6 +1,7 @@
 import { colorful, resourcesHelp, globalHelp, createHelp, clearFlag, createRoomLink } from './utils'
-import { factoryTopTargets } from './setting'
+import { factoryTopTargets, baseLayout } from './setting'
 import { creepApi } from './creepController'
+import { findBaseCenterPos } from './autoPlanning'
 
 // 挂载全局拓展
 export default function () {
@@ -295,6 +296,7 @@ export const globalExtension = {
     get(id: string): any {
         return Game.getObjectById(id)
     },
+
     /**
      * Game.market.extendOrder 的别名
      * 
@@ -340,6 +342,23 @@ export const globalExtension = {
         Object.values(Game.creeps).forEach(creep => creep.say(`${content}!`, toPublic))
 
         return content ? content : 'yeah!'
+    },
+
+    /**
+     * 对指定房间运行基地查找
+     * 
+     * @param roomName 房间名
+     */
+    base(roomName: string): string {
+        const targetPos = findBaseCenterPos(roomName)
+        const firstSpawn = baseLayout[1][STRUCTURE_SPAWN][0]
+
+        if (targetPos.length <= 0) return `[${roomName}] 未找到合适的中心点，请确保该房间中有大于 11*11 的空地。`
+        
+        const logs = [`[${roomName}] 找到如下适合作为基地中心的点位:`]
+        logs.push(...targetPos.map(pos => `[基地中心] ${pos.x} ${pos.y} [spawn 位置] ${pos.x + firstSpawn[0]}, ${pos.y + firstSpawn[1]}`))
+
+        return logs.join('\n')
     },
 
     /**

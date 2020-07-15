@@ -797,7 +797,7 @@ class ControllerExtension extends StructureController {
      */
     public onLevelChange(level: number): void {
         // 规划布局
-        planLayout(this.room)
+        this.log(this.room.planLayout())
 
         // 刚占领，添加最基础的角色组
         if (level === 1) {

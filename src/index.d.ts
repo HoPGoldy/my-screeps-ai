@@ -556,11 +556,18 @@ interface Room {
     getRestrictedPos(): { [creepName: string]: string }
     removeRestrictedPos(creepName: string): void
 
+    // 战争相关
     startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET
     stopWar(): OK | ERR_NOT_FOUND
 
     // 获取房间中的有效能量来源
     getAvailableSource(): StructureTerminal | StructureStorage | Source
+
+    // 自动规划相关
+    findBaseCenterPos(): RoomPosition[]
+    confirmBaseCenter(targetPos?: RoomPosition[]): RoomPosition | ERR_NOT_FOUND
+    setBaseCenter(pos: RoomPosition): OK | ERR_INVALID_ARGS
+    planLayout(): string
 }
 
 interface RoomPosition {
