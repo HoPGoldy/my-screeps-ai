@@ -17,14 +17,14 @@ const ROOM_MAX_SIZE = 50
  * 在房间中找到所有可以放下基地的点
  * 会尽可能的挑选沼泽数量少的区域
  * 
- * @param room 运行规划的房间
+ * @param roomName 运行规划的房间名
  * @param baseSize 正方形基地的尺寸
  * @returns 所有满足条件的房间位置
  */
-export const findBaseCenterPos = function(room: Room, baseSize: number = 11): RoomPosition[] {
-    const terrain = new Room.Terrain(room.name)
+export const findBaseCenterPos = function(roomName: string, baseSize: number = 11): RoomPosition[] {
+    const terrain = new Room.Terrain(roomName)
 
-    let dp: DpNode[][] = Array().fill(ROOM_MAX_SIZE).map(_ => [])
+    let dp: DpNode[][] = Array(ROOM_MAX_SIZE).fill(undefined).map(_ => [])
     // 合适的结果集
     let result: RoomPosition[] = []
     // 结果集里对应的沼泽数量
@@ -54,7 +54,7 @@ export const findBaseCenterPos = function(room: Room, baseSize: number = 11): Ro
                 if (currentSwamp > minSwamp) continue
 
                 const pos = getCenterBybottomRight(i, j, baseSize)
-                const centerPos = new RoomPosition(pos[1], pos[0], room.name)
+                const centerPos = new RoomPosition(pos[1], pos[0], roomName)
 
                 // 对比沼泽数量并更新结果
                 if (currentSwamp < minSwamp) {

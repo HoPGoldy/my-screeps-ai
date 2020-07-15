@@ -1,6 +1,5 @@
 import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from './setting'
 import { calcBodyPart, getName } from './utils'
-import { findBaseCenterPos, confirmBasePos, setBaseCenter } from './autoPlanning'
 
 /**
  * 多房间角色组
@@ -173,10 +172,7 @@ const roles: {
             // 进入房间之后运行基地选址规划
             else {
                 // 用户没有指定旗帜时才会运行自动规划
-                if (!(getName.flagBaseCenter(creep.room.name) in Game.flags)) {
-                    const targetPos = findBaseCenterPos(creep.room)
-                    creep.room.memory.centerCandidates = targetPos.map(pos => [ pos.x, pos.y ])
-                }
+                if (!(getName.flagBaseCenter(creep.room.name) in Game.flags)) creep.room.findBaseCenterPos()
                 
                 return true
             }
@@ -214,7 +210,7 @@ const roles: {
                 const flag = Game.flags[getName.flagBaseCenter(creep.room.name)]
                 // 用户已经指定了旗帜了
                 if (flag) {
-                    setBaseCenter(creep.room, flag.pos)
+                    creep.room.setBaseCenter(flag.pos)
                     creep.log(`使用玩家提供的基地中心点，已确认, 位置 [${flag.pos.x}, ${flag.pos.y}]`, 'green')
                 }
                 // 运行基地选址确认
@@ -223,10 +219,9 @@ const roles: {
                         creep.log(`房间中未找到有效的基地中心点，请放置旗帜并执行 Game.rooms.${creep.room.name}.setcenter('旗帜名')`, 'red')
                     }
                     else {
-                        const centerCondidates = creep.room.memory.centerCandidates.map(c => new RoomPosition(c[0], c[1], creep.room.name))
-                        const center = confirmBasePos(creep.room, centerCondidates)
-                        setBaseCenter(creep.room, center)
-                        creep.log(`新的基地中心点已确认, 位置 [${center.x}, ${center.y}]`, 'green')
+                        const result = creep.room.confirmBaseCenter()
+                        if (result === ERR_NOT_FOUND) creep.log(`新的基地中心点确认失败，请手动指定`, 'yellow')
+                        else creep.log(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`, 'green')
                     }
                 }
 
