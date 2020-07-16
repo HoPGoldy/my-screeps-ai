@@ -1,4 +1,4 @@
-import { stateScanInterval, DEAL_RATIO, terminalModes, terminalChannels } from './setting'
+import { DEAL_RATIO, terminalModes, terminalChannels } from './setting'
 import { createHelp, colorful } from './utils'
 
 /**
@@ -45,7 +45,7 @@ export default class TerminalExtension extends StructureTerminal {
      * 目前只统计 power 数量
      */
     private stateScanner(): void {
-        if (Game.time % stateScanInterval) return
+        if (Game.time % 20) return
         if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
         Memory.stats.rooms[this.room.name].power = this.store[RESOURCE_POWER]

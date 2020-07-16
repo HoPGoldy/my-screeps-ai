@@ -1,5 +1,3 @@
-import { stateScanInterval, colors } from './setting'
-
 /**
 * 获取指定方向的相反方向
 * 
@@ -39,6 +37,16 @@ export function doing(hashMap: object, showCpu: string = ''): void {
 
     // 如果有需求的话就显示 cpu 消耗
     if (showCpu) log(`消耗 ${Game.cpu.getUsed() - startCost}`, [ showCpu ])
+}
+
+/**
+ * 在绘制控制台信息时使用的颜色
+ */
+const colors: { [name in Colors]: string } = {
+    red: '#ef9a9a',
+    green: '#6b9955',
+    yellow: '#c5c599',
+    blue: '#8dc5e3'
 }
 
 /**
@@ -128,7 +136,7 @@ ${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')}   ${createC
  * 详情见 ./doc/Grafana 统计信息.md
  */
 export function stateScanner(): void {
-    if (Game.time % stateScanInterval) return 
+    if (Game.time % 20) return 
 
     if (!Memory.stats) Memory.stats = { rooms: {} }
     
