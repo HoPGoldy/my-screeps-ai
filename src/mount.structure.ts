@@ -13,8 +13,6 @@ import {
     powerSettings,
     // 房间物流任务
     ROOM_TRANSFER_TASK,
-    // 统计间隔
-    stateScanInterval,
     // observer 相关
     observerInterval,
     DEPOSIT_MAX_COOLDOWN,
@@ -746,7 +744,7 @@ class StorageExtension extends StructureStorage {
      * 统计自己存储中的剩余能量
      */
     private stateScanner(): void {
-        if (Game.time % stateScanInterval) return
+        if (Game.time % 20) return
         if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
         Memory.stats.rooms[this.room.name].energy = this.store[RESOURCE_ENERGY]
@@ -768,7 +766,7 @@ class StorageExtension extends StructureStorage {
  */
 class ControllerExtension extends StructureController {
     public work(): void {
-        if (Game.time % stateScanInterval) return
+        if (Game.time % 20) return
 
         // 如果等级发生变化了就运行 creep 规划
         if (this.stateScanner()) this.onLevelChange(this.level)
@@ -912,7 +910,7 @@ class NukerExtension extends StructureNuker {
      * 统计自己存储中的资源数量
      */
     private stateScanner(): void {
-        if (Game.time % stateScanInterval) return
+        if (Game.time % 20) return
         if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
 
         Memory.stats.rooms[this.room.name].nukerEnergy = this.store[RESOURCE_ENERGY]

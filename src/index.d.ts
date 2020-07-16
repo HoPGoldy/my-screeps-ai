@@ -1027,7 +1027,7 @@ type BaseLayout = {
  * 身体配置项类别
  * 包含了所有角色类型的身体配置
  */
-type IBodyConfigs = {
+type BodyConfigs = {
     [type in BodyAutoConfigConstant]: BodyConfig
 }
 
