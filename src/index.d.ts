@@ -106,7 +106,7 @@ type CreepWork = {
 
 interface ICreepConfig {
     // 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
-    isNeed?: (room: Room, creepName: string) => boolean
+    isNeed?: (room: Room, creepName: string, preMemory: CreepMemory) => boolean
     // 准备阶段执行的方法, 返回 true 时代表准备完成
     prepare?: (creep: Creep) => boolean
     // creep 获取工作所需资源时执行的方法
@@ -353,7 +353,6 @@ interface Creep {
     dismantleFlag(flagName: string, healerName?: string): boolean
     healTo(creep: Creep): void
     getFlag(flagName: string): Flag|null
-    getAmount(resourceType: ResourceConstant, source: StructureWithStore, target: StructureWithStore): number
     steadyWall(): OK | ERR_NOT_FOUND
 }
 
@@ -533,7 +532,6 @@ interface Room {
     hasRoomTransferTask(taskType: string): boolean
     getRoomTransferTask(): RoomTransferTasks | null
     handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
-    handleRoomTransferTask(): void
     deleteCurrentRoomTransferTask(): void
 
     // 工厂 api
