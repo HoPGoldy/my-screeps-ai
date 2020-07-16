@@ -424,13 +424,14 @@ const harvesterPlans: PlanNodeFunction[] = [
             }, room.name)
         })
 
+        console.log(room.name, '存在 centerLink < [plan 0]')
         return true
     },
     
     // 有 storage 但没 centerLink
     ({ room, storageId, centerLinkId, sources }: HarvesterPlanStats) => {
-        if (storageId && !centerLinkId) return false
-        
+        if (!(storageId && !centerLinkId)) return false
+
         // 遍历所有 source 进行发布，多余能量直接存到 storage 里
         sources.forEach((sourceDetail, index) => {
             creepApi.add(`${room.name} harvester${index}`, 'harvester', {
@@ -439,6 +440,7 @@ const harvesterPlans: PlanNodeFunction[] = [
             }, room.name)
         })
 
+        console.log(room.name, '不存在 centerLink < [plan 1]')
         return true
     },
 
@@ -451,6 +453,7 @@ const harvesterPlans: PlanNodeFunction[] = [
             }, room.name)
         })
 
+        console.log(room.name, '兜底 < [plan 2]')
         return true
     },
 ]
