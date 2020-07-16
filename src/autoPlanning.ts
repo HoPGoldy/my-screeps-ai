@@ -426,6 +426,7 @@ const harvesterPlans: PlanNodeFunction[] = [
 
         return true
     },
+    
     // 有 storage 但没 centerLink
     ({ room, storageId, centerLinkId, sources }: HarvesterPlanStats) => {
         if (storageId && !centerLinkId) return false
@@ -440,6 +441,7 @@ const harvesterPlans: PlanNodeFunction[] = [
 
         return true
     },
+
     // 没有 storage
     ({ room, sources }: HarvesterPlanStats) => {
         // 遍历所有 source 进行发布，多余能量直接存到 storage 里

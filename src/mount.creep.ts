@@ -440,29 +440,6 @@ class CreepExtension extends Creep {
     }
 
     /**
-     * 常用方法：获取要拿取的数量
-     * 获取数量的原则为：来源建筑的对应资源剩余量、creep 的可携带量、目标建筑的可存放数量 三者之间找到最小的
-     * 
-     * @param resourceType 要拿取的资源类型
-     * @param source 从哪个建筑里拿
-     * @param target 要放到哪个建筑里
-     * @returns 最合适的拿取数量
-     */
-    public getAmount(resourceType: ResourceConstant, source: StructureWithStore, target: StructureWithStore): number {
-        if (!source || !target) return 0
-
-        // 本 creep 的剩余容量
-        const creepCapacity = this.store.getFreeCapacity()
-        // 目标建筑的可存放量，由于这里的目标建筑限制型和非限制型存储都有，这里一律作为非限制性检查来减少代码量
-        const targetCapacity = (target.store as StoreDefinitionUnlimited).getFreeCapacity(resourceType)
-        // 来源建筑的当前存量
-        const sourceCapacity = source.store[resourceType]
-
-        // 找到最小值
-        return [ creepCapacity, targetCapacity, sourceCapacity ].reduce((x, y) => x > y ? y : x)
-    }
-
-    /**
      * 建设房间内存在的建筑工地
      */
     public buildStructure(): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {

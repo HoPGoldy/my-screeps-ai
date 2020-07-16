@@ -489,16 +489,6 @@ class RoomExtension extends Room {
     }
 
     /**
-     * 处理房间物流任务
-     * 此方法会在实装 lab 物流任务后进行扩充
-     * 
-     * @returns 该任务是否完成
-     */
-    public handleRoomTransferTask(): void {
-        this.deleteCurrentRoomTransferTask()
-    }
-
-    /**
      * 更新 labIn 任务信息
      * @param resourceType 要更新的资源 id
      * @param amount 要更新成的数量

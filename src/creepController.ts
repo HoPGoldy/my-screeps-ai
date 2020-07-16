@@ -11,8 +11,13 @@ import { colorful, log } from './utils'
  /**
   * creep 的数量控制器
   * 负责发现死去的 creep 并检查其是否需要再次孵化
+  * 
+  * @param intrval 搜索间隔
   */
-export default function creepNumberListener(): void {
+export default function creepNumberListener(intrval: number = 5): void {
+    if (Game.time % intrval) return
+
+    // 遍历所有 creep 内存，检查其是否存在
     for (const name in Memory.creeps) {
         if (name in Game.creeps) continue
 
@@ -35,7 +40,7 @@ export default function creepNumberListener(): void {
         const creepWork = roles[creepConfig.role](creepConfig.data)
 
         // 如果有 isNeed 阶段并且该阶段返回 false 则遗弃该 creep
-        if (creepWork.isNeed && !creepWork.isNeed(Game.rooms[creepConfig.spawnRoom], name)) {
+        if (creepWork.isNeed && !creepWork.isNeed(Game.rooms[creepConfig.spawnRoom], name, Memory.creeps[name])) {
             creepApi.remove(name)
             delete Memory.creeps[name]
             return
@@ -46,7 +51,10 @@ export default function creepNumberListener(): void {
     }
 }
 
-
+/**
+ * creep 发布 api
+ * 所有 creep 的增删改查都由该模块封装
+ */
 export const creepApi = {
     /**
      * 新增 creep
