@@ -21,7 +21,7 @@ module.exports.loop = function (): void {
     doing(Game.powerCreeps)
 
     // 搓 pixel
-    generatePixel()
+    // generatePixel()
 
     // 统计全局资源使用
     stateScanner()

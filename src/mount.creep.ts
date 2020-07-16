@@ -612,11 +612,8 @@ class CreepExtension extends Creep {
      */
     public transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode {
         // 转移能量实现
-        const result: ScreepsReturnCode = this.transfer(target, RESOURCE)
-        if (result == ERR_NOT_IN_RANGE) {
-            this.goTo(target.pos)
-        }
-        return result
+        this.goTo(target.pos)
+        return this.transfer(target, RESOURCE)
     }
 
     /**

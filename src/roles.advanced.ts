@@ -155,8 +155,8 @@ const deathPrepare = function(creep: Creep, sourceId: string): false {
             else target = sourceId ? Game.getObjectById<StructureStorage>(sourceId): creep.room.storage
 
             // 转移资源
-            const transferResult = creep.transfer(target, <ResourceConstant>resourceType)
-            if (transferResult == ERR_NOT_IN_RANGE) creep.goTo(target.pos)
+            creep.goTo(target.pos)
+            creep.transfer(target, <ResourceConstant>resourceType)
             
             return false
         }
@@ -232,9 +232,9 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 有的话就填充能量
             creep.goTo(target.pos)
-            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
-            if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
-            else if (transferResult != OK) creep.say(`拓展填充 ${transferResult}`)
+            const result = creep.transfer(target, RESOURCE_ENERGY)
+            if (result === ERR_NOT_ENOUGH_RESOURCES) return true
+            else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`拓展填充 ${result}`)
 
             if (creep.store[RESOURCE_ENERGY] === 0) return true
         }
@@ -286,8 +286,8 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 有的话就填充能量
             creep.goTo(target.pos)
-            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
-            if (transferResult != OK) creep.say(`塔填充 ${transferResult}`)
+            const result = creep.transfer(target, RESOURCE_ENERGY)
+            if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`塔填充 ${result}`)
 
             if (creep => creep.store[RESOURCE_ENERGY] === 0) return true
         }
@@ -330,9 +330,9 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             
             // 拿取资源
             creep.goTo(sourceStructure.pos)
-            const getResult = creep.withdraw(sourceStructure, task.resourceType, getAmount)
-            if (getResult === OK) return true
-            else creep.log(`nuker 填充任务，withdraw ${getResult}`, 'red')
+            const result = creep.withdraw(sourceStructure, task.resourceType, getAmount)
+            if (result === OK) return true
+            else if (result != ERR_NOT_IN_RANGE) creep.log(`nuker 填充任务，withdraw ${result}`, 'red')
         },
         target: (creep, task: IFillNuker) => {
             // 获取 nuker 及兜底
@@ -344,12 +344,12 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 转移资源
             creep.goTo(target.pos)
-            const transferResult = creep.transfer(target, task.resourceType)
-            if (transferResult === OK) {
+            const result = creep.transfer(target, task.resourceType)
+            if (result === OK) {
                 creep.room.deleteCurrentRoomTransferTask()
                 return true
             }
-            else creep.say(`核弹填充 ${transferResult}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`核弹填充 ${result}`)
         }
     },
 
@@ -390,7 +390,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             creep.goTo(terminal.pos)
             const result = creep.withdraw(terminal, targetResource.type, getAmount)
             if (result === OK) return true
-            else creep.say(`labInA ${result}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`labInA ${result}`)
         },
         target: (creep, task: ILabIn) => {
             const targetResource = task.resource.find(res => res.amount > 0)
@@ -412,7 +412,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 creep.room.handleLabInTask(targetResource.type, 0)
                 return true
             }
-            else creep.say(`labInB ${result}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`labInB ${result}`)
         }
     },
 
@@ -443,7 +443,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
             // 满了也先去转移资源
             else if (result === ERR_FULL) return true
-            else creep.say(`draw ${result}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`draw ${result}`)
         },
         target: (creep, task: ILabOut) => {
             const terminal = creep.room.terminal
@@ -466,14 +466,14 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 转移资源
             creep.goTo(terminal.pos)
-            const transferResult = creep.transfer(target, resourceType)
+            const result = creep.transfer(target, resourceType)
 
-            if (transferResult === OK || transferResult === ERR_NOT_ENOUGH_RESOURCES) {
+            if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
                 // 转移完之后就检查下还有没有没搬空的 lab，没有的话就完成任务
                 if (getNotClearLab(creep.room.memory.lab) === undefined) creep.room.deleteCurrentRoomTransferTask()
                 return true
             }
-            else creep.say(`labout ${transferResult}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`labout ${result}`)
         }
     },
 
@@ -514,9 +514,9 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 拿取资源
             creep.goTo(sourceStructure.pos)
-            const getResult = creep.withdraw(sourceStructure, task.resourceType, getAmount)
-            if (getResult === OK) return true
-            else creep.log(`powerSpawn 填充任务，withdraw ${getResult}`, 'red')
+            const result = creep.withdraw(sourceStructure, task.resourceType, getAmount)
+            if (result === OK) return true
+            else if (result != ERR_NOT_IN_RANGE) creep.log(`powerSpawn 填充任务，withdraw ${result}`, 'red')
         },
         target: (creep, task: IFillPowerSpawn) => {
             // 获取 powerSpawn 及兜底
@@ -528,14 +528,14 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
 
             // 转移资源
             creep.goTo(target.pos)
-            const transferResult = creep.transfer(target, task.resourceType)
+            const result = creep.transfer(target, task.resourceType)
 
-            if (transferResult === OK) {
+            if (result === OK) {
                 creep.room.deleteCurrentRoomTransferTask()
                 return true
             }
-            else if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
-            else creep.say(`ps 填充错误 ${transferResult}`)
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) return true
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`ps 填充错误 ${result}`)
         }
     },
 
@@ -588,7 +588,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             const result = creep.withdraw(terminal, resource as ResourceConstant, getAmount) 
 
             if (result === OK || result === ERR_FULL) return true
-            else creep.say(`boostIn ${result}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`boostIn ${result}`)
         },
         target: (creep, task: IBoostGetResource) => {
             // 找到要转移的资源以及目标 lab
@@ -606,7 +606,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             }
             // resource 有问题的话就再返回 source 阶段处理
             else if (result === ERR_INVALID_ARGS) return true
-            else creep.say(`boostTarget 错误! ${result}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`boostTarget 错误! ${result}`)
         }
     },
 
@@ -644,7 +644,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             const result = creep.transfer(targetLab, RESOURCE_ENERGY)
             if (result === OK) return true
             // 正常转移资源则更新任务
-            else creep.say(`强化能量 ${result}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`强化能量 ${result}`)
         }
     },
 
@@ -690,13 +690,13 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return true
             }
             
+            creep.goTo(terminal.pos)
             // 转移资源
             // 这里直接使用了 [0] 的原因是如果 store 里没有资源的话 creep 就会去执行 source 阶段，并不会触发这段代码
-            const transferResult = creep.transfer(terminal, <ResourceConstant>Object.keys(creep.store)[0])
-            if (transferResult === OK) return true
-            if (transferResult === ERR_NOT_IN_RANGE) creep.goTo(terminal.pos)
+            const result = creep.transfer(terminal, <ResourceConstant>Object.keys(creep.store)[0])
+            if (result === OK) return true
             // 正常转移资源则更新任务
-            else creep.say(`强化清理 ${transferResult}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`强化清理 ${result}`)
         }
     },
 }
