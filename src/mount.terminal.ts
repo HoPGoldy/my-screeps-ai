@@ -110,7 +110,7 @@ export default class TerminalExtension extends StructureTerminal {
         // 如果自己存储的资源数量已经足够了
         if (this.store[task.resourceType] >= task.amount) {
             const cost = Game.market.calcTransactionCost(task.amount, this.room.name, task.target)
-            
+
             // 如果要转移能量就需要对路费是否足够的判断条件进行下特殊处理
             const costCondition = (task.resourceType === RESOURCE_ENERGY) ?
                 this.store[RESOURCE_ENERGY] - task.amount < cost :
@@ -139,7 +139,9 @@ export default class TerminalExtension extends StructureTerminal {
         else {
             // 如果要共享能量，则从 storage 里拿
             if (task.resourceType === RESOURCE_ENERGY) {
-                if (this.getEnergy(task.amount - this.store[RESOURCE_ENERGY]) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 获取路费, ${task.amount - this.store[RESOURCE_ENERGY]}`)
+                if (this.getEnergy(task.amount - this.store[RESOURCE_ENERGY]) == -2) {
+                    this.log(`终端中央物流添加失败 —— 获取路费, ${task.amount - this.store[RESOURCE_ENERGY]}`, 'yellow', true)
+                }
                 // this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])
             }
         }

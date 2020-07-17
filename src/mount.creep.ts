@@ -172,6 +172,7 @@ class CreepExtension extends Creep {
         const result = PathFinder.search(this.pos, { pos: target, range }, {
             plainCost: 2,
             swampCost: 10,
+            maxOps: 4000,
             roomCallback: roomName => {
                 // 强调了不许走就不走
                 if (Memory.bypassRooms && Memory.bypassRooms.includes(roomName)) return false
