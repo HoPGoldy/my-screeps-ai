@@ -369,11 +369,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
                 return false
             }
 
-            // 把多余的能量放起来
-            if (creep.store[RESOURCE_ENERGY] > 0) {
-                creep.transferTo(creep.room.storage || terminal, RESOURCE_ENERGY)
-                return false
-            }
+            if (!clearCarryingEnergy(creep)) return false
 
             // 找到第一个需要从终端取出的底物
             const targetResource = task.resource.find(res => res.amount > 0)
