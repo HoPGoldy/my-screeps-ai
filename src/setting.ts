@@ -592,9 +592,9 @@ export const minerHervesteLimit = 200000
  */
 export const DEAL_RATIO = {
     // 卖单的最高价格
-    MAX: 1.8,
+    MAX: 1.4,
     // 买单的最低价格
-    MIN: 0.5
+    MIN: 0.4
 }
 
 // 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑

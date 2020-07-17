@@ -142,6 +142,7 @@ const funcAlias = [
              * @param warningLimit 报警的颜色等级
              */
             const addColor = (capacity: number, structureType: STRUCTURE_TERMINAL | STRUCTURE_STORAGE): string => {
+                if (!capacity) return colorful('无法访问', 'red')
                 return capacity > colorLevel[structureType].warning ? colorful(capacity.toString(), 'green') : 
                     capacity > colorLevel[structureType].danger ? colorful(capacity.toString(), 'yellow') : colorful(capacity.toString(), 'red')
             }
@@ -154,10 +155,10 @@ const funcAlias = [
                     if ((!room.storage && !room.terminal) || !room.controller) return false
     
                     let log = `[${room.name}] `
-                    if (room.storage) log += `STORAGE: ${addColor(room.storage.store.getFreeCapacity(), STRUCTURE_STORAGE)}/${room.storage.store.getCapacity()} `
+                    if (room.storage) log += `STORAGE: ${addColor(room.storage.store.getFreeCapacity(), STRUCTURE_STORAGE)}/${room.storage.store.getCapacity() || '无法访问'} `
                     else log += 'STORAGE: X '
     
-                    if (room.terminal) log += `TERMINAL: ${addColor(room.terminal.store.getFreeCapacity(), STRUCTURE_TERMINAL)}/${room.terminal.store.getCapacity()} `
+                    if (room.terminal) log += `TERMINAL: ${addColor(room.terminal.store.getFreeCapacity(), STRUCTURE_TERMINAL)}/${room.terminal.store.getCapacity() || '无法访问'} `
                     else log += 'TERMINAL: X '
     
                     return log
