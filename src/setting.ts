@@ -638,13 +638,13 @@ export const MAX_HARVESTER_NUM = 4
  * 请确保最少有一条内容
  */
 export const UPGRADE_WITH_TERMINAL = [
-    { energy: 20000, num: 2 },
-    { energy: 30000, num: 3 },
-    { energy: 40000, num: 4 },
-    { energy: 50000, num: 5 },
-    { energy: 60000, num: 6 },
-    { energy: 70000, num: 7 },
     { energy: 80000, num: 8 },
+    { energy: 70000, num: 7 },
+    { energy: 60000, num: 6 },
+    { energy: 50000, num: 5 },
+    { energy: 40000, num: 4 },
+    { energy: 30000, num: 3 },
+    { energy: 20000, num: 2 }
 ]
 
 /**

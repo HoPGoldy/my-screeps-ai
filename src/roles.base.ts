@@ -54,11 +54,11 @@ const roles: {
                 // 能量都已经填满就尝试获取冗余存储
                 else {
                     if (data.targetId === '') return 
-                    target = Game.getObjectById(data.targetId)
-                    if (!target) return 
+                    target = Game.getObjectById<StructureStorage | StructureTerminal | StructureContainer>(data.targetId)
+                    if (!target || target.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) return 
                 }
             }
-            
+
             // 将能量移送至目标建筑
             creep.transferTo(target, RESOURCE_ENERGY)
 

@@ -349,7 +349,7 @@ const upgraderPlans: PlanNodeFunction[] = [
 
     // 优先用终端能量发布 upgrader
     ({ room, terminalId, terminalEnergy }: UpgraderPlanStats) => {
-        if (!terminalId || terminalEnergy < UPGRADE_WITH_TERMINAL[0].energy ) return false
+        if (!terminalId || terminalEnergy < UPGRADE_WITH_TERMINAL[UPGRADE_WITH_TERMINAL.length - 1].energy ) return false
 
         // 遍历配置项进行 upgrader 发布
         UPGRADE_WITH_TERMINAL.find(config => {
@@ -366,7 +366,7 @@ const upgraderPlans: PlanNodeFunction[] = [
 
     // 根据 storage 里的能量发布对应数量的 upgrader
     ({ room, storageId, storageEnergy }: UpgraderPlanStats) => {
-        if (!storageId || storageEnergy < UPGRADE_WITH_STORAGE[0].energy ) return false
+        if (!storageId || storageEnergy < UPGRADE_WITH_STORAGE[UPGRADE_WITH_STORAGE.length - 1].energy ) return false
 
         // 遍历配置项进行 upgrader 发布
         UPGRADE_WITH_STORAGE.find(config => {
