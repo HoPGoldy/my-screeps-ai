@@ -362,18 +362,18 @@ class CreepControl extends Room {
     }
 
     /**
-     * 发布 pbTransfer 小组
+     * 发布 pbCarrier 小组
      * 由 pbAttacker 调用
      * 
      * @param flagName powerBank 上的旗帜名
-     * @param number 孵化几个 transfer
+     * @param number 孵化几个 carrier
      */
-    public spawnPbTransferGroup(flagName: string, number: number): void {
+    public spawnPbCarrierGroup(flagName: string, number: number): void {
         // 如果已经有人发布过了就不再费事了
-        if (creepApi.has(`${flagName} transfer0`)) return
+        if (creepApi.has(`${flagName} carrier0`)) return
         
         for (let i = 0; i < number; i++) {
-            creepApi.add(`${flagName} transfer${i}`, 'pbTransfer', {
+            creepApi.add(`${flagName} carrier${i}`, 'pbCarrier', {
                 sourceFlagName: flagName,
                 spawnRoom: this.name
             }, this.name)

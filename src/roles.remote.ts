@@ -149,7 +149,7 @@ const roles: {
             }
             else creep.farMoveTo(targetStructure.pos)
         },
-        bodys: 'transfer'
+        bodys: 'manager'
     }),
 
     /**
@@ -305,7 +305,7 @@ const roles: {
         isNeed: () => {
             const targetRoom = Game.rooms[data.targetRoomName]
             // 如果房间造好了 terminal，自己的使命就完成了
-            if (!targetRoom || targetRoom.terminal) return false
+            if (!targetRoom || (targetRoom.terminal && targetRoom.terminal.my)) return false
 
             return true
         },
@@ -547,12 +547,12 @@ const roles: {
             }
             
             // 再把剩余能量运回去
-            const transferResult = creep.transfer(target, RESOURCE_ENERGY)
+            const result = creep.transfer(target, RESOURCE_ENERGY)
             // 报自己身上资源不足了就说明能量放完了
-            if (transferResult === ERR_NOT_ENOUGH_RESOURCES) return true
-            else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, 1)
-            else if (transferResult === ERR_FULL) creep.say('满了啊')
-            else if (transferResult !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${transferResult}`, 'red')
+            if (result === ERR_NOT_ENOUGH_RESOURCES) return true
+            else if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, 1)
+            else if (result === ERR_FULL) creep.say('满了啊')
+            else if (result !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${result}`, 'red')
 
             return false
         },
@@ -650,8 +650,8 @@ const roles: {
             }
             
             // 转移并检测返回值
-            const transferResult = creep.transfer(room.terminal, creep.memory.depositType)
-            if (transferResult === OK || transferResult === ERR_NOT_ENOUGH_RESOURCES) {
+            const result = creep.transfer(room.terminal, creep.memory.depositType)
+            if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
                 // 获取旗帜，旗帜没了就自杀
                 const targetFlag = Game.flags[data.sourceFlagName]
                 if (!targetFlag) {
@@ -669,8 +669,8 @@ const roles: {
                 // 时间充足就回去继续采集
                 return true
             }
-            if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos, 1)
-            else creep.say(`转移 ${transferResult}`)
+            if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos, 1)
+            else creep.say(`转移 ${result}`)
         },
         bodys: 'remoteHarvester'
     }),
@@ -764,8 +764,8 @@ const roles: {
             // 如果血量低于标准了，则通知运输单位进行提前生成
             if (attackResult === OK) {
                 /**
-                 * @danger 注意下面这个计算式是固定两组在采集时的准备时间计算，如果更多单位一起开采的话会出现 pb 拆完但是 transfer 还没到位的情况发生
-                 * 下面这个 150 是 pbTransfer 的孵化时间，50 为冗余时间，600 是 attacker 的攻击力，2 代表两组同时攻击
+                 * @danger 注意下面这个计算式是固定两组在采集时的准备时间计算，如果更多单位一起开采的话会出现 pb 拆完但是 manager 还没到位的情况发生
+                 * 下面这个 150 是 pbCarrier 的孵化时间，50 为冗余时间，600 是 attacker 的攻击力，2 代表两组同时攻击
                  */
                 if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 150 + 50) * 600 * 2)) {
                     // 发布运输小组
@@ -775,8 +775,8 @@ const roles: {
                         return false
                     }
 
-                    // 下面这个 1600 是 [ CARRY: 32, MOVE: 16 ] 的 pbTransfer 的最大运输量
-                    spawnRoom.spawnPbTransferGroup(data.sourceFlagName, Math.ceil(powerbank.power / 1600))
+                    // 下面这个 1600 是 [ CARRY: 32, MOVE: 16 ] 的 pbCarrier 的最大运输量
+                    spawnRoom.spawnPbCarrierGroup(data.sourceFlagName, Math.ceil(powerbank.power / 1600))
 
                     // 设置为新状态
                     targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
@@ -819,8 +819,8 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      */
-    pbTransfer: (data: RemoteHarvesterData): ICreepConfig => ({
-        // transfer 并不会重复生成
+    pbCarrier: (data: RemoteHarvesterData): ICreepConfig => ({
+        // carrier 并不会重复生成
         isNeed: () => false,
         // 移动到目标三格之内就算准备完成
         prepare: creep => {
@@ -874,9 +874,9 @@ const roles: {
             }
             
             // 存放资源
-            const transferResult = creep.transfer(room.terminal, RESOURCE_POWER)
+            const result = creep.transfer(room.terminal, RESOURCE_POWER)
             // 存好了就直接自杀并移除旗帜
-            if (transferResult === OK) {
+            if (result === OK) {
                 const targetFlag = Game.flags[data.sourceFlagName]
                 if (targetFlag) {
                     delete Memory.flags[targetFlag.name]
@@ -893,7 +893,7 @@ const roles: {
                 
                 return true
             }
-            else if (transferResult === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos)
+            else if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos)
         },
         bodys: calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
     }),

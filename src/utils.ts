@@ -286,28 +286,6 @@ export function generatePixel(cpuLimit: number = 7000): void {
     if (Game.cpu.bucket >= cpuLimit) Game.cpu.generatePixel()
 }
 
-// 不同角色 creep 的名称生成策略
-const creepNameGenerator: CreepNameGenerator = {
-    upgrader: (room, index) => `${room} upgrader${index}`,
-    harvester: (room, index) => `${room} harvester${index}`,
-    transfer: room => `${room} transfer`,
-    centerTransfer: room => `${room} centerTransfer`,
-    remoteHarvester: (room, index) => `${room} remoteHarvester${index}`,
-}
-
-/**
- * 获取 creep 的名称
- * 为了统一维护不同 creep 的名字
- * 
- * @param role creep 的角色名
- * @param roomName creep 所在的房间名
- * @param index 当该角色有多个 creep 时的索引
- */
-export function getCreepName(role: CreepRoleConstant, roomName: string, index?: number): string {
-    if (role in creepNameGenerator) return creepNameGenerator[role](roomName, index)
-    else return `${roomName} ${role}${index}`
-}
-
 /**
  * 全局日志
  * 

@@ -10,11 +10,11 @@
 
 # 战争状态
 
-通过指定 api 将房间设置为战争状态后，boost 进程会同步启动并暂停 lab 化合反应，transfer 会将**所有**需要的化合物依次搬入 lab（配置在 setting.ts 中），并且在战争期间保持 lab 中的强化化合物数量。
+通过指定 api 将房间设置为战争状态后，boost 进程会同步启动并暂停 lab 化合反应，manager 会将**所有**需要的化合物依次搬入 lab（配置在 setting.ts 中），并且在战争期间保持 lab 中的强化化合物数量。
 
 在准备就绪后 boost 进程切入等待强化阶段，此时 creep 可直接前往进行强化。
 
-在战争结束后需要手动执行取消战争状态的 api。此时 transfer 会清空 lab 中的强化材料，并恢复 lab 化合反应工作。
+在战争结束后需要手动执行取消战争状态的 api。此时 manager 会清空 lab 中的强化材料，并恢复 lab 化合反应工作。
 
 # 如何添加新的 boost 配置
 
@@ -158,7 +158,7 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
         [RESOURCE_CATALYZED_LEMERGIUM_ACID]: '5d9bdd4b1acf0f000174aa4c',
         [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: '5d9bdd4b1acf0f000174aa4e'
     }
-    // transfer 会根据这个配置项搬运材料进 lab
+    // manager 会根据这个配置项搬运材料进 lab
     config: {
         // 当前强化任务需要的每个材料
         [BOOST_TYPE.DISMANTLE]: {

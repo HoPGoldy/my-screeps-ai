@@ -1,6 +1,6 @@
 import mountWork from './mount'
 import { doing, stateScanner, generatePixel } from './utils'
-import creepNumberListener from './creepController'
+import creepNumberListener, { creepApi } from './creepController'
 
 module.exports.loop = function (): void {
     // console.log(`-------------------------- [${Game.time}] -------------------------- `)

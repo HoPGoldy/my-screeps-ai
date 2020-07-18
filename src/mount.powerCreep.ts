@@ -320,15 +320,15 @@ const PowerTasks: IPowerTaskConfigs = {
             // 塞不进去就乐观点，继续干其他的活
             if (!creep.room.terminal || creep.room.terminal.store.getFreeCapacity() < 5) return OK
 
-            const transferResult = creep.transfer(creep.room.terminal, RESOURCE_OPS)
+            const result = creep.transfer(creep.room.terminal, RESOURCE_OPS)
 
             // 够不到就移动
-            if (transferResult == ERR_NOT_IN_RANGE) {
+            if (result == ERR_NOT_IN_RANGE) {
                 creep.goTo(creep.room.terminal.pos)
                 return ERR_BUSY
             }
             // ops 不足就继续生成
-            else if (transferResult == ERR_NOT_ENOUGH_RESOURCES){
+            else if (result == ERR_NOT_ENOUGH_RESOURCES){
                 return ERR_NOT_ENOUGH_RESOURCES
             }
         }

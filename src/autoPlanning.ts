@@ -176,7 +176,8 @@ export const getBaseLayout = function(centerFlagName: string, baseSize: number =
  * @param room 要运行规划的房间
  */
 export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
-    if (!room.controller || !room.controller.my) return ERR_NOT_OWNER
+    // 玩家指定了不运行自动布局，或者房间不属于自己，就退出
+    if (room.memory.noLayout || !room.controller || !room.controller.my) return ERR_NOT_OWNER
 
     // 当前需要检查那几个等级的布局
     const planLevel = Array(room.controller.level).fill(undefined).map((_, index) => index + 1)
@@ -515,10 +516,10 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
      * 发布运输者
      * @param room 要发布角色的房间
      */
-    'transfer': function(room: Room): OK | ERR_NOT_FOUND {
+    'manager': function(room: Room): OK | ERR_NOT_FOUND {
         if (!room.storage) return ERR_NOT_FOUND
     
-        creepApi.add(`${room.name} transfer`, 'transfer', {
+        creepApi.add(`${room.name} manager`, 'manager', {
             sourceId: room.storage.id
         }, room.name)
     
@@ -529,13 +530,13 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
      * 发布中央运输者
      * @param room 要发布角色的房间
      */
-    'centerTransfer': function(room: Room): OK | ERR_NOT_FOUND {
+    'processor': function(room: Room): OK | ERR_NOT_FOUND {
         if (!room.memory.center) return ERR_NOT_FOUND
     
-        creepApi.add(`${this.name} centerTransfer`, 'centerTransfer', {
+        creepApi.add(`${room.name} processor`, 'processor', {
             x: room.memory.center[0],
             y: room.memory.center[1]
-        }, this.name)
+        }, room.name)
     
         return OK
     },

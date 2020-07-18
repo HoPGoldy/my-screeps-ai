@@ -55,7 +55,7 @@ focusWall: {
 下列步骤将会依次进行
 
 - tower 停止刷墙工作。
-- 房间进入战争状态，通知 transfer 搬运强化化合物。
+- 房间进入战争状态，通知 manager 搬运强化化合物。
 - 发布维修工，主动维修受到攻击的墙体。
 - 化合物搬运完成后发布 Defender 单位，主动进攻敌人。
 - Defender 孵化完成后 tower 将治疗 Defender 置为优先目标。
