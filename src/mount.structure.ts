@@ -542,10 +542,10 @@ class LinkExtension extends StructureLink {
         }
 
         // 附近有 CT 旗帜就转换为 CenterLink
-        const inRangeCenterTransferFlag = this.pos.findInRange(FIND_FLAGS, 1, {
+        const inRangeProcessorFlag = this.pos.findInRange(FIND_FLAGS, 1, {
             filter: flag => flag.name === `${this.room.name} ct`
         })
-        if (inRangeCenterTransferFlag.length > 0) {
+        if (inRangeProcessorFlag.length > 0) {
             this.asCenter()
             return
         }
@@ -573,11 +573,11 @@ class LinkExtension extends StructureLink {
         this.clearRegister()
         this.room.memory.centerLinkId = this.id
 
-        // 注册中央 link 的同时发布 centerTransfer
-        this.room.releaseCreep('centerTransfer')
+        // 注册中央 link 的同时发布 processor
+        this.room.releaseCreep('processor')
         this.room.releaseCreep('harvester')
 
-        return `${this} 已注册为中央 link，发布 centerTransfer 并调整采集单位`
+        return `${this} 已注册为中央 link，发布 processor 并调整采集单位`
     }
 
     /**
@@ -755,7 +755,7 @@ class StorageExtension extends StructureStorage {
      */
     public onBuildComplete(): void {
         this.room.releaseCreep('harvester')
-        this.room.releaseCreep('transfer')
+        this.room.releaseCreep('manager')
         this.room.releaseCreep('upgrader')
     }
 }

@@ -17,7 +17,7 @@ const roles: {
      * 执行 ROOM_TRANSFER_TASK 中定义的任务
      * 任务处理逻辑定义在 transferTaskOperations 中
      */
-    transfer: (data: WorkerData): ICreepConfig => ({
+    manager: (data: WorkerData): ICreepConfig => ({
         source: creep => {
             if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, data.sourceId)
 
@@ -34,7 +34,7 @@ const roles: {
             if (task) return transferTaskOperations[task.type].target(creep, task)
             else return true
         },
-        bodys: 'transfer'
+        bodys: 'manager'
     }),
 
     /**
@@ -46,7 +46,7 @@ const roles: {
      * @param y 要移动到的 y 坐标
      * @param centerLinkId 中央 link 的 id
      */
-    centerTransfer: (data: CenterTransferData): ICreepConfig => ({
+    processor: (data: ProcessorData): ICreepConfig => ({
         // 移动到指定位置
         prepare: creep => {
             if (creep.pos.isEqualTo(data.x, data.y)) return true
@@ -129,7 +129,7 @@ const roles: {
  
             return false
         },
-        bodys: 'centerTransfer'
+        bodys: 'processor'
     })
 }
 
@@ -140,7 +140,7 @@ export default roles
  * 将资源存放在对应的地方
  * 存完了就自杀
  * 
- * @param creep transfer
+ * @param creep manager
  * @param sourceId 能量存放处
  */
 const deathPrepare = function(creep: Creep, sourceId: string): false {
@@ -178,7 +178,7 @@ const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
     // 如果任务类型不对就移除任务并报错退出
     if (!transferTaskOperations.hasOwnProperty(task.type)) {
         room.deleteCurrentRoomTransferTask()
-        room.log(`发现未定义的房间物流任务 ${task.type}, 已移除`, 'transfer', 'yellow')
+        room.log(`发现未定义的房间物流任务 ${task.type}, 已移除`, 'manager', 'yellow')
         return null
     }
 
@@ -186,7 +186,7 @@ const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
 }
 
 /**
- * transfer 在应对不同类型的任务时执行的操作
+ * manager 在应对不同类型的任务时执行的操作
  * 该对象的属性名即为任务类型
  */
 const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
@@ -296,7 +296,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
     /**
      * nuker 填充任务
      * 由 nuker 在 Nuker.work 中发布
-     * 任务的搬运量取决于 transfer 的最大存储量，搬一次就算任务完成
+     * 任务的搬运量取决于 manager 的最大存储量，搬一次就算任务完成
      */
     [ROOM_TRANSFER_TASK.FILL_NUKER]: {
         source: (creep, task: IFillNuker, sourceId) => {
@@ -386,6 +386,9 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             creep.goTo(terminal.pos)
             const result = creep.withdraw(terminal, targetResource.type, getAmount)
             if (result === OK) return true
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                creep.room.deleteCurrentRoomTransferTask()
+            }
             else if (result != ERR_NOT_IN_RANGE) creep.say(`labInA ${result}`)
         },
         target: (creep, task: ILabIn) => {
@@ -476,7 +479,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
     /**
      * powerspawn 填充任务
      * 由 powerSpawn 在 powerSpawn.work 中发布
-     * 任务的搬运量取决于 transfer 的最大存储量，搬一次就算任务完成
+     * 任务的搬运量取决于 manager 的最大存储量，搬一次就算任务完成
      */
     [ROOM_TRANSFER_TASK.FILL_POWERSPAWN]: {
         source: (creep, task: IFillPowerSpawn, sourceId) => {
@@ -500,7 +503,7 @@ const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
             if (!clearCarryingEnergy(creep)) return false
 
             // 获取应拿取的数量
-            let getAmount = Math.min(creep.store.getFreeCapacity(task.resourceType), sourceStructure.store[task.resourceType], powerspawn.store[task.resourceType])
+            let getAmount = Math.min(creep.store.getFreeCapacity(task.resourceType), sourceStructure.store[task.resourceType], powerspawn.store.getFreeCapacity(task.resourceType))
 
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
@@ -713,7 +716,7 @@ function getNotClearLab(labMemory: any): StructureLab {
     for (const labId of labMemory.inLab) {
         // 获取 inLab
         const inLab = Game.getObjectById(labId) as StructureLab
-        // transfer 并非 lab 集群内部成员，所以不会对 inLab 的缺失做出响应
+        // manager 并非 lab 集群内部成员，所以不会对 inLab 的缺失做出响应
         if (!inLab) continue
 
         // 如果有剩余资源的话就拿出来
@@ -738,4 +741,6 @@ function clearCarryingEnergy(creep: Creep): boolean {
 
         return false
     }
+
+    return true
 }

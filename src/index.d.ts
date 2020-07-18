@@ -63,8 +63,8 @@ type BaseRoleConstant =
 
 // 房间高级运营
 type AdvancedRoleConstant = 
-    'transfer' |
-    'centerTransfer'
+    'manager' |
+    'processor'
 
 // 远程单位
 type RemoteRoleConstant = 
@@ -77,7 +77,7 @@ type RemoteRoleConstant =
     'depositHarvester' |
     'pbAttacker' |
     'pbHealer' |
-    'pbTransfer' |
+    'pbCarrier' |
     'moveTester' |
     'reiver'
 
@@ -127,7 +127,7 @@ type CreepData =
     ReiverData |
     HarvesterData | 
     WorkerData | 
-    CenterTransferData | 
+    ProcessorData | 
     RemoteHelperData | 
     RemoteDeclarerData |
     RemoteHarvesterData |
@@ -165,7 +165,7 @@ interface WorkerData {
  * 中央运输者的 data 
  * x y 为其在房间中的固定位置
  */
-interface CenterTransferData {
+interface ProcessorData {
     x: number
     y: number
 }
@@ -269,8 +269,8 @@ interface HealUnitData {
 type BodyAutoConfigConstant = 
     'worker' |
     'upgrader' |
-    'transfer' |
-    'centerTransfer' |
+    'manager' |
+    'processor' |
     'reserver' |
     'attacker' |
     'healer' |
@@ -422,13 +422,13 @@ interface CreepMemory {
     depositType?: DepositConstant
     // 要填充的墙 id 
     fillWallId?: string
-    // transfer 特有 要填充能量的建筑 id
+    // manager 特有 要填充能量的建筑 id
     fillStructureId?: string
     // 建筑工特有，当前缓存的建筑工地（目前只有外矿采集者在用）
     constructionSiteId?: string
     // 可以执行建筑的单位特有，当该值为 true 时将不会尝试建造
     dontBuild?: boolean
-    // transfer 特有，当前任务正在转移的资源类型
+    // manager 特有，当前任务正在转移的资源类型
     taskResource?: ResourceConstant
     // 城墙填充特有，当前期望的城墙生命值
     expectHits?: number
@@ -508,7 +508,7 @@ interface Room {
     addRemoteReserver(remoteRoomName): void
     addRemoteHelper(remoteRoomName): void
     removePbHarvesteGroup(attackerName: string, healerName: string): void
-    spawnPbTransferGroup(flagName: string, number: number): void
+    spawnPbCarrierGroup(flagName: string, number: number): void
 
     /**
      * 下述方法在 @see /src/mount.room.ts 中定义
@@ -605,6 +605,8 @@ interface RoomMemory {
     center: [ number, number ]
     // 基地中心的待选位置, [0] 为 x 坐标, [1] 为 y 坐标
     centerCandidates?: [ number, number ][]
+    // 是否关闭自动布局，该值为 true 时将不会对本房间运行自动布局
+    noLayout: boolean
 
     // observer 内存
     observer: {

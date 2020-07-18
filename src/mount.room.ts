@@ -929,7 +929,7 @@ class RoomExtension extends Room {
         if (boostResults.includes(OK)) {
             // 强化成功了就发布资源填充任务是因为
             // 在方法返回 OK 时，还没有进行 boost（将在 tick 末进行），所以这里检查资源并不会发现有资源减少
-            // 为了提高存储量，这里直接发布任务，交给 transfer 在处理任务时检查是否有资源不足的情况
+            // 为了提高存储量，这里直接发布任务，交给 manager 在处理任务时检查是否有资源不足的情况
             this.addRoomTransferTask({
                 type: ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE
             })

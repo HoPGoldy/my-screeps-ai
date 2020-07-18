@@ -166,7 +166,7 @@ export default class LabExtension extends StructureLab {
         }
 
         // 检查是否有 boostGetResource 任务存在
-        // 这里检查它的目的是防止 transfer 还在执行 BOOST_GET_RESOURCE 任务，如果过早的完成 boost 进程的话
+        // 这里检查它的目的是防止 manager 还在执行 BOOST_GET_RESOURCE 任务，如果过早的完成 boost 进程的话
         // 就会出现 lab 集群已经回到了 GET_TARGET 阶段但是 lab 里还有材料存在
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) return
         // lab 净空并且 boost clear 物流任务完成，就算是彻底完成了 boost 进程

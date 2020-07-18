@@ -59,7 +59,7 @@ export const bodyConfigs: BodyConfigs = {
      * 房间物流管理单位
      * 负责转移基地资源的 creep
      */
-    transfer: getBodyConfig(
+    manager: getBodyConfig(
         { [CARRY]: 2, [MOVE]: 1 },
         { [CARRY]: 3, [MOVE]: 2 },
         { [CARRY]: 4, [MOVE]: 2 },
@@ -74,7 +74,7 @@ export const bodyConfigs: BodyConfigs = {
      * 中央物流管理单位
      * 负责转移中央物流的 creep（下面其实前 4 级都用不到，因为中央物流管理员只会在 5 级有了 centerLink 之后才会孵化）
      */
-    centerTransfer: getBodyConfig(
+    processor: getBodyConfig(
         { [CARRY]: 2, [MOVE]: 1 },
         { [CARRY]: 3, [MOVE]: 1 },
         { [CARRY]: 5, [MOVE]: 1 },
@@ -398,7 +398,7 @@ export const ROOM_TRANSFER_TASK = {
 }
 
 /**
- * 战争 boost 需要的所有强化材料，在启动战争状态后，transfer 会依次将下列资源填充至 lab
+ * 战争 boost 需要的所有强化材料，在启动战争状态后，manager 会依次将下列资源填充至 lab
  * 注意：在强化旗帜旁的 lab 数量需要超过下面的资源数量
  */
 export const BOOST_RESOURCE: BoostResourceConfig = {
@@ -434,7 +434,7 @@ export const boostResourceReloadLimit = 900
 /**
  * powerbank 的采集阶段
  * @property {} ATTACK 正在拆除
- * @property {} PREPARE 快拆完了，transfer 准备过来
+ * @property {} PREPARE 快拆完了，carrier 准备过来
  * @property {} TRANSFE 拆除完成，正在搬运
  */
 export const PB_HARVESTE_STATE = {
