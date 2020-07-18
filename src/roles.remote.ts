@@ -337,8 +337,11 @@ const roles: {
             if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) delete creep.memory.sourceId
         },
         target: creep => {
-            // 执行建造之后检查下是不是都造好了，如果是的话这辈子就不会再建造了，等下辈子出生后再检查
+            // 执行建造之后检查下是不是都造好了，如果是的话这辈子就不会再建造了，等下辈子出生后再检查（因为一千多 tick 基本上不会出现新的工地）
             if (creep.memory.dontBuild) creep.upgrade()
+            // 有新墙就先刷新墙
+            else if (creep.memory.fillWallId) creep.steadyWall()
+            // 没有就建其他工地
             else if (creep.buildStructure() === ERR_NOT_FOUND) creep.memory.dontBuild = true
 
             if (creep.store.getUsedCapacity() === 0) return true
