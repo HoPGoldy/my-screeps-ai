@@ -192,7 +192,7 @@ class RoomExtension extends Room {
             resourceType: RESOURCE_ENERGY
         }
 
-        logs.unshift(`[能量共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
+        logs.unshift(`[能量共享] 任务已添加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
 
         return logs.join('\n')
     }
@@ -372,7 +372,7 @@ class RoomExtension extends Room {
             resourceType
         }
 
-        logs.unshift(`[资源共享] 任务已填加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
+        logs.unshift(`[资源共享] 任务已添加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
 
         return logs.join('\n')
     }

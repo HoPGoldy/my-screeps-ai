@@ -540,6 +540,7 @@ interface Room {
     clearFactoryTarget(): string
 
     // 资源共享 api
+    giver(roomName: string, resourceType: ResourceConstant, amount?: number): string
     shareRequest(resourceType: ResourceConstant, amount: number): boolean
     shareAddSource(resourceType: ResourceConstant): boolean
     shareRemoveSource(resourceType: ResourceConstant): void
