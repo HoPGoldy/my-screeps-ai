@@ -1,4 +1,4 @@
-import { colorful, resourcesHelp, globalHelp, createHelp, clearFlag, createRoomLink } from './utils'
+import { colorful, createHelp, clearFlag, createRoomLink, createConst, createLink } from './utils'
 import { factoryTopTargets, baseLayout } from './setting'
 import { creepApi } from './creepController'
 import { findBaseCenterPos } from './autoPlanning'
@@ -31,7 +31,83 @@ const funcAlias = [
     {
         alias: 'help',
         exec: function(): string {
-            return globalHelp
+            return [
+                ...projectTitle.map(line => colorful(line, 'blue', true)),
+            
+                `\n半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息 (如：${colorful('Game.rooms.W1N1.help', 'yellow')}())。在 ${colorful('Link, Factory, Terminal, PowerSpawn, Observer', 'yellow')} 对象实例上也包含对应的 help 方法。`,
+            
+                '\n—— [全局指令] ————————',
+                createConst('查看资源常量', 'res'),
+                createConst('移除所有禁止通行点位', 'clearpos'),
+                createConst('查看所有 powerSpawn 的工作状态', 'ps'),
+                createConst('查看商品生产线状态', 'comm'),
+                createConst('列出所有路径缓存', 'route'),
+                createConst('向指定旗帜发射核弹（需二次确认）', 'nuker'),
+                '\n—— [全局方法] ————————',
+                createHelp([
+                    {
+                        title: '获取游戏对象（Game.getObjectById 别名）',
+                        params: [
+                            { name: 'id', desc: '要查询的对象 id' }
+                        ],
+                        functionName: 'get'
+                    },
+                    {
+                        title: '追加订单容量（Game.market.extendOrder 别名）',
+                        params: [
+                            { name: 'orderId', desc: '订单的 id' },
+                            { name: 'amount', desc: '要追加的数量' }
+                        ],
+                        functionName: 'orderExtend'
+                    },
+                    {
+                        title: '查询指定资源的房间分布',
+                        params: [
+                            { name: 'resourceName', desc: '要查询的资源名' }
+                        ],
+                        functionName: 'seeres'
+                    },
+                    {
+                        title: '运行自动选址',
+                        params: [
+                            { name: 'roomName', desc: '要搜索的房间' }
+                        ],
+                        functionName: 'base'
+                    },
+                    {
+                        title: '全局发送资源',
+                        params: [
+                            { name: 'roomName', desc: '要发送到的房间名' },
+                            { name: 'resourceType', desc: '资源类型' },
+                            { name: 'amount', desc: '发送数量' },
+                        ],
+                        functionName: 'give'
+                    },
+                    {
+                        title: '欢呼',
+                        params: [
+                            { name: 'content', desc: '欢呼内容' },
+                            { name: 'toPublic', desc: '[可选] 其他人是否可见，默认为 true' },
+                        ],
+                        functionName: 'hail'
+                    }
+                ]),
+                '—— [全局模块] ————————',
+                createHelp([
+                    {
+                        title: '白名单',
+                        functionName: 'whitelist.help'
+                    },
+                    {
+                        title: '房间绕过',
+                        functionName: 'bypass.help'
+                    },
+                    {
+                        title: '掠夺配置',
+                        functionName: 'reive.help'
+                    }
+                ])
+            ].join('\n')
         }
     },
     // 展示当前的全局路径缓存
@@ -363,6 +439,38 @@ export const globalExtension = {
     },
 
     /**
+     * 全局发送资源到指定房间
+     * 会检查哪个房间包含指定资源，并调用 Room.giver 方法发送资源
+     * 
+     * @param roomName 房间名
+     * @param resourceType 资源类型
+     * @param amount 发送数量
+     */
+    give(roomName: string, resourceType: ResourceConstant, amount: number): string {
+        const logs: string[] = [ '已启动全局资源调配' ]
+        let sendAmount = 0
+
+        // 遍历所有房间进行查找
+        for (const currentRoomName in Game.rooms) {
+            if (amount - sendAmount <= 0) break
+            // 没有对应资源就下个房间
+            const room = Game.rooms[currentRoomName]
+            if (!room.terminal || !room.terminal.my || room.terminal.store[resourceType] <= 0) continue
+
+            // 计算本房间应发送的数量（不超的情况下直接发完）
+            const roomAmount = Math.min(room.terminal.store[resourceType], amount - sendAmount)
+
+            // 发送资源并记录结果
+            logs.push(`[${currentRoomName}]${room.giver(roomName, resourceType, roomAmount)}`)
+            sendAmount += roomAmount
+        }
+
+        logs.push(`调配完成，向 ${roomName} 发送 ${resourceType} 共计 ${sendAmount}`)
+
+        return logs.join('\n')
+    },
+
+    /**
      * 白名单控制 api
      * 挂载在全局，由玩家手动调用
      * 白名单仅应用于房间 tower 的防御目标，不会自动关闭 rempart，也不会因为进攻对象在白名单中而不攻击
@@ -581,6 +689,29 @@ export const globalExtension = {
     // 将 creepApi 挂载到全局方便手动发布或取消 creep
     creepApi
 }
+
+/**
+ * 帮助文档中的标题
+ */
+const projectTitle = [
+    String.raw`        __  __      ____  ______      __    __         _____                               `,
+    String.raw`       / / / /___  / __ \/ ____/___  / /___/ /_  __   / ___/_____________  ___  ____  _____`,
+    String.raw`      / /_/ / __ \/ /_/ / / __/ __ \/ / __  / / / /   \__ \/ ___/ ___/ _ \/ _ \/ __ \/ ___/`,
+    String.raw`     / __  / /_/ / ____/ /_/ / /_/ / / /_/ / /_/ /   ___/ / /__/ /  /  __/  __/ /_/ (__  ) `,
+    String.raw`    /_/ /_/\____/_/    \____/\____/_/\__,_/\__, /   /____/\___/_/   \___/\___/ .___/____/  `,
+    String.raw`                                          /____/                            /_/              openSource at github - ${createLink('hopgoldy/screeps-ai', 'https://github.com/HoPGoldy/my-screeps-ai')}`
+]
+
+// 资源常量控制台帮助
+const resourcesHelp: string = `
+${createConst('O', 'RESOURCE_OXYGEN')}              ${createConst('H', 'RESOURCE_HYDROGEN')}         ${createConst('U', 'RESOURCE_UTRIUM')}             ${createConst('X', 'RESOURCE_CATALYST')}
+${createConst('压缩O', 'RESOURCE_OXIDANT')}         ${createConst('压缩H', 'RESOURCE_REDUCTANT')}     ${createConst('压缩U', 'RESOURCE_UTRIUM_BAR')}     ${createConst('压缩X', 'RESOURCE_PURIFIER')}
+${createConst('L', 'RESOURCE_LEMERGIUM')}           ${createConst('K', 'RESOURCE_KEANIUM')}          ${createConst('Z', 'RESOURCE_ZYNTHIUM')}           ${createConst('G', 'RESOURCE_GHODIUM')} 
+${createConst('压缩L', 'RESOURCE_LEMERGIUM_BAR')}   ${createConst('压缩K', 'RESOURCE_KEANIUM_BAR')}   ${createConst('压缩Z', 'RESOURCE_ZYNTHIUM_BAR')}   ${createConst('压缩G', 'RESOURCE_GHODIUM_MELT')}
+
+${createConst('TOUGH强化', 'RESOURCE_CATALYZED_GHODIUM_ALKALIDE')}   ${createConst('RANGE_ATTACK强化', 'RESOURCE_CATALYZED_KEANIUM_ALKALIDE')}
+${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')}   ${createConst('HEAL强化', 'RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE')}
+`
 
 /**
  * 获取指定房间的工厂状态

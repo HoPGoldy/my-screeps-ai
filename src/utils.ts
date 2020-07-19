@@ -115,20 +115,9 @@ export function createHelp(functionInfo: IFunctionDescribe[]): string {
  * @param name 常量简称
  * @param constant 常量名
  */
-function createConst(name: string, constant: string): string {
+export function createConst(name: string, constant: string): string {
     return `${colorful(name, 'green')} ${colorful(constant, 'blue')}`
 }
-
-// 资源常量控制台帮助
-export const resourcesHelp: string = `
-${createConst('O', 'RESOURCE_OXYGEN')}              ${createConst('H', 'RESOURCE_HYDROGEN')}         ${createConst('U', 'RESOURCE_UTRIUM')}             ${createConst('X', 'RESOURCE_CATALYST')}
-${createConst('压缩O', 'RESOURCE_OXIDANT')}         ${createConst('压缩H', 'RESOURCE_REDUCTANT')}     ${createConst('压缩U', 'RESOURCE_UTRIUM_BAR')}     ${createConst('压缩X', 'RESOURCE_PURIFIER')}
-${createConst('L', 'RESOURCE_LEMERGIUM')}           ${createConst('K', 'RESOURCE_KEANIUM')}          ${createConst('Z', 'RESOURCE_ZYNTHIUM')}           ${createConst('G', 'RESOURCE_GHODIUM')} 
-${createConst('压缩L', 'RESOURCE_LEMERGIUM_BAR')}   ${createConst('压缩K', 'RESOURCE_KEANIUM_BAR')}   ${createConst('压缩Z', 'RESOURCE_ZYNTHIUM_BAR')}   ${createConst('压缩G', 'RESOURCE_GHODIUM_MELT')}
-
-${createConst('TOUGH强化', 'RESOURCE_CATALYZED_GHODIUM_ALKALIDE')}   ${createConst('RANGE_ATTACK强化', 'RESOURCE_CATALYZED_KEANIUM_ALKALIDE')}
-${createConst('MOVE强化', 'RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE')}   ${createConst('HEAL强化', 'RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE')}
-`
 
 /**
  * 全局统计信息扫描器
@@ -152,87 +141,6 @@ export function stateScanner(): void {
     // 统计剩余钱数
     Memory.stats.credit = Game.market.credits
 }
-
-const projectTitle = [
-    String.raw`        __  __      ____  ______      __    __         _____                               `,
-    String.raw`       / / / /___  / __ \/ ____/___  / /___/ /_  __   / ___/_____________  ___  ____  _____`,
-    String.raw`      / /_/ / __ \/ /_/ / / __/ __ \/ / __  / / / /   \__ \/ ___/ ___/ _ \/ _ \/ __ \/ ___/`,
-    String.raw`     / __  / /_/ / ____/ /_/ / /_/ / / /_/ / /_/ /   ___/ / /__/ /  /  __/  __/ /_/ (__  ) `,
-    String.raw`    /_/ /_/\____/_/    \____/\____/_/\__,_/\__, /   /____/\___/_/   \___/\___/ .___/____/  `,
-    String.raw`                                          /____/                            /_/              openSource at github - ${createLink('hopgoldy/screeps-ai', 'https://github.com/HoPGoldy/my-screeps-ai')}`
-]
-
-/**
- * 全局帮助文档
- */
-export const globalHelp = [
-    ...projectTitle.map(line => colorful(line, 'blue', true)),
-
-    `\n半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息 (如：${colorful('Game.rooms.W1N1.help', 'yellow')}())。在 ${colorful('Link, Factory, Terminal, PowerSpawn, Observer', 'yellow')} 对象实例上也包含对应的 help 方法。`,
-
-    '\n—— [全局指令] ————————',
-    createConst('查看资源常量', 'res'),
-    createConst('移除所有禁止通行点位', 'clearpos'),
-    createConst('查看所有 powerSpawn 的工作状态', 'ps'),
-    createConst('查看商品生产线状态', 'comm'),
-    createConst('列出所有路径缓存', 'route'),
-    createConst('向指定旗帜发射核弹（需二次确认）', 'nuker'),
-    '\n—— [全局方法] ————————',
-    createHelp([
-        {
-            title: '获取游戏对象（Game.getObjectById 别名）',
-            params: [
-                { name: 'id', desc: '要查询的对象 id' }
-            ],
-            functionName: 'get'
-        },
-        {
-            title: '追加订单容量（Game.market.extendOrder 别名）',
-            params: [
-                { name: 'orderId', desc: '订单的 id' },
-                { name: 'amount', desc: '要追加的数量' }
-            ],
-            functionName: 'orderExtend'
-        },
-        {
-            title: '查询指定资源的房间分布',
-            params: [
-                { name: 'resourceName', desc: '要查询的资源名' }
-            ],
-            functionName: 'seeres'
-        },
-        {
-            title: '运行自动选址',
-            params: [
-                { name: 'roomName', desc: '要搜索的房间' }
-            ],
-            functionName: 'base'
-        },
-        {
-            title: '欢呼',
-            params: [
-                { name: 'content', desc: '欢呼内容' },
-                { name: 'toPublic', desc: '[可选] 其他人是否可见，默认为 true' },
-            ],
-            functionName: 'hail'
-        }
-    ]),
-    '—— [全局模块] ————————',
-    createHelp([
-        {
-            title: '白名单',
-            functionName: 'whitelist.help'
-        },
-        {
-            title: '房间绕过',
-            functionName: 'bypass.help'
-        },
-        {
-            title: '掠夺配置',
-            functionName: 'reive.help'
-        }
-    ])
-].join('\n')
 
 /**
  * 全局喊话
