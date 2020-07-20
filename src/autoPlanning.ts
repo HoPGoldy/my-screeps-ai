@@ -146,6 +146,34 @@ export const setBaseCenter = function(room: Room, centerPos: RoomPosition): OK |
  */
 
 /**
+ * 清理房间中的非己方建筑
+ * 会保留非空的 Terminal、Storage 以及 factory
+ * 
+ * @param room 要执行清理的房间
+ * @returns OK 清理完成
+ * @returns ERR_NOT_FOUND 未找到建筑
+ */
+export const clearStructure = function(room: Room): OK | ERR_NOT_FOUND {
+    const notMyStructure = room.find(FIND_STRUCTURES, { filter: s => !s.my })
+
+    if (notMyStructure.length <= 0) return ERR_NOT_FOUND
+
+    notMyStructure.forEach(s => {
+        // 如果是这三种建筑则看一下存储，只要不为空就不摧毁，反正就三个建筑，如果玩家觉得里边的资源不重要的话就手动摧毁
+        if (s.structureType === STRUCTURE_TERMINAL || s.structureType === STRUCTURE_FACTORY || s.structureType === STRUCTURE_STORAGE) {
+            if (s.store.getFreeCapacity() > 0) return
+        }
+        // 墙壁交给玩家决定，默认不摧毁
+        else if (s.structureType === STRUCTURE_WALL) return
+
+        // 其他建筑一律摧毁
+        s.destroy()
+    })
+
+    return OK
+}
+
+/**
  * 获取基地的布局信息
  * 每个建筑到基准点的相对位置和建筑类型
  * 
@@ -410,7 +438,7 @@ const harvesterPlans: PlanNodeFunction[] = [
     // 有 storage 也有 centerLink
     ({ room, storageId, centerLinkId, sources }: HarvesterPlanStats) => {
         if (!(storageId && centerLinkId)) return false
-        
+
         // 遍历所有 source 进行发布
         sources.forEach((sourceDetail, index) => {
             // 有对应的 sourceLink 的话 harvester 把自己的能量放进去
