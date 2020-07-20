@@ -231,7 +231,17 @@ const roles: {
         },
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+
+            // 获取有效的能量来源
+            let source: StructureStorage | StructureTerminal | Source
+            if (!creep.memory.sourceId) {
+                source = creep.room.getAvailableSource()
+                creep.memory.sourceId = source.id
+            }
+            else source = Game.getObjectById(creep.memory.sourceId)
+
+            // 之前用的能量来源没能量了就更新来源（如果来源已经是 source 的话就改了）
+            if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) delete creep.memory.sourceId
         },
         target: creep => {
             // 有新墙就先刷新墙

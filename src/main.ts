@@ -4,7 +4,7 @@ import creepNumberListener from './creepController'
 
 module.exports.loop = function (): void {
     // console.log(`-------------------------- [${Game.time}] -------------------------- `)
-    
+
     // 挂载拓展
     mountWork()
 
@@ -21,7 +21,7 @@ module.exports.loop = function (): void {
     doing(Game.powerCreeps)
 
     // 搓 pixel
-    generatePixel()
+    // generatePixel()
 
     // 统计全局资源使用
     stateScanner()
