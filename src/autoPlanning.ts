@@ -1,5 +1,4 @@
 import { baseLayout, MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE } from './setting'
-import { getFreeSpace } from './utils'
 import { creepApi } from './creepController'
 
 // dp 节点
@@ -256,15 +255,20 @@ const placeOutsideConstructionSite = function(room: Room, type: StructureConstan
                 filter: s => s.structureType === STRUCTURE_LINK
             })) continue
 
-            // 获取 source 旁边的开采单位位置
-            const harvesterPos = getFreeSpace(source.pos, true)[0]
-            if (!harvesterPos) continue
-            // 以开采单位为基础寻找 link 的位置
-            const targetPos = getFreeSpace(harvesterPos, true)[0]
+            // 获取 source 旁边的所有可用的开采空位
+            const harvesterPos = source.pos.getFreeSpace()
+            // 找到第一个可以站 creep 的地方
+            const targetHarvesterPos = harvesterPos.find(pos => pos.lookFor(LOOK_STRUCTURES).length <= 0)
+            if (!targetHarvesterPos) continue
+
+            // 以开采单位为基础寻找所有可以放置 link 的位置
+            const targetPos = targetHarvesterPos.getFreeSpace()
+            // 第一个空位就是放置 link 的位置
+            const linkPos = targetPos.find(pos => pos.lookFor(LOOK_STRUCTURES).length <= 0)
             if (!targetPos) continue
 
             // 建造 link
-            targetPos.createConstructionSite(STRUCTURE_LINK)
+            linkPos.createConstructionSite(STRUCTURE_LINK)
             // 一次只会建造一个 link
             break
         }
