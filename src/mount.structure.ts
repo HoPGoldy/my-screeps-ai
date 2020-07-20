@@ -1125,7 +1125,7 @@ class ObserverExtension extends StructureObserver {
             // 更新数量
             this.room.memory.observer.pbNumber += 1
             // 计算应该发布的采集小组数量，最高两组
-            const groupNumber = target.pos.getFreeSpace() > 1 ? 2 : 1
+            const groupNumber = target.pos.getFreeSpace().length > 1 ? 2 : 1
             
             // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
             for (let i = 0; i < groupNumber; i++) {

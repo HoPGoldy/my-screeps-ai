@@ -573,7 +573,7 @@ interface Room {
 
 interface RoomPosition {
     directionToPos(direction: DirectionConstant): RoomPosition | undefined
-    getFreeSpace(): number
+    getFreeSpace(): RoomPosition[]
 }
 
 type ObserverResource = 'powerBank' | 'deposit'
