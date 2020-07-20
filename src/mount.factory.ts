@@ -185,7 +185,7 @@ export default class FactoryExtension extends StructureFactory {
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
                     if (this.room.terminal.store[resType] < needAmount) {
                         this.gotoBed(100, `缺少 ${resType}*${needAmount}`)
-                        return this.log(`合成暂停，缺少 ${resType}*${needAmount}`, 'yellow')
+                        // return this.log(`合成暂停，缺少 ${resType}*${needAmount}`, 'yellow')
                     }
                 }
 

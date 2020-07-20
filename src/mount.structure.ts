@@ -541,11 +541,9 @@ class LinkExtension extends StructureLink {
             return
         }
 
-        // 附近有 CT 旗帜就转换为 CenterLink
-        const inRangeProcessorFlag = this.pos.findInRange(FIND_FLAGS, 1, {
-            filter: flag => flag.name === `${this.room.name} ct`
-        })
-        if (inRangeProcessorFlag.length > 0) {
+        // 在基地中心附近就转换为 CenterLink
+        const center = this.room.memory.center
+        if (center && this.pos.isNearTo(new RoomPosition(center[0], center[1], this.room.name))) {
             this.asCenter()
             return
         }
