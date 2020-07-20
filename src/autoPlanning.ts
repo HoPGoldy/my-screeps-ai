@@ -221,11 +221,11 @@ export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOU
         // 遍历布局中所有建筑，检查是否又可建造的
         Object.keys(currentLevelLayout).forEach((structureType: BuildableStructureConstant) => {
             currentLevelLayout[structureType].forEach(pos => {
+                let result: ScreepsReturnCode
                 // 为 null 说明在集中布局之外
-                if (pos == null) return placeOutsideConstructionSite(room, structureType)
-
+                if (pos == null) result = placeOutsideConstructionSite(room, structureType)
                 // 直接发布工地，通过返回值检查是否需要建造
-                const result = room.createConstructionSite(center[0] + pos[0], center[1] + pos[1], structureType)
+                else result = room.createConstructionSite(center[0] + pos[0], center[1] + pos[1], structureType)
 
                 // 存在需要建造的建筑
                 if (result === OK) needBuild = true
@@ -246,7 +246,7 @@ export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOU
  * @param room 要放置工地的房间
  * @param type 要放置的建筑类型
  */
-const placeOutsideConstructionSite = function(room: Room, type: StructureConstant): void {
+const placeOutsideConstructionSite = function(room: Room, type: StructureConstant): ScreepsReturnCode {
     if (type === STRUCTURE_LINK) {
         // 给 source 旁边造 link
         for (const source of room.sources) {
@@ -268,16 +268,16 @@ const placeOutsideConstructionSite = function(room: Room, type: StructureConstan
             const linkPos = targetPos.find(pos => pos.lookFor(LOOK_STRUCTURES).length <= 0)
             if (!targetPos) continue
 
-            // 建造 link
-            linkPos.createConstructionSite(STRUCTURE_LINK)
             // 一次只会建造一个 link
-            break
+            return linkPos.createConstructionSite(STRUCTURE_LINK)
         }
     }
     // 是 EXTRACTOR 就直接点下去
     else if (type === STRUCTURE_EXTRACTOR) {
-        room.mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR)
+        return room.mineral.pos.createConstructionSite(STRUCTURE_EXTRACTOR)
     }
+
+    return ERR_FULL
 }
 
 /**
