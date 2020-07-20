@@ -1070,6 +1070,17 @@ class RoomExtension extends Room {
         return OK
     }
 
+    public clearwall(): string {
+        // 找到所有不是自己的墙壁
+        const wall = this.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_WALL || (s.structureType === STRUCTURE_RAMPART && !s.my)
+        })
+        if (wall.length <= 0) return `[${this.name}] 未找到墙壁`
+
+        wall.forEach(w => w.destroy())
+        return `[${this.name}] 墙壁清理完成`
+    }
+
     /**
      * 用户操作 - 占领新房间
      * 
@@ -1339,6 +1350,10 @@ class RoomExtension extends Room {
                     { name: 'content', desc: '要签名的内容' }
                 ],
                 functionName: 'sign'
+            },
+            {
+                title: '移除房间中所有墙壁（包括非己方的 Rempart）',
+                functionName: 'clearwall'
             },
             {
                 title: '初始化 lab 集群',

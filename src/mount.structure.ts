@@ -1,6 +1,6 @@
 import roles from './role'
 import { creepApi } from './creepController'
-import { planLayout } from './autoPlanning'
+import { clearStructure } from './autoPlanning'
 import { createHelp, colorful, whiteListFilter } from './utils'
 import { 
     // spawn 孵化相关
@@ -797,8 +797,11 @@ class ControllerExtension extends StructureController {
         // 规划布局
         this.log(this.room.planLayout())
 
-        // 刚占领，添加最基础的角色组
+        // 刚占领，移除不必要的建筑并添加最基础的角色组
         if (level === 1) {
+            const result = clearStructure(this.room)
+            if (result === OK) this.log(`已清理过期建筑，你可以选择执行 Game.rooms.${this.room.name}.clearWall() 来清理现存的墙壁`, 'green')
+
             this.room.releaseCreep('harvester')
             this.room.releaseCreep('upgrader')
         }
