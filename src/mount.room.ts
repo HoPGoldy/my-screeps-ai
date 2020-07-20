@@ -1,6 +1,6 @@
 import mountRoomBase from './mount.roomBase'
-import { createHelp, log, createRoomLink, createElement, getName } from './utils'
-import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK } from './setting'
+import { createHelp, log, createRoomLink, createElement, getName, colorful } from './utils'
+import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK, LAB_STATE, labTarget } from './setting'
 import { creepApi } from './creepController'
 import { findBaseCenterPos, confirmBasePos, setBaseCenter, planLayout } from './autoPlanning'
 
@@ -819,7 +819,7 @@ class RoomExtension extends Room {
         this.memory.lab.pause = true
         return `[${this.name} lab] 已暂停工作`
     }
-    
+
     /**
      * 重启 lab 集群工作
      */
@@ -843,6 +843,33 @@ class RoomExtension extends Room {
      * 用户操作：重启 lab 集群
      */
     public lon(): string { return this.resumeLab() }
+
+    /**
+     * 用户操作：显示当前 lab 状态
+     */
+    public lshow(): string {
+        const memory = this.memory.lab
+        if (!memory) return `[${this.name}] 未启用 lab 集群`
+        const logs = [ `[${this.name}]` ]
+
+        if (memory.pause) logs.push(colorful('暂停中', 'yellow'))
+        logs.push(`[状态] ${memory.state}`)
+
+        // 获取当前目标产物以及 terminal 中的数量
+        const res = labTarget[memory.targetIndex]
+        const currentAmount = this.terminal ? this.terminal.store[res.target] : colorful('无法访问 terminal', 'red')
+
+        // 在工作就显示工作状态
+        if (memory.state === LAB_STATE.WORKING) {
+            logs.push(`[工作进程] 目标 ${res.target} 剩余生产/当前存量/目标存量 ${memory.targetAmount}/${currentAmount}/${res.number}`)
+        }
+        // 做完了就显示总数
+        else if (memory.state === LAB_STATE.PUT_RESOURCE) {
+            logs.push(`正在将 ${res.target} 转移至 terminal，数量：${Object.values(memory.outLab).reduce((p, n) => p + n)}`)
+        }
+
+        return logs.join(' ')
+    }
 
     /**
      * 切换为战争状态
@@ -1366,6 +1393,10 @@ class RoomExtension extends Room {
             {
                 title: '重启 lab 集群',
                 functionName: 'lon'
+            },
+            {
+                title: '显示 lab 集群状态',
+                functionName: 'lshow'
             },
             {
                 title: '查看战争帮助',
