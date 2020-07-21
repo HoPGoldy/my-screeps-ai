@@ -83,14 +83,13 @@ export function createRoomLink(roomName): string {
     return createLink(roomName, `https://screeps.com/a/#!/room/${Game.shard.name}/${roomName}`, false)
 }
 
-
 /**
  * 给函数的显示添加一点小细节
  * 只会用在各种 help 方法中
  * 
  * @param functionInfo 函数的信息
  */
-export function createHelp(functionInfo: IFunctionDescribe[]): string {
+export function createHelp(functionInfo: FunctionDescribe[]): string {
     const functionList = functionInfo.map(func => {
         // 标题
         const title = colorful(func.title, 'green')

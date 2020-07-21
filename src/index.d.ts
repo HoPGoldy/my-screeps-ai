@@ -6,10 +6,24 @@ type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 // 本项目中出现的颜色常量
 type Colors = 'green' | 'blue' | 'yellow' | 'red'
 
+/**
+ * 绘制帮助时需要的模块信息
+ */
+interface ModuleDescribe {
+    // 模块名
+    name: string
+    // 模块介绍
+    describe: string
+    // 该模块的 api 列表
+    api: FunctionDescribe[]
+}
+
 // 函数介绍构造函数的参数对象
-interface IFunctionDescribe {
+interface FunctionDescribe {
     // 该函数的用法
     title: string
+    // 参数介绍
+    describe?: string
     // 该函数的参数列表
     params?: {
         // 参数名
