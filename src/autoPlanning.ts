@@ -173,27 +173,68 @@ export const clearStructure = function(room: Room): OK | ERR_NOT_FOUND {
 }
 
 /**
- * 获取基地的布局信息
- * 每个建筑到基准点的相对位置和建筑类型
- * 
- * @param centerFlagName 基准点（中心点）旗帜名称
- * @param baseSize 基地尺寸，将忽略该尺寸以外的建筑
+ * 设计基地布局的开发者工具
  */
-export const getBaseLayout = function(centerFlagName: string, baseSize: number = 11): string {
-    const flag = Game.flags[centerFlagName]
-    if (!flag) return `未找到基准点旗帜`
+export const layout = {
+    /**
+     * 获取基地的布局信息
+     * 每个建筑到基准点的相对位置和建筑类型
+     * 
+     * @param centerFlagName 基准点（中心点）旗帜名称
+     * @param baseSize 基地尺寸，将忽略该尺寸以外的建筑
+     */
+    get(centerFlagName: string, baseSize: number = 11): string {
+        // 没有存储就新建
+        if (!Memory.layoutInfo) {
+            Memory.layoutInfo = { 1: {}, 2: {}, 3: {}, 4: {}, 5: {}, 6: {}, 7: {}, 8: {} }
+            Memory.layoutLevel = 1
+        }
 
-    // 获取范围内的建筑
-    const inRangeStructure = flag.pos.findInRange(FIND_STRUCTURES, (baseSize / 2 - 0.5))
+        const flag = Game.flags[centerFlagName]
+        if (!flag) return `未找到基准点旗帜`
 
-    let layout = {}
-    // 遍历所有范围内建筑，统计相对位置
-    inRangeStructure.forEach(s => {
-        if (!layout[s.structureType]) layout[s.structureType] = []
-        layout[s.structureType].push([ flag.pos.x - s.pos.x, flag.pos.y - s.pos.y ])
-    })
+        const allStructure = flag.room.find(FIND_STRUCTURES)
 
-    return JSON.stringify(layout, null, 4)
+        let layout = {}
+        // 遍历所有范围内建筑，统计相对位置
+        allStructure.forEach(s => {
+            // 不统计超限建筑和 controller
+            if (!s.isActive || s.structureType === STRUCTURE_CONTROLLER) return
+            if (!layout[s.structureType]) layout[s.structureType] = []
+
+            // 范围外的就当作位置动态计算的建筑
+            const relativePos = s.pos.inRangeTo(flag, (baseSize / 2 - 0.5)) ? [ s.pos.x - flag.pos.x, s.pos.y - flag.pos.y ] : null
+            layout[s.structureType].push(relativePos)
+        })
+
+        // 移除之前重复的建筑
+        Object.keys(layout).forEach((structureType: StructureConstant) => {
+            // 计算该种类建筑在之前出现过多少次
+            const preLength = _.sum(Object.values(Memory.layoutInfo).map(levelLayout => (structureType in levelLayout) ? levelLayout[structureType].length : 0))
+            layout[structureType].splice(0, preLength)
+            // 移除本等级没有新增的建筑类型
+            if (layout[structureType].length <= 0) delete layout[structureType]
+        })
+
+        // 更新并保存点位信息
+        Memory.layoutInfo[Memory.layoutLevel] = layout
+        Memory.layoutLevel += 1
+
+        return `等级 ${Memory.layoutLevel - 1} 的布局信息已保存`
+    },
+    /**
+     * 移除当前等级的数据
+     */
+    remove(): string {
+        Memory.layoutLevel -= 1
+        Memory.layoutInfo[Memory.layoutLevel] = {}
+        
+        return `等级 ${Memory.layoutLevel} 的布局数据已经移除，请重新设计该等级布局`
+    },
+    // 显示现存的所有数据
+    show(): string {
+        return JSON.stringify(Memory.layoutInfo)
+    }
 }
 
 /**
