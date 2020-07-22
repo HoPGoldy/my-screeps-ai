@@ -1,17 +1,17 @@
 {
     "compilerOptions": {
-        "sourceMap": false,
-        "removeComments": false,
         "target": "es5",
-        "rootDir": "src/",
-        "outDir": "dist/"
+        "moduleResolution": "Node", 
+        "outDir": "dist/",
+        "baseUrl": "src/",
+        "sourceMap": true,
+        "allowSyntheticDefaultImports": true
     },
     "include": [
         "src/*.ts",
-        "screeps.d.ts"
+        "screeps.d.ts", "src/mount/mount.ts"
     ],
     "exclude": [
-        "node_modules",
-        "**/*.spec.ts"
+        "node_modules"
     ]
 }
