@@ -9,7 +9,7 @@
     },
     "include": [
         "src/*.ts",
-        "screeps.d.ts", "src/mount/mount.ts"
+        "screeps.d.ts"
     ],
     "exclude": [
         "node_modules"

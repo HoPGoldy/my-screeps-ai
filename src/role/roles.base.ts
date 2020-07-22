@@ -1,4 +1,4 @@
-import { minerHervesteLimit } from './setting'
+import { minerHervesteLimit } from '../setting'
 
 /**
  * 初级房间运维角色组

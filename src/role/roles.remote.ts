@@ -1,5 +1,5 @@
-import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from './setting'
-import { calcBodyPart, getName } from './utils'
+import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from '../setting'
+import { calcBodyPart, getName } from '../utils'
 
 /**
  * 多房间角色组

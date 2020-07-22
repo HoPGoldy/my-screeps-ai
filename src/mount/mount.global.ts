@@ -1,7 +1,7 @@
-import { colorful, createHelp, clearFlag, createRoomLink, createConst, createLink } from './utils'
-import { factoryTopTargets, baseLayout } from './setting'
-import { creepApi } from './creepController'
-import { findBaseCenterPos } from './autoPlanning'
+import { colorful, createHelp, clearFlag, createRoomLink, createConst, createLink } from '../utils'
+import { factoryTopTargets, baseLayout } from '../setting'
+import { creepApi } from '../creepController'
+import { findBaseCenterPos } from '../autoPlanning'
 
 // 挂载全局拓展
 export default function () {
@@ -404,7 +404,7 @@ export const globalExtension = {
         // 遍历所有房间并检查对应的存储建筑
         log += Object.values(Game.rooms).map(room => {
             // 统计数量
-            const amount = room[source].store[resourceName] || 0
+            const amount = room[source] ? (room[source].store[resourceName] || 0) : 0
             total += amount
 
             // 如果有就列出显示
@@ -412,7 +412,7 @@ export const globalExtension = {
             else return false
         }).filter(res => res).join('\n')
 
-        log += `共计: ${total}`
+        log += `\n共计: ${total}`
         return log
     },
 
