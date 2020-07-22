@@ -1,4 +1,4 @@
-import { reactionSource, LAB_STATE, labTarget, BOOST_RESOURCE, ROOM_TRANSFER_TASK } from './setting'
+import { reactionSource, LAB_STATE, labTarget, BOOST_RESOURCE, ROOM_TRANSFER_TASK } from '../setting'
 
 /**
  * Lab 原型拓展

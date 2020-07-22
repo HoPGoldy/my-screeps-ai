@@ -1,5 +1,5 @@
-import { maxOps } from './setting'
-import { log } from './utils'
+import { maxOps } from '../setting'
+import { log } from '../utils'
 
 // 挂载拓展到 PowerCreep 原型
 export default function () {

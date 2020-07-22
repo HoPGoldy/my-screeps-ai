@@ -1,6 +1,6 @@
-import { creepApi } from './creepController'
-import { releaseCreep } from './autoPlanning'
-import { DEFAULT_FLAG_NAME } from './setting'
+import { creepApi } from '../creepController'
+import { releaseCreep } from '../autoPlanning'
+import { DEFAULT_FLAG_NAME } from '../setting'
 
 /**
  * 将所有的房间基础服务挂载至 Room 原型上

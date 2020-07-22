@@ -1,6 +1,6 @@
-import { getOppositeDirection } from './utils'
-import { repairSetting, minWallHits } from './setting'
-import roles from './role'
+import { getOppositeDirection } from '../utils'
+import { repairSetting, minWallHits } from '../setting'
+import roles from '../role'
 
 // 挂载拓展到 Creep 原型
 export default function () {

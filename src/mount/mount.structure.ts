@@ -1,7 +1,7 @@
-import roles from './role'
-import { creepApi } from './creepController'
-import { clearStructure } from './autoPlanning'
-import { createHelp, colorful, whiteListFilter } from './utils'
+import roles from '../role'
+import { creepApi } from '../creepController'
+import { clearStructure } from '../autoPlanning'
+import { createHelp, colorful, whiteListFilter } from '../utils'
 import { 
     // spawn 孵化相关
     bodyConfigs, creepDefaultMemory, 
@@ -19,7 +19,7 @@ import {
     // 挂载内存相关
     structureWithMemory,
     minerHervesteLimit
-} from './setting'
+} from '../setting'
 
 import LabExtension from './mount.lab'
 import FactoryExtension from './mount.factory'

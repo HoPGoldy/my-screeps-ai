@@ -1,5 +1,5 @@
-import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit, commodityMax } from './setting'
-import { createHelp, colorful } from './utils'
+import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit, commodityMax } from '../setting'
+import { createHelp, colorful } from '../utils'
 
 /**
  * Factory 原型拓展

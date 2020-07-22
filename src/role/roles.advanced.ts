@@ -1,4 +1,4 @@
-import { ROOM_TRANSFER_TASK, boostResourceReloadLimit } from "./setting"
+import { ROOM_TRANSFER_TASK, boostResourceReloadLimit } from "../setting"
 
 /**
  * tranfser 触发后事处理的最小生命
