@@ -1,9 +1,9 @@
 import mountRoomBase from './mount.roomBase'
 import { log, createRoomLink, createElement, getName, colorful } from '../utils'
 import { ENERGY_SHARE_LIMIT, BOOST_RESOURCE, DEFAULT_FLAG_NAME, ROOM_TRANSFER_TASK, LAB_STATE, labTarget } from '../setting'
-import { creepApi } from '../creepController'
-import { findBaseCenterPos, confirmBasePos, setBaseCenter, planLayout } from '../autoPlanning'
-import { createHelp } from '../help'
+import { creepApi } from '../modules/creepController'
+import { findBaseCenterPos, confirmBasePos, setBaseCenter, planLayout } from '../modules/autoPlanning'
+import { createHelp } from '../modules/help'
 
 // 挂载拓展到 Room 原型
 export default function () {
