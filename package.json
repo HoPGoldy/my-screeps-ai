@@ -4,10 +4,8 @@
   "description": "my custom ai for game Screeps",
   "main": "src/main.js",
   "scripts": {
-    "start": "npx grunt watch:default",
-    "local": "npx grunt watch:local",
-    "dev": "npx grunt watch:dev",
-    "pull": "npx grunt screeps-get"
+    "start": "rollup -cw --environment DEST:main",
+    "build": "rollup -cw"
   },
   "repository": {
     "type": "git",
@@ -22,17 +20,18 @@
     "url": "https://github.com/HoPGoldy/my-screeps-ai/issues"
   },
   "homepage": "https://github.com/HoPGoldy/my-screeps-ai#readme",
-  "dependencies": {
+  "devDependencies": {
+    "@rollup/plugin-commonjs": "^14.0.0",
+    "@rollup/plugin-node-resolve": "^8.4.0",
     "@types/lodash": "^3.10.2",
-    "@types/node": "^12.12.35",
-    "grunt": "^1.1.0",
-    "grunt-cli": "^1.3.2",
-    "grunt-contrib-clean": "^2.0.0",
-    "grunt-contrib-copy": "^1.0.0",
-    "grunt-contrib-watch": "^1.1.0",
-    "grunt-screeps": "^1.4.0",
-    "grunt-screeps-get": "^0.4.0",
-    "grunt-ts": "^6.0.0-beta.22",
-    "typescript": "^3.8.3"
+    "@types/node": "^14.0.24",
+    "rollup": "^2.22.1",
+    "rollup-plugin-clear": "^2.0.7",
+    "rollup-plugin-screeps": "^1.0.1",
+    "rollup-plugin-typescript2": "^0.27.1",
+    "typescript": "^3.9.7"
+  },
+  "dependencies": {
+    "source-map": "^0.6.1"
   }
 }
