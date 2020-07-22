@@ -4,7 +4,7 @@ import creepNumberListener from './modules/creepController'
 import { ErrorMapper } from './modules/errorMapper'
 
 export const loop = ErrorMapper.wrapLoop(() => {
-    // console.log(`-------------------------- [${Game.time}] -------------------------- `)
+    if (Memory.showCost) console.log(`-------------------------- [${Game.time}] -------------------------- `)
 
     // 挂载拓展
     mountWork()
@@ -12,14 +12,8 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // creep 数量控制
     creepNumberListener()
 
-    // 所有建筑工作
-    doing(Game.structures)
-
-    // 所有 creep 工作
-    doing(Game.creeps)
-
-    // 所有 powerCreep 工作
-    doing(Game.powerCreeps)
+    // 所有建筑、creep、powerCreep 执行工作
+    doing(Game.structures, Game.creeps, Game.powerCreeps)
 
     // 搓 pixel
     generatePixel()
