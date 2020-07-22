@@ -1,8 +1,9 @@
 import mountWork from './mount'
 import { doing, stateScanner, generatePixel } from './utils'
-import creepNumberListener from './creepController'
+import creepNumberListener from './modules/creepController'
+import { ErrorMapper } from './modules/errorMapper'
 
-module.exports.loop = function (): void {
+export const loop = ErrorMapper.wrapLoop(() => {
     // console.log(`-------------------------- [${Game.time}] -------------------------- `)
 
     // 挂载拓展
@@ -25,4 +26,4 @@ module.exports.loop = function (): void {
 
     // 统计全局资源使用
     stateScanner()
-}
+})

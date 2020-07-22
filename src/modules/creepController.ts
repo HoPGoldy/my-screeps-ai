@@ -1,5 +1,5 @@
-import roles from './role'
-import { colorful, log } from './utils'
+import roles from '../role'
+import { colorful, log } from '../utils'
 /**
  * creep 控制模块
  * 

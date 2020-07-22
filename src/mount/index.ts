@@ -3,7 +3,7 @@ import mountPowerCreep from './mount.powerCreep'
 import mountRoom from './mount.room'
 import mountGlobal from './mount.global'
 import mountStructure from './mount.structure'
-import { planLayout } from '../autoPlanning'
+import { planLayout } from '../modules/autoPlanning'
 
 /**
  * 挂载所有的额外属性和方法

@@ -1,4 +1,4 @@
-import { baseLayout, MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE } from './setting'
+import { baseLayout, MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE } from '../setting'
 import { creepApi } from './creepController'
 
 // dp 节点

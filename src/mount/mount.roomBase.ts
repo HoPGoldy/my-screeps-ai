@@ -1,5 +1,5 @@
-import { creepApi } from '../creepController'
-import { releaseCreep } from '../autoPlanning'
+import { creepApi } from '../modules/creepController'
+import { releaseCreep } from '../modules/autoPlanning'
 import { DEFAULT_FLAG_NAME } from '../setting'
 
 /**

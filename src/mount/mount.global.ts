@@ -1,7 +1,7 @@
 import { colorful, createHelp, clearFlag, createRoomLink, createConst, createLink } from '../utils'
 import { factoryTopTargets, baseLayout } from '../setting'
-import { creepApi } from '../creepController'
-import { findBaseCenterPos } from '../autoPlanning'
+import { creepApi } from '../modules/creepController'
+import { findBaseCenterPos } from '../modules/autoPlanning'
 
 // 挂载全局拓展
 export default function () {

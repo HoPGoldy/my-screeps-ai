@@ -1,6 +1,6 @@
 import roles from '../role'
-import { creepApi } from '../creepController'
-import { clearStructure } from '../autoPlanning'
+import { creepApi } from '../modules/creepController'
+import { clearStructure } from '../modules/autoPlanning'
 import { createHelp, colorful, whiteListFilter } from '../utils'
 import { 
     // spawn 孵化相关

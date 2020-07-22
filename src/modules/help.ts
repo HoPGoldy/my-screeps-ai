@@ -1,4 +1,4 @@
-import { colorful } from "./utils"
+import { colorful } from "../utils"
 
 /**
  * 创建帮助信息
