@@ -851,6 +851,9 @@ interface IRoomShareTask {
 }
 
 interface Memory {
+    // 是否显示 cpu 消耗
+    showCost?: boolean
+
     // 核弹投放指示器
     // 核弹是否已经确认
     nukerLock?: boolean
