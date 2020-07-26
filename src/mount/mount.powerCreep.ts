@@ -11,7 +11,6 @@ export default function () {
     updatePowerCreepAbility()
 }
 
-
 /**
  * 注册 pc 能力
  * 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务

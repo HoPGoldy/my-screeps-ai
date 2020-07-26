@@ -203,8 +203,9 @@ const roles: {
             const source: StructureTerminal | StructureStorage | Source = Game.getObjectById(data.sourceId)
 
             // 如果发现能量来源（建筑）里没有能量了，就自杀并重新运行 upgrader 发布规划
+            // 但如果是 Source 或者 Link 里获取能量的话，就不会重新运行规划
             const result = creep.getEngryFrom(source)
-            if ((result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) && source instanceof Structure) {
+            if ((result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) && source instanceof Structure && !(source instanceof StructureLink)) {
                 creep.room.releaseCreep('upgrader')
                 creep.suicide()
             }

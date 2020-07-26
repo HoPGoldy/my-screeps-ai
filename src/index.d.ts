@@ -1335,6 +1335,8 @@ interface UpgraderPlanStats {
     storageId?: string
     // 房间内 terminal 的 id，房间没 terminal 时该值为空，下同
     terminalId?: string
+    // 房间内 upgradeLink 的 id
+    upgradeLinkId?: string
     // storage 中有多少能量
     storageEnergy?: number
     // terminal 中有多少能量
