@@ -683,7 +683,7 @@ class RoomExtension extends Room {
      */
     public shareAddSource(resourceType: ResourceConstant): boolean {
         if (!(resourceType in Memory.resourceSourceMap)) Memory.resourceSourceMap[resourceType] = []
-        
+
         const alreadyRegister = Memory.resourceSourceMap[resourceType].find(name => name == this.name)
         // 如果已经被添加过了就返回 false
         if (alreadyRegister) return false
@@ -716,12 +716,18 @@ class RoomExtension extends Room {
      * @returns 是否成功添加
      */
     public shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean {
-        if (this.memory.shareTask) return false
+        if (this.memory.shareTask || !this.terminal) return false
+        // 如果是能量的话就把来源建筑设为 storage，这里做了个兜底，如果 storage 没了就检查 terminal 里的能量
+        const sourceStructure = resourceType === RESOURCE_ENERGY ?(this.storage || this.terminal) : this.terminal
+        // 终端能发送的最大数量（路费以最大发送量计算）
+        const freeSpace = this.terminal.store.getFreeCapacity() - Game.market.calcTransactionCost(amount, this.name, targetRoom)
+        // 期望发送量、当前存量、能发送的最大数量中找最小的
+        const sendAmount = Math.min(amount, sourceStructure.store[resourceType], freeSpace)
 
         this.memory.shareTask = {
             target: targetRoom,
             resourceType,
-            amount
+            amount: sendAmount
         }
         return true
     }
@@ -747,19 +753,24 @@ class RoomExtension extends Room {
         // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
         let roomWithEmpty = SourceRoomsName.map(roomName => {
             const room = Game.rooms[roomName]
-            if (!room || !room.terminal) return ''
 
-            // 如果该房间当前没有任务，就选择其为目标
-            if (!room.memory.shareTask && (room.name != this.name)) {
-                // 如果请求共享的是能量，并且房间内 storage 低于上限的话，就从资源提供列表中移除该房间
-                if (resourceType === RESOURCE_ENERGY && room.storage && room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return ''
-                // 如果请求的资源不够的话就搜索下一个房间
-                if (room.terminal.store[resourceType] < amount) return roomName
-                
-                // 接受任务的房间就是你了！
-                targetRoom = room
+            if (!room || !room.terminal) return ''
+            // 该房间有任务或者就是自己，不能作为共享来源
+            if (room.memory.shareTask || room.name === this.name) return roomName
+
+            // 如果请求共享的是能量
+            if (resourceType === RESOURCE_ENERGY) {
+                if (!room.storage) return ''
+                // 该房间 storage 中能量低于要求的话，就从资源提供列表中移除该房间
+                if (room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return ''
             }
-            
+            else {
+                // 如果请求的资源已经没有的话也移除房间
+                if ((room.terminal.store[resourceType] || 0) <= 0) return ''
+            }
+
+            // 接受任务的房间就是你了！
+            targetRoom = room
             return roomName
         })
 
