@@ -1,3 +1,7 @@
+/**
+ * 自动规划模块
+ * 实现了基地自动选址、自动布局（放置建筑）以及运营单位自动发布的功能
+ */
 import { baseLayout, MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE } from '../setting'
 import { creepApi } from './creepController'
 
@@ -289,16 +293,17 @@ export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOU
  */
 const placeOutsideConstructionSite = function(room: Room, type: StructureConstant): ScreepsReturnCode {
     if (type === STRUCTURE_LINK) {
-        // 给 source 旁边造 link
-        for (const source of room.sources) {
-            // 旁边已经造好了 link 或者有工地了，就检查下一个 source
+        const targets = [ ...room.sources, room.controller]
+        // 给 source 和 controller 旁边造 link
+        for (const target of targets) {
+            // 旁边已经造好了 link 或者有工地了，就检查下一个 目标
             if (
-                (source.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0) ||
-                (source.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0)
+                (target.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0) ||
+                (target.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0)
             ) continue
 
-            // 获取 source 旁边的所有可用的开采空位
-            const harvesterPos = source.pos.getFreeSpace()
+            // 获取目标点位旁边的所有可用的开采空位
+            const harvesterPos = target.pos.getFreeSpace()
             // 找到第一个可以站 creep 的地方
             const targetHarvesterPos = harvesterPos.find(pos => pos.lookFor(LOOK_STRUCTURES).length <= 0)
             if (!targetHarvesterPos) continue
@@ -351,7 +356,8 @@ const getStatsForUpgrader = function(room: Room): UpgraderPlanStats {
     let stats: UpgraderPlanStats = {
         room,
         controllerLevel: room.controller.level,
-        ticksToDowngrade: room.controller.ticksToDowngrade
+        ticksToDowngrade: room.controller.ticksToDowngrade,
+        upgradeLinkId: room.memory.upgradeLinkId
     }
 
     if (room.storage) {
@@ -422,7 +428,18 @@ const upgraderPlans: PlanNodeFunction[] = [
         return true
     },
 
-    // 优先用终端能量发布 upgrader
+    // 优先用 upgradeLink
+    ({ room, upgradeLinkId }: UpgraderPlanStats) => {
+        if (!upgradeLinkId) return false
+
+        // 发布三个升级单位给 link
+        addUpgrader(room.name, [0, 1, 2], upgradeLinkId)
+
+        console.log(room.name, '从 upgradeLink 获取能量，发布指定数量的 upgrader < [plan 1]')
+        return true
+    },
+
+    // 用终端能量发布 upgrader
     ({ room, terminalId, terminalEnergy }: UpgraderPlanStats) => {
         if (!terminalId || terminalEnergy < UPGRADE_WITH_TERMINAL[UPGRADE_WITH_TERMINAL.length - 1].energy ) return false
 

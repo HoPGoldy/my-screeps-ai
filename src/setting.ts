@@ -200,6 +200,7 @@ export const baseLayout: BaseLayout = {
         [STRUCTURE_SPAWN]: [[-2,-3]],
         [STRUCTURE_FACTORY]: [[0,1]],
         [STRUCTURE_LAB]: [[3,2],[2,4],[3,5]],
+        [STRUCTURE_LINK]: [null],
         [STRUCTURE_ROAD]: [[4,4],[-4,4],[-2,4]]
     },
     8: {
