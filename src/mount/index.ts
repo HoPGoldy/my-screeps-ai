@@ -5,6 +5,8 @@ import mountGlobal from './mount.global'
 import mountStructure from './mount.structure'
 import { planLayout } from '../modules/autoPlanning'
 
+import mountConsole from '../modules/console'
+
 /**
  * 挂载所有的额外属性和方法
  */
@@ -21,6 +23,9 @@ export default function (): void {
         mountCreep()
         mountPowerCreep()
         mountStructure()
+
+        // 挂载所有控制台操作，注释本行将移除所有控制台交互功能
+        mountConsole()
 
         global.hasExtension = true
 
