@@ -286,7 +286,7 @@ class CreepExtension extends Creep {
         // const baseCost = Game.cpu.getUsed()
         // 进行移动，并分析其移动结果，OK 时才有可能发生撞停
         const moveResult = this._move(target) 
-        
+
         if (moveResult != OK || target instanceof Creep) return moveResult
         
         const currentPos = `${this.pos.x}/${this.pos.y}`
