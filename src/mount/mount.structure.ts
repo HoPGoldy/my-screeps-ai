@@ -1,7 +1,7 @@
 import roles from '../role'
 import { creepApi } from '../modules/creepController'
 import { clearStructure } from '../modules/autoPlanning'
-import { createHelp, colorful, whiteListFilter } from '../utils'
+import { createHelp, colorful, whiteListFilter, assignPrototype } from '../utils'
 import { 
     // spawn 孵化相关
     bodyConfigs, creepDefaultMemory, 
@@ -47,7 +47,7 @@ export default function () {
     ]
 
     // 挂载所有拓展
-    assignMap.forEach(protos => _.assign(protos[0].prototype, protos[1].prototype))
+    assignMap.forEach(protos => assignPrototype(protos[0], protos[1]))
 }
 
 /**

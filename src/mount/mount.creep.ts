@@ -1,4 +1,4 @@
-import { getOppositeDirection } from '../utils'
+import { getOppositeDirection, assignPrototype } from '../utils'
 import { repairSetting, minWallHits } from '../setting'
 import roles from '../role'
 
@@ -6,7 +6,7 @@ import roles from '../role'
 export default function () {
     if (!Creep.prototype._move) Creep.prototype._move = Creep.prototype.move
 
-    _.assign(Creep.prototype, CreepExtension.prototype)
+    assignPrototype(Creep, CreepExtension)
 }
 
 // creep 原型拓展
