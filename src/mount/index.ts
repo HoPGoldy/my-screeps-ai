@@ -1,14 +1,14 @@
 import mountCreep from './mount.creep'
 import mountPowerCreep from './mount.powerCreep'
-import mountRoom from './mount.room'
+import mountRoom from './room'
+import mountRoomPostion from './roomPosition'
 import mountGlobal from './mount.global'
 import mountStructure from './mount.structure'
 import { planLayout } from '../modules/autoPlanning'
 
-import mountConsole from '../modules/console'
-
 /**
  * 挂载所有的额外属性和方法
+ * @returns 是否执行挂载了
  */
 export default function (): void {
     if (!global.hasExtension) {
@@ -16,16 +16,14 @@ export default function (): void {
 
         // 存储的兜底工作
         initStorage()
-        
+
         // 挂载全部拓展
         mountGlobal()
         mountRoom()
+        mountRoomPostion()
         mountCreep()
         mountPowerCreep()
         mountStructure()
-
-        // 挂载所有控制台操作，注释本行将移除所有控制台交互功能
-        mountConsole()
 
         global.hasExtension = true
 
@@ -38,6 +36,8 @@ export default function (): void {
  */
 function initStorage() {
     if (!Memory.rooms) Memory.rooms = {}
+    else delete Memory.rooms.undefined
+
     if (!Memory.stats) Memory.stats = { rooms: {} }
     if (!global.routeCache) global.routeCache = {}
     if (!global.resourcePrice) global.resourcePrice = {}
@@ -49,5 +49,11 @@ function workAfterMount() {
     Object.values(Game.rooms).forEach(room => {
         if (!room.controller || !room.controller.my) return
         planLayout(room)
+    })
+
+    // 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
+    Object.values(Game.powerCreeps).forEach(pc => {
+        if (!pc.room) return
+        pc.updatePowerToRoom()
     })
 }

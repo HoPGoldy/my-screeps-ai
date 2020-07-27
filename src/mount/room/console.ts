@@ -1,7 +1,16 @@
-import { createHelp } from "./utils"
-import { DEFAULT_FLAG_NAME } from "setting"
+/**
+ * Room 控制台交互
+ * 
+ * 本文件包含了 Room 中用于控制台交互的方法
+ */
 
-export default class Help extends Room {
+import { createHelp } from "modules/help"
+import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE } from "setting"
+import { getName, createElement, colorful } from "utils"
+import { setBaseCenter } from "modules/autoPlanning"
+import RoomExtension from "./extension"
+
+export default class RoomConsole extends RoomExtension {
     /**
      * 用户操作：addCenterTask - 添加中央运输任务
      * 
@@ -158,6 +167,308 @@ export default class Help extends Room {
         logs.unshift(`[资源共享] 任务已添加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
 
         return logs.join('\n')
+    }
+
+    /**
+     * 用户操作 - 执行自动建筑规划
+     */
+    public planlayout(): string {
+        return this.planLayout()
+    }
+
+    /**
+     * 用户操作 - 设置中心点
+     * @param flagName 中心点旗帜名
+     */
+    public setcenter(flagName: string): string {
+        if (!flagName) flagName = getName.flagBaseCenter(this.name)
+        const flag = Game.flags[flagName]
+
+        if (!flag) return `[${this.name}] 未找到名为 ${flagName} 的旗帜`
+
+        setBaseCenter(this, flag.pos)
+        flag.remove()
+        return `[${this.name}] 已将 ${flagName} 设置为中心点，你可以执行 Game.rooms.${this.name}.planlayout() 来运行布局规划，否则将在 controller 升级时自动执行`
+    }
+
+    /**
+     * 用户操作 - 查看房间工作状态
+     */
+    public fs(): string {
+        if (!this.factory) return `[${this.name}] 未建造工厂`
+        return this.factory.stats()
+    }
+
+    /**
+     * 可视化用户操作 - 添加终端监听任务
+     */
+    public tadd(): string { 
+        return createElement.form('terminalAdd', [
+            { name: 'resourceType', label: '资源类型', type: 'input', placeholder: '资源的实际值' },
+            { name: 'amount', label: '期望值', type: 'input', placeholder: '交易策略的触发值' },
+            { name: 'priceLimit', label: '[可选]价格限制', type: 'input', placeholder: '置空该值以启动价格检查' },
+            { name: 'mod', label: '物流方向', type: 'select', options: [
+                { value: 0, label: '获取' },
+                { value: 1, label: '提供' }
+            ]},
+            { name: 'channel', label: '物流渠道', type: 'select', options: [
+                { value: 0, label: '拍单' },
+                { value: 1, label: '挂单' },
+                { value: 2, label: '共享' }
+            ]}
+        ], {
+            content: '提交',
+            command: `({resourceType, amount, mod, channel, priceLimit}) => Game.rooms['${this.name}'].terminal.add(resourceType, amount, mod, channel, priceLimit)`
+        })
+    }
+
+    /**
+     * 用户操作：addTerminalTask
+     */
+    public ta(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined): string { 
+        if (!this.terminal) return `[${this.name}] 未找到终端`
+
+        return this.terminal.add(resourceType, amount, mod, channel, priceLimit)
+    }
+
+    /**
+     * 用户操作：removeTerminalTask
+     */
+    public tr(index: number): string { 
+        if (!this.terminal) return `[${this.name}] 未找到终端`
+
+        return this.terminal.remove(index)
+    }
+
+    /**
+     * 用户操作：showTerminalTask
+     */
+    public ts(): string {
+        if (!this.terminal) return `[${this.name}] 未找到终端`
+
+        return this.terminal.show()
+    }
+
+    /**
+     * 用户操作：初始化 lab 集群
+     * 要提前放好名字为 lab1 和 lab2 的两个旗帜（放在集群中间的两个 lab 上）
+     */
+    public linit(): string {
+         /**
+         * 获取旗帜及兜底
+         * @danger 这里包含魔法常量，若有需要应改写成数组形式
+         */
+        const lab1Flag = Game.flags['lab1']
+        const lab2Flag = Game.flags['lab2']
+        if (!lab1Flag || !lab2Flag) return `[lab 集群] 初始化失败，请新建名为 [lab1] 和 [lab2] 的旗帜`
+        if (lab1Flag.pos.roomName != this.name || lab2Flag.pos.roomName != this.name) return `[lab 集群] 初始化失败，旗帜不在本房间内，请进行检查`
+
+        // 初始化内存, 之前有就刷新 id 缓存，没有就新建
+        if (this.memory.lab) {
+            this.memory.lab.inLab = []
+            this.memory.lab.outLab = {}
+        }
+        else {
+            this.memory.lab = {
+                state: 'getTarget',
+                targetIndex: 1,
+                inLab: [],
+                outLab: {},
+                pause: false
+            }
+        }
+
+        // 获取并分配 lab
+        const labs = this.find(FIND_MY_STRUCTURES, {
+            filter: s => s.structureType == STRUCTURE_LAB
+        })
+        labs.forEach(lab => {
+            if (lab.pos.isEqualTo(lab1Flag.pos) || lab.pos.isEqualTo(lab2Flag.pos)) this.memory.lab.inLab.push(lab.id)
+            else this.memory.lab.outLab[lab.id] = 0
+        })
+
+        lab1Flag.remove()
+        lab2Flag.remove()
+
+        return `[${this.name} lab] 初始化成功`
+    }
+
+    /**
+     * 用户操作：暂停 lab 集群
+     */
+    public loff(): string {
+        if (!this.memory.lab) return `[${this.name} lab] 集群尚未初始化`
+        this.memory.lab.pause = true
+        return `[${this.name} lab] 已暂停工作`
+    }
+
+    /**
+     * 用户操作：重启 lab 集群
+     */
+    public lon(): string {
+        if (!this.memory.lab) return `[${this.name} lab] 集群尚未初始化`
+        this.memory.lab.pause = false
+        return `[${this.name} lab] 已恢复工作`
+    }
+
+    /**
+     * 用户操作：显示当前 lab 状态
+     */
+    public lshow(): string {
+        const memory = this.memory.lab
+        if (!memory) return `[${this.name}] 未启用 lab 集群`
+        const logs = [ `[${this.name}]` ]
+
+        if (memory.pause) logs.push(colorful('暂停中', 'yellow'))
+        logs.push(`[状态] ${memory.state}`)
+
+        // 获取当前目标产物以及 terminal 中的数量
+        const res = labTarget[memory.targetIndex]
+        const currentAmount = this.terminal ? this.terminal.store[res.target] : colorful('无法访问 terminal', 'red')
+
+        // 在工作就显示工作状态
+        if (memory.state === LAB_STATE.WORKING) {
+            logs.push(`[工作进程] 目标 ${res.target} 剩余生产/当前存量/目标存量 ${memory.targetAmount}/${currentAmount}/${res.number}`)
+        }
+        // 做完了就显示总数
+        else if (memory.state === LAB_STATE.PUT_RESOURCE) {
+            logs.push(`正在将 ${res.target} 转移至 terminal，数量：${Object.values(memory.outLab).reduce((p, n) => p + n)}`)
+        }
+
+        return logs.join(' ')
+    }
+
+    /**
+     * 用户操作 - 启动战争状态
+     */
+    public war(): string {
+        let stats = `[${this.name}] `
+        const result = this.startWar('WAR')
+
+        if (result === OK) stats += `已启动战争状态，正在准备 boost 材料，请在准备完成后再发布角色组`
+        else if (result === ERR_NAME_EXISTS) stats += '已处于战争状态'
+        else if (result === ERR_NOT_FOUND) stats += `未找到名为 [${this.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`
+        else if (result === ERR_INVALID_TARGET) stats += '旗帜周围的 lab 数量不足，请移动旗帜位置'
+
+        return stats
+    }
+
+    /**
+     * 用户操作 - 取消战争状态
+     */
+    public nowar(): string {
+        let stats = `[${this.name}] `
+        const result = this.stopWar()
+
+        if (result === OK) stats += `已解除战争状态，boost 强化材料会依次运回 Terminal`
+        else if (result === ERR_NOT_FOUND) stats += `未启动战争状态`
+
+        return stats
+    }
+
+    /**
+     * 用户操作 - 拓展新外矿
+     * 
+     * @param 同上 addRemote()
+     */
+    public radd(remoteRoomName: string, targetId: string): string {
+        let stats = `[${this.name} 外矿] `
+
+        const actionResult = this.addRemote(remoteRoomName, targetId)
+        if (actionResult === OK) stats += '拓展完成，已发布 remoteHarvester 及 reserver'
+        else if (actionResult === ERR_INVALID_TARGET) stats += '拓展失败，无效的 targetId'
+        else if (actionResult === ERR_NOT_FOUND) stats += `拓展失败，未找到 source 旗帜，请在外矿房间的 source 上放置名为 [${remoteRoomName} source0] 的旗帜（有多个 source 请依次增加旗帜名最后一位的编号）`
+        
+        return stats
+    }
+
+    /**
+     * 用户操作 - 移除外矿
+     * 
+     * @param 同上 removeRemote()
+     */
+    public rremove(remoteRoomName: string, removeFlag: boolean = false): string {
+        let stats = `[${this.name} 外矿] `
+
+        const actionResult = this.removeRemote(remoteRoomName, removeFlag)
+        if (actionResult === OK) stats += '外矿及对应角色组已移除，' + (removeFlag ? 'source 旗帜也被移除' : 'source 旗帜未移除')
+        else if (actionResult === ERR_NOT_FOUND) stats += '未找到对应外矿'
+        
+        return stats
+    }
+
+    /**
+     * 移除所有不属于自己的墙壁
+     */
+    public clearwall(): string {
+        // 找到所有不是自己的墙壁
+        const wall = this.find(FIND_STRUCTURES, {
+            filter: s => s.structureType === STRUCTURE_WALL || (s.structureType === STRUCTURE_RAMPART && !s.my)
+        })
+        if (wall.length <= 0) return `[${this.name}] 未找到墙壁`
+
+        wall.forEach(w => w.destroy())
+        return `[${this.name}] 墙壁清理完成`
+    }
+
+    /**
+     * 用户操作 - 占领新房间
+     * 
+     * @param 同上 claimRoom()
+     */
+    public claim(targetRoomName: string, signText: string = ''): string {
+        this.claimRoom(targetRoomName, signText)
+
+        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。\n 你可以在目标房间中新建名为 ${getName.flagBaseCenter(this.name)} 的旗帜来指定基地中心。否则 claimer 将运行自动规划。`
+    }
+
+    /**
+     * 创建订单并返回创建信息
+     * 
+     * @param type 订单类型
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param totalAmount 总量
+     */
+    private createOrder(type: ORDER_BUY | ORDER_SELL, resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        const orderConfig = {
+            type: type,
+            resourceType,
+            price,
+            totalAmount,
+            roomName: this.name
+        }
+        const createResult = Game.market.createOrder(orderConfig)
+
+        let returnString: string = ''
+        // 新创建的订单下个 tick 才能看到，所以这里只能让玩家自行查看
+        if (createResult === OK) returnString = `[${this.name}] ${type} 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
+        else if (createResult === ERR_NOT_ENOUGH_RESOURCES) returnString = `[${this.name}] 您没有足够的 credit 来缴纳费用，当前/需要 ${Game.market.credits}/${price * totalAmount * 0.05}`
+        else returnString = `[${this.name}] 创建失败，Game.market.createOrder 错误码: ${createResult}`
+
+        return returnString
+    }
+
+    /**
+     * 为该房间创建一个 ORDER_BUY 订单
+     * 
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param amount 总量
+     */
+    public buy(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        return this.createOrder(ORDER_BUY, resourceType, price, totalAmount)
+    }
+
+    /**
+     * 为该房间创建一个 ORDER_SELL 订单
+     * 
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param amount 总量
+     */
+    public sell(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        return this.createOrder(ORDER_SELL, resourceType, price, totalAmount)
     }
     
     /**

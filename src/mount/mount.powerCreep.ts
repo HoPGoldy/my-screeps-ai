@@ -1,25 +1,11 @@
-import { maxOps } from '../setting'
-import { log } from '../utils'
+import { maxOps } from 'setting'
+import { log, assignPrototype } from 'utils'
 
 // 挂载拓展到 PowerCreep 原型
 export default function () {
     if (!PowerCreep.prototype._move) PowerCreep.prototype._move = Creep.prototype._move
 
-    _.assign(PowerCreep.prototype, PowerCreepExtension.prototype)
-
-    // 更新 pc 能力到房间
-    updatePowerCreepAbility()
-}
-
-/**
- * 注册 pc 能力
- * 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
- */
-function updatePowerCreepAbility() {
-    Object.values(Game.powerCreeps).forEach(pc => {
-        if (!pc.room) return
-        pc.updatePowerToRoom()
-    })
+    assignPrototype(PowerCreep, PowerCreepExtension)
 }
 
 /**

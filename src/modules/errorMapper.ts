@@ -1,3 +1,12 @@
+/**
+ * 校正异常的堆栈信息
+ * 
+ * 由于 rollup 会打包所有代码到一个文件，所以异常的调用栈和源码的位置是不同的
+ * 本模块就是用来将异常的调用栈映射至源代码位置
+ * 
+ * @see https://github.com/screepers/screeps-typescript-starter/blob/master/src/utils/ErrorMapper.ts
+ */
+
 import { SourceMapConsumer } from "source-map"
 import { colorful } from '../utils'
 

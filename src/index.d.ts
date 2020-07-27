@@ -507,6 +507,14 @@ interface Room {
     extractor: StructureExtractor
     mineral: Mineral
     sources: Source[]
+    _factory: StructureFactory
+    _mineral: Mineral
+    _powerspawn: StructurePowerSpawn
+    _nuker: StructureNuker
+    _sources: Source[]
+    _centerLink: StructureLink
+    _observer: StructureObserver
+    _extractor: StructureExtractor
 
     // pos 处理 api
     serializePos(pos: RoomPosition): string
@@ -583,6 +591,9 @@ interface Room {
     confirmBaseCenter(targetPos?: RoomPosition[]): RoomPosition | ERR_NOT_FOUND
     setBaseCenter(pos: RoomPosition): OK | ERR_INVALID_ARGS
     planLayout(): string
+    addRemote(remoteRoomName: string, targetId: string): OK | ERR_INVALID_TARGET | ERR_NOT_FOUND
+    removeRemote(remoteRoomName: string, removeFlag?: boolean): OK | ERR_NOT_FOUND
+    claimRoom(targetRoomName: string, signText?: string): OK
 }
 
 interface RoomPosition {
