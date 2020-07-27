@@ -2006,7 +2006,7 @@ interface SurvivalGameInfo {
 }
 
 interface _Constructor<T> {
-    readonly prototype: T;
+    prototype: T;
 }
 
 interface _ConstructorById<T> extends _Constructor<T> {
@@ -4356,7 +4356,7 @@ interface RoomConstructor extends _Constructor<Room> {
     deserializePath(path: string): PathStep[];
 }
 
-declare const Room: RoomConstructor;
+declare let Room: RoomConstructor;
 /**
  * A destroyed structure. This is a walkable object.
  * <ul>
