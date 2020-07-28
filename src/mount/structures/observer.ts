@@ -1,6 +1,7 @@
-import { DEPOSIT_MAX_COOLDOWN, observerInterval } from "setting"
-import { creepApi } from "modules/creepController"
-import { colorful, createHelp } from "utils"
+import { DEPOSIT_MAX_COOLDOWN, observerInterval } from 'setting'
+import { creepApi } from 'modules/creepController'
+import { colorful } from 'utils'
+import { createHelp } from 'modules/help'
 
 /**
  * Observer 拓展
@@ -297,45 +298,50 @@ export class ObserverConsole extends ObserverExtension {
      * 用户操作 - 帮助
      */
     public help(): string {
-        return createHelp([
-            {
-                title: '新增监听房间',
-                params: [
-                    { name: '...roomNames', desc: '要监听的房间名列表' }
-                ],
-                functionName: 'add'
-            },
-            {
-                title: '移除监听房间',
-                params: [
-                    { name: '...roomNames', desc: '要移除的房间名列表' }
-                ],
-                functionName: 'remove'
-            },
-            {
-                title: '设置 observer 对 pb、deposit 的搜索上限',
-                params: [
-                    { name: 'type', desc: 'powerbank 或 deposit 之一' },
-                    { name: 'max', desc: '查找的最大值' }
-                ],
-                functionName: 'setmax'
-            },
-            {
-                title: '显示状态',
-                functionName: 'stats'
-            },
-            {
-                title: '移除所有监听房间',
-                functionName: 'clear'
-            },
-            {
-                title: '暂停工作',
-                functionName: 'off'
-            },
-            {
-                title: '重启工作',
-                functionName: 'on'
-            }
-        ])
+        return createHelp({
+            name: 'Observer 控制台',
+            describe: 'Observer 默认关闭，新增监听房间后将会启动，在监听房间中发现 pb 或者 deposit 时将会自动发布采集单位。',
+            api: [
+                {
+                    title: '新增监听房间',
+                    params: [
+                        { name: '...roomNames', desc: '要监听的房间名列表' }
+                    ],
+                    functionName: 'add'
+                },
+                {
+                    title: '移除监听房间',
+                    params: [
+                        { name: '...roomNames', desc: '要移除的房间名列表' }
+                    ],
+                    functionName: 'remove'
+                },
+                {
+                    title: '设置上限',
+                    describe: '设置对 pb、deposit 的搜索上限，默认为 1（每种同时只采集一个）',
+                    params: [
+                        { name: 'type', desc: 'powerbank 或 deposit 字符串之一' },
+                        { name: 'max', desc: '查找的最大值' }
+                    ],
+                    functionName: 'setmax'
+                },
+                {
+                    title: '显示状态',
+                    functionName: 'stats'
+                },
+                {
+                    title: '移除所有监听房间',
+                    functionName: 'clear'
+                },
+                {
+                    title: '暂停工作',
+                    functionName: 'off'
+                },
+                {
+                    title: '重启工作',
+                    functionName: 'on'
+                }
+            ]
+        })
     }
 }
