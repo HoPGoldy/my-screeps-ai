@@ -44,7 +44,7 @@ function initStorage() {
 
 // 挂载完成后要执行的一些作业
 function workAfterMount() {
-    // 对所有的房间执行建筑规划，放置有房间缺失建筑
+    // 对所有的房间执行建筑规划，防止有房间缺失建筑
     Object.values(Game.rooms).forEach(room => {
         if (!room.controller || !room.controller.my) return
         planLayout(room)
