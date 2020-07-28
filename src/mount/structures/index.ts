@@ -1,8 +1,16 @@
 import { structureWithMemory } from "setting"
 import { assignPrototype } from "utils"
-import { ControllerExtension, SpawnExtension, TowerExtension, LinkExtension, ExtractorExtension, StorageExtension, NukerExtension, PowerSpawnExtension, ObserverExtension } from "./structures"
-import FactoryExtension from "./factory"
-import TerminalExtension from "./terminal"
+import ControllerExtension from './controller'
+import SpawnExtension from './spawn'
+import TowerExtension from './tower'
+import { LinkExtension, LinkConsole } from './link'
+import ExtractorExtension from './extractor'
+import StorageExtension from './storage'
+import NukerExtension from './nuker'
+import { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
+import { ObserverExtension, ObserverConsole } from './observer'
+import { FactoryExtension, FactoryConsole } from './factory'
+import { TerminalExtension, TerminalConsole } from "./terminal"
 import LabExtension from "./lab"
 import StructureExtension from './structure'
 
@@ -13,14 +21,19 @@ const assignMap = [
     [ StructureSpawn, SpawnExtension ],
     [ StructureTower, TowerExtension ],
     [ StructureLink, LinkExtension ],
+    [ StructureLink, LinkConsole ],
     [ StructureFactory, FactoryExtension ],
+    [ StructureFactory, FactoryConsole ],
     [ StructureTerminal, TerminalExtension ],
+    [ StructureTerminal, TerminalConsole ],
     [ StructureExtractor, ExtractorExtension ],
     [ StructureStorage, StorageExtension ],
     [ StructureLab, LabExtension ],
     [ StructureNuker, NukerExtension ],
     [ StructurePowerSpawn, PowerSpawnExtension ],
-    [ StructureObserver, ObserverExtension ]
+    [ StructurePowerSpawn, PowerSpawnConsole ],
+    [ StructureObserver, ObserverExtension ],
+    [ StructureObserver, ObserverConsole ]
 ]
 
 // 挂载拓展到建筑原型
