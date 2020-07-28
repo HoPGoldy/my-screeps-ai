@@ -33,6 +33,8 @@ interface FunctionDescribe {
     }[]
     // 函数名
     functionName: string
+    // 是否为直接执行类型：不需要使用 () 就可以执行的命令
+    commandType?: boolean
 }
 
 declare module NodeJS {

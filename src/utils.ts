@@ -86,31 +86,6 @@ export function createRoomLink(roomName): string {
 }
 
 /**
- * 给函数的显示添加一点小细节
- * 只会用在各种 help 方法中
- * 
- * @param functionInfo 函数的信息
- */
-export function createHelp(functionInfo: FunctionDescribe[]): string {
-    const functionList = functionInfo.map(func => {
-        // 标题
-        const title = colorful(func.title, 'green')
-        // 参数介绍
-        const param = func.params ? 
-            func.params.map(param => `  - ${colorful(param.name, 'blue')}: ${colorful(param.desc, 'green')}`).join('\n') : ''
-        // 函数示例中的参数
-        const paramInFunc = func.params ? 
-            func.params.map(param => colorful(param.name, 'blue')).join(', ') : ''
-        // 函数示例
-        const functionName = `${colorful(func.functionName, 'yellow')}(${paramInFunc})`
-
-        return func.params ? `${title}\n${param}\n${functionName}\n` : `${title}\n${functionName}\n`
-    })
-    
-    return functionList.join('\n')
-}
-
-/**
  * 快捷生成单个常量帮助
  * 
  * @param name 常量简称
