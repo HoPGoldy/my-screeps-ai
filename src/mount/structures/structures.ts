@@ -1,7 +1,7 @@
-import roles from '../role'
-import { creepApi } from '../modules/creepController'
-import { clearStructure } from '../modules/autoPlanning'
-import { createHelp, colorful, whiteListFilter, assignPrototype } from '../utils'
+import roles from 'role'
+import { creepApi } from 'modules/creepController'
+import { clearStructure } from 'modules/autoPlanning'
+import { createHelp, colorful, whiteListFilter } from 'utils'
 import { 
     // spawn 孵化相关
     bodyConfigs, creepDefaultMemory, 
@@ -16,78 +16,14 @@ import {
     // observer 相关
     observerInterval,
     DEPOSIT_MAX_COOLDOWN,
-    // 挂载内存相关
-    structureWithMemory,
+    // miner 相关
     minerHervesteLimit
-} from '../setting'
-
-import LabExtension from './mount.lab'
-import FactoryExtension from './mount.factory'
-import TerminalExtension from './mount.terminal'
-
-// 挂载拓展到建筑原型
-export default function () {
-    mountMemory()
-
-    // 拓展到原型的对应关系
-    const assignMap = [
-        [ Structure, StructureExtension ],
-        [ StructureController, ControllerExtension ],
-        [ StructureSpawn, SpawnExtension ],
-        [ StructureTower, TowerExtension ],
-        [ StructureLink, LinkExtension ],
-        [ StructureFactory, FactoryExtension ],
-        [ StructureTerminal, TerminalExtension ],
-        [ StructureExtractor, ExtractorExtension ],
-        [ StructureStorage, StorageExtension ],
-        [ StructureLab, LabExtension ],
-        [ StructureNuker, NukerExtension ],
-        [ StructurePowerSpawn, PowerSpawnExtension ],
-        [ StructureObserver, ObserverExtension ]
-    ]
-
-    // 挂载所有拓展
-    assignMap.forEach(protos => assignPrototype(protos[0], protos[1]))
-}
-
-/**
- * 给指定建筑挂载内存【暂未使用】
- * 要挂载内存的建筑定义在 setting.ts 中的 structureWithMemory 里
- */
-function mountMemory(): void {
-    structureWithMemory.forEach(structureConfig => {
-        const memoryKey = structureConfig.memoryKey
-
-        // 给指定原型挂载属性 memory
-        Object.defineProperty(structureConfig.poto.prototype, 'memory', {
-            configurable: true,
-            // cpu 消耗：MAX 0.01 AVG 0.009 MIN 0.004
-            // structure.memory.a = 1 这种赋值实际上调用的是这里的 getter
-            get: function() {
-                if(!this.room.memory[memoryKey]) this.room.memory[memoryKey] = {}
-                return this.room.memory[memoryKey]
-            },
-            // cpu 消耗：AVG 0.02
-            set: function(value) {
-                if(!this.room.memory[memoryKey]) this.room.memory[memoryKey] = {}
-    
-                this.room.memory[memoryKey] = value
-            }
-        })
-    })
-}
-
-class StructureExtension extends Structure {
-    // 建筑通用的日志方法
-    log(content:string, color: Colors | undefined = undefined, notify: boolean = false): void {
-        this.room.log(content, this.structureType, color, notify)
-    }
-}
+} from '../../setting'
 
 /**
  * Spawn 原型拓展
  */
-class SpawnExtension extends StructureSpawn {
+export class SpawnExtension extends StructureSpawn {
     /**  
      * spawn 主要工作
      * @todo 能量不足时挂起任务
@@ -192,7 +128,7 @@ class SpawnExtension extends StructureSpawn {
 }
 
 // Tower 原型拓展
-class TowerExtension extends StructureTower {
+export class TowerExtension extends StructureTower {
     /**
      * 主要任务
      */
@@ -515,7 +451,7 @@ class TowerExtension extends StructureTower {
 }
 
 // Link 原型拓展
-class LinkExtension extends StructureLink {
+export class LinkExtension extends StructureLink {
     /**
      * link 主要工作
      */
@@ -735,7 +671,7 @@ class LinkExtension extends StructureLink {
  * 在刚刚建成时会在房间内存里写入 mineral 的 id
  * 并在资源来源表里注册自己
  */
-class ExtractorExtension extends StructureExtractor {
+export class ExtractorExtension extends StructureExtractor {
     public work(): void {
         // 如果 mineral 冷却好了并且 terminal 还有空间就重新发布 miner
         if (Game.time > this.room.memory.mineralCooldown) {
@@ -768,7 +704,7 @@ class ExtractorExtension extends StructureExtractor {
  * storage 会对自己中的能量进行监控，如果大于指定量（ENERGY_SHARE_LIMIT）的话
  * 就将自己注册到资源来源表中为其他房间提供能量
  */
-class StorageExtension extends StructureStorage {
+export class StorageExtension extends StructureStorage {
     public work(): void {
         this.stateScanner()
 
@@ -803,7 +739,7 @@ class StorageExtension extends StructureStorage {
  * Controller 拓展
  * 统计当前升级进度、移除无效的禁止通行点位
  */
-class ControllerExtension extends StructureController {
+export class ControllerExtension extends StructureController {
     public work(): void {
         if (Game.time % 20) return
 
@@ -907,7 +843,7 @@ class ControllerExtension extends StructureController {
 }
 
 // nuker 拓展
-class NukerExtension extends StructureNuker {
+export class NukerExtension extends StructureNuker {
     public work(): void {
         this.stateScanner()
 
@@ -968,7 +904,7 @@ class NukerExtension extends StructureNuker {
  * 
  * 可以随时通过原型上的指定方法来暂停/重启 ps，详见 .help()
  */
-class PowerSpawnExtension extends StructurePowerSpawn {
+export class PowerSpawnExtension extends StructurePowerSpawn {
     public work(): void {
         // ps 未启用或者被暂停了就跳过
         if (this.room.memory.pausePS) return
@@ -1080,7 +1016,7 @@ class PowerSpawnExtension extends StructurePowerSpawn {
  * Observer 拓展
  * 定期搜索给定列表中的房间并插旗
  */
-class ObserverExtension extends StructureObserver {
+export class ObserverExtension extends StructureObserver {
     public work(): void {
         const memory = this.room.memory.observer
         // 没有初始化或者暂停了就不执行工作

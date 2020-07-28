@@ -1,12 +1,12 @@
-import roles from '../role'
-import { colorful, log } from '../utils'
 /**
  * creep 控制模块
  * 
- * 负责 creep 的新增、删除及修改
- * creep 死后也会由该模块负责回收或再孵化
+ * 负责 creep 的新增、删除及修改，creep 死后也会由该模块负责回收或再孵化
  * 更多细节 @see creep控制协议设计案.md
  */
+
+import roles from '../role'
+import { colorful, log } from '../utils'
 
  /**
   * creep 的数量控制器
