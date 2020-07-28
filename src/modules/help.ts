@@ -24,6 +24,12 @@ const createModule = function(module: ModuleDescribe): string {
     return html.replace(/\n/g, '')
 }
 
+/**
+ * 绘制单个 api 的帮助元素
+ * 
+ * @param func api 的描述信息
+ * @returns 绘制完成的字符串
+ */
 const createApiHelp = function(func: FunctionDescribe): string {
     const contents: string[] = []
     // 介绍
@@ -35,10 +41,12 @@ const createApiHelp = function(func: FunctionDescribe): string {
     }).map(s => `<div class="api-content-line">${s}</div>`).join(''))
 
     // 函数示例中的参数
-    const paramInFunc = func.params ? func.params.map(param => colorful(param.name, 'blue')).join(', ') : ''
+    let paramInFunc = func.params ? func.params.map(param => colorful(param.name, 'blue')).join(', ') : ''
+    // 如果启用了命令模式的话就忽略其参数
+    let funcCall = colorful(func.functionName, 'yellow') + (func.commandType ? '': `(${paramInFunc})`)
 
     // 函数示例
-    contents.push(`${colorful(func.functionName, 'yellow')}(${paramInFunc})`)
+    contents.push(funcCall)
 
     const content = contents.map(s => `<div class="api-content-line">${s}</div>`).join('')
     const checkboxId = `${func.functionName}${Game.time}`

@@ -1,6 +1,6 @@
 import { findBaseCenterPos } from "modules/autoPlanning"
 import { baseLayout } from "setting"
-import { createHelp } from "utils"
+import { createHelp } from "modules/help"
 import creepApi from 'modules/creepController'
 
 // 全局拓展对象
@@ -170,26 +170,30 @@ export default {
          * 帮助
          */
         help() {
-            return createHelp([
-                {
-                    title: '添加新玩家到白名单',
-                    params: [
-                        { name: 'userName', desc: '要加入白名单的用户名' }
-                    ],
-                    functionName: 'add'
-                },
-                {
-                    title: '从白名单移除玩家',
-                    params: [
-                        { name: 'userName', desc: '要移除的用户名' }
-                    ],
-                    functionName: 'remove'
-                },
-                {
-                    title: '列出所有白名单玩家',
-                    functionName: 'show'
-                }
-            ])
+            return createHelp({
+                name: '白名单模块',
+                describe: '白名单中的玩家不会被房间的 tower 所攻击，但是会记录其访问次数',
+                api: [
+                    {
+                        title: '添加新玩家到白名单',
+                        params: [
+                            { name: 'userName', desc: '要加入白名单的用户名' }
+                        ],
+                        functionName: 'add'
+                    },
+                    {
+                        title: '从白名单移除玩家',
+                        params: [
+                            { name: 'userName', desc: '要移除的用户名' }
+                        ],
+                        functionName: 'remove'
+                    },
+                    {
+                        title: '列出所有白名单玩家',
+                        functionName: 'show'
+                    }
+                ]
+            })
         }
     },
 
@@ -240,26 +244,30 @@ export default {
          * 帮助信息
          */
         help() {
-            return createHelp([
-                {
-                    title: '添加绕过房间',
-                    params: [
-                        { name: '...roomNames', desc: '要添加的绕过房间名列表' }
-                    ],
-                    functionName: 'add'
-                },
-                {
-                    title: '移除绕过房间',
-                    params: [
-                        { name: '...roomNames', desc: '[可选] 要移除的房间名列表，置空来移除所有' }
-                    ],
-                    functionName: 'remove'
-                },
-                {
-                    title: '显示所有绕过房间',
-                    functionName: 'show'
-                }
-            ])
+            return createHelp({
+                name: '绕过房间',
+                describe: '通过该模块添加的房间将不会被纳入远程寻路，但是要注意如果之前有寻路缓存则可能该模块无效',
+                api: [
+                    {
+                        title: '添加绕过房间',
+                        params: [
+                            { name: '...roomNames', desc: '要添加的绕过房间名列表' }
+                        ],
+                        functionName: 'add'
+                    },
+                    {
+                        title: '移除绕过房间',
+                        params: [
+                            { name: '...roomNames', desc: '[可选] 要移除的房间名列表，置空来移除所有' }
+                        ],
+                        functionName: 'remove'
+                    },
+                    {
+                        title: '显示所有绕过房间',
+                        functionName: 'show'
+                    }
+                ]
+            })
         }
     },
 
@@ -310,26 +318,31 @@ export default {
          * 帮助信息
          */
         help() {
-            return createHelp([
-                {
-                    title: '添加要掠夺的资源',
-                    params: [
-                        { name: '...resources', desc: '要掠夺的资源' }
-                    ],
-                    functionName: 'add'
-                },
-                {
-                    title: '移除要掠夺的资源',
-                    params: [
-                        { name: '...resources', desc: '[可选] 不再掠夺的资源，置空来移除所有' }
-                    ],
-                    functionName: 'remove'
-                },
-                {
-                    title: '显示所有掠夺资源',
-                    functionName: 'show'
-                }
-            ])
+            return createHelp({
+                name: '资源掠夺模块',
+                describe: '该模块会影响 reiver 单位的行为，如果不添加的话，reiver 将会掠夺目标建筑内的所有资源',
+                api: [
+                    {
+                        title: '添加要掠夺的资源',
+                        describe: '当配置了掠夺资源时，reiver 将只会搬回列表指定的资源',
+                        params: [
+                            { name: '...resources', desc: '要掠夺的资源' }
+                        ],
+                        functionName: 'add'
+                    },
+                    {
+                        title: '移除要掠夺的资源',
+                        params: [
+                            { name: '...resources', desc: '[可选] 不再掠夺的资源，置空来移除所有' }
+                        ],
+                        functionName: 'remove'
+                    },
+                    {
+                        title: '显示所有掠夺资源',
+                        functionName: 'show'
+                    }
+                ]
+            })
         }
     },
 
