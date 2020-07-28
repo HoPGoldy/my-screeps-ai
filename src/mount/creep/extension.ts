@@ -1,16 +1,9 @@
-import { getOppositeDirection, assignPrototype } from '../utils'
-import { repairSetting, minWallHits } from '../setting'
-import roles from '../role'
-
-// 挂载拓展到 Creep 原型
-export default function () {
-    if (!Creep.prototype._move) Creep.prototype._move = Creep.prototype.move
-
-    assignPrototype(Creep, CreepExtension)
-}
+import { getOppositeDirection, assignPrototype } from 'utils'
+import { repairSetting, minWallHits } from 'setting'
+import roles from 'role'
 
 // creep 原型拓展
-class CreepExtension extends Creep {
+export default class CreepExtension extends Creep {
     /**
      * creep 主要工作
      */
@@ -790,16 +783,4 @@ class CreepExtension extends Creep {
         }
         else return flag
     }
-
-    /**
-     * 将身上的资源存放起来
-     * 会根据资源类型自动选择存放建筑，只会存放 store 中第一位资源
-     */
-    // public storeResource(): void {
-    //     const carryRes = Object.keys(this.store)[0]
-
-    //     if (carryRes as ResourceConstant === RESOURCE_ENERGY) {
-            
-    //     }
-    // }
 }

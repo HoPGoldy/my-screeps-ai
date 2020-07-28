@@ -5,7 +5,7 @@ import CreepControl from './creepControl'
 import { assignPrototype } from 'utils'
 
 // 定义好挂载顺序
-const plugins = [ Shortcut, Extension, Console, CreepControl]
+const plugins = [ Shortcut, Extension, Console, CreepControl ]
 
 /**
  * 依次挂载所有的 Room 拓展

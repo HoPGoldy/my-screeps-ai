@@ -1,14 +1,13 @@
-import mountCreep from './mount.creep'
-import mountPowerCreep from './mount.powerCreep'
+import mountCreep from './creep'
+import mountPowerCreep from './powerCreep'
 import mountRoom from './room'
 import mountRoomPostion from './roomPosition'
-import mountGlobal from './mount.global'
-import mountStructure from './mount.structure'
-import { planLayout } from '../modules/autoPlanning'
+import mountGlobal from './global'
+import mountStructure from './structures'
+import { planLayout } from 'modules/autoPlanning'
 
 /**
- * 挂载所有的额外属性和方法
- * @returns 是否执行挂载了
+ * 挂载所有的属性和方法
  */
 export default function (): void {
     if (!global.hasExtension) {

@@ -1,18 +1,11 @@
 import { maxOps } from 'setting'
-import { log, assignPrototype } from 'utils'
-
-// 挂载拓展到 PowerCreep 原型
-export default function () {
-    if (!PowerCreep.prototype._move) PowerCreep.prototype._move = Creep.prototype._move
-
-    assignPrototype(PowerCreep, PowerCreepExtension)
-}
+import { log } from 'utils'
 
 /**
  * PowerCreep 原型拓展
  * 遍历自己的 powers，并执行相应任务
  */
-class PowerCreepExtension extends PowerCreep {
+export default class PowerCreepExtension extends PowerCreep {
     public work(): void {
         if (!this.keepAlive()) return
 

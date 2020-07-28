@@ -1,10 +1,7 @@
-import RoomPostionCustom from './extension'
+import RoomPostionExtension from './extension'
 import { assignPrototype } from 'utils'
 
 /**
- * 挂载所有的 Room 拓展
- * 挂载顺序为 shortcut > extension > console > creepControl
+ * 挂载 RoomPosition 拓展
  */
-export default () => {
-    assignPrototype(RoomPosition, RoomPostionCustom)
-}
+export default () => assignPrototype(RoomPosition, RoomPostionExtension)

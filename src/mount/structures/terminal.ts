@@ -1,5 +1,5 @@
-import { DEAL_RATIO, terminalModes, terminalChannels } from '../setting'
-import { createHelp, colorful } from '../utils'
+import { DEAL_RATIO, terminalModes, terminalChannels } from 'setting'
+import { createHelp, colorful } from 'utils'
 
 /**
  * Terminal 原型拓展

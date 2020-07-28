@@ -1,7 +1,7 @@
-import baseRoles from './roles.base'
-import advancedRoles from './roles.advanced'
-import remoteRoles from './roles.remote'
-import warRoles from './roles.war'
+import baseRoles from './base'
+import advancedRoles from './advanced'
+import remoteRoles from './remote'
+import warRoles from './war'
 
 const creepWork: CreepWork = {
     ...baseRoles,
