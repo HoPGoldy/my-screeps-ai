@@ -523,8 +523,8 @@ export default class RoomExtension extends RoomShortcut {
                 if (room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return ''
             }
             else {
-                // 如果请求的资源已经没有的话也移除房间
-                if ((room.terminal.store[resourceType] || 0) <= 0) return ''
+                // 如果请求的资源已经没有的话就暂时跳过（因为无法确定之后是否永远无法提供该资源）
+                if ((room.terminal.store[resourceType] || 0) <= 0) return roomName
             }
 
             // 接受任务的房间就是你了！
