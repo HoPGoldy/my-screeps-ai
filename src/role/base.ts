@@ -76,10 +76,7 @@ const roles: {
 
             // 不存在 container，开始新建，首先尝试获取工地缓存，没有缓存就新建工地
             let constructionSite: ConstructionSite
-            if (!creep.memory.constructionSiteId) {
-                creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
-                creep.room.releaseCreep('builder')
-            }
+            if (!creep.memory.constructionSiteId) creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
             else constructionSite = Game.getObjectById<ConstructionSite>(creep.memory.constructionSiteId)
 
             // 没找到工地缓存或者工地没了，重新搜索
@@ -88,14 +85,16 @@ const roles: {
             // 还没找到就说明有可能工地已经建好了，进行搜索
             if (!constructionSite) {
                 const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER)
-                // 找到了，重新发布 creep 并进入采集阶段
+                // 找到了造好的 container 了
                 if (container) {
-                    creep.room.releaseCreep('filler')
-                    creep.room.releaseCreep('upgrader')
-
                     // 把 container 添加到房间基础服务
                     if (!creep.room.memory.sourceContainersIds) creep.room.memory.sourceContainersIds = []
                     creep.room.memory.sourceContainersIds.push(container.id)
+
+                    // 发布 creep 并进入采集阶段
+                    creep.room.releaseCreep('filler')
+                    creep.room.releaseCreep('upgrader')
+
                     return true
                 }
 

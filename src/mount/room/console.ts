@@ -9,6 +9,7 @@ import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE } from "setting"
 import { getName, createElement, colorful } from "utils"
 import { setBaseCenter } from "modules/autoPlanning/planBasePos"
 import RoomExtension from "./extension"
+import { planLayout } from "modules/autoPlanning/planBaseLayout"
 
 export default class RoomConsole extends RoomExtension {
     /**
@@ -188,7 +189,9 @@ export default class RoomConsole extends RoomExtension {
 
         setBaseCenter(this, flag.pos)
         flag.remove()
-        return `[${this.name}] 已将 ${flagName} 设置为中心点，你可以执行 Game.rooms.${this.name}.planlayout() 来运行布局规划，否则将在 controller 升级时自动执行`
+        // 设置好了之后自动运行布局规划
+        planLayout(this)
+        return `[${this.name}] 已将 ${flagName} 设置为中心点，controller 升级时自动执行布局规划`
     }
 
     /**

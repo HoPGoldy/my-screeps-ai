@@ -182,11 +182,11 @@ const releasePlans: CreepReleasePlans = {
             // 兜底，从 sourceContainer 中获取能量
             ({ room, sourceContainerIds }: UpgraderPlanStats) => {
                 // 有援建单位，每个 container 只发布一个 upgrader
-                const upgraderIndexs = creepApi.has(`${room.name} RemoteUpgrader`) ? [ 1 ] : [ 1, 2 ]
+                const upgraderIndexs = creepApi.has(`${room.name} RemoteUpgrader`) ? [ 0 ] : [ 0, 1 ]
 
                 // 遍历所有 container，发布对应数量的 upgrader
                 sourceContainerIds.forEach((containerId, index) => {
-                    addUpgrader(room.name, upgraderIndexs.map(i => i * (index + 1)), containerId)
+                    addUpgrader(room.name, upgraderIndexs.map(i => index + (i * 2)), containerId)
                 })
 
                 room.log(`规划完成, 将从 sourceContainer 获取能量，发布数量 * ${sourceContainerIds.length * upgraderIndexs.length}`, 'upgrader', 'green')
