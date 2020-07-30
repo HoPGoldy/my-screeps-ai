@@ -591,11 +591,16 @@ export const minerHervesteLimit = 200000
  * 用于防止过贵的卖单或者太便宜的买单
  * 在进行交易时会通过该资源的昨日历史价格配合下面的比例来确定合适的交易价格区间
  */
-export const DEAL_RATIO = {
-    // 卖单的最高价格
-    MAX: 1.4,
-    // 买单的最低价格
-    MIN: 0.4
+export const DEAL_RATIO: DealRatios = {
+    default: { MAX: 1.4, MIN: 0.4 },
+    // 所有原矿
+    [RESOURCE_HYDROGEN]: { MAX: 2.5, MIN: 0.3 },
+    [RESOURCE_OXYGEN]: { MAX: 2.5, MIN: 0.3 },
+    [RESOURCE_UTRIUM]: { MAX: 2.5, MIN: 0.3 },
+    [RESOURCE_LEMERGIUM]: { MAX: 2.5, MIN: 0.3 },
+    [RESOURCE_KEANIUM]: { MAX: 2.5, MIN: 0.3 },
+    [RESOURCE_ZYNTHIUM]: { MAX: 2.5, MIN: 0.3 },
+    [RESOURCE_CATALYST]: { MAX: 2.5, MIN: 0.3 }
 }
 
 // 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
