@@ -84,6 +84,10 @@ const roles: {
                 if (container) {
                     creep.room.releaseCreep('filler')
                     creep.room.releaseCreep('upgrader')
+
+                    // 把 container 添加到房间基础服务
+                    if (!creep.room.memory.sourceContainersIds) creep.room.memory.sourceContainersIds = []
+                    creep.room.memory.sourceContainersIds.push(container.id)
                     return true
                 }
 
