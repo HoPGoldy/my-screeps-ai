@@ -1,5 +1,5 @@
-import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from '../setting'
-import { calcBodyPart, getName } from '../utils'
+import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from 'setting'
+import { calcBodyPart, getName } from 'utils'
 
 /**
  * 多房间角色组
@@ -326,7 +326,7 @@ const roles: {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
             // 获取有效的能量来源
-            let source: StructureStorage | StructureTerminal | Source
+            let source: StructureStorage | StructureTerminal | StructureContainer | Source
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
                 creep.memory.sourceId = source.id
@@ -378,7 +378,7 @@ const roles: {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
             // 获取有效的能量来源
-            let source: StructureStorage | StructureTerminal | Source
+            let source: StructureStorage | StructureTerminal | StructureContainer | Source
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
                 creep.memory.sourceId = source.id

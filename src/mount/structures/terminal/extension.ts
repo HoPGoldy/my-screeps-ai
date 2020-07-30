@@ -363,7 +363,7 @@ export default class TerminalExtension extends StructureTerminal {
         this.room.memory.targetOrderId = targetOrder.id
 
         // 想要卖出的数量有可能比订单数量大，所以计算路费的时候要考虑到
-        const cost = Game.market.calcTransactionCost(amount > targetOrder.amount ? amount : targetOrder.amount, this.room.name, targetOrder.roomName)
+        const cost = Game.market.calcTransactionCost(Math.min(amount, targetOrder.amount), this.room.name, targetOrder.roomName)
         // 如果路费不够的话就问 sotrage 要
         if (this.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
             if (this.getEnergy(cost) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 拍单时等待路费, ${cost}`)
