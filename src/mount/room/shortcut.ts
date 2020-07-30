@@ -63,6 +63,41 @@ export default class RoomShortcut extends Room {
         return this._sources
     }
 
+    /**
+     * source 旁的 container 访问器
+     * 只会检查内存中是否存在对应 id，有的话就获取 container 实例，没有的话则不会主动搜索
+     * 内存中的对应 id 由新建 container 的 harvester 角色上传
+     */
+    public sourceContainersGetter(): StructureContainer[] {
+        if (this._sourceContainers) return this._sourceContainers
+
+        // 内存中没有 id 就说明没有 container
+        if (!this.memory.sourceContainersIds) return []
+
+        // container 有可能会消失，每次获取时都要把废弃的 id 移除出内存
+        const abandonedIdIndex = []
+
+        const targets = this.memory.sourceContainersIds
+            // 遍历 id，获取 container 实例
+            .map((containerId, index) => {
+                const container = Game.getObjectById<StructureContainer>(containerId)
+                if (container) return container
+
+                abandonedIdIndex.push(index)
+                return false
+            })
+            // 去除所有为 false 的结果
+            .filter(s => s)
+
+        // 移除失效的 id
+        abandonedIdIndex.forEach(index => this.memory.sourceContainersIds.splice(index, 1))
+        if (this.memory.sourceContainersIds.length <= 0) delete this.memory.sourceContainersIds
+
+        // 暂存对象并返回
+        this._sourceContainers = targets as StructureContainer[]
+        return this._sourceContainers
+    }
+
     public factoryGetter(): StructureFactory {
         return getStructure<StructureFactory>(this, '_factory', 'factoryId')
     }
@@ -99,21 +134,19 @@ export default class RoomShortcut extends Room {
 const getStructure = function<T>(room: Room, privateKey: string, memoryKey: string): T {
     if (room[privateKey]) return room[privateKey]
 
-        // 如果没有缓存就检查内存中是否存有 id
-        if (room.memory[memoryKey]) {
-            const target: T = Game.getObjectById(room.memory[memoryKey])
+    // 内存中没有 id 就说明没有该建筑
+    if (!room.memory[memoryKey]) return undefined
+    
+    // 从 id 获取建筑并缓存
+    const target: T = Game.getObjectById(room.memory[memoryKey])
 
-            // 如果保存的 id 失效的话，就移除缓存
-            if (!target) {
-                delete room.memory[memoryKey]
-                return undefined
-            }
-
-            // 否则就暂存对象并返回
-            room[privateKey] = target
-            return target
-        }
-
-        // 内存中没有 id 就说明没有该建筑
+    // 如果保存的 id 失效的话，就移除缓存
+    if (!target) {
+        delete room.memory[memoryKey]
         return undefined
+    }
+
+    // 否则就暂存对象并返回
+    room[privateKey] = target
+    return target
 }

@@ -7,7 +7,7 @@
 import { createHelp } from "modules/help"
 import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE } from "setting"
 import { getName, createElement, colorful } from "utils"
-import { setBaseCenter } from "modules/autoPlanning"
+import { setBaseCenter } from "modules/autoPlanning/planBasePos"
 import RoomExtension from "./extension"
 
 export default class RoomConsole extends RoomExtension {

@@ -1,4 +1,4 @@
-import { findBaseCenterPos } from "modules/autoPlanning"
+import { findBaseCenterPos } from "modules/autoPlanning/planBasePos"
 import { baseLayout } from "setting"
 import { createHelp } from "modules/help"
 import creepApi from 'modules/creepController'

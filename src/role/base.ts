@@ -1,4 +1,5 @@
-import { minerHervesteLimit } from '../setting'
+import { minerHervesteLimit, ROOM_TRANSFER_TASK } from 'setting'
+import { getRoomTransferTask, transferTaskOperations } from './advanced'
 
 /**
  * 初级房间运维角色组
@@ -9,60 +10,94 @@ const roles: {
 } = {
     /**
      * 采集者
-     * 从指定 source 中获取能量 > 将矿转移到 spawn 和 extension 中
+     * 从指定 source 中获取能量 > 将能量存放到身下的 container 中
      */
     harvester: (data: HarvesterData): ICreepConfig => ({
-        source: creep => {
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
-        },
-        target: creep => {
-            let target: AnyStructure
+        // 向 container 或者 source 移动
+        // 在这个阶段中，targetId 是指 container 或 source
+        prepare: creep => {
+            let target: StructureContainer | Source
+            // 如果有缓存的话就获取缓存
+            if (creep.memory.targetId) target = Game.getObjectById<StructureContainer | Source>(creep.memory.sourceId)
 
-            // 有缓存就用缓存
-            if (creep.memory.fillStructureId) {
-                target = <StructureTower>Game.getObjectById(creep.memory.fillStructureId)
-
-                // 如果 tower 填到 800 以上或者 spwan extension 填满就移除
-                if ((target instanceof StructureTower && target.store[RESOURCE_ENERGY] < 800) || target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
-                    delete creep.memory.fillStructureId
-                    target = undefined
-                }
-            }
-
+            // 没有缓存或者缓存失效了就重新获取
             if (!target) {
-                // 找需要填充能量的建筑
-                let targets: AnyStructure[] = creep.room.find(FIND_STRUCTURES, {
-                    filter: s => {
-                        // 是否有目标 extension 和 tower
-                        const hasTargetSpawn = (s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_SPAWN) && 
-                            (s.store[RESOURCE_ENERGY] < s.energyCapacity)
-                        // 是否有目标 tower
-                        const hasTargetTower = (s.structureType == STRUCTURE_TOWER) && 
-                            (s.store[RESOURCE_ENERGY] < 800)
-                        
-                        return hasTargetSpawn || hasTargetTower
-                    }
+                // 先尝试获取 container
+                const containers = creep.room.find<StructureContainer>(FIND_STRUCTURES, {
+                    filter: s => s.structureType === STRUCTURE_CONTAINER
                 })
 
-                // 有目标的话就找到最近的
-                if (targets.length > 0) {
-                    target = creep.pos.findClosestByRange(targets)
-                    // 写入缓存
-                    creep.memory.fillStructureId = target.id
-                }
-                // 能量都已经填满就尝试获取冗余存储
-                else {
-                    if (data.targetId === '') return 
-                    target = Game.getObjectById<StructureStorage | StructureTerminal | StructureContainer>(data.targetId)
-                    if (!target || target.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) return 
-                }
+                // 找到了就把 container 当做目标
+                if (containers.length > 0) target = containers[0]
+                // 否则就把 source 当做目标
+                else target = Game.getObjectById<Source>(data.sourceId)
+
+                // 进行缓存
+                creep.memory.targetId = target.id
             }
 
-            // 将能量移送至目标建筑
-            creep.transferTo(target, RESOURCE_ENERGY)
+            // 如果还是没找到的话就提示
+            if (!target) {
+                creep.say('找不到目标')
+                return false
+            }
 
-            if (creep.store.getUsedCapacity() === 0) return true
+            // 设置移动范围并进行移动（source 走到附近、container 就走到它上面）
+            const range = target instanceof Source ? 1 : 0
+            creep.goTo(target.pos, range)
+
+            // 抵达位置了就准备完成
+            if (creep.pos.inRangeTo(target.pos, range)) return true
+            return false
+        },
+        // 因为 prepare 准备完之后会先执行 source 阶段，所以在这个阶段里对 container 进行维护
+        // 在这个阶段中，targetId 仅指 container
+        source: creep => {
+            // 没有能量就进行采集，因为是维护阶段，所以允许采集一下工作一下
+            if (creep.store[RESOURCE_ENERGY] <= 0) {
+                creep.getEngryFrom(Game.getObjectById(data.sourceId))
+                return false
+            }
+            
+            // 获取 prepare 阶段中保存的 targetId
+            let target = Game.getObjectById<StructureContainer | Source>(creep.memory.targetId)
+
+            // 存在 container，把血量修满
+            if (target && target instanceof StructureContainer) {
+                creep.repair(target)
+                // 血修满了就正式进入采集阶段
+                return target.hits >= target.hitsMax
+            }
+
+            // 不存在 container，开始新建，首先尝试获取工地缓存，没有缓存就新建工地
+            let constructionSite: ConstructionSite
+            if (!creep.memory.constructionSiteId) creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
+            else constructionSite = Game.getObjectById<ConstructionSite>(creep.memory.constructionSiteId)
+
+            // 没找到工地缓存或者工地没了，重新搜索
+            if (!constructionSite) constructionSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER)
+
+            // 还没找到就说明有可能工地已经建好了，进行搜索
+            if (!constructionSite) {
+                const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER)
+                // 找到了，重新发布 creep 并进入采集阶段
+                if (container) {
+                    creep.room.releaseCreep('filler')
+                    creep.room.releaseCreep('upgrader')
+                    return true
+                }
+
+                // 还没找到，等下个 tick 会重新新建工地
+                creep.say('找不到工地')
+                return false
+            }
+
+            creep.build(constructionSite)
+        },
+        // 采集阶段会无脑采集，过量的能量会掉在 container 上然后被接住存起来
+        target: creep => {
+            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+            return false
         },
         bodys: 'worker'
     }),
@@ -192,27 +227,66 @@ const roles: {
     }),
 
     /**
+     * 填充单位
+     * 从 container 中获取能量 > 执行房间物流任务
+     * 在空闲时间会尝试把能量运输至 storage
+     */
+    filler: (data: WorkerData): ICreepConfig => ({
+        // 能量来源（container）没了就自觉放弃
+        isNeed: () => {
+            return !!Game.getObjectById(data.sourceId)
+        },
+        // 一直尝试从 container 里获取能量，不过拿到了就走
+        source: creep => {
+            if (creep.store[RESOURCE_ENERGY] > 0) return true
+            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+        },
+        // 维持房间能量填充
+        target: creep => {
+            const task = getRoomTransferTask(creep.room)
+
+            // 只会执行能量填充任务
+            if (task && (task.type === ROOM_TRANSFER_TASK.FILL_EXTENSION || task.type === ROOM_TRANSFER_TASK.FILL_TOWER)) {
+                return transferTaskOperations[task.type].target(creep, task)
+            }
+            
+            // 空闲时间会尝试把能量存放到 storage 里
+            if (!creep.room.storage) return false
+            creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
+            if (creep.store[RESOURCE_ENERGY] <= 0) return true
+        },
+        bodys: 'manager'
+    }),
+
+    /**
      * 升级者
-     * 只有在 sourceId 是 storage 并且其能量足够多时才会生成
-     * 从 Source 中采集能量一定会生成
-     * 从指定结构中获取能量 > 将其转移到本房间的 Controller 中
+     * 不会采集能量，只会从指定目标获取能量
+     * 从指定建筑中获取能量 > 升级 controller
      */
     upgrader: (data: WorkerData): ICreepConfig => ({
         source: creep => {
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            const source: StructureTerminal | StructureStorage | Source = Game.getObjectById(data.sourceId)
+            const source: StructureTerminal | StructureStorage | StructureContainer = Game.getObjectById(data.sourceId)
 
-            // 如果发现能量来源（建筑）里没有能量了，就自杀并重新运行 upgrader 发布规划
-            // 但如果是 Source 或者 Link 里获取能量的话，就不会重新运行规划
+            // 如果来源是 container 的话就等到其中能量大于指定数量再拿（优先满足 filler 的能量需求）
+            if (source && source.structureType === STRUCTURE_CONTAINER && source.store[RESOURCE_ENERGY] <= 500) return false
+
+            // 获取能量
             const result = creep.getEngryFrom(source)
-            if ((result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) && source instanceof Structure && !(source instanceof StructureLink)) {
+            // 但如果是 Container 或者 Link 里获取能量的话，就不会重新运行规划
+            if (
+                (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) && 
+                (source instanceof StructureTerminal || source instanceof StructureStorage)
+            ) {
+                // 如果发现能量来源（建筑）里没有能量了，就自杀并重新运行 upgrader 发布规划
                 creep.room.releaseCreep('upgrader')
                 creep.suicide()
             }
+
+            // 因为是从 container 里拿，所以只要拿到了就去升级
+            if (creep.store[RESOURCE_ENERGY] > 0) return true
         },
         target: creep => {
-            creep.upgrade()
-            if (creep.store.getUsedCapacity() === 0) return true
+            if (creep.upgrade() === ERR_NOT_ENOUGH_RESOURCES) return true
         },
         bodys: 'upgrader'
     }),

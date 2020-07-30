@@ -171,7 +171,7 @@ const deathPrepare = function(creep: Creep, sourceId: string): false {
  * 
  * @param room 要获取物流任务的房间名
  */
-const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
+export const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
     const task = room.getRoomTransferTask()
     if (!task) return null
 
@@ -189,7 +189,7 @@ const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
  * manager 在应对不同类型的任务时执行的操作
  * 该对象的属性名即为任务类型
  */
-const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
+export const transferTaskOperations: { [taskType: string]: transferTaskOperation } = {
     /**
      * extension 填充任务
      * 维持正常孵化的任务
