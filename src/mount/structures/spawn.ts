@@ -1,4 +1,4 @@
-import { ROOM_TRANSFER_TASK, creepDefaultMemory, bodyConfigs } from 'setting'
+import { ROOM_TRANSFER_TASK, creepDefaultMemory, bodyConfigs, importantRoles } from 'setting'
 import roles from 'role'
 
 /**
@@ -32,15 +32,20 @@ export default class SpawnExtension extends StructureSpawn {
             return
         }
         if (!this.room.memory.spawnList) this.room.memory.spawnList = []
-        // 生成中共 / 生产队列为空 就啥都不干
+        // 生成中 / 生产队列为空 就啥都不干
         if (this.spawning || this.room.memory.spawnList.length == 0) return 
+
+        const task = this.room.memory.spawnList[0]
         // 进行生成
-        const spawnResult: MySpawnReturnCode = this.mySpawnCreep(this.room.memory.spawnList[0])
+        const spawnResult: MySpawnReturnCode = this.mySpawnCreep(task)
 
         // 生成成功后移除任务
         if (spawnResult === OK) this.room.memory.spawnList.shift()
-        // 能量不足就挂起任务
-        else if (spawnResult === ERR_NOT_ENOUGH_ENERGY) this.room.hangSpawnTask()
+        // 能量不足就挂起任务，但是如果是重要角色的话就会卡住然后优先孵化
+        else if (
+            spawnResult === ERR_NOT_ENOUGH_ENERGY &&
+            !importantRoles.includes(Memory.creepConfigs[task].role)
+        ) this.room.hangSpawnTask()
     }
 
     /**

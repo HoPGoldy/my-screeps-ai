@@ -661,3 +661,6 @@ export const UPGRADE_WITH_STORAGE = [
     { energy: 500000, num: 2 },
     { energy: 100000, num: 1 }
 ]
+
+// 用于维持房间能量正常运转的重要角色
+export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'collector', 'filler', 'manager', 'processor' ]
