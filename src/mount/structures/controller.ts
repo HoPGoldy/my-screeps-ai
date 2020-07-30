@@ -1,5 +1,5 @@
 import { creepApi } from "modules/creepController"
-import { clearStructure } from "modules/autoPlanning"
+import { clearStructure } from "modules/autoPlanning/planBaseLayout"
 import { whiteListFilter } from "utils"
 
 /**

@@ -4,7 +4,7 @@ import mountRoom from './room'
 import mountRoomPostion from './roomPosition'
 import mountGlobal from './global'
 import mountStructure from './structures'
-import { planLayout } from 'modules/autoPlanning'
+import { planLayout } from 'modules/autoPlanning/planBaseLayout'
 
 /**
  * 挂载所有的属性和方法

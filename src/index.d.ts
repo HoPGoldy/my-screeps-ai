@@ -74,6 +74,7 @@ type BaseRoleConstant =
     'collector' |
     'miner' |
     'upgrader' |
+    'filler' |
     'builder' |
     'repairer'
 
@@ -360,7 +361,7 @@ interface Creep {
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
     mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND
-    upgrade(): boolean
+    upgrade(): ScreepsReturnCode
     buildStructure(): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: Structure|Source): ScreepsReturnCode
@@ -421,8 +422,10 @@ interface CreepMemory {
     // 该 Creep 是否在站着不动进行工作
     // 该字段用于减少 creep 向 Room.restrictedPos 里添加自己位置的次数
     standed?: boolean
-    // 外矿采集者特有 要采集的 Source Id
+    // 要采集的资源 Id
     sourceId?: string
+    // 要存放到的目标建筑
+    targetId?: string
     // 远程寻路缓存
     farMove?: {
         // 序列化之后的路径信息
@@ -509,6 +512,7 @@ interface Room {
     extractor: StructureExtractor
     mineral: Mineral
     sources: Source[]
+    sourceContainers: StructureContainer[]
     _factory: StructureFactory
     _mineral: Mineral
     _powerspawn: StructurePowerSpawn
@@ -517,6 +521,7 @@ interface Room {
     _centerLink: StructureLink
     _observer: StructureObserver
     _extractor: StructureExtractor
+    _sourceContainers: StructureContainer[]
 
     // pos 处理 api
     serializePos(pos: RoomPosition): string
@@ -714,7 +719,8 @@ interface RoomMemory {
     nukerId: string
     observerId: string
     sourceIds: string[]
-    
+    sourceContainersIds: string[]
+
     // 中央 link 的 id
     centerLinkId?: string
     // 升级 link 的 id
@@ -1334,7 +1340,7 @@ interface ButtonDetail {
  * @param detail 该 creep 发布所需的房间信息
  * @returns 代表该发布计划是否适合房间状态
  */
-type PlanNodeFunction = (detail: UpgraderPlanStats | HarvesterPlanStats) => boolean
+type PlanNodeFunction = (detail: UpgraderPlanStats | HarvesterPlanStats | TransporterPlanStats) => boolean
 
 // 房间中用于发布 upgrader 所需要的信息
 interface UpgraderPlanStats {
@@ -1344,6 +1350,8 @@ interface UpgraderPlanStats {
     controllerLevel: number
     // 控制器还有多久降级
     ticksToDowngrade: number
+    // source 建造好的 container 的 id
+    sourceContainerIds: string[]
     // 房间内 storage 的 id，房间没 storage 时该值为空，下同
     storageId?: string
     // 房间内 terminal 的 id，房间没 terminal 时该值为空，下同
@@ -1369,4 +1377,33 @@ interface HarvesterPlanStats {
     storageId?: string
     // 房间内中央 link 的 id
     centerLinkId?: string
+}
+
+// 房间中用于发布 filler manager processor 所需要的信息
+interface TransporterPlanStats {
+    // 房间对象
+    room: Room
+    // 房间内 storage 的 id，房间没 storage 时该值为空，下同
+    storageId?: string
+    // 房间内中央 link 的 id
+    centerLinkId?: string
+    // source 建造好的 container 的 id
+    sourceContainerIds?: string[]
+    // 基地中心点（processor的位置）坐标
+    centerPos?: [ number, number ]
+}
+
+// 发布角色配置项需要的素材集合
+interface ReleasePlanConstructor<T> {
+    // 搜集发布该角色需要的房间信息
+    getStats: (room: Room) => T
+    // 发布计划的集合，会根据收集到的房间信息选择具体的计划
+    plans: PlanNodeFunction[]
+}
+
+// 所有使用发布计划的角色
+interface CreepReleasePlans {
+    harvester: ReleasePlanConstructor<HarvesterPlanStats>
+    upgrader: ReleasePlanConstructor<UpgraderPlanStats>
+    transporter: ReleasePlanConstructor<TransporterPlanStats>
 }

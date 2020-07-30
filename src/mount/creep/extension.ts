@@ -419,18 +419,18 @@ export default class CreepExtension extends Creep {
     /**
      * 填充本房间的 controller
      */
-    public upgrade(): boolean {
-        const actionResult = this.upgradeController(this.room.controller)
+    public upgrade(): ScreepsReturnCode {
+        const result = this.upgradeController(this.room.controller)
 
         // 如果刚开始站定工作，就把自己的位置设置为禁止通行点
-        if (actionResult === OK && !this.memory.standed) {
+        if (result === OK && !this.memory.standed) {
             this.memory.standed = true
             this.room.addRestrictedPos(this.name, this.pos)
         }
-        else if (actionResult == ERR_NOT_IN_RANGE) {
+        else if (result == ERR_NOT_IN_RANGE) {
             this.goTo(this.room.controller.pos)
         }
-        return true
+        return result
     }
 
     /**
