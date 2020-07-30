@@ -25,6 +25,16 @@ const getBodyConfig = function(...bodySets: [ BodySet, BodySet, BodySet, BodySet
  * spawn 在孵化时会根据所处房间的可用能量自动调整身体部件
  */
 export const bodyConfigs: BodyConfigs = {
+    harvester: getBodyConfig(
+        { [WORK]: 2, [CARRY]: 1, [MOVE]: 1 },
+        { [WORK]: 4, [CARRY]: 1, [MOVE]: 2 },
+        { [WORK]: 6, [CARRY]: 1, [MOVE]: 3 },
+        { [WORK]: 8, [CARRY]: 1, [MOVE]: 4 },
+        { [WORK]: 10, [CARRY]: 1, [MOVE]: 5 },
+        { [WORK]: 12, [CARRY]: 1, [MOVE]: 6 },
+        { [WORK]: 12, [CARRY]: 1, [MOVE]: 6 },
+        { [WORK]: 12, [CARRY]: 1, [MOVE]: 6 }
+    ),
     /**
      * 工作单位
      * 诸如 harvester、builder 之类的

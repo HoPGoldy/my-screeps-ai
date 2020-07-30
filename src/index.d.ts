@@ -284,6 +284,7 @@ interface HealUnitData {
  * creep 的自动规划身体类型，以下类型的详细规划定义在 setting.ts 中
  */
 type BodyAutoConfigConstant = 
+    'harvester' |
     'worker' |
     'upgrader' |
     'manager' |
@@ -591,7 +592,7 @@ interface Room {
     stopWar(): OK | ERR_NOT_FOUND
 
     // 获取房间中的有效能量来源
-    getAvailableSource(): StructureTerminal | StructureStorage | Source
+    getAvailableSource(): StructureTerminal | StructureStorage | StructureContainer | Source
 
     // 自动规划相关
     findBaseCenterPos(): RoomPosition[]

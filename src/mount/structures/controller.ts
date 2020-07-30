@@ -1,6 +1,6 @@
-import { creepApi } from "modules/creepController"
-import { clearStructure } from "modules/autoPlanning/planBaseLayout"
-import { whiteListFilter } from "utils"
+import { creepApi } from 'modules/creepController'
+import { clearStructure } from 'modules/autoPlanning/planBaseLayout'
+import { whiteListFilter } from 'utils'
 
 /**
  * Controller 拓展
@@ -45,7 +45,6 @@ export default class ControllerExtension extends StructureController {
             if (result === OK) this.log(`已清理过期建筑，你可以选择执行 Game.rooms.${this.room.name}.clearWall() 来清理现存的墙壁`, 'green')
 
             this.room.releaseCreep('harvester')
-            this.room.releaseCreep('upgrader')
         }
     }
 

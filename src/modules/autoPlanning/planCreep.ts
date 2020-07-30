@@ -75,7 +75,7 @@ const releasePlans: CreepReleasePlans = {
                     }, room.name)
                 })
 
-                console.log(room.name, '存在 centerLink < [plan 0]')
+                room.log(`规划完成, 能量将存放至 sourceLink`, 'harvester', 'green')
                 return true
             },
 
@@ -88,7 +88,7 @@ const releasePlans: CreepReleasePlans = {
                     }, room.name)
                 })
 
-                console.log(room.name, '兜底 < [plan 2]')
+                room.log(`规划完成, 能量将存放至 sourceContainer`, 'harvester', 'green')
                 return true
             },
         ]
@@ -104,7 +104,7 @@ const releasePlans: CreepReleasePlans = {
                 room,
                 controllerLevel: room.controller.level,
                 ticksToDowngrade: room.controller.ticksToDowngrade,
-                sourceContainerIds: room.memory.sourceContainersIds,
+                sourceContainerIds: room.memory.sourceContainersIds || [],
                 upgradeLinkId: room.memory.upgradeLinkId
             }
         
@@ -123,15 +123,14 @@ const releasePlans: CreepReleasePlans = {
         // 发布计划
         plans: [
             // 8 级时的特殊判断
-            ({ room, controllerLevel, ticksToDowngrade, storageId }: UpgraderPlanStats) => {
+            ({ room, controllerLevel, ticksToDowngrade, upgradeLinkId }: UpgraderPlanStats) => {
                 if (controllerLevel < 8) return false
                 // 掉级还早，不发布 upgrader 了
                 if (ticksToDowngrade >= 100000) return true
         
                 // 快掉级了就发布一个
-                addUpgrader(room.name, [ 0 ], storageId)
-        
-                console.log(room.name, '超过 8 级，发布 creep < [plan 0]')
+                addUpgrader(room.name, [ 0 ], upgradeLinkId)
+
                 return true
             },
         
@@ -141,8 +140,8 @@ const releasePlans: CreepReleasePlans = {
         
                 // 发布三个升级单位给 link
                 addUpgrader(room.name, [0, 1, 2], upgradeLinkId)
-        
-                console.log(room.name, '从 upgradeLink 获取能量，发布指定数量的 upgrader < [plan 1]')
+
+                room.log('规划完成, 将从 upgradeLink 获取能量', 'upgrader', 'green')
                 return true
             },
         
@@ -155,42 +154,42 @@ const releasePlans: CreepReleasePlans = {
                     // 找到对应的配置项了，发布对应数量的 upgrader
                     if (terminalEnergy > config.energy) {
                         addUpgrader(room.name, new Array(config.num).fill(undefined).map((_, i) => i), terminalId)
+                        room.log(`规划完成, 将从 terminal 获取能量，发布数量 * ${config.num}`, 'upgrader', 'green')
                         return true
                     }
                 })
-        
-                console.log(room.name, '从 terminal 获取能量，发布指定数量的 upgrader < [plan 2]')
+
                 return true
             },
-        
+
             // 根据 storage 里的能量发布对应数量的 upgrader
             ({ room, storageId, storageEnergy }: UpgraderPlanStats) => {
                 if (!storageId || storageEnergy < UPGRADE_WITH_STORAGE[UPGRADE_WITH_STORAGE.length - 1].energy ) return false
-        
+
                 // 遍历配置项进行 upgrader 发布
                 UPGRADE_WITH_STORAGE.find(config => {
                     // 找到对应的配置项了，发布对应数量的 upgrader
                     if (storageEnergy > config.energy) {
                         addUpgrader(room.name, new Array(config.num).fill(undefined).map((_, i) => i), storageId)
+                        room.log(`规划完成, 将从 storage 获取能量，发布数量 * ${config.num}`, 'upgrader', 'green')
                         return true
                     }
                 })
-        
-                console.log(room.name, '从 storage 获取能量，发布指定数量的 upgrader < [plan 3]')
+
                 return true
             },
-        
+
             // 兜底，从 sourceContainer 中获取能量
             ({ room, sourceContainerIds }: UpgraderPlanStats) => {
                 // 有援建单位，每个 container 只发布一个 upgrader
-                const upgraderIndexs = creepApi.has(`${room.name} RemoteUpgrader`) ? [ 0 ] : [ 0, 1 ]
-                
+                const upgraderIndexs = creepApi.has(`${room.name} RemoteUpgrader`) ? [ 1 ] : [ 1, 2 ]
+
                 // 遍历所有 container，发布对应数量的 upgrader
                 sourceContainerIds.forEach((containerId, index) => {
                     addUpgrader(room.name, upgraderIndexs.map(i => i * (index + 1)), containerId)
                 })
-        
-                console.log(room.name, '启动兜底，发布基础 upgrader < [plan 4]')
+
+                room.log(`规划完成, 将从 sourceContainer 获取能量，发布数量 * ${sourceContainerIds.length * upgraderIndexs.length}`, 'upgrader', 'green')
                 return true
             }
         ]
@@ -204,7 +203,7 @@ const releasePlans: CreepReleasePlans = {
         getStats(room: Room): TransporterPlanStats {
             const stats: TransporterPlanStats = {
                 room,
-                sourceContainerIds: room.memory.sourceContainersIds
+                sourceContainerIds: room.memory.sourceContainersIds || []
             }
 
             if (room.storage) stats.storageId = room.storage.id
@@ -222,6 +221,7 @@ const releasePlans: CreepReleasePlans = {
                     sourceId: containerId
                 }, room.name))
 
+                room.log(`规划完成, 发布 filler * ${sourceContainerIds.length}`, 'transporter', 'green')
                 // 发布并没有完成，继续检查是否可以发布 manager 和 processor
                 return false
             },
@@ -236,6 +236,7 @@ const releasePlans: CreepReleasePlans = {
                     sourceId: storageId
                 }, room.name)
 
+                room.log(`规划完成, 发布 manager`, 'transporter', 'green')
                 return false
             },
 
@@ -249,6 +250,7 @@ const releasePlans: CreepReleasePlans = {
                     y: centerPos[1]
                 }, room.name)
 
+                room.log(`规划完成, 发布 processor`, 'transporter', 'green')
                 return true
             },
         ]
@@ -343,8 +345,8 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
      * @param room 要发布角色的房间
      */
     'builder': function(room: Room) {
-        creepApi.add(`${room.name} builder`, 'builder', {
-            sourceId: room.storage ? room.storage.id : room.sources[0].id
+        creepApi.add(`${room.name} builder${Game.time}`, 'builder', {
+            sourceId: room.getAvailableSource().id
         }, room.name)
 
         return OK

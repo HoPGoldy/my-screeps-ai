@@ -57,6 +57,7 @@ export default class SpawnExtension extends StructureSpawn {
     private mySpawnCreep(configName): MySpawnReturnCode {
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
+
         if (!creepConfig) return OK
         // 找不到他的工作逻辑的话也直接移除任务
         const creepWork = roles[creepConfig.role](creepConfig.data)
@@ -68,7 +69,7 @@ export default class SpawnExtension extends StructureSpawn {
         creepMemory.data = creepConfig.data
 
         // 获取身体部件, 优先使用 bodys
-        const bodys = (typeof creepWork.bodys === 'string') ? this.getBodys(creepConfig.bodys as string) : creepConfig.bodys as BodyPartConstant[]
+        const bodys = (typeof creepWork.bodys === 'string') ? this.getBodys(creepConfig.bodys as BodyAutoConfigConstant) : creepConfig.bodys as BodyPartConstant[]
         if (bodys.length <= 0) return ERR_NOT_ENOUGH_ENERGY
         
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
@@ -94,7 +95,7 @@ export default class SpawnExtension extends StructureSpawn {
      * 
      * @param bodyType creepConfig 中的 bodyType
      */
-    private getBodys(bodyType: string): BodyPartConstant[] {
+    private getBodys(bodyType: BodyAutoConfigConstant): BodyPartConstant[] {
         const bodyConfig: BodyConfig = bodyConfigs[bodyType]
 
         const targetLevel = Object.keys(bodyConfig).reverse().find(level => {

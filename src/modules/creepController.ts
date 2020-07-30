@@ -5,8 +5,8 @@
  * 更多细节 @see creep控制协议设计案.md
  */
 
-import roles from '../role'
-import { colorful, log } from '../utils'
+import roles from 'role'
+import { colorful, log } from 'utils'
 
  /**
   * creep 的数量控制器
