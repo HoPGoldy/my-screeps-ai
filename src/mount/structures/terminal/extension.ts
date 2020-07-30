@@ -476,14 +476,16 @@ export default class TerminalExtension extends StructureTerminal {
         // 以昨日均价为准
         const avgPrice = history[0].avgPrice
 
+        // 获取设置好的价格区间
+        const dealRatio = targetOrder.type in DEAL_RATIO ? DEAL_RATIO[targetOrder.type] : DEAL_RATIO.default
         // 目标订单的价格要在规定好的价格区间内浮动才算可靠
         // 卖单的价格不能太高
         if (targetOrder.type == ORDER_SELL) {
-            if (targetOrder.price <= avgPrice * DEAL_RATIO.MAX) return true
+            if (targetOrder.price <= avgPrice * dealRatio.MAX) return true
         }
         // 买单的价格不能太低
         else {
-            if (targetOrder.price >= avgPrice * DEAL_RATIO.MIN) return true
+            if (targetOrder.price >= avgPrice * dealRatio.MIN) return true
         }
         return false
     }
