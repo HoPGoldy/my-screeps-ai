@@ -711,4 +711,22 @@ export default class RoomExtension extends RoomShortcut {
 
         return OK
     }
+
+    /**
+     * 为本房间添加新的 source container
+     * 会触发 creep 发布
+     * 
+     * @param container 要登记的 container
+     */
+    public registerContainer(container: StructureContainer): OK {
+        // 把 container 添加到房间基础服务
+        if (!this.memory.sourceContainersIds) this.memory.sourceContainersIds = []
+        this.memory.sourceContainersIds.push(container.id)
+
+        // 触发对应的 creep 发布规划
+        this.releaseCreep('filler')
+        this.releaseCreep('upgrader')
+
+        return OK
+    }
 }

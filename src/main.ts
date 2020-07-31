@@ -16,7 +16,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     doing(Game.structures, Game.creeps, Game.powerCreeps)
 
     // 搓 pixel
-    // generatePixel()
+    generatePixel()
 
     // 统计全局资源使用
     stateScanner()
