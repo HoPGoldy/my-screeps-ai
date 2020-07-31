@@ -207,7 +207,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 target = <StructureExtension>Game.getObjectById(creep.memory.fillStructureId)
 
                 // 如果找不到对应的建筑或者已经填满了就移除缓存
-                if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) == 0) {
+                if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) {
                     delete creep.memory.fillStructureId
                     target = undefined
                 }
@@ -233,7 +233,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             // 有的话就填充能量
             creep.goTo(target.pos)
             const result = creep.transfer(target, RESOURCE_ENERGY)
-            if (result === ERR_NOT_ENOUGH_RESOURCES) return true
+            if (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_FULL) return true
             else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`拓展填充 ${result}`)
 
             if (creep.store[RESOURCE_ENERGY] === 0) return true

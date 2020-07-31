@@ -8,20 +8,20 @@ export default class TowerExtension extends StructureTower {
      * 主要任务
      */
     public work(): void {
-        if (this.store[RESOURCE_ENERGY] > 10) {
-            // 根据当前状态执行对应的逻辑
-            switch (this.room.memory.defenseMode) {
-                case 'defense': // 普通防御模式
-                    this.defenseWork()
-                break
-                case 'active': // 主动防御模式
-                    this.activeWork()
-                break
-                default: // 日常模式
-                case undefined: 
-                    this.dailyWork()
-                break
-            }
+        if (this.store[RESOURCE_ENERGY] < 10) return this.requireEnergy()
+        
+        // 根据当前状态执行对应的逻辑
+        switch (this.room.memory.defenseMode) {
+            case 'defense': // 普通防御模式
+                this.defenseWork()
+            break
+            case 'active': // 主动防御模式
+                this.activeWork()
+            break
+            default: // 日常模式
+            case undefined: 
+                this.dailyWork()
+            break
         }
     }
 
@@ -35,6 +35,9 @@ export default class TowerExtension extends StructureTower {
         else if (this.commandRepair()) { }
         // 找不到要维修的建筑就刷墙
         else if (this.commandFillWall()) { }
+
+        // 如果能量低了就发布填充任务
+        this.requireEnergy(600)
     }
 
     /**
@@ -56,6 +59,9 @@ export default class TowerExtension extends StructureTower {
             this.room.memory.defenseMode = 'active'
             // this.log('已启动主动防御')
         }
+
+        // 如果能量低了就发布填充任务
+        this.requireEnergy(700)
     }
 
     /**
@@ -199,7 +205,12 @@ export default class TowerExtension extends StructureTower {
         // 没有缓存就进行搜索
         if (!this.room._damagedStructure) {
             const damagedStructures = <AnyStructure[]>this.room.find(FIND_STRUCTURES, {
-                filter: s => s.hits < s.hitsMax && s.structureType != STRUCTURE_RAMPART && s.structureType != STRUCTURE_WALL
+                filter: s => s.hits < s.hitsMax &&
+                    // 墙壁稍后会单独修
+                    s.structureType != STRUCTURE_RAMPART &&
+                    s.structureType != STRUCTURE_WALL &&
+                    // container 由 harvester 专门维护
+                    s.structureType != STRUCTURE_CONTAINER 
             })
 
             // 找到最近的受损建筑并更新缓存
@@ -219,8 +230,6 @@ export default class TowerExtension extends StructureTower {
             // 这里把需要维修的建筑置为 1 是为了避免其他的 tower 奶一个满血建筑从而造成 cpu 浪费
             if (this.room._damagedStructure.hits + 500 >= this.room._damagedStructure.hitsMax) this.room._damagedStructure = 1
 
-            // 如果能量低了就发布填充任务
-            this.requireEnergy(600)
             return true
         }
         return false
@@ -272,9 +281,6 @@ export default class TowerExtension extends StructureTower {
 
         // 填充墙壁
         this.repair(targetWall)
-
-        // 如果能量低了就发布填充任务
-        this.requireEnergy(600)
 
         // 标记一下防止其他 tower 继续刷墙
         this.room._hasFillWall = true
