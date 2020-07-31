@@ -7,7 +7,7 @@
 
 ## CLI 设计
 
-已实装，详见 `StructureObserver.help()`
+详见 `StructureObserver.help()`
 
 ## 流程
 
@@ -19,8 +19,12 @@
   - ob 该房间
     - 如果 ob 成功则缓存其名称
   - 更新索引
-- 如果存在 `checkRoomName` 字段（已经有 ob 过的房间等待查看了）
-  - 获取上一tick查询的房间
+- 如果存在 `checkRoomName` 字段（已经有 ob 过的房间在等待查看了）
+  - 获取上一 tick 查询的房间
   - 查找 deposit 和 powerBank 并插旗（旗帜名称 "资源类型 + 房间名 + 当前时间"）
   - 更新获取到的资源
   - 移除 `checkRoomName`
+
+## 资源采集
+
+目前 observer 仅用于采集资源过道资源，在发现 deposit 和 powerBank 时将会自行发布对应的采集单位。

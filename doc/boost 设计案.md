@@ -1,6 +1,6 @@
 # Boost 设计案（已实装）
 
-本设计案建立在 lab 设计案和房间物流设计案已实装的基础上。
+本设计案建立在 lab 模块和房间物流模块已实装的基础上。
 
 # 目标
 
@@ -40,7 +40,7 @@ Room.boostCreep(creep)
 解除战争状态，当前 boost 进程会被取消，将已经填进 lab 的化合物移会 terminal
 
 ```js
-Room.endwar()
+Room.nowar()
 ```
 
 # 模块化
@@ -112,18 +112,6 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
             - 有，return
             - 没有，发布任务
 
-**Room.boost(boostType)**
-
-- 检查是否有 boost 任务
-    - 有，return 已存在任务
-- 检查是否有 [房间名 + Boost] 的旗帜存在
-    - 不存在，return 未找到旗帜
-- 获取紧邻旗帜的 lab。
-- 获取到的 lab 数量是否超过强化所需的材料种类数量？
-    - 没超过，return 资源不足
-- 将足够数量的 lab id 筛选出来，并分配资源类型
-- 新建 `Room.memory.boost` 任务，return OK
-
 **Room.boostCreep()**
 
 - 检查是否有 boost 任务
@@ -131,58 +119,3 @@ boost 控制器应拆分成 **流程控制器** 和 **基础资源检查**：
 - 检查当前是否是 `waitBoost` 状态
     - 不是，说明没准备好强化，return 繁忙中
 - 进行强化，将 boost 状态修改为 `boostClear` return OK
-
-**Room.boostCancel()**
-
-- 检查是否有 boost 任务
-    - 没有任务，给出提示, return
-- 将 `Room.memory.boost.state` 设置为 `boostClear`
-- return 取消成功
-
-# 持久化
-
-**Room.memory.boost**
-
-```js
-{
-    // 当前强化任务状态，包括：boostGet, labGetEnergy, waitBoost, boostClear
-    state: 'boostGet',
-    // 强化类型
-    type: BOOST_TYPE.DISMANTLE,
-    // boost 强化位置，pos[0] 是 x 坐标，pos[1] 是 y 坐标，
-    pos: [ 12, 43 ],
-    // 要进行强化的材料及执行强化的 lab
-    lab: {
-        [RESOURCE_CATALYZED_GHODIUM_ACID]: '5d9bdd4b1acf0f000174aa4a',
-        [RESOURCE_CATALYZED_KEANIUM_ACID]: '5d9bdd4b1acf0f000174aa4b',
-        [RESOURCE_CATALYZED_LEMERGIUM_ACID]: '5d9bdd4b1acf0f000174aa4c',
-        [RESOURCE_CATALYZED_ZYNTHIUM_ACID]: '5d9bdd4b1acf0f000174aa4e'
-    }
-    // manager 会根据这个配置项搬运材料进 lab
-    config: {
-        // 当前强化任务需要的每个材料
-        [BOOST_TYPE.DISMANTLE]: {
-            // 其中的值代表这个材料需要的数量（指强化多少个 bodyPart）
-            ['XZH20']: 12,
-            // ...
-        },
-        // ...
-    }
-}
-```
-
-**setting.ts**
-
-```js
-const BOOST_TYPE = {
-    // 拆除专用 12T 5W 10M 23H
-    DISMANTLE: 'dismantle',
-    // 范围攻击 12T 5RA 10M 23H
-    RANGE_ATTACK: 'rangeAttack', 
-}
-```
-
-# 问题
-
-- boost 要在 creep 生成前准备对应的强化材料，但是 boost 模块和 spawn 模块怎么协商要生成的身体部件数量？
-    - 解决方案：升级 spawn 模块，boost creep 在生成时会按照房间最大能量进行生成。boost 模块会始终按照最大身体数量进行资源转移，在强化完成后再将剩余的资源移回 terminal。
