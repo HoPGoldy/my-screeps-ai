@@ -425,7 +425,7 @@ export default class RoomExtension extends RoomShortcut {
 
         if (result === OK) return `自动规划完成`
         else if (result === ERR_NOT_OWNER) return `自动规划失败，房间没有控制权限`
-        else return `自动规划失败，未找到房间中心点位，请执行 Game.rooms.${this.name}.setcenter 进行设置`
+        else return `未找到基地中心点位，请执行 Game.rooms.${this.name}.setcenter 以启用自动规划`
     }
 
     /**
@@ -721,7 +721,8 @@ export default class RoomExtension extends RoomShortcut {
     public registerContainer(container: StructureContainer): OK {
         // 把 container 添加到房间基础服务
         if (!this.memory.sourceContainersIds) this.memory.sourceContainersIds = []
-        this.memory.sourceContainersIds.push(container.id)
+        // 去重，防止推入了多个相同的 container
+        this.memory.sourceContainersIds = _.uniq([ ...this.memory.sourceContainersIds, container.id])
 
         // 触发对应的 creep 发布规划
         this.releaseCreep('filler')
