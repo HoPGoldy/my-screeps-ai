@@ -1,5 +1,7 @@
 # my-screeps-ai
 
+[![](https://img.shields.io/badge/Room-12-success.svg)](https://screeps.com/a/#!/profile/HoPGoldy) ![](https://img.shields.io/badge/avgCPU-15-yellow)
+
 适用于游戏《[Screeps](https://screeps.com/a/#!/map)》的半自动 ai 项目。
 
 注意，本项目尚未完成，后续可能会进行大范围的代码更改，你可以通过本项目了解 Screeps 相关的操作以及如何将 rollup 和 TypeScript 应用在 Screeps 里（本项目包含完整的中文注释），但是请尊重自己和他人的游戏体验，不要将本项目直接部署在官方服务器上。
@@ -15,7 +17,7 @@ npm install
 
 **添加密钥**
 
-在根目录下新建 `.secret.json` 文件，并填入以下内容，注意填写自己的 token。
+在根目录下新建 `.secret.json` 文件，并填入以下内容:
 
 ```js
 {
@@ -26,16 +28,25 @@ npm install
         "port": 443,
         "path": "/",
         "branch": "default"
+    },
+    "local": {
+        "copyPath": "../screeps-dist"
     }
 }
 ```
 
 ## 使用
 
-启动代码自动提交
+向服务器自动提交代码（需要填写 `.secret.json` 中 `main.token` 字段）
 
 ```
 npm start
+```
+
+向本地目录自动提交代码（需要填写 `.secret.json` 中 `local.copyPath` 字段）
+
+```
+npm run local
 ```
 
 启动开发环境 (只会执行 ts 编译, 不提交代码)
