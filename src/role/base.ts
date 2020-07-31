@@ -85,16 +85,10 @@ const roles: {
             // 还没找到就说明有可能工地已经建好了，进行搜索
             if (!constructionSite) {
                 const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER)
-                // 找到了造好的 container 了
+
+                // 找到了造好的 container 了，添加进房间
                 if (container) {
-                    // 把 container 添加到房间基础服务
-                    if (!creep.room.memory.sourceContainersIds) creep.room.memory.sourceContainersIds = []
-                    creep.room.memory.sourceContainersIds.push(container.id)
-
-                    // 发布 creep 并进入采集阶段
-                    creep.room.releaseCreep('filler')
-                    creep.room.releaseCreep('upgrader')
-
+                    creep.room.registerContainer(container as StructureContainer)
                     return true
                 }
 

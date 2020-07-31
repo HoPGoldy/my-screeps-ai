@@ -446,18 +446,25 @@ export default class CreepExtension extends Creep {
             if (!target) {
                 // 获取曾经工地的位置
                 const constructionSitePos = new RoomPosition(this.room.memory.constructionSitePos[0], this.room.memory.constructionSitePos[1], this.room.name)
-                // 检查上面是否有已经造好的同类型建筑，如果有的话就执行回调
+                // 检查上面是否有已经造好的同类型建筑
                 const structure = _.find(constructionSitePos.lookFor(LOOK_STRUCTURES), s => s.structureType === this.room.memory.constructionSiteType)
-                if (structure && structure.onBuildComplete) structure.onBuildComplete()
+                if (structure) {
+                    // 如果有的话就执行回调
+                    if (structure.onBuildComplete) structure.onBuildComplete()
+
+                    // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点（相关逻辑见 builder.target()）
+                    if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+                        this.memory.fillWallId = structure.id
+                        return
+                    }
+                    // 如果修好的是 source container 的话，就执行注册
+                    else if (structure instanceof StructureContainer && this.room.sources.find(s => structure.pos.isNearTo(s))) {
+                        this.room.registerContainer(structure)
+                    }
+                }
 
                 // 获取下个建筑目标
-                target = this._updateConstructionSite()
-
-                // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点（相关逻辑见 builder.target()）
-                if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
-                    this.memory.fillWallId = structure.id
-                    return
-                }
+                target = this._updateConstructionSite()   
             }
         }
         // 没缓存就直接获取
