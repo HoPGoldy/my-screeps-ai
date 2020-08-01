@@ -143,6 +143,11 @@ export default class TerminalExtension extends StructureTerminal {
                 }
                 // this.getEnergy(task.amount - this.store[RESOURCE_ENERGY])
             }
+            // 资源不足就不予响应
+            else {
+                this.log(`由于 ${task.resourceType} 资源不足 ${this.store[task.resourceType] || 0}/${task.amount}，${task.target} 的共享任务已被移除`)
+                delete this.room.memory.shareTask
+            }
         }
     }
 
