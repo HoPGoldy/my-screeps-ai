@@ -74,6 +74,7 @@ export class LinkExtension extends StructureLink {
         this.clearRegister()
 
         this.room.memory.upgradeLinkId = this.id
+        this.room.releaseCreep('upgrader')
         return `${this} 已注册为升级 link`
     }
 
@@ -93,7 +94,10 @@ export class LinkExtension extends StructureLink {
      */
     private upgradeWork(): void {
         // 有能量就待机
-        if (<number>this.store.getUsedCapacity(RESOURCE_ENERGY) > 100) return
+        if (this.store[RESOURCE_ENERGY] > 100) return
+        const centerlink = this.room.centerLink
+        // 中央 link 没冷却好，待机
+        if (!centerlink || centerlink.cooldown > 0) return
 
         let source: StructureTerminal | StructureStorage
         // 优先用 terminal 里的能量
@@ -102,12 +106,13 @@ export class LinkExtension extends StructureLink {
         if (!source && this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > LINK_CAPACITY) source = this.room.storage
 
         // 以 centerLink 的名义发布中央物流任务
-        this.room.addCenterTask({
+        const result = this.room.addCenterTask({
             submit: 'centerLink',
             source: source.structureType,
             target: 'centerLink',
             resourceType: RESOURCE_ENERGY,
-            amount: this.store.getFreeCapacity(RESOURCE_ENERGY)
+            // 自己和 centerLink 的容量中找最小值
+            amount: Math.min(this.store.getFreeCapacity(RESOURCE_ENERGY), centerlink.store.getFreeCapacity(RESOURCE_ENERGY))
         })
     }
 
@@ -117,8 +122,8 @@ export class LinkExtension extends StructureLink {
      * 能量快满时向房间中的资源转移队列推送任务
      */
     private centerWork(): void {
-        // 能量为空则待机
-        if (<number>this.store.getUsedCapacity(RESOURCE_ENERGY) == 0) return
+        // 能量不足则待机
+        if (this.store[RESOURCE_ENERGY] < 600) return
 
         // 优先响应 upgrade
         if (this.supportUpgradeLink()) return

@@ -39,7 +39,7 @@ export default class RoomExtension extends RoomShortcut {
     public addCenterTask(task: ITransferTask, priority: number = null): number {
         if (this.hasCenterTask(task.submit)) return -1
         // 由于这里的目标建筑限制型和非限制型存储都有，这里一律作为非限制性检查来减少代码量
-        if (this[task.target] && (this[task.target].store as StoreDefinitionUnlimited).getFreeCapacity() < task.amount) return -2
+        if (this[task.target] && (this[task.target].store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) < task.amount) return -2
 
         if (!priority) this.memory.centerTransferTasks.push(task)
         else this.memory.centerTransferTasks.splice(priority, 0, task)
