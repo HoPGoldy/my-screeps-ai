@@ -75,7 +75,7 @@ const releasePlans: CreepReleasePlans = {
                     }, room.name)
                 })
 
-                room.log(`规划完成, 能量将存放至 sourceLink`, 'harvester', 'green')
+                room.log(`能量将存放至 sourceLink`, 'harvester', 'green')
                 return true
             },
 
@@ -88,7 +88,7 @@ const releasePlans: CreepReleasePlans = {
                     }, room.name)
                 })
 
-                room.log(`规划完成, 能量将存放至 sourceContainer`, 'harvester', 'green')
+                room.log(`能量将存放至 sourceContainer`, 'harvester', 'green')
                 return true
             },
         ]
@@ -138,10 +138,10 @@ const releasePlans: CreepReleasePlans = {
             ({ room, upgradeLinkId }: UpgraderPlanStats) => {
                 if (!upgradeLinkId) return false
         
-                // 发布三个升级单位给 link
-                addUpgrader(room.name, [0, 1, 2], upgradeLinkId)
+                // 发布升级单位给 link
+                addUpgrader(room.name, [0, 1], upgradeLinkId)
 
-                room.log('规划完成, 将从 upgradeLink 获取能量', 'upgrader', 'green')
+                room.log('将从 upgradeLink 获取能量', 'upgrader', 'green')
                 return true
             },
         
@@ -154,7 +154,7 @@ const releasePlans: CreepReleasePlans = {
                     // 找到对应的配置项了，发布对应数量的 upgrader
                     if (terminalEnergy > config.energy) {
                         addUpgrader(room.name, new Array(config.num).fill(undefined).map((_, i) => i), terminalId)
-                        room.log(`规划完成, 将从 terminal 获取能量，发布数量 * ${config.num}`, 'upgrader', 'green')
+                        room.log(`将从 terminal 获取能量，发布数量 * ${config.num}`, 'upgrader', 'green')
                         return true
                     }
                 })
@@ -171,7 +171,7 @@ const releasePlans: CreepReleasePlans = {
                     // 找到对应的配置项了，发布对应数量的 upgrader
                     if (storageEnergy > config.energy) {
                         addUpgrader(room.name, new Array(config.num).fill(undefined).map((_, i) => i), storageId)
-                        room.log(`规划完成, 将从 storage 获取能量，发布数量 * ${config.num}`, 'upgrader', 'green')
+                        room.log(`将从 storage 获取能量，发布数量 * ${config.num}`, 'upgrader', 'green')
                         return true
                     }
                 })
@@ -189,7 +189,7 @@ const releasePlans: CreepReleasePlans = {
                     addUpgrader(room.name, upgraderIndexs.map(i => index + (i * 2)), containerId)
                 })
 
-                room.log(`规划完成, 将从 sourceContainer 获取能量，发布数量 * ${sourceContainerIds.length * upgraderIndexs.length}`, 'upgrader', 'green')
+                room.log(`将从 sourceContainer 获取能量，发布数量 * ${sourceContainerIds.length * upgraderIndexs.length}`, 'upgrader', 'green')
                 return true
             }
         ]
@@ -221,7 +221,7 @@ const releasePlans: CreepReleasePlans = {
                     sourceId: containerId
                 }, room.name))
 
-                room.log(`规划完成, 发布 filler * ${sourceContainerIds.length}`, 'transporter', 'green')
+                room.log(`发布 filler * ${sourceContainerIds.length}`, 'transporter', 'green')
                 // 发布并没有完成，继续检查是否可以发布 manager 和 processor
                 return false
             },
@@ -236,7 +236,7 @@ const releasePlans: CreepReleasePlans = {
                     sourceId: storageId
                 }, room.name)
 
-                room.log(`规划完成, 发布 manager`, 'transporter', 'green')
+                room.log(`发布 manager`, 'transporter', 'green')
                 return false
             },
 
@@ -250,7 +250,7 @@ const releasePlans: CreepReleasePlans = {
                     y: centerPos[1]
                 }, room.name)
 
-                room.log(`规划完成, 发布 processor`, 'transporter', 'green')
+                room.log(`发布 processor`, 'transporter', 'green')
                 return true
             },
         ]

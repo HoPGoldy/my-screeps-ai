@@ -455,7 +455,6 @@ export default class CreepExtension extends Creep {
                     // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点（相关逻辑见 builder.target()）
                     if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
                         this.memory.fillWallId = structure.id
-                        return
                     }
                     // 如果修好的是 source container 的话，就执行注册
                     else if (structure instanceof StructureContainer && this.room.sources.find(s => structure.pos.isNearTo(s))) {
