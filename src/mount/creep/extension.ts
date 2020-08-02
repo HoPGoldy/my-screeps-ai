@@ -507,7 +507,15 @@ export default class CreepExtension extends Creep {
     private _updateConstructionSite(): ConstructionSite | undefined {
         const targets: ConstructionSite[] = this.room.find(FIND_MY_CONSTRUCTION_SITES)
         if (targets.length > 0) {
-            const target = this.pos.findClosestByRange(targets)
+            let target: ConstructionSite
+            // 优先建造 spawn，然后是 extension，想添加新的优先级就在下面的数组里追加即可
+            for (const type of [ STRUCTURE_SPAWN, STRUCTURE_EXTENSION ]) {
+                target = targets.find(cs => cs.structureType === type)
+                if (target) break
+            }
+            // 优先建造的都完成了，按照距离建造
+            if (!target) target = this.pos.findClosestByRange(targets)
+
             // 缓存工地信息，用于统一建造并在之后验证是否完成建造
             this.room.memory.constructionSiteId = target.id
             this.room.memory.constructionSiteType = target.structureType
