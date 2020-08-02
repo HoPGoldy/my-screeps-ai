@@ -345,7 +345,15 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
      * @param room 要发布角色的房间
      */
     'builder': function(room: Room) {
-        creepApi.add(`${room.name} builder${Game.time}`, 'builder', {
+        const builderName = `${room.name} builder${Game.time}`
+        let index = 0
+
+        // 增加索引保证一 tick 可以发布多个 builder
+        do index += 1
+        while (creepApi.has(builderName + index))
+
+        // 发布 builder
+        creepApi.add(builderName + index, 'builder', {
             sourceId: room.getAvailableSource().id
         }, room.name)
 
