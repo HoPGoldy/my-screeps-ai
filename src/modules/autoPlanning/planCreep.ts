@@ -181,8 +181,8 @@ const releasePlans: CreepReleasePlans = {
 
             // 兜底，从 sourceContainer 中获取能量
             ({ room, sourceContainerIds }: UpgraderPlanStats) => {
-                // 有援建单位，每个 container 只发布一个 upgrader
-                const upgraderIndexs = creepApi.has(`${room.name} RemoteUpgrader`) ? [ 0 ] : [ 0, 1 ]
+                // 有援建单位，每个 container 少发布一个 upgrader
+                const upgraderIndexs = creepApi.has(`${room.name} RemoteUpgrader`) ? [ 0, 1 ] : [ 0, 1, 2 ]
 
                 // 遍历所有 container，发布对应数量的 upgrader
                 sourceContainerIds.forEach((containerId, index) => {
