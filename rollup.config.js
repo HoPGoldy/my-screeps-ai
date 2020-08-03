@@ -13,7 +13,7 @@ else if (!(config = require("./.secret.json")[process.env.DEST])) {
 }
 
 // 根据指定的配置决定是上传还是复制到文件夹
-const pluginBeforeBuild = config.copyPath ?
+const pluginBeforeBuild = config && config.copyPath ?
     // 复制到指定路径
     copy({
         targets: [
