@@ -63,6 +63,8 @@ interface Game {
     // 本 tick 是否已经执行了 creep 数量控制器了
     // 每 tick 只会调用一次
     _hasRunCreepNumberController: boolean
+    // 本 tick 是否需要执行保存 InterShardMemory
+    _needSaveInterShardData: boolean
 }
 
 // 所有的 creep 角色
@@ -1427,33 +1429,45 @@ type DealRatios = {
 // 目前官服存在的所有 shard 的名字
 type ShardName = 'shard0' | 'shard1' | 'shard2' | 'shard3'
 
-// 跨 shard 请求 - 发送 creep
-type SendCreep = 'sendCreep'
+// 跨 shard 请求构造器
+interface CrossShardRequestConstructor<RequestType, RequestData> {
+    // 要处理请求的 shard
+    to: ShardName,
+    // 该请求的类型
+    type: RequestType,
+    // 该请求携带的数据
+    data: RequestData
+}
 
-// 所有跨 shard 请求的类型
+/**
+ * 跨 shard 请求 - 发送 creep
+ */
+type SendCreep = 'sendCreep'
+type SendCreepData = {
+    // 要发送 creep 的内存
+    memory: CreepMemory,
+    // 要发送 creep 的名字
+    name: string
+}
+
+// 构造所有的跨 shard 请求
+type CrossShardRequest = CrossShardRequestConstructor<SendCreep, SendCreepData>
+
+// 所有跨 shard 请求的类型和数据
 type CrossShardRequestType = SendCreep
+type CrossShardRequestData = SendCreepData
 
 // 所有跨 shard 请求的执行策略
 type CrossShardRequestStrategies = {
     [type in CrossShardRequestType]: (data: { [key: string]: any}) => ScreepsReturnCode
 }
 
-// 所有镜面的跨 shard 数据
-type AllShardData = {
-    [shard in ShardName]: {
+// 镜面的跨 shard 数据
+type InterShardData = {
+    [shard in ShardName]?: {
         // 一个键值对构成了一个消息
         [msgName: string]: CrossShardRequest | ScreepsReturnCode   
     }
-}
-
-// 跨 shard 请求
-interface CrossShardRequest {
-    // 要处理请求的 shard
-    to: ShardName,
-    // 该请求的类型
-    type: CrossShardRequestType,
-    // 该请求携带的数据
-    data: { [anyKey: string]: string}
 }
 
 // 跨 shard 响应
@@ -1464,7 +1478,7 @@ interface CrossShardReply {
     result?: ScreepsReturnCode
 }
 
-// 请求的元数据
+// 跨 shard 请求的元数据
 interface CrossShardRequestInfo {
     // 请求的发送 shard
     source: ShardName,

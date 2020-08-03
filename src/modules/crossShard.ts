@@ -6,27 +6,32 @@
 
 import { ALL_SHARD_NAME } from 'setting'
 
-/**
- * 检查并处理其他 shard 的消息
- */
-export const checkShardMessage = function () {
-    CrossShard
-        .init()
-        .checkSelfMessage()
-}
+export default class CrossShard {
+    // 其他 shard 的数据
+    private static otherShardData: { [shard in ShardName]?: InterShardData } = {}
+    // 自己 shard 的数据
+    private static selfData: InterShardData = {}
 
-export class CrossShard {
-    private static allShardData: AllShardData
+    /**
+     * 工作入口 - 检查并处理其他 shard 的消息
+     */
+    static exec() {
+        this.init().checkSelfMessage().handleRequest()
+
+        return this
+    }
+
     /**
      * 从 InterShardMemory 初始化消息
      */
     static init() {
         // 获取所有 shard 的 InterShardMemory
         ALL_SHARD_NAME.forEach(name => {
-            this.allShardData[name] = JSON.parse(Game.shard.name === name ?
-                InterShardMemory.getLocal():
-                InterShardMemory.getRemote(name)
-            ) || {}
+            // 缓存消失时才会重新获取
+            if (Game.shard.name === name && !this.selfData) return this.selfData = JSON.parse(InterShardMemory.getLocal()) || {}
+
+            // 重建其他 shard 的数据
+            this.otherShardData[name] = JSON.parse(InterShardMemory.getRemote(name)) || {}
         })
 
         return this
@@ -37,27 +42,24 @@ export class CrossShard {
      * 确定自身发布的请求或者响应是否可以关闭
      */
     static checkSelfMessage() {
-        const selfMessage = this.allShardData[Game.shard.name]
-
         // 针对自己负责的消息进行处理
-        for (const msgName in selfMessage) {
+        for (const msgName in this.selfData) {
             // 如果消息是响应
             if (this.isReply(msgName)) {
                 const requestInfo = this.getRequestInfo(msgName)
-                
+
                 // 自己已经响应了但是请求还在，为了避免之后 handleRequest 重复执行该请求，这里将其移除掉（并没有修改原始请求）
-                if (requestInfo.name in this.allShardData[requestInfo.source]) {
-                    delete this.allShardData[requestInfo.source][requestInfo.name]
+                if (requestInfo.name in this.otherShardData[requestInfo.source]) {
+                    delete this.otherShardData[requestInfo.source][requestInfo.name]
                 }
                 // 如果请求已经被移除的话说明目标 shard 察觉到自己的响应了，所以直接把响应移除即可
-                else delete selfMessage[msgName]
-                
+                else delete this.selfData[msgName]
             }
             // 如果消息是请求
             else {
                 // 请求有响应了就直接移除该请求
-                const reply = this.checkReply(msgName, selfMessage[msgName])
-                if (reply.has) delete selfMessage[msgName]
+                const reply = this.checkReply(msgName, this.selfData[msgName])
+                if (reply.has) delete this.selfData[msgName]
             }
         }
 
@@ -67,8 +69,9 @@ export class CrossShard {
     /**
      * 发布新请求
      */
-    static addRequest() {
-
+    static addRequest(name: string, to: ShardName, type: CrossShardRequestType, data: CrossShardRequestData) {
+        this.selfData[name] = { to, type, data } as CrossShardRequest
+        Game._needSaveInterShardData = true
     }
 
     /**
@@ -76,21 +79,20 @@ export class CrossShard {
      */
     static handleRequest() {
         // 遍历所有 shard 搜索需要处理的请求
-        for (const shardName in this.allShardData) {
-            // 不会处理自己发布的跨 shard 请求
-            if (shardName === Game.shard.name) continue
-
+        for (const shardName in this.otherShardData) {
             // 遍历该 shard 的所有消息
-            for (const msgName in this.allShardData[shardName]) {
+            for (const msgName in this.otherShardData[shardName]) {
                 // 不处理 replay
                 if (this.isReply(msgName)) continue
 
-                const request: CrossShardRequest = this.allShardData[shardName][msgName]
+                const request: CrossShardRequest = this.otherShardData[shardName][msgName]
                 // 执行请求并作出回应
                 const result = requestHandleStrategies[request.type](request.data)
                 this.reply(msgName, shardName as ShardName, result)
             }
         }
+
+        return this
     }
 
     /**
@@ -103,7 +105,9 @@ export class CrossShard {
     static reply(requestName: string, sourceShard: ShardName, result: ScreepsReturnCode) {
         const replyName = this.getReplyName(requestName, sourceShard)
 
-        this.save(replyName, result)
+        // 暂存数据，等待 tick 结尾统一保存
+        this.selfData[replyName] = result
+        Game._needSaveInterShardData = true
     }
 
     /**
@@ -112,12 +116,10 @@ export class CrossShard {
      * @param msgName 消息名称
      * @param msgContent 消息内容
      */
-    private static save(msgName: string, msgContent: CrossShardRequest | ScreepsReturnCode) {
-        this.allShardData[Game.shard.name][msgName] = msgContent
-
-        // 直接保存，有可能会导致一个 tick 保存多次
-        // 但是为了防止其他代码执行异常导致请求没有正确保存，这点消耗可以接受
-        InterShardMemory.setLocal(JSON.stringify(this.allShardData[Game.shard.name]))
+    static save() {
+        if (!Game._needSaveInterShardData) return
+        // 需要保存时再执行保存
+        InterShardMemory.setLocal(JSON.stringify(this.selfData))
     }
 
     /**
@@ -144,7 +146,7 @@ export class CrossShard {
      */
     private static checkReply(requestName: string, request: CrossShardRequest): CrossShardReply {
         // 尝试从目标 shard 获取响应
-        const reply = this.allShardData[request.to][this.getReplyName(requestName, request.to)]
+        const reply = this.otherShardData[request.to][this.getReplyName(requestName, request.to)]
 
         // 返回响应结果
         return {
@@ -173,7 +175,14 @@ export class CrossShard {
  * 每种请求都必须存在对应的处理策略
  */
 const requestHandleStrategies: CrossShardRequestStrategies = {
-    sendCreep: (data) => {
+    /**
+     * 发送 creep 到其他 shard
+     */
+    sendCreep: (data: SendCreepData) => {
+        if (!Memory.creeps) Memory.creeps = {}
+
+        // 把 creep 内存复制到自己 Memory 里
+        Memory.creeps[data.name] = data.memory
         return OK
     }
 }
