@@ -1,6 +1,7 @@
 import mountWork from './mount'
 import { doing, stateScanner, generatePixel } from './utils'
 import creepNumberListener from './modules/creepController'
+import { checkShardMessage } from './modules/crossShard'
 import { ErrorMapper } from './modules/errorMapper'
 
 export const loop = ErrorMapper.wrapLoop(() => {
@@ -8,6 +9,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
     // 挂载拓展
     mountWork()
+
+    // 检查跨 shard 请求
+    checkShardMessage()
 
     // creep 数量控制
     creepNumberListener()

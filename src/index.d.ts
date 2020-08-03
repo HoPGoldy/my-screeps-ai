@@ -1423,3 +1423,51 @@ type DealRatios = {
         MIN: number
     }
 }
+
+// 目前官服存在的所有 shard 的名字
+type ShardName = 'shard0' | 'shard1' | 'shard2' | 'shard3'
+
+// 跨 shard 请求 - 发送 creep
+type SendCreep = 'sendCreep'
+
+// 所有跨 shard 请求的类型
+type CrossShardRequestType = SendCreep
+
+// 所有跨 shard 请求的执行策略
+type CrossShardRequestStrategies = {
+    [type in CrossShardRequestType]: (data: { [key: string]: any}) => ScreepsReturnCode
+}
+
+// 所有镜面的跨 shard 数据
+type AllShardData = {
+    [shard in ShardName]: {
+        // 一个键值对构成了一个消息
+        [msgName: string]: CrossShardRequest | ScreepsReturnCode   
+    }
+}
+
+// 跨 shard 请求
+interface CrossShardRequest {
+    // 要处理请求的 shard
+    to: ShardName,
+    // 该请求的类型
+    type: CrossShardRequestType,
+    // 该请求携带的数据
+    data: { [anyKey: string]: string}
+}
+
+// 跨 shard 响应
+interface CrossShardReply {
+    // 响应是否存在
+    has: boolean,
+    // 响应的状态
+    result?: ScreepsReturnCode
+}
+
+// 请求的元数据
+interface CrossShardRequestInfo {
+    // 请求的发送 shard
+    source: ShardName,
+    // 请求的名称
+    name: string
+}
