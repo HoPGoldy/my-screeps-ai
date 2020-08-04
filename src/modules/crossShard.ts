@@ -16,6 +16,9 @@ export default class CrossShard {
      * 工作入口 - 检查并处理其他 shard 的消息
      */
     static exec() {
+        // 私服不存在该属性
+        if (!global.InterShardMemory) return ERR_NOT_FOUND
+
         this.init().checkSelfMessage().handleRequest()
 
         return this

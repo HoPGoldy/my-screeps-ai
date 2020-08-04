@@ -22,7 +22,7 @@ export const clearStructure = function(room: Room): OK | ERR_NOT_FOUND {
     notMyStructure.forEach(s => {
         // 如果是这三种建筑则看一下存储，只要不为空就不摧毁，反正就三个建筑，如果玩家觉得里边的资源不重要的话就手动摧毁
         if (s.structureType === STRUCTURE_TERMINAL || s.structureType === STRUCTURE_FACTORY || s.structureType === STRUCTURE_STORAGE) {
-            if (s.store.getFreeCapacity() > 0) return
+            if (s.store.getUsedCapacity() > 0) return
         }
         // 墙壁交给玩家决定，默认不摧毁
         else if (s.structureType === STRUCTURE_WALL) return
@@ -100,6 +100,24 @@ export const layout = {
 }
 
 /**
+ * 移除房间中的重要建筑
+ * 如果建筑 store 空了就移除
+ * 
+ * @param room 要清理重要建筑的房间
+ */
+const clearImportantStructure = function(room: Room): OK {
+    [ STRUCTURE_STORAGE, STRUCTURE_TERMINAL, STRUCTURE_FACTORY ].forEach(structureKey => {
+        const structure = room[structureKey]
+        // 存储没搬完就保留
+        if (!structure || structure.my || structure.store.getUsedCapacity() > 0) return
+        // 已经空了就摧毁
+        structure.destroy()
+    })
+
+    return OK
+}
+
+/**
  * 对指定房间运行自定建筑摆放
  * 会自动放置建筑工地并发布建造者
  * 
@@ -108,6 +126,9 @@ export const layout = {
 export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
     // 玩家指定了不运行自动布局，或者房间不属于自己，就退出
     if (room.memory.noLayout || !room.controller || !room.controller.my) return ERR_NOT_OWNER
+
+    // 尝试清空可能用完的非己方建筑
+    clearImportantStructure(room)
 
     // 当前需要检查那几个等级的布局
     const planLevel = Array(room.controller.level).fill(undefined).map((_, index) => index + 1)
