@@ -227,6 +227,8 @@ const roles: {
                     }
                 }
 
+                // 执行废弃建筑清理，由 claimer 发起是因为和 controller 发起的 planLayout 错开
+                // 如果这俩在一个 tick 调用并且有废弃 spawn 的话会导致没办法正常放置 spawn 工地（建筑销毁实际是在下个 tick 开始时进行）
                 const result = creep.room.clearStructure()
                 if (result === OK) creep.log(`已清理过期建筑，你可以选择执行 Game.rooms.${creep.room.name}.clearWall() 来清理现存的墙壁`, 'green')
 

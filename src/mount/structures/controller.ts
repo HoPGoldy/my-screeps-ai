@@ -37,6 +37,8 @@ export default class ControllerExtension extends StructureController {
     public onLevelChange(level: number): void {
         // 刚占领，添加最基础的角色组
         if (level === 1) {
+            // 清除建筑默认是 claimer 发起的，如果是第一个 spawn 的话就由 controller 发起
+            if (Object.keys(Game.spawns).length <= 1) this.room.clearStructure()
             this.room.releaseCreep('harvester')
             // 多发布一个 build 协助建造
             this.room.releaseCreep('builder')
