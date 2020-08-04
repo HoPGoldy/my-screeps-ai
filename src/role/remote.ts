@@ -302,12 +302,10 @@ const roles: {
      * 如果都造好的话就升级控制器
      */
     remoteBuilder: (data: RemoteHelperData): ICreepConfig => ({
-        isNeed: () => {
-            const targetRoom = Game.rooms[data.targetRoomName]
+        isNeed: room => {
+            const target = Game.rooms[data.targetRoomName]
             // 如果房间造好了 terminal，自己的使命就完成了
-            if (!targetRoom || (targetRoom.terminal && targetRoom.terminal.my)) return false
-
-            return true
+            return remoteHelperIsNeed(room, target, () => target.terminal && target.terminal.my)
         },
         // 向指定房间移动
         prepare: creep => {
@@ -354,12 +352,10 @@ const roles: {
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      */
     remoteUpgrader: (data: RemoteHelperData): ICreepConfig => ({
-        isNeed: () => {
-            const targetRoom = Game.rooms[data.targetRoomName]
-            // 如果房间到 6 级了就任务完成
-            if (!targetRoom || targetRoom.controller.level >= 6) return false
-
-            return true
+        isNeed: room => {
+            const target = Game.rooms[data.targetRoomName]
+            // 目标房间到 6 了就算任务完成
+            return remoteHelperIsNeed(room, target, () =>  target.controller.level >= 6)
         },
         // 向指定房间移动
         prepare: creep => {
@@ -949,6 +945,27 @@ const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName
     // 自杀并释放采集位置
     creep.suicide()
     creep.room.removeRestrictedPos(creep.name)
+}
+
+/**
+ * 远程支援单位的 isNeed 阶段
+ * 
+ * @param source 来源房间
+ * @param target 被支援的房间
+ * @param customCondition 自定义判断条件
+ */
+const remoteHelperIsNeed = function(source: Room, target: Room, customCondition: () => boolean): boolean {
+    // 源房间没视野就默认孵化
+    if (!target) return true
+
+    if (
+        // 判断自定义条件
+        customCondition() ||
+        // 源房间还不够 7 级并且目标房间的 spawn 已经造好了
+        (source.controller?.level < 7 && target.find(FIND_MY_SPAWNS).length > 0)
+    ) return false
+
+    return true
 }
 
 export default roles
