@@ -422,7 +422,7 @@ export default class RoomConsole extends RoomExtension {
     public claim(targetRoomName: string, signText: string = ''): string {
         this.claimRoom(targetRoomName, signText)
 
-        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。\n 你可以在目标房间中新建名为 ${getName.flagBaseCenter(this.name)} 的旗帜来指定基地中心。否则 claimer 将运行自动规划。`
+        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。\n 你可以在目标房间中新建名为 ${getName.flagBaseCenter(targetRoomName)} 的旗帜来指定基地中心。否则 claimer 将运行自动规划。`
     }
 
     /**

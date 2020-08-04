@@ -1,5 +1,4 @@
 import { creepApi } from 'modules/creepController'
-import { clearStructure } from 'modules/autoPlanning/planBaseLayout'
 import { whiteListFilter } from 'utils'
 
 /**
@@ -36,18 +35,15 @@ export default class ControllerExtension extends StructureController {
      * @param level 当前的等级
      */
     public onLevelChange(level: number): void {
-        // 规划布局
-        this.log(this.room.planLayout())
-
-        // 刚占领，移除不必要的建筑并添加最基础的角色组
+        // 刚占领，添加最基础的角色组
         if (level === 1) {
-            const result = clearStructure(this.room)
-            if (result === OK) this.log(`已清理过期建筑，你可以选择执行 Game.rooms.${this.room.name}.clearWall() 来清理现存的墙壁`, 'green')
-
             this.room.releaseCreep('harvester')
             // 多发布一个 build 协助建造
             this.room.releaseCreep('builder')
         }
+
+        // 规划布局
+        this.log(this.room.planLayout(), 'green')
     }
 
     /**

@@ -186,7 +186,7 @@ const roles: {
             }
 
             // 绘制所有基地中央待选点位
-            creep.room.memory.centerCandidates.forEach(center => creep.room.visual.circle(...center))
+            creep.room.memory.centerCandidates?.forEach(center => creep.room.visual.circle(...center))
 
             // 如果控制器不是自己或者被人预定的话就进行攻击
             if ((controller.owner && controller.owner.username !== creep.owner.username) || controller.reservation !== undefined) {
@@ -212,6 +212,8 @@ const roles: {
                 if (flag) {
                     creep.room.setBaseCenter(flag.pos)
                     creep.log(`使用玩家提供的基地中心点，已确认, 位置 [${flag.pos.x}, ${flag.pos.y}]`, 'green')
+                    // 移除旗帜
+                    flag.remove()
                 }
                 // 运行基地选址确认
                 else {
@@ -224,6 +226,9 @@ const roles: {
                         else creep.log(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`, 'green')
                     }
                 }
+
+                const result = creep.room.clearStructure()
+                if (result === OK) creep.log(`已清理过期建筑，你可以选择执行 Game.rooms.${creep.room.name}.clearWall() 来清理现存的墙壁`, 'green')
 
                 // 任务完成，一路顺风
                 creep.suicide()

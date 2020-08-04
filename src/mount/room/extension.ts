@@ -9,7 +9,7 @@ import RoomShortcut from './shortcut'
 import { creepApi } from 'modules/creepController'
 import { ROOM_TRANSFER_TASK, BOOST_RESOURCE, ENERGY_SHARE_LIMIT } from 'setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from 'modules/autoPlanning/planBasePos'
-import { planLayout } from 'modules/autoPlanning/planBaseLayout'
+import { planLayout, clearStructure } from 'modules/autoPlanning/planBaseLayout'
 import { createRoomLink, log } from 'utils'
 
 export default class RoomExtension extends RoomShortcut {
@@ -543,6 +543,11 @@ export default class RoomExtension extends RoomShortcut {
         // 把上面筛选出来的空字符串元素去除
         Memory.resourceSourceMap[resourceType] = roomWithEmpty.filter(roomName => roomName)
         return targetRoom
+    }
+
+    // 移除不必要的建筑
+    public clearStructure(): OK | ERR_NOT_FOUND {
+        return clearStructure(this)
     }
 
     /**
