@@ -605,6 +605,7 @@ interface Room {
     removeRemote(remoteRoomName: string, removeFlag?: boolean): OK | ERR_NOT_FOUND
     claimRoom(targetRoomName: string, signText?: string): OK
     registerContainer(container: StructureContainer): OK
+    clearStructure(): OK | ERR_NOT_FOUND
 }
 
 interface RoomPosition {
