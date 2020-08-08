@@ -11,9 +11,10 @@ export default class CreepControl extends RoomConsole {
     /**
      * 给本房间发布或重新规划指定的 creep 角色
      * @param role 要发布的 creep 角色
+     * @param number 要发布的数量，部分角色会无视该参数
      */
-    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant): ScreepsReturnCode { 
-        return releaseCreep(this, role)
+    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant, number: number = 1): ScreepsReturnCode { 
+        return releaseCreep(this, role, number)
     }
 
     /**

@@ -538,7 +538,7 @@ interface Room {
     hangPowerTask(): void
 
     // creep 发布 api
-    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant): ScreepsReturnCode
+    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant, number?: number): ScreepsReturnCode
     addRemoteCreepGroup(remoteRoomName: string)
     addRemoteReserver(remoteRoomName): void
     addRemoteHelper(remoteRoomName): void

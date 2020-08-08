@@ -41,7 +41,7 @@ export default class ControllerExtension extends StructureController {
             if (Object.keys(Game.spawns).length <= 1) this.room.clearStructure()
             this.room.releaseCreep('harvester')
             // 多发布一个 build 协助建造
-            this.room.releaseCreep('builder')
+            this.room.releaseCreep('builder', 1)
         }
 
         // 规划布局

@@ -157,11 +157,8 @@ export const planLayout = function(room: Room): OK | ERR_NOT_OWNER | ERR_NOT_FOU
         })
     })
 
-    // 有需要建造的，发布两个建造者
-    if (needBuild) {
-        releaseCreep(room, 'builder')
-        releaseCreep(room, 'builder')
-    }
+    // 有需要建造的，发布建造者
+    if (needBuild) releaseCreep(room, 'builder')
 
     return OK
 }
