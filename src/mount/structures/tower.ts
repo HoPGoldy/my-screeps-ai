@@ -83,11 +83,18 @@ export default class TowerExtension extends StructureTower {
             }
         }
         else {
-            // 没有防御单位的情况下当能量大于 700 才攻击敌方单位，省下能量来之后治疗防御单位
-            if (this.store[RESOURCE_ENERGY] > 700) {
-                const enemys = this.findEnemy()
-                this.fire(enemys)
+            const enemys = this.findEnemy()
+
+            // 没有敌人了就返回日常模式
+            if (enemys.length <= 0){
+                // this.log('威胁解除，返回日常模式')
+                delete this.room.memory.defenseMode
+                this.room.stopWar()
+                return
             }
+
+            // 没有防御单位的情况下当能量大于 700 才攻击敌方单位，省下能量来之后治疗防御单位
+            if (this.store[RESOURCE_ENERGY] > 700) this.fire(enemys)
 
             // 没有防御单位时才准备 boost
             this.prepareBoost(defenderName)

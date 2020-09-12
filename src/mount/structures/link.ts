@@ -99,6 +99,15 @@ export class LinkExtension extends StructureLink {
         // 中央 link 没冷却好，待机
         if (!centerlink || centerlink.cooldown > 0) return
 
+        /**
+         * 当 RCL 小于 7 时，房间只支持 3 个 link，这时存在 upgradeLink 的话就导致房间内存在 4 个 Link（1 个 center、2 个 source）
+         * 这就导致了这四个 link 中势必会有一个 link 不能工作，如果这个 link 恰好是 centerLink 的话，整个房间运营就会卡死。
+         * 所以，在不够 7 级时应该主动移除 upgradeLink。
+         * 
+         * 这种情况只会在房间从 7 级以上掉级下来时出现
+         */
+        if (this.room.controller.level < 7) this.destroy()
+
         let source: StructureTerminal | StructureStorage
         // 优先用 terminal 里的能量
         if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > LINK_CAPACITY) source = this.room.terminal

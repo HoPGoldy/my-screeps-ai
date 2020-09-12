@@ -113,7 +113,7 @@ const roles: {
             // 如果目标建筑物太远了，就移动过去
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos)
             else if (result === ERR_FULL) {
-                creep.say(`${task.target} 满了`)
+                creep.log(`${task.target} 满了`)
                 if (task.target === STRUCTURE_TERMINAL) Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
                 creep.room.hangCenterTask()
             }
