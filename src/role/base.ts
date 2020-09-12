@@ -302,10 +302,11 @@ const roles: {
             // 但如果是 Container 或者 Link 里获取能量的话，就不会重新运行规划
             if (
                 (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) &&
-                (source instanceof StructureTerminal || source instanceof StructureStorage)
+                (!source || source instanceof StructureTerminal || source instanceof StructureStorage)
             ) {
                 // 如果发现能量来源（建筑）里没有能量了，就自杀并重新运行 upgrader 发布规划
-                creep.room.releaseCreep('upgrader')
+                // 下面这个 if 的意思时只有编号为 0 的 upgrader 才会运行规划
+                if (creep.name.includes('0')) creep.room.releaseCreep('upgrader')
                 creep.suicide()
             }
         },
