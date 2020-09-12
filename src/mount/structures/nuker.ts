@@ -7,10 +7,10 @@ export default class NukerExtension extends StructureNuker {
 
         if (Game.time % 30) return
 
-        // G 矿不满并且 terminal 中有 G 矿则开始填充 G
-        if (!this.keepResource(RESOURCE_GHODIUM, NUKER_GHODIUM_CAPACITY, this.room.terminal, 0)) return 
         // 能量不满并且 storage 能量大于 300k 则开始填充能量
         if (!this.keepResource(RESOURCE_ENERGY, NUKER_ENERGY_CAPACITY, this.room.storage, 300000)) return
+        // G 矿不满并且 terminal 中有 G 矿则开始填充 G
+        if (!this.keepResource(RESOURCE_GHODIUM, NUKER_GHODIUM_CAPACITY, this.room.terminal, 0)) return 
     }
 
     // 在房间基础服务中注册自己
@@ -36,7 +36,7 @@ export default class NukerExtension extends StructureNuker {
                 type: ROOM_TRANSFER_TASK.FILL_NUKER,
                 id: this.id,
                 resourceType: resource
-            })    
+            })
         }
 
         return false
