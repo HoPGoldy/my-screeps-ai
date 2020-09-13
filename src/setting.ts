@@ -686,3 +686,6 @@ export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'collector', '
  * 当增加了新 shard 时需要在该数组中添加其名称后才会启用和新 shard 的通讯
  */
 export const ALL_SHARD_NAME: ShardName[] = [ 'shard0', 'shard1', 'shard2', 'shard3' ]
+
+// 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
+export const ROOM_REMOVE_INTERVAL: number = 30

@@ -5,7 +5,7 @@
  */
 
 import { createHelp } from "modules/help"
-import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE } from "setting"
+import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE, ROOM_REMOVE_INTERVAL } from "setting"
 import { getName, createElement, colorful } from "utils"
 import { setBaseCenter } from "modules/autoPlanning/planBasePos"
 import RoomExtension from "./extension"
@@ -101,7 +101,7 @@ export default class RoomConsole extends RoomExtension {
         return logs.join('\n')
     }
 
-        /**
+    /**
      * 用户操作 - 发送 power 到指定房间
      * 
      * @param RoomName 要发送到的房间名
@@ -109,6 +109,37 @@ export default class RoomConsole extends RoomExtension {
      */
     public givep(RoomName: string, amount: number = 5000) {
         return this.giver(RoomName, RESOURCE_POWER, amount)
+    }
+
+    /**
+     * 移除房间
+     * 第一次执行时将会弹出警告
+     * 玩家需要在指定时间内重新执行该 api 才会真正执行移除
+     */
+    public remove(): string {
+        let log = '完成移除'
+        // 没有发起过移除或者移除过期了，都视为第一次发起移除
+        if (!this.memory.removeTime || Game.time > this.memory.removeTime + ROOM_REMOVE_INTERVAL) {
+            log = [
+                `${colorful('警告!', 'red', true)} 你正在试图移除房间 ${this.name}，这将会导致以下行为的发生：\n`,
+                `- 移除所有建筑（不包括 wall、rempart、terminal 和 storage）`,
+                `- 移除所有相关 creep 及配置项（以 ${this.name} 作为名称前缀的 creep）`,
+                `- 移除所有相关 memory（工作内存及统计内存）`,
+                `- ${colorful('不会', undefined, true)}转移房间中存放的资源，需要提前手动转移`,
+                `\n在 ${ROOM_REMOVE_INTERVAL.toString()} tick 内重新执行 ${colorful(this.name + '.remove()', 'red')} 以确认移除，执行 ${colorful(this.name + '.cancelremove()', 'yellow')} 来取消操作`
+            ].join('\n')
+            this.memory.removeTime = Game.time
+        }
+        else this.dangerousRemove()
+        return log
+    }
+
+    /**
+     * 取消移除房间
+     */
+    public cancelremove(): string {
+        delete this.memory.removeTime
+        return `移除操作已取消`
     }
 
     /**
@@ -665,6 +696,11 @@ export default class RoomConsole extends RoomExtension {
                             { name: 'content', desc: '要签名的内容' }
                         ],
                         functionName: 'sign'
+                    },
+                    {
+                        title: '移除本房间',
+                        describe: '会移除房间内的建筑（不包括墙壁）、移除对应的 creep 及 memory，需二次确认',
+                        functionName: 'remove'
                     }
                 ]
             },

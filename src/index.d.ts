@@ -633,7 +633,9 @@ interface RoomMemory {
     // 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
     // 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
     powers?: string
-
+    // 该房间发起移除操作的时间
+    // 执行移除时会检查该时间，如果已经过期的话将不会执行移除操作 
+    removeTime?: number
     // 该房间的生产队列，元素为 creepConfig 的键名
     spawnList?: string[]
     // 该房间禁止通行点的存储

@@ -193,6 +193,44 @@ export default class RoomExtension extends RoomShortcut {
     }
 
     /**
+     * 危险操作：执行本 api 将会直接将本房间彻底移除
+     */
+    public dangerousRemove(): string {
+        // 移除建筑
+        this.find(FIND_STRUCTURES).forEach(s => {
+            if (
+                s.structureType === STRUCTURE_STORAGE ||
+                s.structureType === STRUCTURE_TERMINAL ||
+                s.structureType === STRUCTURE_WALL ||
+                s.structureType === STRUCTURE_RAMPART
+            ) return
+
+            s.destroy()
+        })
+
+        // 移除 creep config
+        creepApi.batchRemove(this.name)
+
+        // 移除 creep
+        for (const name in Game.creeps) {
+            const creep = Game.creeps[name]
+            if (creep.name.includes(this.name)) {
+                creep.suicide()
+                delete creep.memory
+            }
+        }
+
+        // 移除内存
+        delete this.memory
+        delete Memory.stats.rooms[this.name]
+
+        // 放弃房间
+        this.controller.unclaim()
+
+        return this.name + ' 房间已移除'
+    }
+
+    /**
      * 将位置序列化字符串转换为位置
      * 位置序列化字符串形如: 12/32/E1N2
      * 
@@ -425,7 +463,7 @@ export default class RoomExtension extends RoomShortcut {
 
         if (result === OK) return `自动规划完成`
         else if (result === ERR_NOT_OWNER) return `自动规划失败，房间没有控制权限`
-        else return `未找到基地中心点位，请执行 Game.rooms.${this.name}.setcenter 以启用自动规划`
+        else return `未找到基地中心点位，请执行 Game.rooms.${this.name}.setcenter() 以启用自动规划`
     }
 
     /**
