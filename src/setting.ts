@@ -142,14 +142,14 @@ export const bodyConfigs: BodyConfigs = {
      * 拆除者身体
      */
     dismantler: getBodyConfig(
-        { [TOUGH]: 1, [WORK]: 1, [MOVE]: 2 },
-        { [TOUGH]: 2, [WORK]: 2, [MOVE]: 4 },
-        { [TOUGH]: 2, [WORK]: 3, [MOVE]: 5 },
-        { [TOUGH]: 3, [WORK]: 4, [MOVE]: 7 },
-        { [TOUGH]: 4, [WORK]: 5, [MOVE]: 9 },
-        { [TOUGH]: 5, [WORK]: 6, [MOVE]: 11 },
-        { [TOUGH]: 10, [WORK]: 10, [MOVE]: 20 },
-        { [TOUGH]: 13, [WORK]: 12, [MOVE]: 25 }
+        { [WORK]: 1, [MOVE]: 2 },
+        { [WORK]: 2, [MOVE]: 4 },
+        { [WORK]: 4, [MOVE]: 4 },
+        { [WORK]: 6, [MOVE]: 6 },
+        { [WORK]: 10, [MOVE]: 10 },
+        { [WORK]: 15, [MOVE]: 15 },
+        { [WORK]: 25, [MOVE]: 25 },
+        { [WORK]: 25, [MOVE]: 25 }
     ),
 
     /**

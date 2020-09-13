@@ -181,13 +181,34 @@ export default class CreepControl extends RoomConsole {
         if (num <=0 || num > 10) num = 1
 
         for (let i = 0; i < num; i++) {
-            creepApi.add(`${this.name} dismantler ${Game.time}-${i}`, 'soldier', {
+            creepApi.add(`${this.name} soldier ${Game.time}-${i}`, 'soldier', {
                 targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
                 keepSpawn: false
             }, this.name)
         }
 
         return `已发布 soldier*${num}，正在孵化`
+    }
+
+    /**
+     * 孵化基础拆除单位
+     * 一般用于清除中立房间中挡路的墙壁
+     * 
+     * @param targetFlagName 进攻旗帜名称
+     * @param num 要孵化的数量
+     * @param keepSpawn 是否持续生成
+     */
+    public spwanDismantler(targetFlagName: string = '', num: number = 2, keepSpawn: boolean = false) {
+        if (num <=0 || num > 10) num = 1
+
+        for (let i = 0; i < num; i++) {
+            creepApi.add(`${this.name} dismantler ${Game.time}-${i}`, 'dismantler', {
+                targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
+                keepSpawn
+            }, this.name)
+        }
+
+        return `已发布 dismantler*${num}，正在孵化`
     }
 
     /**

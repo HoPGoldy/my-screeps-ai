@@ -1,4 +1,4 @@
-import { getOppositeDirection, assignPrototype } from 'utils'
+import { getOppositeDirection } from 'utils'
 import { repairSetting, minWallHits } from 'setting'
 import roles from 'role'
 
@@ -291,7 +291,7 @@ export default class CreepExtension extends Creep {
             // 没找到说明撞墙上了或者前面的 creep 拒绝对穿，重新寻路
             if (crossResult != OK) {
                 delete this.memory._move
-                return ERR_INVALID_TARGET
+                return crossResult
             }
         }
 
@@ -376,20 +376,20 @@ export default class CreepExtension extends Creep {
      * @param direction 要进行对穿的方向
      * @returns OK 成功对穿
      * @returns ERR_BUSY 对方拒绝对穿
-     * @returns ERR_NOT_FOUND 前方没有 creep
+     * @returns ERR_INVALID_TARGET 前方没有 creep
      */
-    public mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
+    public mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_INVALID_TARGET {
         // 获取前方位置上的 creep（fontCreep）
         const fontPos = this.pos.directionToPos(direction)
-        if (!fontPos) return ERR_NOT_FOUND
+        if (!fontPos) return ERR_INVALID_TARGET
 
         const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
-        if (!fontCreep) return ERR_NOT_FOUND
+        if (!fontCreep) return ERR_INVALID_TARGET
 
         this.say(`👉`)
         // 如果前面的 creep 同意对穿了，自己就朝前移动
         if (fontCreep.requireCross(getOppositeDirection(direction))) this._move(direction)
-        else return 
+        else return ERR_BUSY
 
         return OK
     }
@@ -723,17 +723,31 @@ export default class CreepExtension extends Creep {
         // 如果 creep 不在房间里 则一直向旗帜移动
         if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
             // 如果 healer 存在则只会在 healer 相邻且可以移动时才进行移动
-            if (!this.canMoveWith(healer)) return true
-            this.farMoveTo(attackFlag.pos)
+            if (!healer || (healer && this.canMoveWith(healer))) this.farMoveTo(attackFlag.pos)
             return true
         }
 
         // 如果到旗帜所在房间了
         const structures = attackFlag.pos.lookFor(LOOK_STRUCTURES)
         if (structures.length == 0) this.say('干谁?')
+        
+        // healer 不存在（自己行动）或者 healer 可以和自己同时移动时才允许自己移动
+        if (!healer || (healer && this.canMoveWith(healer))) {
+            this.moveTo(attackFlag)
+            
+            // 如果之前在拆墙则移除刚才所在的禁止通行点位
+            if (this.memory.standed) {
+                this.room.removeRestrictedPos(this.name)
+                delete this.memory.standed
+            }
+        }
 
-        if (this.canMoveWith(healer)) this.moveTo(attackFlag)
-        this.dismantle(structures[0])
+        const result = this.dismantle(structures[0])
+        // 开始工作后就禁止对穿
+        if (result === OK && !this.memory.standed) {
+            this.room.addRestrictedPos(this.name, this.pos)
+            this.memory.standed = true
+        } 
     }
 
     /**
@@ -775,7 +789,7 @@ export default class CreepExtension extends Creep {
         else this.goTo(creep.pos)
         
         // 检查自己是不是在骑墙
-        if (this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49) {
+        if (this.onEnter()) {
             const safePosFinder = i => i !== 0 && i !== 49
             // 遍历找到目标 creep 身边的不骑墙位置
             const x = [creep.pos.x - 1, creep.pos.x + 1].find(safePosFinder)
@@ -784,6 +798,13 @@ export default class CreepExtension extends Creep {
             // 移动到不骑墙位置
             this.moveTo(new RoomPosition(x, y, creep.pos.roomName))
         }
+    }
+
+    /**
+     * 判断当前是否在入口处（是否骑墙）
+     */
+    private onEnter(): boolean {
+        return this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49
     }
 
     /**

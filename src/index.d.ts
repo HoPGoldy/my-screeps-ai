@@ -364,7 +364,7 @@ interface Creep {
     farMoveTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE
     goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
     requireCross(direction: DirectionConstant): Boolean
-    mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND
+    mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_INVALID_TARGET
     upgrade(): ScreepsReturnCode
     buildStructure(): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
     fillDefenseStructure(expectHits?: number): boolean

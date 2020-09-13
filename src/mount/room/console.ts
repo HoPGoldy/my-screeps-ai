@@ -692,6 +692,16 @@ export default class RoomConsole extends RoomExtension {
                         functionName: 'spwanSoldier'
                     },
                     {
+                        title: '孵化拆除单位',
+                        describe: '孵化基础、无 boost 、无 TOUGH 的黄球单位',
+                        params: [
+                            { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
+                            { name: 'num', desc: '[可选] 要孵化的数量，1 - 10，默认为 2' },
+                            { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' },
+                        ],
+                        functionName: 'spwanDismantler'
+                    },
+                    {
                         title: '孵化进攻一体机',
                         describe: '<需要战争状态> 包含完全 boost 的蓝绿球单位',
                         params: [

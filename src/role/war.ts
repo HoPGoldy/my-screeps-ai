@@ -289,7 +289,7 @@ const battleBase = (flagName: string, keepSpawn: boolean) => ({
         }
 
         if (creep.room.name == targetFlag.pos.roomName) {
-            creep.log(`[${creep.name}] 抵达指定房间，切入作战模式`, 'green')
+            creep.log(`抵达指定房间，切入作战模式`, 'green')
             return true
         }
         
