@@ -113,6 +113,8 @@ export class LinkExtension extends StructureLink {
         if (this.room.terminal && this.room.terminal.store[RESOURCE_ENERGY] > LINK_CAPACITY) source = this.room.terminal
         // terminal 不能作为能量来源的话就用 storage 里的能量
         if (!source && this.room.storage && this.room.storage.store[RESOURCE_ENERGY] > LINK_CAPACITY) source = this.room.storage
+        // 实在找不到目标了，放弃治疗
+        if (!source) return
 
         // 以 centerLink 的名义发布中央物流任务
         const result = this.room.addCenterTask({
