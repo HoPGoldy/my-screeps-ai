@@ -320,7 +320,11 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             if (!clearCarryingEnergy(creep)) return false
 
             // 获取应拿取的数量（能拿取的最小值）
-            let getAmount = Math.min(creep.store.getFreeCapacity(task.resourceType), sourceStructure.store[task.resourceType], nuker.store[task.resourceType])
+            let getAmount = Math.min(
+                creep.store.getFreeCapacity(task.resourceType),
+                sourceStructure.store[task.resourceType],
+                nuker.store.getFreeCapacity(task.resourceType)
+            )
 
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
@@ -503,7 +507,11 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             if (!clearCarryingEnergy(creep)) return false
 
             // 获取应拿取的数量
-            let getAmount = Math.min(creep.store.getFreeCapacity(task.resourceType), sourceStructure.store[task.resourceType], powerspawn.store.getFreeCapacity(task.resourceType))
+            let getAmount = Math.min(
+                creep.store.getFreeCapacity(task.resourceType),
+                sourceStructure.store[task.resourceType],
+                powerspawn.store.getFreeCapacity(task.resourceType)
+            )
 
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
