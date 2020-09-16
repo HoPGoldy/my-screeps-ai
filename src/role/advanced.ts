@@ -683,10 +683,10 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
             // 转移资源
             creep.goTo(targetLab.pos)
-            const reult = creep.withdraw(targetLab, targetLab.mineralType)
-            if (reult === OK) return true
+            const result = creep.withdraw(targetLab, targetLab.mineralType)
+            if (result === OK) return true
             // 正常转移资源则更新任务
-            else creep.say(`强化清理 ${reult}`)
+            else if (result != ERR_NOT_IN_RANGE) creep.say(`强化清理 ${result}`)
         },
         target: (creep, task: IBoostClear) => {
             const terminal = creep.room.terminal
