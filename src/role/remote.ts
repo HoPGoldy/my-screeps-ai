@@ -211,7 +211,7 @@ const roles: {
                 // 用户已经指定了旗帜了
                 if (flag) {
                     creep.room.setBaseCenter(flag.pos)
-                    creep.log(`使用玩家提供的基地中心点，已确认, 位置 [${flag.pos.x}, ${flag.pos.y}]`, 'green')
+                    creep.log(`使用玩家提供的基地中心点，位置 [${flag.pos.x}, ${flag.pos.y}]`, 'green')
                     // 移除旗帜
                     flag.remove()
                 }
