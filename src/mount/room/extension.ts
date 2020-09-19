@@ -250,8 +250,13 @@ export default class RoomExtension extends RoomShortcut {
         // terminal 或 storage 里有能量就优先用
         if (this.terminal && this.terminal.store[RESOURCE_ENERGY] > 10000) return this.terminal
         if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) return this.storage
-        // 如果有 sourceConainer 的话就挑个多的
-        if (this.sourceContainers.length > 0) return _.max(this.sourceContainers, container => container.store[RESOURCE_ENERGY])
+        // 如果有 sourceConainer 
+        if (this.sourceContainers.length > 0) {
+            // 能量必须够多才会选用
+            const availableContainer = this.sourceContainers.filter(container => container.store[RESOURCE_ENERGY] > 300)
+            // 挑个能量多的 container
+            if (availableContainer.length > 0) return _.max(availableContainer, container => container.store[RESOURCE_ENERGY])
+        }
 
         // 没有就选边上有空位的 source
         return this.sources.find(source => {

@@ -337,10 +337,10 @@ const roles: {
                 creep.memory.sourceId = source.id
             }
             else source = Game.getObjectById(creep.memory.sourceId)
-            if (!source) delete creep.memory.sourceId
+            // 之前的来源建筑里能量不够了就更新来源（如果来源已经是 source 的话就不改了）
+            if (!source || (source instanceof Structure && source.store[RESOURCE_ENERGY] < 300)) delete creep.memory.sourceId
 
-            // 之前用的能量来源没能量了就更新来源（如果来源已经是 source 的话就改了）
-            if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) delete creep.memory.sourceId
+            creep.getEngryFrom(source)
         },
         target: creep => {
             // 执行建造之后检查下是不是都造好了，如果是的话这辈子就不会再建造了，等下辈子出生后再检查（因为一千多 tick 基本上不会出现新的工地）
@@ -388,10 +388,10 @@ const roles: {
                 creep.memory.sourceId = source.id
             }
             else source = Game.getObjectById(creep.memory.sourceId)
-            if (!source) delete creep.memory.sourceId
+            // 之前的来源建筑里能量不够了就更新来源（如果来源已经是 source 的话就不改了）
+            if (!source || (source instanceof Structure && source.store[RESOURCE_ENERGY] < 300)) delete creep.memory.sourceId
 
-            // 之前用的能量来源没能量了就更新来源（如果来源已经是 source 的话就改了）
-            if (creep.getEngryFrom(source) === ERR_NOT_ENOUGH_RESOURCES && source instanceof Structure) delete creep.memory.sourceId
+            creep.getEngryFrom(source)
         },
         target: creep => {
             creep.upgrade()
