@@ -34,7 +34,13 @@ export default class TowerExtension extends StructureTower {
         // 找不到敌人再维修建筑
         else if (this.commandRepair()) { }
         // 找不到要维修的建筑就刷墙
-        else if (this.commandFillWall()) { }
+        else {
+            /**
+             * 房间等级大于 5 才会刷墙，因为低等级的能量运力可能不足
+             * 如果 tower 参与刷墙的话可能会导致 filler 一直卡在给 tower 填充能量的任务
+             */
+            if (this.room.controller.level >= 5) this.commandFillWall()
+        }
 
         // 如果能量低了就发布填充任务
         this.requireEnergy(600)
