@@ -104,7 +104,7 @@ const releasePlans: CreepReleasePlans = {
                 room,
                 controllerLevel: room.controller.level,
                 ticksToDowngrade: room.controller.ticksToDowngrade,
-                sourceContainerIds: room.memory.sourceContainersIds || [],
+                sourceContainerIds: room.sourceContainers.map(container => container.id) || [],
                 upgradeLinkId: room.memory.upgradeLinkId
             }
         
@@ -203,7 +203,7 @@ const releasePlans: CreepReleasePlans = {
         getStats(room: Room): TransporterPlanStats {
             const stats: TransporterPlanStats = {
                 room,
-                sourceContainerIds: room.memory.sourceContainersIds || []
+                sourceContainerIds: room.sourceContainers.map(container => container.id) || []
             }
 
             if (room.storage) stats.storageId = room.storage.id

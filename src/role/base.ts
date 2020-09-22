@@ -134,10 +134,18 @@ const roles: {
                 return false
             }
 
-            const actionResult = creep.harvest(source)
+            const result = creep.harvest(source)
 
-            if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
-            else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) {
+            // harvest 需要长时间占用该位置，所以需要禁止对穿
+            if (result === OK) {
+                // 开始采集能量了就拒绝对穿
+                if (!creep.memory.standed) {
+                    creep.room.addRestrictedPos(creep.name, creep.pos)
+                    creep.memory.standed = true
+                }
+            }
+            else if (result === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 // 如果满足下列条件就重新发送 regen_source 任务
                 if (
                     // creep 允许重新发布任务
@@ -294,19 +302,31 @@ const roles: {
 
             const source: StructureTerminal | StructureStorage | StructureContainer = Game.getObjectById(data.sourceId)
 
-            // 如果来源是 container 的话就等到其中能量大于指定数量再拿（优先满足 filler 的能量需求）
-            if (source && source.structureType === STRUCTURE_CONTAINER && source.store[RESOURCE_ENERGY] <= 500) return false
+            // 如果能量来源是 container
+            if (source && source.structureType === STRUCTURE_CONTAINER) {
+                // 完全没能量很少见，可能是边上有 link 了（这时候 harvester 会把能量存到 link 里，就不再用 container 了）
+                // 所以这里需要特殊判断一下，避免 upgrader 对着一个空的 container 发呆好几辈子
+                if (source.store[RESOURCE_ENERGY] === 0) {
+                    if (source.pos.findInRange(FIND_MY_STRUCTURES, 1, {
+                        filter: s => s.structureType === STRUCTURE_LINK
+                    })) {
+                        source.destroy()
+                        return false
+                    }
+                }
+                // 有能量但是太少，就等到其中能量大于指定数量再拿（优先满足 filler 的能量需求）
+                else if (source.store[RESOURCE_ENERGY] <= 500) return false
+            }
 
             // 获取能量
             const result = creep.getEngryFrom(source)
-            // 但如果是 Container 或者 Link 里获取能量的话，就不会重新运行规划
+
+            // 能量来源无法提供能量了, 自杀并重新运行 upgrader 发布规划, 从 Link 里获取能量的话，就不会重新运行规划
             if (
                 (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) &&
                 (!source || source instanceof StructureTerminal || source instanceof StructureStorage)
             ) {
-                // 如果发现能量来源（建筑）里没有能量了，就自杀并重新运行 upgrader 发布规划
-                // 下面这个 if 的意思时只有编号为 0 的 upgrader 才会运行规划
-                if (creep.name.includes('0')) creep.room.releaseCreep('upgrader')
+                creep.room.releaseCreep('upgrader')
                 creep.suicide()
             }
         },
