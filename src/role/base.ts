@@ -307,9 +307,11 @@ const roles: {
                 // 完全没能量很少见，可能是边上有 link 了（这时候 harvester 会把能量存到 link 里，就不再用 container 了）
                 // 所以这里需要特殊判断一下，避免 upgrader 对着一个空的 container 发呆好几辈子
                 if (source.store[RESOURCE_ENERGY] === 0) {
-                    if (source.pos.findInRange(FIND_MY_STRUCTURES, 1, {
+                    const nearLinks = source.pos.findInRange(FIND_MY_STRUCTURES, 1, {
                         filter: s => s.structureType === STRUCTURE_LINK
-                    })) {
+                    })
+                    // 已经造好 link 了，废弃空 container
+                    if (nearLinks.length > 0) {
                         source.destroy()
                         return false
                     }
