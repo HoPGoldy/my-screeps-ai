@@ -659,12 +659,9 @@ interface RoomMemory {
         watchIndex: number
         // 监听的房间列表
         watchRooms: string[]
-        // 当前已经找到的 powerBank 和 deposit 的数量，observer 找到后会增加该数值，采集 creep 采集完之后会减少该数值
-        pbNumber: number
-        depositNumber: number
-        // 和上面两个对应，分别是 powerBank 和 deposit 的查找上限，由玩家通过 api 指定。两者默认值均为 1
-        pbMax: number
-        depositMax: number
+        // 当前已经找到的 powerBank 和 deposit 旗帜名数组，会自动进行检查来移除消失的旗帜信息
+        pbList: string[]
+        depoList: string[]
         // 是否暂停，为 true 时暂停
         pause?: boolean
     }

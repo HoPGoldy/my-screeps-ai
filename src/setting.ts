@@ -689,3 +689,7 @@ export const ALL_SHARD_NAME: ShardName[] = [ 'shard0', 'shard1', 'shard2', 'shar
 
 // 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
 export const ROOM_REMOVE_INTERVAL: number = 30
+
+// 每个 observer 同时允许采集的 pb 和 depo 的最大数量
+export const OBSERVER_POWERBANK_MAX = 1
+export const OBSERVER_DEPOSIT_MAX = 2

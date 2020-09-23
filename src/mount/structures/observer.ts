@@ -1,6 +1,6 @@
-import { DEPOSIT_MAX_COOLDOWN, observerInterval } from 'setting'
+import { DEPOSIT_MAX_COOLDOWN, OBSERVER_POWERBANK_MAX, OBSERVER_DEPOSIT_MAX, observerInterval } from 'setting'
 import { creepApi } from 'modules/creepController'
-import { colorful } from 'utils'
+import { colorful, createRoomLink } from 'utils'
 import { createHelp } from 'modules/help'
 
 /**
@@ -14,11 +14,14 @@ export class ObserverExtension extends StructureObserver {
         if (!memory) return
         if (memory.pause) return
         // 都找到上限就不继续工作了
-        if ((memory.pbNumber >= memory.pbMax) && (memory.depositNumber >= memory.depositMax)) return
+        if ((memory.pbList.length >= OBSERVER_POWERBANK_MAX) && (memory.depoList.length >= OBSERVER_DEPOSIT_MAX)) return
 
         // 如果房间没有视野就获取视野，否则就执行搜索
         if (this.room.memory.observer.checkRoomName) this.searchRoom()
         else this.obRoom()
+
+        // 每隔一段时间检查下是否有 flag 需要清理
+        if (!(Game.time % 30)) this.updateFlagList()
     }
 
     public onBuildComplete(): void {
@@ -41,7 +44,7 @@ export class ObserverExtension extends StructureObserver {
         // this.log(`搜索房间 ${room.name}`)
 
         // 还没插旗的话就继续查找 deposit
-        if (memory.depositNumber < memory.depositMax) {
+        if (memory.depoList.length < OBSERVER_DEPOSIT_MAX) {
             const deposits = room.find(FIND_DEPOSITS)
             // 对找到的 deposit 进行处置归档
             deposits.forEach(deposit => {
@@ -57,7 +60,7 @@ export class ObserverExtension extends StructureObserver {
         }
         
         // 还没插旗的话就继续查找 pb
-        if (memory.pbNumber < memory.pbMax) {
+        if (memory.pbList.length < OBSERVER_POWERBANK_MAX) {
             // pb 的存活时间大于 3000 / power 足够大的才去采集
             const powerBanks = room.find<StructurePowerBank>(FIND_STRUCTURES, {
                 filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3000 && (s as StructurePowerBank).power >= 2000
@@ -89,7 +92,7 @@ export class ObserverExtension extends StructureObserver {
             target.pos.createFlag(targetFlagName)
 
             // 更新数量
-            this.room.memory.observer.pbNumber += 1
+            this.room.memory.observer.pbList.push(targetFlagName)
             // 计算应该发布的采集小组数量，最高两组
             const groupNumber = target.pos.getFreeSpace().length > 1 ? 2 : 1
             
@@ -114,7 +117,7 @@ export class ObserverExtension extends StructureObserver {
             target.pos.createFlag(targetFlagName)
 
             // 更新数量
-            this.room.memory.observer.depositNumber += 1
+            this.room.memory.observer.depoList.push(targetFlagName)
 
             // 发布采集者，他会自行完成剩下的工作
             creepApi.add(`${targetFlagName} worker`, 'depositHarvester', {
@@ -124,7 +127,6 @@ export class ObserverExtension extends StructureObserver {
         }
         else return ERR_INVALID_TARGET
 
-        
         return OK
     }
 
@@ -154,11 +156,36 @@ export class ObserverExtension extends StructureObserver {
         this.room.memory.observer = {
             watchIndex: 0,
             watchRooms: [],
-            pbNumber: 0,
-            depositNumber: 0,
-            pbMax: 1,
-            depositMax: 1
+            pbList: [],
+            depoList: []
         }
+    }
+
+    /**
+     * 检查当前 depo 和 bp 旗帜是否失效
+     * 会更新内存中的两个资源对应的 List 字段
+     */
+    public updateFlagList(): OK | ERR_NOT_FOUND {
+        const memory = this.room.memory.observer
+        if (!memory) return ERR_NOT_FOUND
+
+        this.room.memory.observer.pbList = memory.pbList.filter(this.checkAliveFlag)
+        this.room.memory.observer.depoList = memory.depoList.filter(this.checkAliveFlag)
+
+        return OK
+    }
+
+    /**
+     * 检查旗帜是否失效
+     * 会完成失效后的释放操作
+     * 
+     * @param flagName 要检查的旗帜名称
+     */
+    private checkAliveFlag(flagName): boolean {
+        if (flagName in Game.flags) return true
+
+        Memory.flags && delete Memory.flags[flagName]
+        return false
     }
 }
 
@@ -167,54 +194,26 @@ export class ObserverConsole extends ObserverExtension {
      * 用户操作 - 查看状态
      */
     public stats(): string {
-        if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
+        const memory = this.room.memory.observer
+        if (!memory) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
         
         let stats = [ `[${this.room.name} observer] 当前状态`, this.showList() ]
-        // 这里并没有直接用 memory 里的信息，是因为为了保证准确性，并且下面会用 Game.flags 进行统计，所以也不用多费什么事情
-        let pbNumber = 0
-        let pbDetail = ''
-        let depositNumber = 0
-        let depositDetail = ''
+        
+        // 更新旗帜列表，保证显示最新数据
+        this.updateFlagList()
 
-        // 遍历所有 flag，统计两种资源的旗帜数量
-        for (const flagName in Game.flags) {
-            if (flagName.includes(`${STRUCTURE_POWER_BANK} ${this.room.name}`)) {
-                pbNumber += 1
-                pbDetail += ` ${Game.flags[flagName].pos.roomName}`
-                continue
-            }
-            if (flagName.includes(`deposit ${this.room.name}`)) {
-                depositNumber += 1
-                depositDetail += ` ${Game.flags[flagName].pos.roomName}`
-                continue
-            }
-        }
+        // 正在采集的两种资源数量
+        const pbNumber = memory.pbList.length
+        const depoNumber = memory.depoList.length
+        // 开采资源的所处房间
+        const getFlagRoomLink = flagName => createRoomLink(Game.flags[flagName].pos.roomName)
+        const pbPos = memory.pbList.map(getFlagRoomLink).join(' ')
+        const depoPos = memory.depoList.map(getFlagRoomLink).join(' ')
 
-        stats.push(`[powerBank] 已发现：${pbNumber}/${this.room.memory.observer.pbMax} ${pbDetail ? '[位置]' : ''} ${pbDetail}`)
-        stats.push(`[deposit] 已发现：${depositNumber}/${this.room.memory.observer.depositMax} ${pbDetail ? '[位置]' : ''} ${depositDetail}`)
-
-        // 更新缓存信息
-        this.room.memory.observer.pbNumber = pbNumber
-        this.room.memory.observer.depositNumber = depositNumber
+        stats.push(`[powerBank] 已发现：${pbNumber}/${OBSERVER_POWERBANK_MAX} ${pbNumber ? '[位置]' : ''} ${pbPos}`)
+        stats.push(`[deposit] 已发现：${depoNumber}/${OBSERVER_DEPOSIT_MAX} ${depoNumber ? '[位置]' : ''} ${depoPos}`)
 
         return stats.join('\n')
-    }
-
-    /**
-     * 设置 observer 对 pb、deposit 的搜索上限
-     * 
-     * @param type 要设置的类型
-     * @param max 要设置的最大值
-     */
-    public setmax(type: 'powerbank' | 'deposit', max: number): string {
-        if (!this.room.memory.observer) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
-        if (max < 0) return `[${this.room.name} observer] 最大数量不得小于 0，请重新指定`
-
-        if (type === 'powerbank') this.room.memory.observer.pbMax = max
-        else if (type == 'deposit') this.room.memory.observer.depositMax = max
-        else return `[${this.room.name} observer] 错误的类型，必须为 powerbank 或者 deposit`
-
-        return `[${this.room.name} observer] 配置成功\n` + this.stats()
     }
 
     /**
@@ -315,15 +314,6 @@ export class ObserverConsole extends ObserverExtension {
                         { name: '...roomNames', desc: '要移除的房间名列表' }
                     ],
                     functionName: 'remove'
-                },
-                {
-                    title: '设置上限',
-                    describe: '设置对 pb、deposit 的搜索上限，默认为 1（每种同时只采集一个）',
-                    params: [
-                        { name: 'type', desc: 'powerbank 或 deposit 字符串之一' },
-                        { name: 'max', desc: '查找的最大值' }
-                    ],
-                    functionName: 'setmax'
                 },
                 {
                     title: '显示状态',

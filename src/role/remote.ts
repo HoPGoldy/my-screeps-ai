@@ -582,8 +582,6 @@ const roles: {
 
             // 冷却时长过长则放弃该 deposit
             if (targetFlag.memory.depositCooldown >= DEPOSIT_MAX_COOLDOWN) {
-                if (room.memory && room.memory.observer) room.memory.observer.depositNumber -= 1
-                delete Memory.flags[targetFlag.name]
                 targetFlag.remove()
                 return false
             }
@@ -593,8 +591,8 @@ const roles: {
             // 旗帜效验, 没有旗帜则原地待命
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
-                creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
-                creep.say('旗呢？')
+                creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜，creep 已移除`)
+                creep.suicide()
                 return false
             }
 
@@ -629,10 +627,6 @@ const roles: {
                 if (target) targetFlag.memory.sourceId = target.id
                 // 找不到就失去了存在的意义
                 else {
-                    const roomMemory = Memory.rooms[data.spawnRoom]
-                    if (roomMemory && roomMemory.observer) roomMemory.observer.depositNumber -= 1
-
-                    delete Memory.flags[targetFlag.name]
                     targetFlag.remove()
                     creep.suicide()
                     return
@@ -656,7 +650,7 @@ const roles: {
                 creep.log(`[${creep.name}] 找不到存放建筑`, 'yellow')
                 return false
             }
-            
+
             // 转移并检测返回值
             const result = creep.transfer(room.terminal, creep.memory.depositType)
             if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
@@ -678,6 +672,7 @@ const roles: {
                 return true
             }
             if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos, 1)
+            else if (result === ERR_INVALID_ARGS) return true
             else creep.say(`转移 ${result}`)
         },
         bodys: 'remoteHarvester'
@@ -752,15 +747,8 @@ const roles: {
                 if (targetFlag.pos.lookFor(LOOK_RUINS).length > 0) {
                     targetFlag.memory.state = PB_HARVESTE_STATE.TRANSFER
                 }
-                else {
-                    // 未能成功在 pb 消失前将其摧毁，移除采集小组
-                    delete Memory.flags[targetFlag.name]
-                    targetFlag.remove()
-
-                    // 通知 observer
-                    const roomMemory = Memory.rooms[data.spawnRoom]
-                    if (roomMemory && roomMemory.observer) roomMemory.observer.pbNumber -= 1
-                }
+                // 未能成功在 pb 消失前将其摧毁，任务失败，移除旗帜
+                else targetFlag.remove()
                 
                 // 移除采集小组
                 removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
@@ -886,19 +874,12 @@ const roles: {
             // 存好了就直接自杀并移除旗帜
             if (result === OK) {
                 const targetFlag = Game.flags[data.sourceFlagName]
-                if (targetFlag) {
-                    delete Memory.flags[targetFlag.name]
-                    targetFlag.remove()
-
-                    const roomMemory = Memory.rooms[data.spawnRoom]
-                    if (roomMemory && roomMemory.observer) roomMemory.observer.pbNumber -= 1
-                }
-
+                targetFlag && targetFlag.remove()
                 creep.suicide()
 
                 // 通知 terminal 进行 power 平衡
                 room.terminal.balancePower()
-                
+
                 return true
             }
             else if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos)
