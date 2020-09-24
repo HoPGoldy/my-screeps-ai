@@ -42,9 +42,14 @@ export default [
                                 functionName: 'clearpos'
                             },
                             {
-                                title: '查看启用的 ps 状态',
+                                title: '查看 powerSpawn 状态汇总',
                                 commandType: true,
                                 functionName: 'ps'
+                            },
+                            {
+                                title: '查看 observer 状态汇总',
+                                commandType: true,
+                                functionName: 'ob'
                             },
                             {
                                 title: '查看商品生产线',
@@ -234,6 +239,40 @@ export default [
 
             // 更新可用的房间名
             Memory.psRooms = workingPowerSpawn
+            return stats
+        }
+    },
+    {
+        alias: 'ob',
+        exec: function(): string {
+            // 获取旗帜所在房间的访问链接
+            const getFlagRoomLink = flagName => createRoomLink(Game.flags[flagName].pos.roomName)
+
+            const stats = Object.values(Game.rooms).map(room => {
+                if (!room.observer) return false
+
+                const memory = room.memory.observer
+                const obName = createRoomLink(room.name)
+                if (!memory) return `${colorful('●', 'red', true)} ${obName} 未启用`
+                if (memory.pause) return `${colorful('●', 'yellow', true)} ${obName} 暂停中`
+
+                // 更新旗帜列表，保证显示最新数据
+                room.observer.updateFlagList()
+
+                // 正在采集的两种资源数量
+                const pbNumber = memory.pbList.length
+                const depoNumber = memory.depoList.length
+                // 开采资源的所处房间
+                const pbPos = memory.pbList.map(getFlagRoomLink).join(' ')
+                const depoPos = memory.depoList.map(getFlagRoomLink).join(' ')
+
+                let stats = [ colorful('●', 'green', true), obName ]
+                stats.push(`[开采中 PB] ${pbNumber ? pbPos : '无'}`)
+                stats.push(`[开采中 DEPO] ${depoNumber ? depoPos : '无'}`)
+
+                return stats.join(' ')
+            }).filter(stats => stats).join('\n')
+
             return stats
         }
     },

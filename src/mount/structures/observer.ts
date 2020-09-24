@@ -58,7 +58,7 @@ export class ObserverExtension extends StructureObserver {
                 this.log(`${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`, 'green')
             })
         }
-        
+
         // 还没插旗的话就继续查找 pb
         if (memory.pbList.length < OBSERVER_POWERBANK_MAX) {
             // pb 的存活时间大于 3000 / power 足够大的才去采集
@@ -196,9 +196,9 @@ export class ObserverConsole extends ObserverExtension {
     public stats(): string {
         const memory = this.room.memory.observer
         if (!memory) return `[${this.room.name} observer] 未启用，使用 .help() 来查看更多用法`
-        
+
         let stats = [ `[${this.room.name} observer] 当前状态`, this.showList() ]
-        
+
         // 更新旗帜列表，保证显示最新数据
         this.updateFlagList()
 

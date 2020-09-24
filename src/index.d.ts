@@ -1046,6 +1046,11 @@ interface StructureLink {
     asUpgrade(): string
 }
 
+// ob 拓展
+interface StructureObserver {
+    updateFlagList(): OK | ERR_NOT_FOUND
+}
+
 /**
  * 从路径名到颜色的映射表
  */
