@@ -290,7 +290,7 @@ const releaseTransporter = function(room: Room): OK {
 /**
  * 房间运营角色名对应的发布逻辑
  */
-const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room: Room, number: number) => OK | ERR_NOT_FOUND } = {
+const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room: Room, number: number) => OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY } = {
     'harvester': releaseHarvester,
     'collector': releaseHarvester,
     'filler': releaseTransporter,
@@ -330,13 +330,23 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
      * @param room 要发布角色的房间
      * @param num 要发布的刷墙工数量
      */
-    'repairer': function(room: Room, num: number = 1): OK {
+    'repairer': function(room: Room, num: number = 1): OK | ERR_NOT_ENOUGH_ENERGY {
+        let sources: string[] = undefined
+        
+        // 优先使用 container 中的能量
+        if (!sources && room.sourceContainers.length > 0) sources = room.sourceContainers.map(c => c.id)
+        // container 没有再去找 storage 或 terminal
+        else if (!sources && room.storage) sources = [ room.storage.id ]
+        else if (!sources && room.terminal && room.terminal.store[RESOURCE_ENERGY] > 0) sources = [ room.terminal.id ]
+        // 都没有就没有能量来源了，拒绝发布
+        else return ERR_NOT_ENOUGH_ENERGY
+
         for (let i = 0; i < num; i ++) {
             creepApi.add(`${room.name} repair${i}`, 'repairer', {
-                sourceId: room.storage ? room.storage.id : '',
+                sourceId: sources[i % sources.length],
             }, room.name)
         }
-    
+
         return OK
     },
 
@@ -363,6 +373,6 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
  * @param role 要发布的角色名
  * @param number 要发布的数量，部分角色将无视该值
  */
-export const releaseCreep = function(room: Room, role: BaseRoleConstant | AdvancedRoleConstant, number: number = 1): OK | ERR_NOT_FOUND {
+export const releaseCreep = function(room: Room, role: BaseRoleConstant | AdvancedRoleConstant, number: number = 1): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
     return roleToRelease[role](room, number)
 }

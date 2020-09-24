@@ -388,14 +388,24 @@ const roles: {
     /**
      * 维修者
      * 从指定结构中获取能量 > 维修房间内的建筑
-     * 注：目前维修者只会在敌人攻城时使用
+     * 主要用途：
+     * 在低等级时从 container 中拿能量刷墙（container 消失后自动移除）
+     * 在敌人进攻时孵化并针对性刷墙
+     * 在解决能量爆仓问题（暂未开发）
      * 
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
     repairer: (data: WorkerData): ICreepConfig => ({
         // 根据敌人威胁决定是否继续生成
-        isNeed: room => room.controller.checkEnemyThreat(),
+        isNeed: room => {
+            const source = Game.getObjectById(data.sourceId)
+
+            // 如果能量来源没了就删除自己
+            if (!source) return false
+            // 否则就看当前房间里有没有威胁，有的话就继续孵化并刷墙
+            return room.controller.checkEnemyThreat()
+        },
         source: creep => {
             creep.getEngryFrom(Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal)
 
@@ -407,7 +417,7 @@ const roles: {
             // 先尝试获取焦点墙，有最新的就更新缓存，没有就用缓存中的墙
             if (importantWall) creep.memory.fillWallId = importantWall.id
             else if (creep.memory.fillWallId) importantWall = Game.getObjectById(creep.memory.fillWallId)
-            
+
             // 有焦点墙就优先刷
             if (importantWall) {
                 const actionResult = creep.repair(creep.room._importantWall)
@@ -416,7 +426,7 @@ const roles: {
                         creep.memory.standed = true
                         creep.room.addRestrictedPos(creep.name, creep.pos)
                     }
-                    
+
                     // 离墙三格远可能正好把路堵上，所以要走进一点
                     if (!creep.room._importantWall.pos.inRangeTo(creep.pos, 2)) creep.goTo(creep.room._importantWall.pos)
                 }
