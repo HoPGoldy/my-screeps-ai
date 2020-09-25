@@ -76,10 +76,10 @@ export default class TerminalExtension extends StructureTerminal {
             .map(roomName => {
                 const room = Game.rooms[roomName]
                 // 无法正常接收的不参与计算
-                if (!room || !room.terminal) return { room: room.name, number: null }
+                if (!room || !room.terminal) return { room: roomName, number: null }
 
                 return {
-                    room: room.name,
+                    room: roomName,
                     number: room.terminal.store[RESOURCE_POWER]
                 }
             })
