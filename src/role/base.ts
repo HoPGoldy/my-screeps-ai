@@ -403,11 +403,17 @@ const roles: {
 
             // 如果能量来源没了就删除自己
             if (!source) return false
+            // 如果能量来源是 container 的话说明还在发展期，只要 container 在就一直孵化
+            else if (source && source instanceof StructureContainer) return true
+
             // 否则就看当前房间里有没有威胁，有的话就继续孵化并刷墙
             return room.controller.checkEnemyThreat()
         },
         source: creep => {
-            creep.getEngryFrom(Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal)
+            const source = Game.getObjectById<StructureContainer>(data.sourceId) || creep.room.storage || creep.room.terminal
+            // 能量不足就先等待，优先满足 filler 需求
+            if (source.store[RESOURCE_ENERGY] < 500) return false
+            creep.getEngryFrom(source)
 
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
         },
