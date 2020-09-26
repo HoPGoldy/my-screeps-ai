@@ -698,19 +698,30 @@ const roles: {
             // 朝目标移动
             creep.farMoveTo(targetFlag.pos, 1)
 
+            let findPowerbank = true
             // 进入房间后搜索 pb 并缓存
-            if (!targetFlag.memory.sourceId && creep.room.name === targetFlag.pos.roomName) {
-                const powerbank = _.find(targetFlag.pos.lookFor(LOOK_STRUCTURES), s => s.structureType === STRUCTURE_POWER_BANK) as StructurePowerBank
-                // 并写入缓存
-                if (powerbank) targetFlag.memory.sourceId = powerbank.id
-                else {
-                    // 没找到说明已经没了
-                    delete Memory.flags[targetFlag.name]
-                    targetFlag.remove()
-                    // 移除采集小组
-                    removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
-                    return false
+            if (creep.room.name === targetFlag.pos.roomName) {
+                // 有缓存了就验证下
+                if (targetFlag.memory.sourceId) {
+                    const pb = Game.getObjectById(targetFlag.memory.sourceId)
+                    if (!pb) findPowerbank = false
                 }
+                // 没缓存就查找 pb
+                else {
+                    const powerbank = _.find(targetFlag.pos.lookFor(LOOK_STRUCTURES), s => s.structureType === STRUCTURE_POWER_BANK) as StructurePowerBank
+                    // 并写入缓存
+                    if (powerbank) targetFlag.memory.sourceId = powerbank.id
+                    // 没找到说明已经没了
+                    else findPowerbank = false
+                }
+            }
+
+            // 没找到目标，任务失败
+            if (!findPowerbank) {
+                targetFlag.remove()
+                // 移除采集小组
+                removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
+                return false
             }
 
             // 如果到了就算准备完成
