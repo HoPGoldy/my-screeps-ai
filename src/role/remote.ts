@@ -337,8 +337,12 @@ const roles: {
                 creep.memory.sourceId = source.id
             }
             else source = Game.getObjectById(creep.memory.sourceId)
-            // 之前的来源建筑里能量不够了就更新来源（如果来源已经是 source 的话就不改了）
-            if (!source || (source instanceof Structure && source.store[RESOURCE_ENERGY] < 300)) delete creep.memory.sourceId
+            // 之前的来源建筑里能量不够了就更新来源
+            if (
+                !source ||
+                (source instanceof Structure && source.store[RESOURCE_ENERGY] < 300) ||
+                (source instanceof Source && source.energy === 0)
+            ) delete creep.memory.sourceId
 
             creep.getEngryFrom(source)
         },
@@ -388,8 +392,12 @@ const roles: {
                 creep.memory.sourceId = source.id
             }
             else source = Game.getObjectById(creep.memory.sourceId)
-            // 之前的来源建筑里能量不够了就更新来源（如果来源已经是 source 的话就不改了）
-            if (!source || (source instanceof Structure && source.store[RESOURCE_ENERGY] < 300)) delete creep.memory.sourceId
+            // 之前的来源建筑里能量不够了就更新来源
+            if (
+                !source ||
+                (source instanceof Structure && source.store[RESOURCE_ENERGY] < 300) ||
+                (source instanceof Source && source.energy === 0)
+            ) delete creep.memory.sourceId
 
             creep.getEngryFrom(source)
         },
