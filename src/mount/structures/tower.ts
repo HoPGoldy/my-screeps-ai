@@ -1,5 +1,5 @@
 import { creepApi } from "modules/creepController"
-import { repairSetting, ROOM_TRANSFER_TASK } from "setting"
+import { repairSetting, ROOM_TRANSFER_TASK, TOWER_FILL_WALL_LEVEL } from "setting"
 import { whiteListFilter } from "utils"
 
 // Tower 原型拓展
@@ -44,7 +44,7 @@ export default class TowerExtension extends StructureTower {
              * 房间等级大于 5 才会刷墙，因为低等级的能量运力可能不足
              * 如果 tower 参与刷墙的话可能会导致 filler 一直卡在给 tower 填充能量的任务
              */
-            if (this.room.controller.level >= 5) this.commandFillWall()
+            if (this.room.controller.level >= TOWER_FILL_WALL_LEVEL) this.commandFillWall()
         }
 
         // 如果能量低了就发布填充任务

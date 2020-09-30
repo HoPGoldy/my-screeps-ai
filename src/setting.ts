@@ -660,8 +660,6 @@ export const MAX_HARVESTER_NUM = 4
  * 请确保最少有一条内容
  */
 export const UPGRADE_WITH_TERMINAL = [
-    { energy: 80000, num: 8 },
-    { energy: 70000, num: 7 },
     { energy: 60000, num: 6 },
     { energy: 50000, num: 5 },
     { energy: 40000, num: 4 },
@@ -676,6 +674,16 @@ export const UPGRADE_WITH_STORAGE = [
     { energy: 700000, num: 3 },
     { energy: 500000, num: 2 },
     { energy: 100000, num: 1 }
+]
+
+/**
+ * source container 离基地中心的距离与对应发布的 filler 数量
+ * 这个值是每个 container 发布的 filler
+ */
+export const FILLER_WITH_CONTAINER_RANGE = [
+    { range: 30, num: 3 },
+    { range: 20, num: 2 },
+    { range: 0, num: 1 }
 ]
 
 // 用于维持房间能量正常运转的重要角色
@@ -693,3 +701,6 @@ export const ROOM_REMOVE_INTERVAL: number = 30
 // 每个 observer 同时允许采集的 pb 和 depo 的最大数量
 export const OBSERVER_POWERBANK_MAX = 1
 export const OBSERVER_DEPOSIT_MAX = 2
+
+// tower 将在几级之后参与刷墙
+export const TOWER_FILL_WALL_LEVEL = 6

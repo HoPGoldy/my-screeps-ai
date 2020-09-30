@@ -169,7 +169,7 @@ const roles: {
                     }
                 }
                 else {
-                    creep.log(`[${creep.name}] 不在指定房间，切入迁徙模式`)
+                    creep.log(`不在指定房间，切入迁徙模式`)
                     return true
                 }
             },
