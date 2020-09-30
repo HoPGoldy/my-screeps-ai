@@ -11,6 +11,7 @@ import { ROOM_TRANSFER_TASK, BOOST_RESOURCE, ENERGY_SHARE_LIMIT } from 'setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from 'modules/autoPlanning/planBasePos'
 import { planLayout, clearStructure } from 'modules/autoPlanning/planBaseLayout'
 import { createRoomLink, log } from 'utils'
+import planWall from 'modules/autoPlanning/planWall'
 
 export default class RoomExtension extends RoomShortcut {
     /**
@@ -465,6 +466,17 @@ export default class RoomExtension extends RoomShortcut {
      */
     public planLayout(): string {
         const result = planLayout(this)
+
+        // 自动修建 rampart
+        const center = this.memory.center
+        // 这里三级后每升一级都会规划一次，防止有些墙掉了
+        if (center && this.controller.level >= 3) {
+            const centerPos = new RoomPosition(center[0], center[1], this.name)
+
+            // 找到合适的点位并修建
+            const targetPos = planWall(this, centerPos)
+            targetPos.forEach(pos => pos.createConstructionSite(STRUCTURE_RAMPART))
+        }
 
         if (result === OK) return `自动规划完成`
         else if (result === ERR_NOT_OWNER) return `自动规划失败，房间没有控制权限`
