@@ -334,6 +334,11 @@ const roles: {
             let source: StructureStorage | StructureTerminal | StructureContainer | Source
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
+                if (!source) {
+                    creep.say('没能量了，歇会')
+                    return false
+                }
+
                 creep.memory.sourceId = source.id
             }
             else source = Game.getObjectById(creep.memory.sourceId)
@@ -389,6 +394,11 @@ const roles: {
             let source: StructureStorage | StructureTerminal | StructureContainer | Source
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
+                if (!source) {
+                    creep.say('没能量了，歇会')
+                    return false
+                }
+
                 creep.memory.sourceId = source.id
             }
             else source = Game.getObjectById(creep.memory.sourceId)

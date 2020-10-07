@@ -379,7 +379,7 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
     'builder': function(room: Room, num: number = 2) {
         for (let i = 0; i < num; i ++) {
             creepApi.add(`${room.name} builder${i}`, 'builder', {
-                sourceId: room.getAvailableSource().id
+                sourceId: room.getAvailableSource()?.id
             }, room.name)
         }
 
