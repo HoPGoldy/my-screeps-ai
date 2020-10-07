@@ -9,7 +9,7 @@
  * 
  * @returns 需要建墙的位置
  */
-export default function (room: Room, centerPos: RoomPosition, distanceToCenter: number = 6, thickness: number = 3): RoomPosition[] {
+export default function (room: Room, centerPos: RoomPosition, distanceToCenter: number = 7, thickness: number = 3): RoomPosition[] {
     const cost = getImpassableCostMatrix(room)
 
     const outWall = getOutWalls(cost, centerPos, distanceToCenter)

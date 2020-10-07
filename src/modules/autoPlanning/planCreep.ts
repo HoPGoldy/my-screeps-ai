@@ -104,8 +104,7 @@ const releasePlans: CreepReleasePlans = {
                 room,
                 controllerLevel: room.controller.level,
                 ticksToDowngrade: room.controller.ticksToDowngrade,
-                sourceContainerIds: room.sourceContainers.map(container => container.id) || [],
-                upgradeLinkId: room.memory.upgradeLinkId
+                sourceContainerIds: room.sourceContainers.map(container => container.id) || []
             }
         
             if (room.storage) {
@@ -117,6 +116,11 @@ const releasePlans: CreepReleasePlans = {
                 stats.terminalId = room.terminal.id
                 stats.terminalEnergy = room.terminal.store[RESOURCE_ENERGY]
             }
+
+            if (Game.getObjectById(room.memory.upgradeLinkId)) {
+                stats.upgradeLinkId = room.memory.upgradeLinkId
+            }
+            else delete room.memory.upgradeLinkId
         
             return stats
         },

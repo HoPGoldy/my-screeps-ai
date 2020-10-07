@@ -681,8 +681,7 @@ export const UPGRADE_WITH_STORAGE = [
  * 这个值是每个 container 发布的 filler
  */
 export const FILLER_WITH_CONTAINER_RANGE = [
-    { range: 30, num: 3 },
-    { range: 20, num: 2 },
+    { range: 25, num: 2 },
     { range: 0, num: 1 }
 ]
 

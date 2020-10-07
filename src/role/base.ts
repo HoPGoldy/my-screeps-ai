@@ -363,7 +363,7 @@ const roles: {
 
             // 获取有效的能量来源
             let source: StructureStorage | StructureTerminal | StructureContainer | Source
-            if (!creep.memory.sourceId) {
+            if (!creep.memory.sourceId || !source) {
                 source = creep.room.getAvailableSource()
                 creep.memory.sourceId = source.id
             }
