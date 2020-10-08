@@ -106,6 +106,12 @@ export default class TerminalExtension extends StructureTerminal {
         const task = this.room.memory.shareTask
         if (!task) return 
 
+        if (task.amount <= 0) {
+            this.log(`共享资源的数量不可为负 (${task.resourceType}/${task.amount})，任务已移除`, 'yellow')
+            delete this.room.memory.shareTask
+            return
+        }
+
         // 如果自己存储的资源数量已经足够了
         if (this.store[task.resourceType] >= task.amount) {
             const cost = Game.market.calcTransactionCost(task.amount, this.room.name, task.target)
@@ -125,7 +131,7 @@ export default class TerminalExtension extends StructureTerminal {
             // 路费够了就执行转移
             if (!this.room.controller.owner) return
             const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.room.controller.owner.username} 的资源共享 - ${this.room.name}`)
-            
+
             if (sendResult == OK) {
                 delete this.room.memory.shareTask
                 this.energyCheck()
@@ -170,7 +176,7 @@ export default class TerminalExtension extends StructureTerminal {
     /**
      * 继续处理之前缓存的订单
      * 
-     * @returns 是否需要继续执行 resourceListener
+     * @returns 是否有空闲精力继续工作
      */
     public dealOrder(resource: TerminalListenerTask): boolean {
         // 没有订单需要处理
@@ -221,6 +227,7 @@ export default class TerminalExtension extends StructureTerminal {
      */
     public resourceListener(resource: TerminalListenerTask): void {
         const resourceAmount = this.store[resource.type]
+
         // 资源移出监听，超过才进行移出（卖出或共享资源）
         if (resource.mod === terminalModes.put) {
             if (resourceAmount <= resource.amount) return this.setNextIndex()
@@ -261,7 +268,19 @@ export default class TerminalExtension extends StructureTerminal {
             case terminalChannels.share:
                 if (resource.mod === terminalModes.get) this.room.shareRequest(resource.type, resource.amount - resourceAmount)
                 else this.room.shareAddSource(resource.type)
-                
+
+                return this.setNextIndex()
+            break
+
+            // 进行支援
+            case terminalChannels.support:
+                if (resource.mod === terminalModes.put) {
+                    // 向自己房间添加一个指向目标房间的资源共享任务来进行支援
+                    // 这里的容量直接 resourceAmount - resource.amount，因为 mod 为 put 时代码能走到这里证明现有的资源数量一定是大于阈值的，所以这个值一定为正数
+                    this.room.shareAdd(resource.supportRoomName, resource.type, resourceAmount - resource.amount)
+                }
+                else this.log('支援渠道的资源监听任务，其物流方向必须为 put（提供）', 'yellow')
+
                 return this.setNextIndex()
             break
 
@@ -518,17 +537,18 @@ export default class TerminalExtension extends StructureTerminal {
      * @param resourceType 要监控的资源类型
      * @param amount 期望的资源数量
      * @param mod 监听类型
-     * @param supplementAction 交易策略
+     * @param channel 交易策略
      * @param priceLimit 价格限制
+     * @param supportRoomName 要支援的房间名【在 channel 为 support 时生效】
      */
-    public addTask(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined): void {
+    public addTask(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined, supportRoomName: string = undefined): void {
         // 先移除同类型的监听任务
         this.removeByType(resourceType, mod, channel)
 
         if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = []
 
         // 再保存任务
-        this.room.memory.terminalTasks.push(this.stringifyTask({ mod, channel, type: resourceType, amount, priceLimit }))
+        this.room.memory.terminalTasks.push(this.stringifyTask({ mod, channel, type: resourceType, amount, priceLimit, supportRoomName }))
     }
 
     /**
@@ -560,9 +580,8 @@ export default class TerminalExtension extends StructureTerminal {
      * @danger 注意，这个序列化格式是固定的，单独修改将会导致任务读取时出现问题
      * @param task 要序列化的任务
      */
-    protected stringifyTask({ mod, channel, type, amount, priceLimit }: TerminalListenerTask): string {
-        let stringifyTask = `${mod} ${channel} ${type} ${amount}`
-        if (priceLimit) stringifyTask += ` ${priceLimit}`
+    protected stringifyTask({ mod, channel, type, amount, priceLimit, supportRoomName }: TerminalListenerTask): string {
+        let stringifyTask = `${mod} ${channel} ${type} ${amount} ${priceLimit} ${supportRoomName}`
 
         return stringifyTask
     }
@@ -575,14 +594,15 @@ export default class TerminalExtension extends StructureTerminal {
      */
     protected unstringifyTask(taskStr: string): TerminalListenerTask {
         // 对序列化的任务进行重建
-        const [ mod, channel, type, amount, priceLimit ] = taskStr.split(' ')
+        const [ mod, channel, type, amount, priceLimit, supportRoomName ] = taskStr.split(' ')
 
         return {
             mod: (Number(mod) as TerminalModes),
             channel: (Number(channel) as TerminalChannels),
             type: (type as ResourceConstant),
             amount: Number(amount),
-            priceLimit: priceLimit ? Number(priceLimit) : undefined
+            priceLimit: priceLimit ? Number(priceLimit) : undefined,
+            supportRoomName: supportRoomName ? supportRoomName : undefined
         }
     }
 

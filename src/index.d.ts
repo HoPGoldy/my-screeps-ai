@@ -712,7 +712,9 @@ interface RoomMemory {
     // 数组中每一个字符串都代表了一个监听任务，形如 "0 0 power"，第一位对应 TerminalModes，第二位对应 TerminalChannels，第三位对应资源类型
     terminalTasks: string[]
     // 房间内终端缓存的订单id
-    targetOrderId: string
+    targetOrderId?: string
+    // 房间内终端要立刻支援的房间名
+    targetSupportRoom?: string
     // 当前终端要监听的资源索引
     terminalIndex: number
     
@@ -1110,7 +1112,8 @@ type TerminalModes = ModeGet | ModePut
 type ChannelTake = 0
 type ChannelRelease = 1
 type ChannelShare = 2
-type TerminalChannels = ChannelTake | ChannelRelease | ChannelShare
+type ChannelSupport = 3
+type TerminalChannels = ChannelTake | ChannelRelease | ChannelShare | ChannelSupport
 
 // 终端监听任务，详见 doc/终端设计案
 interface TerminalListenerTask {
@@ -1124,6 +1127,8 @@ interface TerminalListenerTask {
     channel: TerminalChannels
     // 价格限制
     priceLimit?: number
+    // 要支援的房间名
+    supportRoomName?: string
 }
 
 // 反应底物表接口

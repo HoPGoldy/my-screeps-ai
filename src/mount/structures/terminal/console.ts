@@ -10,10 +10,11 @@ export default class TerminalConsole extends TerminalExtension {
     /**
      * 用户操作 - 添加资源监听
      */
-    public add(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined) {
+    public add(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined, supportRoomName: string = undefined) {
         if (!_.isNumber(priceLimit)) priceLimit = undefined
-        
-        this.addTask(resourceType, amount, mod, channel, priceLimit)
+        if (!_.isString(supportRoomName)) supportRoomName = undefined
+
+        this.addTask(resourceType, amount, mod, channel, priceLimit, supportRoomName)
         return `已添加，当前监听任务如下: \n${this.show()}`
     }
 
@@ -56,7 +57,8 @@ export default class TerminalConsole extends TerminalExtension {
         const channelIntroduce: { [action in TerminalChannels]: string } = {
             [terminalChannels.take]: '拍单',
             [terminalChannels.release]: '挂单',
-            [terminalChannels.share]: '共享'
+            [terminalChannels.share]: '共享',
+            [terminalChannels.support]: '支援'
         }
         const modeIntroduce: { [action in TerminalModes]: string } = {
             [terminalModes.get]: 'get',
@@ -73,6 +75,7 @@ export default class TerminalConsole extends TerminalExtension {
                 `[渠道] ${channelIntroduce[task.channel]}`
             ]
             if (task.priceLimit) logs.push(`[价格${task.mod === terminalModes.get ? '上限' : '下限'}] ${task.priceLimit}`)
+            if (task.supportRoomName) logs.push(`[支援目标] ${task.supportRoomName}`)
             if (index === currentIndex) logs.push(`< 正在检查`)
             return '  ' + logs.join(' ')
         }).join('\n')
@@ -90,8 +93,9 @@ export default class TerminalConsole extends TerminalExtension {
                         { name: 'resourceType', desc: '终端要监听的资源类型(只会监听自己库存中的数量)' },
                         { name: 'amount', desc: '指定类型的期望数量' },
                         { name: 'mod', desc: '[可选] 监听类型，分为 0(获取，默认), 1(对外提供)' },
-                        { name: 'channel', desc: '[可选] 渠道，分为 0(拍单，默认), 1(挂单), 2(共享)'},
-                        { name: 'priceLimit', desc: '[可选] 价格限制，若不填则通过历史平均价格检查'}
+                        { name: 'channel', desc: '[可选] 渠道，分为 0(拍单，默认), 1(挂单), 2(共享)，3(支援)'},
+                        { name: 'priceLimit', desc: '[可选] 价格限制，若不填则通过历史平均价格检查'},
+                        { name: 'supportRoomName', desc: '[可选] 要支援的房间名，在 channel 为 3 时生效'}
                     ],
                     functionName: 'add'
                 },

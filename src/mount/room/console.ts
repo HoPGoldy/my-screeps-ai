@@ -248,11 +248,13 @@ export default class RoomConsole extends RoomExtension {
             { name: 'channel', label: '物流渠道', type: 'select', options: [
                 { value: 0, label: '拍单' },
                 { value: 1, label: '挂单' },
-                { value: 2, label: '共享' }
-            ]}
+                { value: 2, label: '共享' },
+                { value: 3, label: '支援' }
+            ]},
+            { name: 'supportRoomName', label: '[可选]支援房间', type: 'input', placeholder: 'channel 为支援时必填' },
         ], {
             content: '提交',
-            command: `({resourceType, amount, mod, channel, priceLimit}) => Game.rooms['${this.name}'].terminal.add(resourceType, amount, mod, channel, priceLimit)`
+            command: `({resourceType, amount, mod, channel, priceLimit, supportRoomName}) => Game.rooms['${this.name}'].terminal.add(resourceType, amount, mod, channel, priceLimit, supportRoomName)`
         })
     }
 

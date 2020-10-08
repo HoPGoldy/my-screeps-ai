@@ -641,13 +641,16 @@ export const terminalChannels: {
     take: ChannelTake
     release: ChannelRelease
     share: ChannelShare
+    support: ChannelSupport
 } = {
     // 拍单
     take: 0,
     // 挂单
     release: 1,
     // 资源共享
-    share: 2
+    share: 2,
+    // 支援
+    support: 3
 }
 
 // 每个房间最多同时存在多少 upgrader 和 harvester
