@@ -173,7 +173,7 @@ const roles: {
             else {
                 // 用户没有指定旗帜时才会运行自动规划
                 if (!(getName.flagBaseCenter(creep.room.name) in Game.flags)) creep.room.findBaseCenterPos()
-                
+
                 return true
             }
         },
@@ -193,7 +193,7 @@ const roles: {
                 if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.moveTo(controller)
                 return false
             }
-            
+
             // 是中立控制器，进行占领
             const claimResult = creep.claimController(controller)
             if (claimResult === ERR_NOT_IN_RANGE) creep.goTo(controller.pos)

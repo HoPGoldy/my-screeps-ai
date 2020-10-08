@@ -22,7 +22,7 @@ Function.prototype.setNextPlan = function(nextPlan): PlanNodeFunction {
 /**
  * 快捷发布 upgrader
  * @param roomName 要添加到的房间名
- * @param indexs creep 的名称后缀
+ * @param indexs creep 的名称后缀，数组长度即为要发布的 upgrader 数量
  * @param sourceId 能量来源 id
  */
 const addUpgrader = function(roomName: string, indexs: number[], sourceId: string): void {
@@ -139,11 +139,13 @@ const releasePlans: CreepReleasePlans = {
             },
         
             // 优先用 upgradeLink
-            ({ room, upgradeLinkId }: UpgraderPlanStats) => {
-                if (!upgradeLinkId) return false
-        
+            ({ room, upgradeLinkId, storageEnergy }: UpgraderPlanStats) => {
+                if (!upgradeLinkId || !storageEnergy) return false
+                
+                // 能量不太够了就只会发布一个 upgrader
+                const upgraderIndexs = storageEnergy > 300000 ? [0, 1] : [0]
                 // 发布升级单位给 link
-                addUpgrader(room.name, [0, 1], upgradeLinkId)
+                addUpgrader(room.name, upgraderIndexs, upgradeLinkId)
 
                 room.log('将从 upgradeLink 获取能量', 'upgrader', 'green')
                 return true
@@ -163,7 +165,8 @@ const releasePlans: CreepReleasePlans = {
                     }
                 })
 
-                return true
+                // 用终端刷墙的同时也可以继续检查是否用 storage 刷墙
+                return false
             },
 
             // 根据 storage 里的能量发布对应数量的 upgrader

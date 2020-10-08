@@ -61,7 +61,8 @@ export const bodyConfigs: BodyConfigs = {
         { [WORK]: 4, [CARRY]: 4, [MOVE]: 4 },
         { [WORK]: 6, [CARRY]: 6, [MOVE]: 6 },
         { [WORK]: 9, [CARRY]: 9, [MOVE]: 9 },
-        { [WORK]: 17, [CARRY]: 9, [MOVE]: 17 },
+        // 7 级的时候有了 upgrader Link，所以对移动的需求下降了
+        { [WORK]: 30, [CARRY]: 5, [MOVE]: 15 },
         { [WORK]: 12, [CARRY]: 12, [MOVE]: 12 }
     ),
 

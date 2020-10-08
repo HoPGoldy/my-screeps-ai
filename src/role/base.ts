@@ -328,6 +328,8 @@ const roles: {
                 (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_INVALID_TARGET) &&
                 (!source || source instanceof StructureTerminal || source instanceof StructureStorage)
             ) {
+                // 有可能时之前遗留下来的建筑，里边能量用光后就没有利用价值了，直接摧毁
+                if (!source.my) source.destroy()
                 creep.room.releaseCreep('upgrader')
                 creep.suicide()
             }
