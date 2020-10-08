@@ -231,7 +231,7 @@ export default [
             // 遍历保存的所有房间，统计 ps 状态
             const stats = Memory.psRooms.map(roomName => {
                 const room = Game.rooms[roomName]
-                if (!room || !room.powerSpawn) return `[${roomName}] 无法访问该房间或该房间中的 powerSpawn，已移除。请重新尝试对该 powerSpawn 执行 .on()`
+                if (!room || !room.powerSpawn) return `${colorful('●', 'red', true)} ${createRoomLink(roomName)} 无法访问该房间中的 powerSpawn，已移除。`
                 workingPowerSpawn.push(roomName)
 
                 return room.powerSpawn.stats()
