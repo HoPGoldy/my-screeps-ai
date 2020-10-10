@@ -9,12 +9,12 @@
  * 
  * @returns 需要建墙的位置
  */
-export default function (room: Room, centerPos: RoomPosition, distanceToCenter: number = 7, thickness: number = 3): RoomPosition[] {
+export default function (room: Room, centerPos: RoomPosition, distanceToCenter: number = 7, thickness: number = 3): RoomPosition[][] {
     const cost = getImpassableCostMatrix(room)
 
     const outWall = getOutWalls(cost, centerPos, distanceToCenter)
     const [ neededWall, safeCost ] = getNeededWalls(room, cost, outWall)
-    const targetWall = getThickerWalls(safeCost, neededWall, thickness - 1)
+    const targetWall = getThickerWalls(safeCost, neededWall, thickness)
 
     return targetWall
 }
@@ -119,17 +119,18 @@ const getNeededWalls = function (room: Room, impassableCostMatrix: CostMatrix, o
  * 
  * @param impassableCostMatrix 无法通行位置（需要把墙壁外侧区域置为 255，不然墙也会向外侧加厚）
  * @param neededWalls 从入口可以抵达的墙壁数组
- * @param thickness 要加厚的厚度
+ * @param thickness 要加厚的厚度，这个值的大小等于返回数组的长度
+ * @return 一个二维数组，每个数组都是一层完整的防御墙壁，便于分批建造
  */
-const getThickerWalls = function (impassableCostMatrix: CostMatrix, neededWalls: RoomPosition[], thickness: number): RoomPosition[] {
+const getThickerWalls = function (impassableCostMatrix: CostMatrix, neededWalls: RoomPosition[], thickness: number): RoomPosition[][] {
     // 已经存在的墙壁标识，会在下面使用避免重复
     const existWallTags = neededWalls.map(wall => getShortPosName(wall))
     // 最终的结果，肯定会包含之前筛查出来的墙
-    const result = [ ...neededWalls ]
+    const result = [ neededWalls ]
 
     // 计算迭代器，用该数组的长度控制蔓延了“几轮”，两轮就是加厚两层
     // 下面这个 +1 是因为需要在第一个元素放置蔓延起始墙壁
-    const timer: RoomPosition[][] = new Array(thickness + 1).fill([])
+    const timer: RoomPosition[][] = new Array(thickness).fill([])
     timer[0] = neededWalls
 
     // 开始迭代，蔓延指定步长（多走一步墙就加厚一格）
@@ -145,7 +146,7 @@ const getThickerWalls = function (impassableCostMatrix: CostMatrix, neededWalls:
         }))
 
         // 把本轮新产生的墙加入最终结果
-        result.push(...newBaseWall)
+        result.push(newBaseWall)
         // 用这一次蔓延的结果作为下一次蔓延的起点
         return newBaseWall
     })

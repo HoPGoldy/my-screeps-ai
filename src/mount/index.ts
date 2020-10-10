@@ -4,7 +4,6 @@ import mountRoom from './room'
 import mountRoomPostion from './roomPosition'
 import mountGlobal from './global'
 import mountStructure from './structures'
-import { planLayout } from 'modules/autoPlanning/planBaseLayout'
 
 /**
  * 挂载所有的属性和方法
@@ -45,12 +44,6 @@ function initStorage() {
 
 // 挂载完成后要执行的一些作业
 function workAfterMount() {
-    // 对所有的房间执行建筑规划，防止有房间缺失建筑
-    Object.values(Game.rooms).forEach(room => {
-        if (!room.controller || !room.controller.my) return
-        planLayout(room)
-    })
-
     // 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
     Object.values(Game.powerCreeps).forEach(pc => {
         if (!pc.room) return

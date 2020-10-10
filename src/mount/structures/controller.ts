@@ -1,4 +1,5 @@
 import { creepApi } from 'modules/creepController'
+import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
 
 /**
@@ -11,6 +12,8 @@ export default class ControllerExtension extends StructureController {
 
         // 如果等级发生变化了就运行 creep 规划
         if (this.stateScanner()) this.onLevelChange(this.level)
+
+        this.checkConstructionSites()
 
         // 8 级并且快掉级了就孵化 upgrader
         if (this.level === 8 && this.ticksToDowngrade <= 100000) creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
@@ -37,8 +40,6 @@ export default class ControllerExtension extends StructureController {
     public onLevelChange(level: number): void {
         // 刚占领，添加最基础的角色组
         if (level === 1) {
-            // 清除建筑默认是 claimer 发起的，如果是第一个 spawn 的话就由 controller 发起
-            if (Object.keys(Game.spawns).length <= 1) this.room.clearStructure()
             this.room.releaseCreep('harvester')
             // 多发布一个 build 协助建造
             this.room.releaseCreep('builder', 1)
@@ -46,6 +47,46 @@ export default class ControllerExtension extends StructureController {
 
         // 规划布局
         this.log(this.room.planLayout(), 'green')
+    }
+
+    /**
+     * 检查房间中是否存在没有放置的工地
+     * 
+     * 如果有的话就尝试放置
+     */
+    public checkConstructionSites(): void {
+        // 检查等待放置的工地（CS）队列
+        const delayCSList = this.room.memory.delayCSList
+        if (!delayCSList) return
+
+        // 仍未完成放置的工地
+        const incompleteList: string[] = []
+
+        // 是否需要孵化建造者
+        let needBuild = false
+        // 遍历整个队列，依次进行处理
+        while (delayCSList.length > 0) {
+            const constructionSiteStr = delayCSList.shift()
+            const info = unstringifyBuildPos(constructionSiteStr, this.room.name)
+
+            const placeResult = info.pos.createConstructionSite(info.type)
+
+            if (placeResult === OK) needBuild = true
+            else if (placeResult === ERR_INVALID_TARGET) {
+                incompleteList.push(constructionSiteStr)
+            }
+            else if (placeResult === ERR_FULL) {
+                // 如果工地已经放满了，就不再检查了，直接把剩下的推入到未完成队列
+                incompleteList.push(constructionSiteStr, ...delayCSList)
+                break
+            }
+            else this.log(`工地 ${info.type} 无法放置，位置 [${info.pos.x}, ${info.pos.y}]，createConstructionSite 结果 ${placeResult}`, 'yellow')
+        }
+
+        // 把未完成的任务放回去
+        this.room.memory.delayCSList = incompleteList
+
+        if (needBuild && !creepApi.has(`${this.room.name} builder0`)) this.room.releaseCreep('builder')
     }
 
     /**
