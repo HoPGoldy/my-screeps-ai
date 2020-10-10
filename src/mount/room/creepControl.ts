@@ -57,8 +57,9 @@ export default class CreepControl extends RoomConsole {
      * 给本房间签名
      * 
      * @param content 要签名的内容
+     * @param targetRoomName 要签名到的房间名（默认为本房间）
      */
-    public sign(content: string): string {
+    public sign(content: string, targetRoomName: string = undefined): string {
         const creepName = `${this.name} signer`
         const creep = Game.creeps[creepName]
         // 如果有显存的签名单位就直接签名
@@ -68,7 +69,7 @@ export default class CreepControl extends RoomConsole {
         }
         // 否则就发布一个
         creepApi.add(creepName, 'signer', {
-            targetRoomName: this.name,
+            targetRoomName: targetRoomName || this.name,
             signText: content
         }, this.name)
 

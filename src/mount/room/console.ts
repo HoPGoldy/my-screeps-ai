@@ -695,7 +695,8 @@ export default class RoomConsole extends RoomExtension {
                     {
                         title: '给本房间签名',
                         params: [
-                            { name: 'content', desc: '要签名的内容' }
+                            { name: 'content', desc: '要签名的内容' },
+                            { name: 'targetRoomName', desc: '[可选] 要签名的房间名（默认为本房间）' }
                         ],
                         functionName: 'sign'
                     },

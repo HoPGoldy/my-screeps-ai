@@ -384,7 +384,7 @@ export default class CreepExtension extends Creep {
         if (!fontPos) return ERR_INVALID_TARGET
 
         const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
-        if (!fontCreep) return ERR_INVALID_TARGET
+        if (!fontCreep || !fontCreep.my) return ERR_INVALID_TARGET
 
         this.say(`👉`)
         // 如果前面的 creep 同意对穿了，自己就朝前移动
