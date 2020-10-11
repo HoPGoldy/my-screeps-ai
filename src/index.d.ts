@@ -43,17 +43,6 @@ declare module NodeJS {
         InterShardMemory: InterShardMemory
         // 是否已经挂载拓展
         hasExtension: boolean
-        // 全局的路径缓存
-        // Creep 在执行远程寻路时会优先检查该缓存
-        routeCache: {
-            // 键为路径的起点和终点名，例如："12/32/W1N1 23/12/W2N2"，值是使用 Creep.serializeFarPath 序列化后的路径
-            [routeKey: string]: string
-        }
-        // 全局缓存的订单价格表
-        resourcePrice: {
-            // 键为资源和订单类型，如："energy/buy"、"power/sell"，值是缓存下来的订单价格
-            [resourceKey: string]: number
-        }
     }
 }
 
@@ -417,8 +406,11 @@ interface CreepMemory {
      */
     _go?: MoveInfo
 
-    // 自己是否会向他人发起对穿
+    /**
+     * 自己是否会向他人发起对穿
+     */
     disableCross?: boolean
+
     // creep 是否已经准备好可以工作了
     ready: boolean
     // creep 的角色
@@ -1158,6 +1150,11 @@ interface PowerCreepMemory {
      * 同 creep.memory.stand
      */
     stand: boolean
+
+    /**
+     * 同 creep.memory.disableCross
+     */
+    disableCross?: boolean
 
     // 要添加 REGEN_SOURCE 的 souce 在 room.sources 中的索引值
     sourceIndex?: number

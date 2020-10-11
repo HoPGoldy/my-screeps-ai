@@ -38,8 +38,6 @@ function initStorage() {
 
     if (!Memory.stats) Memory.stats = { rooms: {} }
     if (!Memory.creepConfigs) Memory.creepConfigs = {}
-    if (!global.routeCache) global.routeCache = {}
-    if (!global.resourcePrice) global.resourcePrice = {}
 }
 
 // 挂载完成后要执行的一些作业

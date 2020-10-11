@@ -1,6 +1,14 @@
 import { getOppositeDirection } from 'utils'
 
 /**
+ * 全局的路径缓存
+ * 
+ * Creep 在执行远程寻路时会优先检查该缓存
+ * 键为路径的起点和终点名，例如："12/32/W1N1 23/12/W2N2"，值是使用 serializeFarPath 序列化后的路径
+ */
+export const routeCache = {}
+
+/**
  * 移动 creep
  * 
  * @param creep 要进行移动的 creep
@@ -138,7 +146,7 @@ const requireCross = function (creep: Creep | PowerCreep, direction: DirectionCo
 const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt): string | null {
     // 先查询下缓存里有没有值
     const routeKey = `${creep.room.serializePos(creep.pos)} ${creep.room.serializePos(target)}`
-    let route = global.routeCache[routeKey]
+    let route = routeCache[routeKey]
     // 如果有值则直接返回
     if (route) {
         return route
@@ -178,10 +186,14 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
             }
 
             // 躲避房间中的 creep
-            if (moveOpt.disableCross) {
-                room.find(FIND_CREEPS).forEach(creep => costs.set(creep.pos.x, creep.pos.y, 255))
-                room.find(FIND_POWER_CREEPS).forEach(creep => costs.set(creep.pos.x, creep.pos.y, 255))
+            const addCreepCost = (creep: Creep | PowerCreep) => {
+                // 如果没有禁用对穿并且 creep 属于自己则不会躲避
+                if (!moveOpt.disableCross && !creep.memory.disableCross && creep.my) return
+                costs.set(creep.pos.x, creep.pos.y, 255)
             }
+
+            room.find(FIND_CREEPS).forEach(addCreepCost)
+            room.find(FIND_POWER_CREEPS).forEach(addCreepCost)
 
             return costs
         }
@@ -192,7 +204,7 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
     // 找到了就进行压缩
     route = serializeFarPath(creep, result.path)
     // 保存到全局缓存
-    if (!result.incomplete) global.routeCache[routeKey] = route
+    if (!result.incomplete) routeCache[routeKey] = route
     
 
     // 根据玩家指定的重用距离返回缓存

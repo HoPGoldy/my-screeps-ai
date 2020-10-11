@@ -1,6 +1,13 @@
 import { DEAL_RATIO, terminalModes, terminalChannels } from 'setting'
 
 /**
+ * 全局缓存的订单价格表
+ * 
+ * 键为资源和订单类型，如："energy/buy"、"power/sell"，值是缓存下来的订单价格
+ */
+const resourcePrice = {}
+
+/**
  * Terminal 原型拓展
  * 
  * 监听房间中的共享任务和资源监听任务
@@ -462,7 +469,7 @@ export default class TerminalExtension extends StructureTerminal {
      */
     private getOrderPrice(resourceType: ResourceConstant, type: ORDER_BUY | ORDER_SELL): number | undefined {
         // 先查看缓存
-        const cachePrice = global.resourcePrice[`${resourceType}/${type}`]
+        const cachePrice = resourcePrice[`${resourceType}/${type}`]
         if (cachePrice) return cachePrice
 
         let price = undefined
@@ -485,7 +492,7 @@ export default class TerminalExtension extends StructureTerminal {
         }
 
         // 存入缓存并返回
-        global.resourcePrice[`${resourceType}/${type}`] = price
+        resourcePrice[`${resourceType}/${type}`] = price
         return price
     }
 

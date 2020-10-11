@@ -1,6 +1,7 @@
 import { colorful, clearFlag, createRoomLink, createConst, createLink } from 'utils'
 import { factoryTopTargets } from 'setting'
 import { createHelp } from 'modules/help'
+import { routeCache } from 'modules/move'
 
 /**
  * 全局拓展的别名
@@ -155,17 +156,15 @@ export default [
     {
         alias: 'route',
         exec: function(): string {
-            if (!global.routeCache) {
-                global.routeCache = {}
-                return `暂无路径缓存`
-            }
+            const routeNames = Object.keys(routeCache)
+            if (routeNames.length <= 0) return `暂无路径缓存`
 
-            const logs = Object.keys(global.routeCache).map(routeKey => {
-                return `[${routeKey.split(' ').join(' > ')}] ${global.routeCache[routeKey]}`
+            const logs = routeNames.map(routeKey => {
+                return `[${routeKey.split(' ').join(' > ')}] ${routeCache[routeKey]}`
             })
 
             if (logs.length > 0) {
-                logs.unshift(`当前共缓存路径 ${Object.keys(global.routeCache).length} 条`)
+                logs.unshift(`当前共缓存路径 ${routeNames.length} 条`)
             }
             else return `暂无路径缓存`
 
