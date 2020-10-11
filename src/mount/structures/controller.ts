@@ -72,19 +72,19 @@ export default class ControllerExtension extends StructureController {
             const placeResult = info.pos.createConstructionSite(info.type)
 
             if (placeResult === OK) needBuild = true
-            else if (placeResult === ERR_INVALID_TARGET) {
-                incompleteList.push(constructionSiteStr)
-            }
             else if (placeResult === ERR_FULL) {
                 // 如果工地已经放满了，就不再检查了，直接把剩下的推入到未完成队列
                 incompleteList.push(constructionSiteStr, ...delayCSList)
                 break
             }
-            else this.log(`工地 ${info.type} 无法放置，位置 [${info.pos.x}, ${info.pos.y}]，createConstructionSite 结果 ${placeResult}`, 'yellow')
+            else if (placeResult !== ERR_RCL_NOT_ENOUGH && placeResult !== ERR_INVALID_TARGET) {
+                this.log(`工地 ${info.type} 无法放置，位置 [${info.pos.x}, ${info.pos.y}]，createConstructionSite 结果 ${placeResult}`, 'yellow')
+            }
         }
 
         // 把未完成的任务放回去
-        this.room.memory.delayCSList = incompleteList
+        if (incompleteList.length > 0) this.room.memory.delayCSList = incompleteList
+        else delete this.room.memory.delayCSList
 
         if (needBuild && !creepApi.has(`${this.room.name} builder0`)) this.room.releaseCreep('builder')
     }

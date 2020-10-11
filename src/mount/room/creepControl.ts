@@ -3,7 +3,7 @@
  */
 
 import RoomConsole from "./console"
-import { releaseCreep } from "modules/autoPlanning/planCreep"
+import { releaseCreep } from "modules/autoPlanning"
 import { creepApi } from "modules/creepController"
 import { DEFAULT_FLAG_NAME } from "setting"
 

@@ -468,8 +468,12 @@ export default class CreepExtension extends Creep {
         }
         // 没缓存就直接获取
         else target = this._updateConstructionSite()
+
         if (!target) return ERR_NOT_FOUND
-        
+        // 上面发现有墙要刷了，这个 tick 就不再造建造了
+        // 防止出现造好一个 rampart，然后直接造下一个 rampart，造好后又扭头去刷第一个 rampart 的小问题出现
+        if (this.memory.fillWallId) return ERR_BUSY
+
         // 建设
         const buildResult = this.build(target)
         if (buildResult == OK) {

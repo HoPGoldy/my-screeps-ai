@@ -1,7 +1,8 @@
 import planWall from './planWall'
-import planBase from './planBaseLayout'
-import { LEVEL_START_BUILD_RAMPART } from 'setting'
-import { releaseCreep } from './planCreep'
+import planBase from './planBase'
+import planRoad from './planRoad'
+import { LEVEL_START_BUILD_RAMPART, LEVEL_BUILD_ROAD } from 'setting'
+import { roleToRelease } from './planCreep'
 
 let planningCaches: StructurePlanningCache = {}
 
@@ -13,7 +14,7 @@ let planningCaches: StructurePlanningCache = {}
  * @param room 要执行规划的房间
  * @return 所有需要放置工地的位置
  */
-export const planStaticStructure = function (room: Room): ERR_NOT_FOUND | StructurePlanningResult {
+const planStaticStructure = function (room: Room): ERR_NOT_FOUND | StructurePlanningResult {
     // 房间保存的中心位置
     const center = room.memory.center
     if (!center) return ERR_NOT_FOUND
@@ -24,14 +25,22 @@ export const planStaticStructure = function (room: Room): ERR_NOT_FOUND | Struct
 
     // 执行自动墙壁规划，获取 rampart 位置
     const wallsPos = planWall(room, centerPos)
+
     wallsPos.forEach((walls, index) => {
-        // 先取出已经存在的 rampart
-        const targetLevelRampartPos = result[index + LEVEL_START_BUILD_RAMPART - 1][STRUCTURE_RAMPART] || []
-        // 然后把外墙追加进去
-        result[index + LEVEL_START_BUILD_RAMPART - 1][STRUCTURE_RAMPART] = [ ...targetLevelRampartPos, ...walls ]
+        // 要放置外墙的等级，默认情况下是 RCL 3、5、7 级时放置三层外墙
+        let placeLevel = (index * 2) + LEVEL_START_BUILD_RAMPART
+        // 如果 LEVEL_START_BUILD_RAMPART 设置的太高会导致超过 8 级，这里检查下
+        if (placeLevel > 8) placeLevel = 8
+
+        mergeStructurePlan(result, walls, placeLevel as AvailableLevel, STRUCTURE_RAMPART)
     })
 
     // 执行自动道路规划，获取基地之外的 road 位置
+    const roadPos = planRoad(room, centerPos, result)
+
+    roadPos.forEach((roads, index) => {
+        mergeStructurePlan(result, roads, LEVEL_BUILD_ROAD[index] as AvailableLevel, STRUCTURE_ROAD)
+    })
 
     return result
 }
@@ -96,10 +105,13 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
                 // 存在需要建造的建筑
                 if (placeResult === OK) needBuild = true
                 // 如果工地放不了了就加入暂存队列
-                else if (placeResult === ERR_INVALID_TARGET || placeResult === ERR_FULL) {
+                else if (placeResult === ERR_FULL) {
                     delayQueue.push(stringifyBuildPos(pos, structureType))
                 }
-                else room.log(`工地 ${structureType} 无法放置，位置 [${pos.x}, ${pos.y}]，createConstructionSite 结果 ${placeResult}`, '建筑规划', 'yellow')
+                // RCL 等级不足就不予建造
+                else if (placeResult !== ERR_RCL_NOT_ENOUGH && placeResult !== ERR_INVALID_TARGET) {
+                    room.log(`工地 ${structureType} 无法放置，位置 [${pos.x}, ${pos.y}]，createConstructionSite 结果 ${placeResult}`, '建筑规划', 'yellow')
+                }
             })
         })
     }
@@ -145,7 +157,7 @@ export const unstringifyBuildPos = function (posStr: string, roomName: string): 
  * @returns OK 清理完成
  * @returns ERR_NOT_FOUND 未找到建筑
  */
-const clearStructure = function(room: Room): OK | ERR_NOT_FOUND {
+const clearStructure = function (room: Room): OK | ERR_NOT_FOUND {
     const notMyStructure = room.find(FIND_STRUCTURES, { filter: s => !s.my })
 
     if (notMyStructure.length <= 0) return ERR_NOT_FOUND
@@ -163,4 +175,34 @@ const clearStructure = function(room: Room): OK | ERR_NOT_FOUND {
     })
 
     return OK
+}
+
+/**
+ * 将新的建筑位置合并到现有的规划方案
+ * 
+ * @param origin 要合并到的原始规划方案
+ * @param newData 要进行合并的新位置数据
+ * @param level 要合并到的等级
+ * @param type 要合并到的建筑类型
+ */
+const mergeStructurePlan = function (origin: StructurePlanningResult, newData: RoomPosition[], level: AvailableLevel, type: BuildableStructureConstant): OK {
+    // 先取出已经存在的道路
+    const targetStructurePos = origin[level - 1][type] || []
+    // 然后把新道路追加进去
+    origin[level - 1][type] = [ ...targetStructurePos, ...newData ]
+
+    return OK
+}
+
+
+/**
+ * 在指定房间发布 creep
+ * 本函数的发布会控制房间内的所有同种类 creep，所以对于某些角色来说调用一次本函数可能会新增或删除多个 creep
+ * 
+ * @param room 要发布 creep 的房间
+ * @param role 要发布的角色名
+ * @param number 要发布的数量，部分角色将无视该值
+ */
+export const releaseCreep = function (room: Room, role: BaseRoleConstant | AdvancedRoleConstant, number: number = 1): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
+    return roleToRelease[role](room, number)
 }

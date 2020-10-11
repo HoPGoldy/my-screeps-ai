@@ -65,17 +65,22 @@ const releasePlans: CreepReleasePlans = {
                 // 遍历所有 source 进行发布
                 sources.forEach((sourceDetail, index) => {
                     // 有对应的 sourceLink 的话 harvester 把自己的能量放进去
-                    if (sourceDetail.linkId) creepApi.add(`${room.name} harvester${index}`, 'collector', {
-                        sourceId: sourceDetail.id,
-                        targetId: sourceDetail.linkId
-                    }, room.name)
-                    // 没有的话就还是老角色，只是装满的时候会把能量存到 storage 里
-                    else creepApi.add(`${room.name} harvester${index}`, 'harvester', {
-                        sourceId: sourceDetail.id
-                    }, room.name)
+                    if (sourceDetail.linkId) {
+                        creepApi.add(`${room.name} harvester${index}`, 'collector', {
+                            sourceId: sourceDetail.id,
+                            targetId: sourceDetail.linkId
+                        }, room.name)
+                        room.log(`能量将存放至 sourceLink`, 'harvester', 'green')
+                    }
+                    // 没有的话就还是老角色，新建 container 并采集
+                    else {
+                        creepApi.add(`${room.name} harvester${index}`, 'harvester', {
+                            sourceId: sourceDetail.id
+                        }, room.name)
+                        room.log(`能量将存放至 sourceContainer`, 'harvester', 'green')
+                    }
                 })
-
-                room.log(`能量将存放至 sourceLink`, 'harvester', 'green')
+                
                 return true
             },
 
@@ -315,7 +320,7 @@ const releaseTransporter = function(room: Room): OK {
 /**
  * 房间运营角色名对应的发布逻辑
  */
-const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room: Room, number: number) => OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY } = {
+export const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room: Room, number: number) => OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY } = {
     'harvester': releaseHarvester,
     'collector': releaseHarvester,
     'filler': releaseTransporter,
@@ -388,16 +393,4 @@ const roleToRelease: { [role in BaseRoleConstant | AdvancedRoleConstant]: (room:
 
         return OK
     }
-}
-
-/**
- * 在指定房间发布 creep
- * 本函数的发布会控制房间内的所有同种类 creep，所以对于某些角色来说调用一次本函数可能会新增或删除多个 creep
- * 
- * @param room 要发布 creep 的房间
- * @param role 要发布的角色名
- * @param number 要发布的数量，部分角色将无视该值
- */
-export const releaseCreep = function(room: Room, role: BaseRoleConstant | AdvancedRoleConstant, number: number = 1): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
-    return roleToRelease[role](room, number)
 }
