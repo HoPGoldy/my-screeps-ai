@@ -47,7 +47,7 @@ const roles: {
 
             // 设置移动范围并进行移动（source 走到附近、container 和工地就走到它上面）
             const range = target instanceof Source ? 1 : 0
-            creep.goTo(target.pos, range)
+            creep.goTo(target.pos, { range })
 
             // 抵达位置了就准备完成
             if (creep.pos.inRangeTo(target.pos, range)) return true
@@ -139,9 +139,9 @@ const roles: {
             // harvest 需要长时间占用该位置，所以需要禁止对穿
             if (result === OK) {
                 // 开始采集能量了就拒绝对穿
-                if (!creep.memory.standed) {
+                if (!creep.memory.stand) {
                     creep.room.addRestrictedPos(creep.name, creep.pos)
-                    creep.memory.standed = true
+                    creep.memory.stand = true
                 }
             }
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
@@ -223,8 +223,8 @@ const roles: {
             const harvestResult = creep.harvest(creep.room.mineral)
 
             // 开始采矿了就注册禁止对穿
-            if (harvestResult === OK && !creep.memory.standed) {
-                creep.memory.standed = true
+            if (harvestResult === OK && !creep.memory.stand) {
+                creep.memory.stand = true
                 creep.room.addRestrictedPos(creep.name, creep.pos)
             }
             else if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
@@ -435,8 +435,8 @@ const roles: {
             if (importantWall) {
                 const actionResult = creep.repair(creep.room._importantWall)
                 if (actionResult === OK) {
-                    if (!creep.memory.standed) {
-                        creep.memory.standed = true
+                    if (!creep.memory.stand) {
+                        creep.memory.stand = true
                         creep.room.addRestrictedPos(creep.name, creep.pos)
                     }
 

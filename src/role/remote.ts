@@ -61,7 +61,7 @@ const roles: {
             }
 
             // 移动并统计移动时长
-            creep.farMoveTo(flag.pos)
+            creep.goTo(flag.pos)
             flag.memory.travelTime = flag.memory.travelTime === undefined ? 0 : flag.memory.travelTime + 1
             return false
         },
@@ -96,7 +96,7 @@ const roles: {
                         if (withdrawResult === ERR_FULL) return true
                         // 还没到就继续走
                         else if (withdrawResult === ERR_NOT_IN_RANGE) {
-                            creep.farMoveTo(targetStructure.pos)
+                            creep.goTo(targetStructure.pos)
                         }
                         
                         // 等到下个 tick 重新遍历来继续搬
@@ -110,7 +110,7 @@ const roles: {
                 return true
             }
             // 没有到指定房间就移动
-            else creep.farMoveTo(flag.pos)
+            else creep.goTo(flag.pos)
             return false
         },
         target: creep => {
@@ -128,7 +128,7 @@ const roles: {
                         const result = creep.transfer(targetStructure, res as ResourceConstant)
 
                         // 还没到就继续走
-                        if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(targetStructure.pos)
+                        if (result === ERR_NOT_IN_RANGE) creep.goTo(targetStructure.pos)
                         return false
                     }
                 }
@@ -147,7 +147,7 @@ const roles: {
                     return false
                 }
             }
-            else creep.farMoveTo(targetStructure.pos)
+            else creep.goTo(targetStructure.pos)
         },
         bodys: 'manager'
     }),
@@ -166,7 +166,7 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
+                creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             // 进入房间之后运行基地选址规划
@@ -250,7 +250,7 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
+                creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else return true
@@ -264,11 +264,11 @@ const roles: {
 
             // 如果房间的预订者不是自己, 就攻击控制器
             if (controller.reservation && controller.reservation.username !== creep.owner.username) {
-                if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, 1)
+                if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.goTo(controller.pos, { range: 1 })
             }
             // 房间没有预定满, 就继续预定
             if (!controller.reservation || controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-                if (creep.reserveController(controller) == ERR_NOT_IN_RANGE) creep.farMoveTo(controller.pos, 1)
+                if (creep.reserveController(controller) == ERR_NOT_IN_RANGE) creep.goTo(controller.pos, { range: 1 })
             }
             return false
         },
@@ -291,7 +291,7 @@ const roles: {
                     creep.goTo(creep.room.controller.pos)
                 }
             }
-            else creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
+            else creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
 
             return false
         },
@@ -313,11 +313,11 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
+                creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else {
-                delete creep.memory.farMove
+                delete creep.memory._go
                 return true
             }
         },
@@ -373,11 +373,11 @@ const roles: {
         prepare: creep => {
             // 只要进入房间则准备结束
             if (creep.room.name !== data.targetRoomName) {
-                creep.farMoveTo(new RoomPosition(25, 25, data.targetRoomName))
+                creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
                 return false
             }
             else {
-                delete creep.memory.farMove
+                delete creep.memory._go
                 return true
             }
         },
@@ -445,7 +445,7 @@ const roles: {
                 }
 
                 // 旗帜所在房间没视野, 就进行移动
-                if (!sourceFlag.room) creep.farMoveTo(sourceFlag.pos)
+                if (!sourceFlag.room) creep.goTo(sourceFlag.pos)
                 else {
                     // 缓存外矿房间名
                     sourceFlag.memory.roomName = sourceFlag.room.name
@@ -528,7 +528,7 @@ const roles: {
             }
             // 这里只要有异常就直接向外矿移动, 因为外矿有可能没视野, 下同
             else {
-                creep.farMoveTo(sourceFlag.pos)
+                creep.goTo(sourceFlag.pos)
             }
         },
         target: creep => {
@@ -538,16 +538,16 @@ const roles: {
                 const buildResult = creep.buildStructure()
                 // 正在建造就禁止对穿
                 if (buildResult === OK) {
-                    if (!creep.memory.standed) {
+                    if (!creep.memory.stand) {
                         creep.room.addRestrictedPos(creep.name, creep.pos)
-                        creep.memory.standed = true
+                        creep.memory.stand = true
                     }
                 }
                 if (buildResult === ERR_NOT_FOUND)  creep.memory.dontBuild = true
                 // 能量不足了就去 source 阶段，同时释放掉禁止通行点位
                 else if (buildResult === ERR_NOT_ENOUGH_ENERGY) {
                     creep.room.removeRestrictedPos(creep.name)
-                    delete creep.memory.standed
+                    delete creep.memory.stand
                     return true
                 }
                 
@@ -571,7 +571,7 @@ const roles: {
             const result = creep.transfer(target, RESOURCE_ENERGY)
             // 报自己身上资源不足了就说明能量放完了
             if (result === ERR_NOT_ENOUGH_RESOURCES) return true
-            else if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(target.pos, 1)
+            else if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 1 })
             else if (result === ERR_FULL) creep.say('满了啊')
             else if (result !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${result}`, 'red')
 
@@ -623,7 +623,7 @@ const roles: {
                 // 旅途时间还没有计算完成
                 else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime ++ // 增量
 
-                creep.farMoveTo(targetFlag.pos, 1)
+                creep.goTo(targetFlag.pos, { range: 1 })
 
                 return false
             }
@@ -684,7 +684,7 @@ const roles: {
                 // 时间充足就回去继续采集
                 return true
             }
-            if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos, 1)
+            if (result === ERR_NOT_IN_RANGE) creep.goTo(room.terminal.pos, { range: 1 })
             else if (result === ERR_INVALID_ARGS) return true
             else creep.say(`转移 ${result}`)
         },
@@ -709,7 +709,7 @@ const roles: {
             }
 
             // 朝目标移动
-            creep.farMoveTo(targetFlag.pos, 1)
+            creep.goTo(targetFlag.pos, { range: 1 })
 
             let findPowerbank = true
             // 进入房间后搜索 pb 并缓存
@@ -826,7 +826,7 @@ const roles: {
 
             // 移动到身边了就治疗
             if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
-            else creep.farMoveTo(targetCreep.pos)
+            else creep.goTo(targetCreep.pos)
         },
         bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
     }),
@@ -850,7 +850,7 @@ const roles: {
                 return false
             }
 
-            creep.farMoveTo(targetFlag.pos)
+            creep.goTo(targetFlag.pos)
 
             return creep.pos.inRangeTo(targetFlag.pos, 3)
         },
@@ -906,7 +906,7 @@ const roles: {
 
                 return true
             }
-            else if (result === ERR_NOT_IN_RANGE) creep.farMoveTo(room.terminal.pos)
+            else if (result === ERR_NOT_IN_RANGE) creep.goTo(room.terminal.pos)
         },
         bodys: calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
     }),
@@ -914,6 +914,7 @@ const roles: {
     /**
      * 移动测试单位
      * 一直朝着旗帜移动
+     * creepApi.add('tester', 'moveTester', { sourceFlagName: 'tester' }, 'W48S6')
      * 
      * @param spawnRoom 出生房间名称
      * @param flagName 目标旗帜名称
@@ -926,8 +927,13 @@ const roles: {
                 creep.say('旗呢？')
                 return false
             }
+            console.log('移动数据', JSON.stringify(creep.memory._go))
+
             let cost1 = Game.cpu.getUsed()
-            creep.farMoveTo(targetFlag.pos)
+            creep.goTo(targetFlag.pos, {
+                // disableCross: true
+                checkTarget: true
+            })
             creep.log(`移动消耗 ${Game.cpu.getUsed() - cost1}`)
 
             return false

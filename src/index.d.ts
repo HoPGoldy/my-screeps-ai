@@ -356,13 +356,11 @@ interface Creep {
     log(content:string, color?: Colors, notify?: boolean): void
 
     _id: string
-    _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
     work(): void
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    farMoveTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE
-    goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
+    goTo(target: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
     requireCross(direction: DirectionConstant): Boolean
     mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_INVALID_TARGET
     upgrade(): ScreepsReturnCode
@@ -413,6 +411,12 @@ type StructureWithStore = StructureStorage | StructureContainer | StructureExten
 interface CreepMemory {
     // 内置移动缓存
     _move?: Object
+
+    /**
+     * 移动缓存
+     */
+    _go?: MoveInfo
+
     // 自己是否会向他人发起对穿
     disableCross?: boolean
     // creep 是否已经准备好可以工作了
@@ -423,24 +427,17 @@ interface CreepMemory {
     working: boolean
     // creep 在工作时需要的自定义配置，在孵化时由 spawn 复制
     data?: CreepData
-    // 该 Creep 是否在站着不动进行工作
-    // 该字段用于减少 creep 向 Room.restrictedPos 里添加自己位置的次数
-    standed?: boolean
+
+    /**
+     * 该 Creep 是否在进行工作（站着不动）
+     * 该字段用于减少 creep 向 Room.restrictedPos 里添加自己位置的次数
+     */
+    stand?: boolean
     // 要采集的资源 Id
     sourceId?: string
     // 要存放到的目标建筑
     targetId?: string
-    // 远程寻路缓存
-    farMove?: {
-        // 序列化之后的路径信息
-        path?: string
-        // 移动索引，标志 creep 现在走到的第几个位置
-        index?: number
-        // 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞墙
-        prePos?: string
-        // 缓存路径的目标，该目标发生变化时刷新路径, 形如"14/4E14S1"
-        targetPos?: string
-    }
+
     // 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞墙
     prePos?: string
     // deposit 采集者特有，deposit 的类型
@@ -1157,6 +1154,11 @@ interface PowerCreepMemory {
     // 工作的房间名，在第一次出生时由玩家指定，后面会根据该值自动出生到指定房间
     workRoom: string
 
+    /**
+     * 同 creep.memory.stand
+     */
+    stand: boolean
+
     // 要添加 REGEN_SOURCE 的 souce 在 room.sources 中的索引值
     sourceIndex?: number
 }
@@ -1528,3 +1530,64 @@ interface StructurePlanningCache {
  * 目前存在的所有有效 RCL 等级
  */
 type AvailableLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+
+/**
+ * 自定义移动的选项
+ */
+interface MoveOpt {
+    /**
+     * 重用距离，等同于 moveTo 的 reusePath
+     */
+    reusePath?: number,
+
+    /**
+     * 要移动到目标位置的距离
+     */
+    range?: number,
+
+    /**
+     * 是否禁用对穿（为 true 则会躲避 creep，默认为 false）
+     */
+    disableCross?: boolean,
+
+    /**
+     * 移动目标所在的 shard（不填则默认为本 shard）
+     */
+    shard?: ShardName,
+
+    /**
+     * 路径点
+     */
+    wayPoint?: number,
+
+    /**
+     * 最大的搜索成本
+     */
+    maxOps?: number,
+
+    /**
+     * 是否检查目标发生了变化，为 true 的话会每 tick 检查目标位置是否变化
+     * 一旦变化则会立刻重新规划
+     */
+    checkTarget?: boolean
+}
+
+/**
+ * 移动的内存数据
+ */
+interface MoveInfo {
+    /**
+     * 序列化之后的路径信息
+     */
+    path?: string
+
+    /**
+     * 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞停
+     */
+    prePos?: string
+
+    /**
+     * 要移动到的目标位置，creep 会用这个字段判断目标是否变化了
+     */
+    targetPos?: string
+}

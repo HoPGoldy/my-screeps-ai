@@ -44,7 +44,7 @@ const roles: {
         isNeed: () => data.keepSpawn,
         prepare: creep => {
             // 治疗单位不允许发起对穿
-            if (!creep.memory.disableCross) creep.memory.disableCross = true
+            creep.memory.disableCross = true
             return true
         },
         target: creep => {
@@ -156,7 +156,7 @@ const roles: {
                 // 治疗自己，不会检查自己生命值，一直治疗
                 // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害足以击穿 tough。
                 if (creep.getActiveBodyparts(HEAL)) creep.heal(creep)
-        
+
                 // 无脑移动
                 creep.moveTo(targetFlag)
 
@@ -279,7 +279,7 @@ const battleBase = (flagName: string, keepSpawn: boolean) => ({
         }
 
         // 远程移动
-        creep.farMoveTo(targetFlag.pos)
+        creep.goTo(targetFlag.pos, { checkTarget: true })
         creep.say('🛴', true)
 
         // 保证自己血量健康（兼容没有 HEAL 的 creep）
@@ -292,7 +292,7 @@ const battleBase = (flagName: string, keepSpawn: boolean) => ({
             creep.log(`抵达指定房间，切入作战模式`, 'green')
             return true
         }
-        
+
         return false
     }
 })

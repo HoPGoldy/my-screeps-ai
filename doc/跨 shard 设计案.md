@@ -24,7 +24,7 @@
 
 ## 2、请求
 
-请求是消息的一种，代表了该 shard 想让其他 shard 的执行的操作。请求将被发布在自己的 InterShardMemory 上，每个 shard 都会定时检查其他 shard 的 InterShardMemory，并通过请求的 to 字段获取那些请求是需要自己处理的。请求的消息内容如下：
+请求是消息的一种，代表了该 shard 想让其他 shard 执行的操作。请求将被发布在自己的 InterShardMemory 上，每个 shard 都会定时检查其他 shard 的 InterShardMemory，并通过请求的 to 字段获取哪些请求是需要自己处理的。请求的消息内容如下：
 
 ```js
 'harvester-2312333': {

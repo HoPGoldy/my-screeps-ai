@@ -169,6 +169,8 @@ const spread = function (impassableCostMatrix: CostMatrix, spreadWork: (pos: Roo
 
         // 遍历 x 和 y 坐标
         xs.forEach(x => ys.forEach(y => {
+            if (x < 1 || x > 48 || y < 1 || y > 48) return
+
             const cost = impassableCostMatrix.get(x, y)
             // 已经是墙了，停止蔓延
             if (cost === undefined || cost === 255) return

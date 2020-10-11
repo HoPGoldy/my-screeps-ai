@@ -14,6 +14,8 @@ export default class CrossShard {
 
     /**
      * 工作入口 - 检查并处理其他 shard 的消息
+     * 
+     * 静默状态（完全没有跨 shard 信息）下的基础消耗为 0.03 - 0.01
      */
     static exec() {
         // 私服不存在该属性
