@@ -73,8 +73,8 @@ export default function (room: Room, centerPos: RoomPosition, structurePlacePlan
      * 
      * @param targetPos 要寻找的目标终点
      */
-    const findPath = (targetPos: RoomPosition) => {
-        const searchResult = PathFinder.search(centerPos, targetPos, {
+    const findPath = (targetPos: RoomPosition, range: number = 2) => {
+        const searchResult = PathFinder.search(centerPos, { pos: targetPos, range }, {
             plainCost: 2,
             swampCost: 10,
             roomCallback: (roomName) => {
@@ -105,10 +105,10 @@ export default function (room: Room, centerPos: RoomPosition, structurePlacePlan
     }
 
     // 到 Controller 的路径
-    const pathToController: RoomPosition[] = findPath(room.controller.pos)
+    const pathToController: RoomPosition[] = findPath(room.controller.pos, 2)
 
     // 到 Mineral 的路径
-    const pathToMineral: RoomPosition[] = findPath(room.mineral.pos)
+    const pathToMineral: RoomPosition[] = findPath(room.mineral.pos, 1)
 
     return [ pathToSource, pathToController, pathToMineral ]
 }
