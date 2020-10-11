@@ -1554,8 +1554,10 @@ interface MoveOpt {
 
     /**
      * 路径点
+     * 传入形如 [ '12 21 E1N1', '12 21 E2N2' ] 的路径点数组
+     * 或是任意路径旗帜名前缀
      */
-    wayPoint?: number,
+    wayPoint?: string[] | string,
 
     /**
      * 最大的搜索成本
@@ -1587,4 +1589,14 @@ interface MoveInfo {
      * 要移动到的目标位置，creep 会用这个字段判断目标是否变化了
      */
     targetPos?: string
+
+    /**
+     * 数组形式传入的路径点
+     */
+    wayPoints?: string[]
+
+    /**
+     * 路径旗帜名（包含后面的编号，如 waypoint1 或者 waypoint99）
+     */
+    wayPointFlag?: string
 }

@@ -37,7 +37,7 @@ export function doing(...hashMaps: object[]): void {
         })
 
         // 如果有需求的话就显示 cpu 消耗
-        if (Memory.showCost) log(`消耗 ${Game.cpu.getUsed() - startCost}`, [ `[${index}]` ])
+        if (Memory.showCost) log(`消耗 ${Game.cpu.getUsed() - startCost}`, [ index.toString() ])
     })
 }
 

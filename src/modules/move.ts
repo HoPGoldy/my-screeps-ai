@@ -152,7 +152,7 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
         return route
     }
 
-    const result = PathFinder.search(creep.pos, { pos: target, range: moveOpt.range || 0 }, {
+    const result = PathFinder.search(creep.pos, { pos: target, range: moveOpt.range || 1 }, {
         plainCost: 2,
         swampCost: 10,
         maxOps: moveOpt.maxOps || 4000,
@@ -188,7 +188,7 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
             // 躲避房间中的 creep
             const addCreepCost = (creep: Creep | PowerCreep) => {
                 // 如果没有禁用对穿并且 creep 属于自己则不会躲避
-                if (!moveOpt.disableCross && !creep.memory.disableCross && creep.my) return
+                if (!moveOpt.disableCross && creep.my && !creep.memory.disableCross) return
                 costs.set(creep.pos.x, creep.pos.y, 255)
             }
 
