@@ -349,7 +349,7 @@ interface Creep {
     checkEnemy(): boolean
     standBy(): void
     defense(): void
-    goTo(target: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
+    goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
     requireCross(direction: DirectionConstant): Boolean
     mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_INVALID_TARGET
     upgrade(): ScreepsReturnCode

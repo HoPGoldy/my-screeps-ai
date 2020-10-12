@@ -6,7 +6,17 @@ import { getOppositeDirection } from 'utils'
  * Creep 在执行远程寻路时会优先检查该缓存
  * 键为路径的起点和终点名，例如："12/32/W1N1 23/12/W2N2"，值是使用 serializeFarPath 序列化后的路径
  */
-export const routeCache = {}
+export const routeCache: { [routeKey: string]: string } = {}
+
+/**
+ * 全局的路径点缓存
+ * 
+ * Creep 会把自己下一个路径点对应的位置缓存在这里，这样就不用每 tick 都从内存中的路径点字符串重建位置
+ * 不过这么做会导致 creep 无法立刻感知到位置的变化
+ * 
+ * 其键为 creep 的名字，值为下一个路径目标
+ */
+export const wayPointCache: { [creepName: string]: RoomPosition } = {}
 
 /**
  * 移动 creep
@@ -15,8 +25,11 @@ export const routeCache = {}
  * @param target 要移动到的目标位置
  * @param moveOpt 移动参数
  */
-export const goTo = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt = {}): ScreepsReturnCode {
+export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt = {}): ScreepsReturnCode {
     if (!creep.memory._go) creep.memory._go = {}
+    // 如果没有指定目标的话则默认为路径模式
+    let target: RoomPosition = targetPos || getTarget(creep)
+    if (!target) return ERR_INVALID_ARGS
 
     // 确认目标有没有变化, 变化了则重新规划路线
     if (moveOpt.checkTarget) {
@@ -34,7 +47,11 @@ export const goTo = function (creep: Creep, target: RoomPosition, moveOpt: MoveO
     }
 
     // 还为空的话就是没找到路径或者已经到了
-    if (!creep.memory._go.path) return OK
+    if (!creep.memory._go.path) {
+        // 到达目的地后如果是路径模式的话就需要更新路径点
+        if (!targetPos) updateWayPoint(creep)
+        return OK
+    }
 
     // 使用缓存进行移动
     const direction = <DirectionConstant>Number(creep.memory._go.path[0])
@@ -44,12 +61,105 @@ export const goTo = function (creep: Creep, target: RoomPosition, moveOpt: MoveO
     if (goResult == OK) creep.memory._go.path = creep.memory._go.path.substr(1)
     // 如果发生撞停或者参数异常的话说明缓存可能存在问题，移除缓存
     else if (goResult === ERR_INVALID_TARGET || goResult == ERR_INVALID_ARGS) {
-        delete creep.memory._go
+        delete creep.memory._go.path
     }
     // 其他异常直接报告
     else if (goResult != ERR_TIRED) creep.say(`寻路 ${goResult}`)
 
     return goResult
+}
+
+
+/**
+ * 路径模式下获取要移动到的目标
+ * 
+ * 会进行缓存
+ * 如果内存中没有设置的话则返回 undefined
+ */
+const getTarget = function (creep: Creep): RoomPosition {
+    // 检查缓存
+    let target = wayPointCache[creep.name]
+    if (target) return target
+
+    const memroy = creep.memory._go
+    if (!memroy) return
+
+    // 优先用路径旗帜
+    if (memroy.wayPointFlag) {
+        const flag = Game.flags[memroy.wayPointFlag]
+        target = flag?.pos
+    }
+    // 没有🚩就找找路径数组
+    else if (memroy.wayPoints && memroy.wayPoints.length > 0) {
+        const [ x, y, roomName ] = memroy.wayPoints[0].split(' ')
+        if (!x || !y || !roomName) {
+            creep.log(`错误的路径点 ${memroy.wayPoints[0]}`)
+            return
+        }
+
+        target = new RoomPosition(Number(x), Number(y), roomName)
+    }
+
+    wayPointCache[creep.name] = target
+    return target
+}
+
+
+
+/**
+ * 给 Creep 设置路径点目标
+ * 
+ * target 是一个路径数组或者路径旗帜
+ * 
+ * @param target 路径点目标
+ */
+export const setWayPoint = function (creep: Creep, target: string[] | string) {
+    if (!creep.memory._go) creep.memory._go = {}
+    delete wayPointCache[creep.name]
+
+    // 设置时会移除另一个路径模式的数据，防止这个移动完之后再回头走之前留下的路径点
+    if (target instanceof Array) {
+        creep.memory._go.wayPoints = target
+        delete creep.memory._go.wayPointFlag
+    }
+    else {
+        creep.memory._go.wayPointFlag = target + '0'
+        delete creep.memory._go.wayPoints
+    }
+
+    return OK
+}
+
+
+/**
+ * 更新路径点
+ * 
+ * 当抵达当前路径点后就需要更新内存数据以移动到下一个路径点
+ */
+const updateWayPoint = function (creep: Creep) {
+    if (!creep.memory._go) creep.memory._go = {}
+    const memory = creep.memory._go
+
+    if (memory.wayPoints) {
+        // 弹出已经抵达的路径点
+        if (memory.wayPoints.length > 0) memory.wayPoints.shift()
+        else delete memory.wayPoints
+    }
+    else if (memory.wayPointFlag) {
+        // 获取路径旗帜名
+        const flagPrefix = memory.wayPointFlag.slice(0, memory.wayPointFlag.length - 1)
+        // 把路径旗帜的编号 + 1
+        const nextFlagCode = Number(memory.wayPointFlag.substr(-1)) + 1
+        // 拿到新的旗帜
+        const flag = Game.flags[flagPrefix + nextFlagCode]
+
+        // 把新旗帜更新到内存
+        if (flag) memory.wayPointFlag = flag.name
+        else delete memory.wayPointFlag
+    }
+
+    // 移除缓存以便下次可以重新查找目标
+    delete wayPointCache[creep.name]
 }
 
 
@@ -73,7 +183,7 @@ const move = function (creep: Creep, target: DirectionConstant, moveOpt: MoveOpt
 
         // 没找到说明撞墙上了或者前面的 creep 拒绝对穿，重新寻路
         if (crossResult != OK) {
-            delete creep.memory._go
+            delete creep.memory._go.path
             return crossResult
         }
     }
@@ -143,7 +253,7 @@ const requireCross = function (creep: Creep | PowerCreep, direction: DirectionCo
  * @param range 搜索范围 默认为 1
  * @returns PathFinder.search 的返回值
  */
-const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt): string | null {
+const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt): string | undefined {
     // 先查询下缓存里有没有值
     const routeKey = `${creep.room.serializePos(creep.pos)} ${creep.room.serializePos(target)}`
     let route = routeCache[routeKey]
@@ -152,7 +262,8 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
         return route
     }
 
-    const result = PathFinder.search(creep.pos, { pos: target, range: moveOpt.range || 1 }, {
+    const range = moveOpt.range === undefined ? 1 : moveOpt.range
+    const result = PathFinder.search(creep.pos, { pos: target, range }, {
         plainCost: 2,
         swampCost: 10,
         maxOps: moveOpt.maxOps || 4000,
@@ -199,8 +310,8 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
         }
     })
 
-    // 没找到就返回 null
-    if (result.path.length <= 0) return null
+    // 没找到就返回空
+    if (result.path.length <= 0) return undefined
     // 找到了就进行压缩
     route = serializeFarPath(creep, result.path)
     // 保存到全局缓存

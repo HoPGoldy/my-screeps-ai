@@ -1,6 +1,6 @@
 import { repairSetting, minWallHits } from 'setting'
 import roles from 'role'
-import { goTo } from 'modules/move'
+import { goTo, setWayPoint } from 'modules/move'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -150,8 +150,18 @@ export default class CreepExtension extends Creep {
      * 
      * @param target 要移动到的位置
      */
-    public goTo(target: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode {
+    public goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode {
         return goTo(this, target, moveOpt)
+    }
+
+    /**
+     * 设置路径点
+     * 
+     * @see doc/移动及寻路设计案
+     * @param target 要进行设置的目标，位置字符串数组或者是路径名前缀
+     */
+    public setWayPoint(target: string[] | string): ScreepsReturnCode {
+        return setWayPoint(this, target)
     }
 
     /**
