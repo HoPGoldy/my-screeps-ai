@@ -114,7 +114,8 @@ export default class CreepExtension extends Creep {
         }
         // 如果没到 就向旗帜移动
         if (!this.pos.isEqualTo(standByFlag.pos)) this.goTo(standByFlag.pos, {
-            checkTarget: true
+            checkTarget: true,
+            range: 0
         })
         else this.memory.isStanBy = true
     }

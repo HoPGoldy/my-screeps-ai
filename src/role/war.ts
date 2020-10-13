@@ -253,7 +253,7 @@ const boostPrepare = () => ({
             }
         }
         // 否则就继续移动
-        else creep.goTo(boostPos)
+        else creep.goTo(boostPos, { range: 0 })
         return false
     }
 })

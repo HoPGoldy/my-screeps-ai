@@ -51,7 +51,7 @@ const roles: {
         prepare: creep => {
             if (creep.pos.isEqualTo(data.x, data.y)) return true
             else {
-                creep.goTo(new RoomPosition(data.x, data.y, creep.room.name))
+                creep.goTo(new RoomPosition(data.x, data.y, creep.room.name), { range: 0 })
                 return false
             }
         },
