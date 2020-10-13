@@ -1,7 +1,15 @@
 import { getOppositeDirection } from 'utils'
 
 /**
- * 全局的路径缓存
+ * 房间移动成本缓存
+ * 
+ * 会缓存房间内的静态地形、道路、建筑等短时间内不会移动的对象
+ * 如果出现了撞墙等情况，说明缓存过期，会在撞墙时移除缓存以便下次重新搜索
+ */
+const costCache: { [roomName: string]: CostMatrix } = {}
+
+/**
+ * 路径缓存
  * 
  * Creep 在执行远程寻路时会优先检查该缓存
  * 键为路径的起点和终点名，例如："12/32/W1N1 23/12/W2N2"，值是使用 serializeFarPath 序列化后的路径
@@ -9,14 +17,14 @@ import { getOppositeDirection } from 'utils'
 export const routeCache: { [routeKey: string]: string } = {}
 
 /**
- * 全局的路径点缓存
+ * 路径点缓存
  * 
  * Creep 会把自己下一个路径点对应的位置缓存在这里，这样就不用每 tick 都从内存中的路径点字符串重建位置
  * 不过这么做会导致 creep 无法立刻感知到位置的变化
  * 
  * 其键为 creep 的名字，值为下一个路径目标
  */
-export const wayPointCache: { [creepName: string]: RoomPosition } = {}
+const wayPointCache: { [creepName: string]: RoomPosition } = {}
 
 /**
  * 移动 creep
@@ -62,6 +70,7 @@ export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined,
     // 如果发生撞停或者参数异常的话说明缓存可能存在问题，移除缓存
     else if (goResult === ERR_INVALID_TARGET || goResult == ERR_INVALID_ARGS) {
         delete creep.memory._go.path
+        delete costCache[creep.room.name]
     }
     // 其他异常直接报告
     else if (goResult != ERR_TIRED) creep.say(`寻路 ${goResult}`)
@@ -275,17 +284,24 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
             // 房间没有视野
             if (!room) return
 
-            let costs = new PathFinder.CostMatrix
+            // 尝试从缓存中读取，没有缓存就进行查找
+            let costs = costCache[room.name]
+            if (!costs) {
+                costs = new PathFinder.CostMatrix
 
-            room.find(FIND_STRUCTURES).forEach(struct => {
-                if (struct.structureType === STRUCTURE_ROAD) {
-                    costs.set(struct.pos.x, struct.pos.y, 1)
-                }
-                // 不能穿过无法行走的建筑
-                else if (struct.structureType !== STRUCTURE_CONTAINER &&
-                    (struct.structureType !== STRUCTURE_RAMPART || !struct.my) 
-                ) costs.set(struct.pos.x, struct.pos.y, 255)
-            })
+                room.find(FIND_STRUCTURES).forEach(struct => {
+                    // 更倾向走道路
+                    if (struct.structureType === STRUCTURE_ROAD) {
+                        costs.set(struct.pos.x, struct.pos.y, 1)
+                    }
+                    // 不能穿过无法行走的建筑
+                    else if (struct.structureType !== STRUCTURE_CONTAINER &&
+                        (struct.structureType !== STRUCTURE_RAMPART || !struct.my) 
+                    ) costs.set(struct.pos.x, struct.pos.y, 255)
+                })
+
+                costCache[room.name] = costs
+            }
 
             // 避开房间中的禁止通行点
             const restrictedPos = room.getRestrictedPos()
@@ -293,7 +309,7 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
                 // 自己注册的禁止通行点位自己可以走
                 if (creepName === creep.name) continue
                 const pos = room.unserializePos(restrictedPos[creepName])
-                costs.set(pos.x, pos.y, 0xff)
+                costs.set(pos.x, pos.y, 255)
             }
 
             // 躲避房间中的 creep
