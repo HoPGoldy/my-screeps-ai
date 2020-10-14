@@ -915,20 +915,25 @@ const roles: {
      * 移动测试单位
      * 
      * 一直朝着旗帜移动
-     * 添加：creepApi.add('tester', 'moveTester', { sourceFlagName: 'tester' }, 'W48S6')
+     * 添加：creepApi.add('happy creep', 'moveTester', { sourceFlagName: 'p' }, 'W49S9')
      * 删除：creepApi.remove('tester')
      * 
      * @param spawnRoom 出生房间名称
      * @param flagName 目标旗帜名称
      */
     moveTester: (data: RemoteHarvesterData): ICreepConfig => ({
+        prepare: creep => {
+            creep.setWayPoint(data.sourceFlagName)
+            creep.memory.fromShard = Game.shard.name as ShardName
+            return true
+        },
         target: creep => {
-            const targetFlag = Game.flags[data.sourceFlagName]
-            if (!targetFlag) {
-                creep.log(`找不到 ${data.sourceFlagName} 旗帜`, 'yellow')
-                creep.say('旗呢？')
-                return false
-            }
+            // const targetFlag = Game.flags[data.sourceFlagName]
+            // if (!targetFlag) {
+            //     creep.log(`找不到 ${data.sourceFlagName} 旗帜`, 'yellow')
+            //     creep.say('旗呢？')
+            //     return false
+            // }
             console.log('移动数据', JSON.stringify(creep.memory._go))
 
             let cost1 = Game.cpu.getUsed()
@@ -937,7 +942,7 @@ const roles: {
                 checkTarget: true,
                 range: 0
             })
-            creep.log(`移动消耗 ${Game.cpu.getUsed() - cost1}`)
+            // creep.log(`移动消耗 ${Game.cpu.getUsed() - cost1}`)
             creep.say(result.toString())
 
             return false

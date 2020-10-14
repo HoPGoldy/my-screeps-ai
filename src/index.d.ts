@@ -121,7 +121,7 @@ interface ICreepConfig {
     // creep 获取工作所需资源时执行的方法
     // 返回 true 则执行 target 阶段，返回其他将继续执行该方法
     source?: (creep: Creep) => boolean
-    // creep 工作时执行的方法,
+    // creep 工作时执行的方法
     // 返回 true 则执行 source 阶段，返回其他将继续执行该方法
     target: (creep: Creep) => boolean
     // 每个角色默认的身体组成部分
@@ -350,6 +350,7 @@ interface Creep {
     standBy(): void
     defense(): void
     goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
+    setWayPoint(target: string[] | string): ScreepsReturnCode
     requireCross(direction: DirectionConstant): Boolean
     mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_INVALID_TARGET
     upgrade(): ScreepsReturnCode
@@ -405,6 +406,19 @@ interface CreepMemory {
      * 移动缓存
      */
     _go?: MoveInfo
+
+    /**
+     * 来自的 shard
+     * 在死后会向这个 shard 发送孵化任务
+     * creepController 会通过这个字段检查一个 creep 是不是跨 shard creep
+     */
+    fromShard?: ShardName
+
+    /**
+     * 要到的 shard
+     * 会在抵达该 creep 后移除该字段（不会移除 fromShard）
+     */
+    toShard?: ShardName
 
     /**
      * 自己是否会向他人发起对穿
@@ -903,7 +917,10 @@ interface Memory {
         4: string[]
         5: string[]
     }
-    // 所有 creep 的配置项，每次 creep 死亡或者新增时都会通过这个表来完成初始化
+
+    /**
+     * 所有 creep 的配置项，每次 creep 死亡或者新增时都会通过这个表来完成初始化
+     */
     creepConfigs: {
         [creepName: string]: {
             // creep 的角色名
@@ -917,6 +934,7 @@ interface Memory {
             bodys: BodyAutoConfigConstant | BodyPartConstant[]
         }
     }
+
     // 全局统计信息
     stats: {
         // GCl/GPL 升级百分比
@@ -1452,22 +1470,35 @@ interface CrossShardRequestConstructor<RequestType, RequestData> {
  */
 type SendCreep = 'sendCreep'
 type SendCreepData = {
-    // 要发送 creep 的内存
-    memory: CreepMemory,
     // 要发送 creep 的名字
     name: string
+    // 要发送 creep 的内存
+    memory: CreepMemory
+}
+
+/**
+ * 跨 shard 请求 - 提交重新孵化任务
+ */
+type SendRespawn = 'sendRespawn'
+type SendRespawnData = {
+    // 要重新孵化的 creep 的名字
+    name: string
+    // 要重新孵化的 creep 的内存
+    memory: CreepMemory
 }
 
 // 构造所有的跨 shard 请求
-type CrossShardRequest = CrossShardRequestConstructor<SendCreep, SendCreepData>
+type CrossShardRequest = 
+    CrossShardRequestConstructor<SendCreep, SendCreepData> |
+    CrossShardRequestConstructor<SendRespawn, SendRespawnData>
 
 // 所有跨 shard 请求的类型和数据
-type CrossShardRequestType = SendCreep
-type CrossShardRequestData = SendCreepData
+type CrossShardRequestType = SendCreep | SendRespawn
+type CrossShardRequestData = SendCreepData | SendRespawnData
 
 // 所有跨 shard 请求的执行策略
 type CrossShardRequestStrategies = {
-    [type in CrossShardRequestType]: (data: { [key: string]: any}) => ScreepsReturnCode
+    [type in CrossShardRequestType]: (data: CrossShardRequestData) => ScreepsReturnCode
 }
 
 // 镜面的跨 shard 数据

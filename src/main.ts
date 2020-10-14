@@ -1,7 +1,7 @@
 import mountWork from './mount'
 import { doing, stateScanner, generatePixel } from './utils'
 import creepNumberListener from './modules/creepController'
-import CrossShard from './modules/crossShard'
+import { execShard, saveShardData } from './modules/crossShard'
 import { ErrorMapper } from './modules/errorMapper'
 
 export const loop = ErrorMapper.wrapLoop(() => {
@@ -11,7 +11,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     mountWork()
 
     // 检查跨 shard 请求
-    CrossShard.exec()
+    execShard()
 
     // creep 数量控制
     creepNumberListener()
@@ -23,7 +23,7 @@ export const loop = ErrorMapper.wrapLoop(() => {
     generatePixel()
 
     // 保存自己的跨 shard 消息
-    CrossShard.save()
+    saveShardData()
 
     // 统计全局资源使用
     stateScanner()

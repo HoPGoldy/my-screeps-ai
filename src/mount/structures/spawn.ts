@@ -81,7 +81,8 @@ export default class SpawnExtension extends StructureSpawn {
             return OK
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
-            this.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成 ...`)
+            this.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成`)
+            // 这里返回 ok，然后让外层方法移除对应的孵化任务
             return OK
         }
         else {

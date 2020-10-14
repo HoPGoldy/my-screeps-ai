@@ -1,4 +1,5 @@
 import { getOppositeDirection } from 'utils'
+import { addCrossShardRequest } from './crossShard'
 
 /**
  * 房间移动成本缓存
@@ -65,6 +66,45 @@ export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined,
     const direction = <DirectionConstant>Number(creep.memory._go.path[0])
     const goResult = move(creep, direction, moveOpt)
 
+    /**
+     * 如果是跨 shard 单位的话就要检查下目标是不是传送门
+     *
+     * 这里没办法直接通过判断当前位置在不在传送门上来确定是不是要跨 shard
+     * 因为在 screeps 声明周期的创建阶段中：位置变更到传送门上后会立刻把 creep 转移到新 shard
+     * 而这时还没有到代码执行阶段，即：
+     * 
+     * - tick1: 执行 move > 判断当前位置 > 不是传送门
+     * - tick2: 更新位置 > 发现新位置在传送门上 > 发送到新 shard > 执行代码（creep 到了新 shard，当前位置依旧不在传送门上）
+     * 
+     * 所以要在路径还有一格时判断前方是不是传送门
+     */
+    if (creep.memory.fromShard && creep.memory._go?.path.length === 1) {
+        const nextPos = creep.pos.directionToPos(direction)
+        const portal = nextPos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_PORTAL) as StructurePortal
+
+        // 移动到去其他 shard 的传送门上了，发送跨 shard 请求
+        if (portal && !(portal.destination instanceof RoomPosition)) {
+            updateWayPoint(creep)
+            const { name, memory } = creep
+            // 移除移动路径，到下个 shard 可以重新规划路径
+            delete memory._go.path
+            console.log(`向 ${portal.destination.shard} 发送 sendCreep 任务`, JSON.stringify({ name, memory }))
+            // 发送跨 shard 请求来转移自己的 memory
+            addCrossShardRequest(
+                `sendCreep${creep.name}${Game.time}`,
+                portal.destination.shard as ShardName,
+                'sendCreep',
+                { name, memory }
+            )
+
+            // 主动释放掉自己的内存，从而避免 creepController 认为自己去世了而直接重新孵化
+            // 这里因为上面已经执行了 move，所以下个 tick 就直接到目标 shard 了，不会报错找不到自己内存
+            delete Memory.creeps[creep.name]
+
+            return OK
+        }
+    }
+
     // 移动成功，更新路径
     if (goResult == OK) creep.memory._go.path = creep.memory._go.path.substr(1)
     // 如果发生撞停或者参数异常的话说明缓存可能存在问题，移除缓存
@@ -103,13 +143,15 @@ const getTarget = function (creep: Creep): RoomPosition {
         const [ x, y, roomName ] = memroy.wayPoints[0].split(' ')
         if (!x || !y || !roomName) {
             creep.log(`错误的路径点 ${memroy.wayPoints[0]}`)
-            return
         }
-
-        target = new RoomPosition(Number(x), Number(y), roomName)
+        else target = new RoomPosition(Number(x), Number(y), roomName)
     }
 
     wayPointCache[creep.name] = target
+
+    // 如果还没有找到目标的话说明路径点失效了，移除整个缓存
+    if (!target) delete creep.memory._go
+
     return target
 }
 
@@ -152,19 +194,16 @@ const updateWayPoint = function (creep: Creep) {
     if (memory.wayPoints) {
         // 弹出已经抵达的路径点
         if (memory.wayPoints.length > 0) memory.wayPoints.shift()
-        else delete memory.wayPoints
     }
     else if (memory.wayPointFlag) {
         // 获取路径旗帜名
         const flagPrefix = memory.wayPointFlag.slice(0, memory.wayPointFlag.length - 1)
         // 把路径旗帜的编号 + 1
         const nextFlagCode = Number(memory.wayPointFlag.substr(-1)) + 1
-        // 拿到新的旗帜
-        const flag = Game.flags[flagPrefix + nextFlagCode]
 
-        // 把新旗帜更新到内存
-        if (flag) memory.wayPointFlag = flag.name
-        else delete memory.wayPointFlag
+        // 把新旗帜更新到内存，这里没有检查旗帜是否存在
+        // 原因在于跨 shard 需要在跨越之前将旗帜更新到下一个，但是这时还没有到下个 shard，就获取不到位于下个 shard 的旗帜
+        memory.wayPointFlag = flagPrefix + nextFlagCode
     }
 
     // 移除缓存以便下次可以重新查找目标
@@ -279,6 +318,7 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
         roomCallback: roomName => {
             // 强调了不许走就不走
             if (Memory.bypassRooms && Memory.bypassRooms.includes(roomName)) return false
+            
 
             const room = Game.rooms[roomName]
             // 房间没有视野
@@ -321,6 +361,12 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
 
             room.find(FIND_CREEPS).forEach(addCreepCost)
             room.find(FIND_POWER_CREEPS).forEach(addCreepCost)
+            
+            // 跨 shard creep 需要解除 portal 的不可移动性
+            if (creep.memory.fromShard) {
+                const portals = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_PORTAL})
+                portals.forEach(portal => costs.set(portal.pos.x, portal.pos.y, 2))
+            }
 
             return costs
         }
