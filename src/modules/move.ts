@@ -78,7 +78,7 @@ export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined,
      * 
      * 所以要在路径还有一格时判断前方是不是传送门
      */
-    if (creep.memory.fromShard && creep.memory._go?.path.length === 1) {
+    if (creep.memory.fromShard && creep.memory._go && creep.memory._go.path.length === 1) {
         const nextPos = creep.pos.directionToPos(direction)
         const portal = nextPos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_PORTAL) as StructurePortal
 
@@ -361,11 +361,11 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
 
             room.find(FIND_CREEPS).forEach(addCreepCost)
             room.find(FIND_POWER_CREEPS).forEach(addCreepCost)
-            
-            // 跨 shard creep 需要解除 portal 的不可移动性
-            if (creep.memory.fromShard) {
-                const portals = room.find(FIND_STRUCTURES, { filter: s => s.structureType === STRUCTURE_PORTAL})
-                portals.forEach(portal => costs.set(portal.pos.x, portal.pos.y, 2))
+
+            // 跨 shard creep 需要解除目标 portal 的不可移动性（如果有的话）
+            if (creep.memory.fromShard && target.roomName === roomName) {
+                const portal = target.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_PORTAL)
+                if (portal) costs.set(portal.pos.x, portal.pos.y, 2)
             }
 
             return costs

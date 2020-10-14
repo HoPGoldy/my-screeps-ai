@@ -31,6 +31,8 @@ export default function creepNumberListener(intrval: number = 5): void {
             addCrossShardRequest(`respawnCreep ${name}`, fromShard, 'sendRespawn', {
                 name, memory: Memory.creeps[name]
             })
+
+            delete Memory.creeps[name]
         }
         // 如果 creep 凉在了本 shard
         else handleNotExistCreep(name, Memory.creeps[name])
