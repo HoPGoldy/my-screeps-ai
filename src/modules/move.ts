@@ -78,7 +78,7 @@ export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined,
      * 
      * 所以要在路径还有一格时判断前方是不是传送门
      */
-    if (creep.memory.fromShard && creep.memory._go && creep.memory._go.path.length === 1) {
+    if (creep.memory.fromShard && creep.memory._go.path && creep.memory._go.path.length === 1) {
         const nextPos = creep.pos.directionToPos(direction)
         const portal = nextPos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_PORTAL) as StructurePortal
 
@@ -196,14 +196,22 @@ const updateWayPoint = function (creep: Creep) {
         if (memory.wayPoints.length > 0) memory.wayPoints.shift()
     }
     else if (memory.wayPointFlag) {
-        // 获取路径旗帜名
-        const flagPrefix = memory.wayPointFlag.slice(0, memory.wayPointFlag.length - 1)
-        // 把路径旗帜的编号 + 1
-        const nextFlagCode = Number(memory.wayPointFlag.substr(-1)) + 1
-
-        // 把新旗帜更新到内存，这里没有检查旗帜是否存在
-        // 原因在于跨 shard 需要在跨越之前将旗帜更新到下一个，但是这时还没有到下个 shard，就获取不到位于下个 shard 的旗帜
-        memory.wayPointFlag = flagPrefix + nextFlagCode
+        const preFlag = Game.flags[memory.wayPointFlag]
+        
+        // 如果旗帜内存里指定了下一个路径点名称的话就直接使用
+        if (preFlag && preFlag.memory && preFlag.memory.next) {
+            memory.wayPointFlag = preFlag.memory.next
+        }
+        // 否则就默认自增编号
+        else {
+            // 获取路径旗帜名
+            const flagPrefix = memory.wayPointFlag.slice(0, memory.wayPointFlag.length - 1)
+            // 把路径旗帜的编号 + 1
+            const nextFlagCode = Number(memory.wayPointFlag.substr(-1)) + 1
+            // 把新旗帜更新到内存，这里没有检查旗帜是否存在
+            // 原因在于跨 shard 需要在跨越之前将旗帜更新到下一个，但是这时还没有到下个 shard，就获取不到位于下个 shard 的旗帜
+            memory.wayPointFlag = flagPrefix + nextFlagCode
+        }
     }
 
     // 移除缓存以便下次可以重新查找目标
@@ -325,7 +333,7 @@ const findPath = function (creep: Creep, target: RoomPosition, moveOpt: MoveOpt)
             if (!room) return
 
             // 尝试从缓存中读取，没有缓存就进行查找
-            let costs = costCache[room.name]
+            let costs = (room.name in costCache) ? costCache[room.name].clone() : undefined
             if (!costs) {
                 costs = new PathFinder.CostMatrix
 

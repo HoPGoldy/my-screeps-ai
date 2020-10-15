@@ -10,11 +10,11 @@ const requestHandleStrategies: CrossShardRequestStrategies = {
      * 其他 shard 发来了 creep
      */
     sendCreep: (data: SendCreepData) => {
-        console.log('收到 sennCreep 任务', JSON.stringify(data))
-        if (!Memory.creeps) Memory.creeps = {}
+        console.log('收到 sendCreep 任务', JSON.stringify(data))
+        if (!Memory.crossShardCreeps) Memory.crossShardCreeps = {}
 
-        // 把 creep 内存复制到自己 Memory 里
-        Memory.creeps[data.name] = data.memory
+        // 把 creep 内存复制到暂存区里
+        Memory.crossShardCreeps[data.name] = data.memory
         return OK
     },
 

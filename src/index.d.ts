@@ -935,6 +935,17 @@ interface Memory {
         }
     }
 
+    /**
+     * 从其他 shard 跳跃过来的 creep 内存会被存放在这里
+     * 等 creep 抵达后在由其亲自放在 creepConfigs 里
+     * 
+     * 不能直接放在 creepConfigs
+     * 因为有可能出现内存到了但是 creep 还没到的情况，这时候 creepController 就会以为这个 creep 死掉了从而直接把内存回收掉
+     */
+    crossShardCreeps: {
+        [creepName: string]: CreepMemory
+    }
+
     // 全局统计信息
     stats: {
         // GCl/GPL 升级百分比
@@ -1002,6 +1013,12 @@ interface FlagMemory {
     // 因为外矿房间有可能没视野
     // 所以把房间名缓存进内存
     roomName?: string
+
+    /**
+     * 路径点旗帜中生效
+     * 用于指定下一个路径点的旗帜名
+     */
+    next: string
 }
 
 type CenterStructures = STRUCTURE_STORAGE | STRUCTURE_TERMINAL | STRUCTURE_FACTORY | 'centerLink'

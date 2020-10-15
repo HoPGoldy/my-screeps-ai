@@ -15,9 +15,7 @@ import { addCrossShardRequest } from './crossShard'
   * 
   * @param intrval 搜索间隔
   */
-export default function creepNumberListener(intrval: number = 5): void {
-    if (Game.time % intrval) return
-
+export default function creepNumberListener(): void {
     // 遍历所有 creep 内存，检查其是否存在
     for (const name in Memory.creeps) {
         if (name in Game.creeps) continue

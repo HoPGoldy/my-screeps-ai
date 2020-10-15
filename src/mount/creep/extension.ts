@@ -1,6 +1,7 @@
 import { repairSetting, minWallHits } from 'setting'
 import roles from 'role'
 import { goTo, setWayPoint } from 'modules/move'
+import { getMemoryFromCrossShard } from 'modules/crossShard'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -10,21 +11,13 @@ export default class CreepExtension extends Creep {
     public work(): void {
         // 检查 creep 内存中的角色是否存在
         if (!(this.memory.role in roles)) {
-            this.log(`找不到对应的 creepConfig`, 'yellow')
-            this.say('我凉了！')
-            return
-        }
-
-        // 还没出生就啥都不干
-        if (this.spawning) {
-            if (this.ticksToLive === CREEP_LIFE_TIME) this._id = this.id // 解决 this creep not exist 问题
-            return
-        }
-
-        // 快死时的处理
-        if (this.ticksToLive <= 3) {
-            // 如果还在工作，就释放掉自己的工作位置
-            if (this.memory.stand) this.room.removeRestrictedPos(this.name)
+            // 没有的话可能是放在跨 shard 暂存区了
+            const memory = getMemoryFromCrossShard(this.name)
+            if (!memory) {
+                this.log(`找不到对应的 creepConfig`, 'yellow')
+                this.say('我凉了！')
+                return
+            }
         }
 
         // 获取对应配置项
@@ -61,6 +54,12 @@ export default class CreepExtension extends Creep {
                 this.room.removeRestrictedPos(this.name)
                 delete this.memory.stand
             }
+        }
+
+        // 快死时的处理
+        if (this.ticksToLive <= 1) {
+            // 如果还在工作，就释放掉自己的工作位置
+            if (this.memory.stand) this.room.removeRestrictedPos(this.name)
         }
     }
 

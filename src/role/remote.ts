@@ -934,7 +934,7 @@ const roles: {
             //     creep.say('旗呢？')
             //     return false
             // }
-            console.log('移动数据', JSON.stringify(creep.memory._go))
+            // console.log('移动数据', JSON.stringify(creep.memory._go))
 
             let cost1 = Game.cpu.getUsed()
             const result = creep.goTo(undefined, {
@@ -943,7 +943,9 @@ const roles: {
                 range: 0
             })
             // creep.log(`移动消耗 ${Game.cpu.getUsed() - cost1}`)
-            creep.say(result.toString())
+            const _go = creep.memory._go
+            const path = _go ? (_go.path || '') : ''
+            creep.say(`${result.toString()} ${path}`)
 
             return false
         },

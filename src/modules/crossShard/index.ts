@@ -200,7 +200,7 @@ export const saveShardData = function () {
 
 
 /**
- * 发布新请求
+ * 发布新的跨 shard 请求
  * 
  * @param name 请求的名字，要保证唯一性
  * @param to 要发送到的 shard 名称
@@ -210,4 +210,23 @@ export const saveShardData = function () {
 export const addCrossShardRequest = function (name: string, to: ShardName, type: CrossShardRequestType, data: CrossShardRequestData) {
     selfData[name] = { to, type, data } as CrossShardRequest
     Game._needSaveInterShardData = true
+}
+
+/**
+ * 从跨 shard 内存暂存区取出 creep 内存
+ * 
+ * 会直接把 creep 内存放到 Memory.creeps 里
+ * 
+ * @param creepName 要取出内存的 creep 名字
+ */
+export const getMemoryFromCrossShard = function (creepName: string): CreepMemory {
+    if (!Memory.crossShardCreeps) return undefined
+
+    // 取出并清空暂存区
+    const creepMemory = Memory.crossShardCreeps[creepName]
+    delete Memory.crossShardCreeps[creepName]
+
+    // 返回并设置到 Memory.creeps
+    if (!Memory.creeps) Memory.creeps = {}
+    return Memory.creeps[creepName] = creepMemory
 }
