@@ -915,8 +915,8 @@ const roles: {
      * 移动测试单位
      * 
      * 一直朝着旗帜移动
-     * 添加：creepApi.add('happy creep', 'moveTester', { sourceFlagName: 'p' }, 'W49S9')
-     * 删除：creepApi.remove('tester')
+     * 添加：creepApi.add('happyCreep0', 'moveTester', { sourceFlagName: 'p' }, 'W49S9')
+     * 删除：creepApi.remove('happyCreep')
      * 
      * @param spawnRoom 出生房间名称
      * @param flagName 目标旗帜名称

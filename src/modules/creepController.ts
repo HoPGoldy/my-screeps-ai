@@ -20,6 +20,14 @@ export default function creepNumberListener(): void {
     for (const name in Memory.creeps) {
         if (name in Game.creeps) continue
 
+        // creep 的内存不可能完全未空，所以这里只有可能是 creep 主动释放（比如去了其他 shard）
+        // 所以这里不予重生
+        if (Object.keys(Memory.creeps[name]).length <= 0) {
+            console.log(name, '离开了', Game.shard.name)
+            delete Memory.creeps[name]
+            continue
+        }
+
         const { fromShard } = Memory.creeps[name]
 
         // 有 fromShard 这个字段说明是跨 shard creep，只要不是自己 shard 的，统统发送跨 shard 重生任务

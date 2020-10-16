@@ -415,12 +415,6 @@ interface CreepMemory {
     fromShard?: ShardName
 
     /**
-     * 要到的 shard
-     * 会在抵达该 creep 后移除该字段（不会移除 fromShard）
-     */
-    toShard?: ShardName
-
-    /**
      * 自己是否会向他人发起对穿
      */
     disableCross?: boolean
