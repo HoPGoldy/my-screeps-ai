@@ -23,7 +23,7 @@ export default function creepNumberListener(): void {
         // creep 的内存不可能完全未空，所以这里只有可能是 creep 主动释放（比如去了其他 shard）
         // 所以这里不予重生
         if (Object.keys(Memory.creeps[name]).length <= 0) {
-            console.log(name, '离开了', Game.shard.name)
+            // console.log(name, '离开了', Game.shard.name)
             delete Memory.creeps[name]
             continue
         }
@@ -33,7 +33,7 @@ export default function creepNumberListener(): void {
         // 有 fromShard 这个字段说明是跨 shard creep，只要不是自己 shard 的，统统发送跨 shard 重生任务
         // 有 fromShard 字段并且该字段又等于自己 shard 的名字，说明该跨 shard creep 死在了本 shard 的路上
         if (fromShard && fromShard !== Game.shard.name) {
-            console.log(`向 ${fromShard} 发送 sendRespawn 任务`, JSON.stringify({ name, memory: Memory.creeps[name] }))
+            // console.log(`向 ${fromShard} 发送 sendRespawn 任务`, JSON.stringify({ name, memory: Memory.creeps[name] }))
             addCrossShardRequest(`respawnCreep ${name}`, fromShard, 'sendRespawn', {
                 name, memory: Memory.creeps[name]
             })
@@ -73,7 +73,7 @@ export const handleNotExistCreep = function (creepName: string, creepMemory: Cre
 
     // 通过 isNeed 阶段判断该 creep 是否要继续孵化
     // 没有提供 isNeed 阶段的话则默认需要重新孵化
-    if (creepWork.isNeed && creepWork.isNeed(spawnRoom, creepName, creepMemory)) {
+    if (creepWork.isNeed && !creepWork.isNeed(spawnRoom, creepName, creepMemory)) {
         // creep 不需要了，遗弃该 creep
         creepApi.remove(creepName)
         delete Memory.creeps[creepName]

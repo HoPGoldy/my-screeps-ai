@@ -88,7 +88,7 @@ export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined,
             const { name, memory } = creep
             // 移除移动路径，到下个 shard 可以重新规划路径
             delete memory._go.path
-            console.log(`向 ${portal.destination.shard} 发送 sendCreep 任务`, JSON.stringify({ name, memory }))
+            // console.log(`向 ${portal.destination.shard} 发送 sendCreep 任务`, JSON.stringify({ name, memory }))
             // 发送跨 shard 请求来转移自己的 memory
             addCrossShardRequest(
                 `sendCreep${creep.name}${Game.time}`,
@@ -265,8 +265,8 @@ const mutualCross = function (creep: Creep, direction: DirectionConstant): OK | 
     if (!fontPos) return ERR_INVALID_TARGET
 
     const fontCreep = fontPos.lookFor(LOOK_CREEPS)[0] || fontPos.lookFor(LOOK_POWER_CREEPS)[0]
-    // 前方不是 creep 或者不是自己的 creep 的话就不会发起对穿
-    if (!fontCreep || !fontCreep.my) return ERR_INVALID_TARGET
+    // 前方不是 creep 或者不是自己的 creep 或者内存被清空（正在跨越 shard）的话就不会发起对穿
+    if (!fontCreep || !fontCreep.my || Object.keys(fontCreep.memory).length <= 0) return ERR_INVALID_TARGET
 
     creep.say(`👉`)
     // 如果前面的 creep 同意对穿了，自己就朝前移动

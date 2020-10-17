@@ -13,7 +13,7 @@ export default class CreepExtension extends Creep {
         if (!(this.memory.role in roles)) {
             // 没有的话可能是放在跨 shard 暂存区了
             const memory = getMemoryFromCrossShard(this.name)
-            console.log(`${this.name} 从暂存区获取了内存`, memory)
+            // console.log(`${this.name} 从暂存区获取了内存`, memory)
             if (!memory) {
                 this.log(`找不到对应的 creepConfig`, 'yellow')
                 this.say('我凉了！')
