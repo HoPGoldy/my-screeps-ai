@@ -296,6 +296,15 @@ const roles: {
      * 从指定建筑中获取能量 > 升级 controller
      */
     upgrader: (data: WorkerData): ICreepConfig => ({
+        isNeed: (room) => {
+            if (!room.controller) return false
+            // 小于 8 级就一直孵化
+            if (room.controller.level < 8) return true
+            // 大于 8 级就看 bucket，cpu 够就继续孵化
+            else if (Game.cpu.bucket >= 700) return true
+
+            return false
+        },
         source: creep => {
             // 因为只会从建筑里拿，所以只要拿到了就去升级
             if (creep.store[RESOURCE_ENERGY] > 0) return true

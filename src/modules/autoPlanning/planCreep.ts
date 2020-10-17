@@ -132,17 +132,15 @@ const releasePlans: CreepReleasePlans = {
         // 发布计划
         plans: [
             // 8 级时的特殊判断
-            ({ room, controllerLevel, ticksToDowngrade, upgradeLinkId }: UpgraderPlanStats) => {
+            ({ room, controllerLevel, upgradeLinkId, storageId }: UpgraderPlanStats) => {
                 if (controllerLevel < 8) return false
-                // 掉级还早，不发布 upgrader 了
-                if (ticksToDowngrade >= 100000) return true
-        
-                // 快掉级了就发布一个
-                addUpgrader(room.name, [ 0 ], upgradeLinkId)
+
+                // 只会发布一个，优先从 upgraderLink 里取能量
+                addUpgrader(room.name, [ 0 ], upgradeLinkId || storageId)
 
                 return true
             },
-        
+
             // 优先用 upgradeLink
             ({ room, upgradeLinkId, storageEnergy }: UpgraderPlanStats) => {
                 if (!upgradeLinkId || !storageEnergy) return false

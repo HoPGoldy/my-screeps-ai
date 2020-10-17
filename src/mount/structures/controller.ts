@@ -16,11 +16,9 @@ export default class ControllerExtension extends StructureController {
         this.checkConstructionSites()
 
         // 8 级并且快掉级了就孵化 upgrader
-        if (this.level === 8 && this.ticksToDowngrade <= 100000) creepApi.add(`${this.room.name} upgrader1`, 'upgrader', {
-            sourceId: this.room.storage.id
-        }, this.room.name)
+        if (this.level === 8 && this.ticksToDowngrade <= 100000) this.room.releaseCreep('upgrader')
 
-        // 检查外矿有没有被入侵的，有的话是不是可以重新发布 creep 了
+        // 检查外矿有没有被入侵的，有的话是不是可以重新发布 creep
         if (this.room.memory.remote) {
             for (const remoteRoomName in this.room.memory.remote) {
                 // 如果发现入侵者已经老死了，就移除对应属性并重新发布外矿角色组
@@ -43,6 +41,10 @@ export default class ControllerExtension extends StructureController {
             this.room.releaseCreep('harvester')
             // 多发布一个 build 协助建造
             this.room.releaseCreep('builder', 1)
+        }
+        // 8 级之后重新规划升级单位
+        else if (level === 8) {
+            this.room.releaseCreep('upgrader')
         }
 
         // 规划布局
