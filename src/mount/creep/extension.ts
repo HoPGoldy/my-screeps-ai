@@ -262,7 +262,7 @@ export default class CreepExtension extends Creep {
         if (targets.length > 0) {
             let target: ConstructionSite
             // 优先建造 spawn，然后是 extension，想添加新的优先级就在下面的数组里追加即可
-            for (const type of [ STRUCTURE_SPAWN, STRUCTURE_EXTENSION ]) {
+            for (const type of [ STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER ]) {
                 target = targets.find(cs => cs.structureType === type)
                 if (target) break
             }

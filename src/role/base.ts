@@ -1,4 +1,4 @@
-import { minerHervesteLimit, ROOM_TRANSFER_TASK } from 'setting'
+import { minerHervesteLimit, ROOM_TRANSFER_TASK, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { getRoomTransferTask, transferTaskOperations } from './advanced'
 
 /**
@@ -301,7 +301,7 @@ const roles: {
             // 小于 8 级就一直孵化
             if (room.controller.level < 8) return true
             // 大于 8 级就看 bucket，cpu 够就继续孵化
-            else if (Game.cpu.bucket >= 700) return true
+            else if (Game.cpu.bucket >= 700 && room.storage && room.storage.store[RESOURCE_ENERGY] > UPGRADER_WITH_ENERGY_LEVEL_8) return true
 
             return false
         },

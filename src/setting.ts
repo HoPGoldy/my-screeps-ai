@@ -681,6 +681,12 @@ export const UPGRADE_WITH_STORAGE = [
 ]
 
 /**
+ * 8级时只要 cpu 足够，依旧会孵化一个 upgrader 进行升级
+ * 这个限制代表了在房间 8 级时 storage 里的能量大于多少才会持续孵化 upgarder
+ */
+export const UPGRADER_WITH_ENERGY_LEVEL_8 = 700000
+
+/**
  * source container 离基地中心的距离与对应发布的 filler 数量
  * 这个值是每个 container 发布的 filler
  */

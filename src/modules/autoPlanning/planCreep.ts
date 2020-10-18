@@ -1,4 +1,4 @@
-import { MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE, FILLER_WITH_CONTAINER_RANGE } from 'setting'
+import { MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE, FILLER_WITH_CONTAINER_RANGE, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { creepApi } from '../creepController'
 
 // 在 Function 原型上挂载 setNextPlan 方法来完成 creep 发布的职责链
@@ -132,8 +132,8 @@ const releasePlans: CreepReleasePlans = {
         // 发布计划
         plans: [
             // 8 级时的特殊判断
-            ({ room, controllerLevel, upgradeLinkId, storageId }: UpgraderPlanStats) => {
-                if (controllerLevel < 8) return false
+            ({ room, controllerLevel, upgradeLinkId, storageEnergy, storageId }: UpgraderPlanStats) => {
+                if (controllerLevel < 8 || storageEnergy < UPGRADER_WITH_ENERGY_LEVEL_8) return false
 
                 // 只会发布一个，优先从 upgraderLink 里取能量
                 addUpgrader(room.name, [ 0 ], upgradeLinkId || storageId)
