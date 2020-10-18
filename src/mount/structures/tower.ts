@@ -61,6 +61,7 @@ export default class TowerExtension extends StructureTower {
         if (enemys.length <= 0){
             // this.log('威胁解除，返回日常模式')
             delete this.room.memory.defenseMode
+            this.room.planLayout()
             return
         }
 
@@ -100,6 +101,7 @@ export default class TowerExtension extends StructureTower {
             if (enemys.length <= 0){
                 // this.log('威胁解除，返回日常模式')
                 delete this.room.memory.defenseMode
+                this.room.planLayout()
                 this.room.stopWar()
                 return
             }

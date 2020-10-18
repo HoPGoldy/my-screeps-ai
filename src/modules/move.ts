@@ -113,7 +113,7 @@ export const goTo = function (creep: Creep, targetPos: RoomPosition | undefined,
         delete costCache[creep.room.name]
     }
     // 其他异常直接报告
-    else if (goResult != ERR_TIRED) creep.say(`寻路 ${goResult}`)
+    else if (goResult != ERR_TIRED && goResult != ERR_BUSY) creep.say(`寻路 ${goResult}`)
 
     return goResult
 }

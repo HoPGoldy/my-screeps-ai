@@ -235,7 +235,7 @@ const releasePlans: CreepReleasePlans = {
                     if (!container) return
 
                     // 获取 container 到基地中心的距离
-                    const range = container.pos.getRangeTo(centerPos[0], centerPos[1])
+                    const range = container.pos.findPathTo(centerPos[0], centerPos[1]).length
 
                     // 根据获取合适的人数
                     const numberConfig = FILLER_WITH_CONTAINER_RANGE.find(config => range > config.range)

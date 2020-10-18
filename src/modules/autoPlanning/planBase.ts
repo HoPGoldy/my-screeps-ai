@@ -65,6 +65,12 @@ const getOutLinkPos = function (room: Room): RoomPosition[] {
     const result = []
 
     for (const target of targets) {
+        // 旁边已经造好了 link 或者有工地了，就检查下一个 目标
+        if (
+            (target.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0) ||
+            (target.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0)
+        ) continue
+
         // 获取目标点位旁边的所有可用的开采空位
         const harvesterPos = target.pos.getFreeSpace()
         // 找到第一个可以站 creep 的地方
