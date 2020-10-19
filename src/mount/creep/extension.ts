@@ -171,12 +171,7 @@ export default class CreepExtension extends Creep {
     public upgrade(): ScreepsReturnCode {
         const result = this.upgradeController(this.room.controller)
 
-        // 如果刚开始站定工作，就把自己的位置设置为禁止通行点
-        if (result === OK && !this.memory.stand) {
-            this.memory.stand = true
-            this.room.addRestrictedPos(this.name, this.pos)
-        }
-        else if (result == ERR_NOT_IN_RANGE) {
+        if (result == ERR_NOT_IN_RANGE) {
             this.goTo(this.room.controller.pos)
         }
         return result
@@ -320,18 +315,7 @@ export default class CreepExtension extends Creep {
 
         // 填充墙壁
         const result = this.repair(targetWall)
-        if (result === OK) {
-            if (!this.memory.stand) {
-                this.memory.stand = true
-                this.room.addRestrictedPos(this.name, this.pos)
-            }
-            
-            // 离墙三格远可能正好把路堵上，所以要走进一点
-            if (!targetWall.pos.inRangeTo(this.pos, 2)) this.goTo(targetWall.pos)
-        }
-        else if (result == ERR_NOT_IN_RANGE) {
-            this.goTo(targetWall.pos)
-        }
+        if (result == ERR_NOT_IN_RANGE) this.goTo(targetWall.pos)
         return true
     }
 
@@ -350,19 +334,7 @@ export default class CreepExtension extends Creep {
             result = this.withdraw(target as Structure, RESOURCE_ENERGY)
         }
         // 不是的话就用 harvest
-        else {
-            result = this.harvest(target as Source)
-
-            // harvest 需要长时间占用该位置，所以需要禁止对穿
-            // withdraw 则不需要
-            if (result === OK) {
-                // 开始采集能量了就拒绝对穿
-                if (!this.memory.stand) {
-                    this.room.addRestrictedPos(this.name, this.pos)
-                    this.memory.stand = true
-                }
-            }
-        }
+        else result = this.harvest(target as Source)
 
         if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos)
 
@@ -500,11 +472,6 @@ export default class CreepExtension extends Creep {
         }
 
         const result = this.dismantle(structures[0])
-        // 开始工作后就禁止对穿
-        if (result === OK && !this.memory.stand) {
-            this.room.addRestrictedPos(this.name, this.pos)
-            this.memory.stand = true
-        } 
     }
 
     /**

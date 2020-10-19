@@ -20,7 +20,7 @@ const planStaticStructure = function (room: Room): ERR_NOT_FOUND | StructurePlan
     if (!center) return ERR_NOT_FOUND
     const centerPos = new RoomPosition(center[0], center[1], room.name)
 
-    // 计算基地点位
+    // 计算基地内的建筑点位
     let result: StructurePlanningResult = planBase(room, centerPos)
 
     // 执行自动墙壁规划，获取 rampart 位置

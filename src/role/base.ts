@@ -136,15 +136,7 @@ const roles: {
 
             const result = creep.harvest(source)
 
-            // harvest 需要长时间占用该位置，所以需要禁止对穿
-            if (result === OK) {
-                // 开始采集能量了就拒绝对穿
-                if (!creep.memory.stand) {
-                    creep.room.addRestrictedPos(creep.name, creep.pos)
-                    creep.memory.stand = true
-                }
-            }
-            else if (result === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
+            if (result === ERR_NOT_IN_RANGE) creep.goTo(source.pos)
             else if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 // 如果满足下列条件就重新发送 regen_source 任务
                 if (
@@ -221,13 +213,7 @@ const roles: {
 
             // 采矿
             const harvestResult = creep.harvest(creep.room.mineral)
-
-            // 开始采矿了就注册禁止对穿
-            if (harvestResult === OK && !creep.memory.stand) {
-                creep.memory.stand = true
-                creep.room.addRestrictedPos(creep.name, creep.pos)
-            }
-            else if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
+            if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.mineral.pos)
         },
         target: creep => {
             const target: StructureTerminal = creep.room.terminal
@@ -275,7 +261,7 @@ const roles: {
             if (task && (task.type === ROOM_TRANSFER_TASK.FILL_EXTENSION || task.type === ROOM_TRANSFER_TASK.FILL_TOWER)) {
                 return transferTaskOperations[task.type].target(creep, task)
             }
-            
+
             // 空闲时间会尝试把能量存放到 storage 里
             if (!creep.room.storage) return false
 
@@ -326,7 +312,10 @@ const roles: {
                     }
                 }
                 // 有能量但是太少，就等到其中能量大于指定数量再拿（优先满足 filler 的能量需求）
-                else if (source.store[RESOURCE_ENERGY] <= 500) return false
+                else if (source.store[RESOURCE_ENERGY] <= 500) {
+                    creep.say('🎲')
+                    return false
+                }
             }
 
             // 获取能量
@@ -338,7 +327,7 @@ const roles: {
                 (!source || source instanceof StructureTerminal || source instanceof StructureStorage)
             ) {
                 // 有可能时之前遗留下来的建筑，里边能量用光后就没有利用价值了，直接摧毁
-                if (!source.my) source.destroy()
+                if (source && !source.my) source.destroy()
                 creep.room.releaseCreep('upgrader')
                 creep.suicide()
             }
@@ -428,7 +417,10 @@ const roles: {
         source: creep => {
             const source = Game.getObjectById<StructureContainer>(data.sourceId) || creep.room.storage || creep.room.terminal
             // 能量不足就先等待，优先满足 filler 需求
-            if (source.store[RESOURCE_ENERGY] < 500) return false
+            if (source.store[RESOURCE_ENERGY] < 500) {
+                creep.say('🎮')
+                return false
+            }
             creep.getEngryFrom(source)
 
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
@@ -443,16 +435,7 @@ const roles: {
             // 有焦点墙就优先刷
             if (importantWall) {
                 const actionResult = creep.repair(creep.room._importantWall)
-                if (actionResult === OK) {
-                    if (!creep.memory.stand) {
-                        creep.memory.stand = true
-                        creep.room.addRestrictedPos(creep.name, creep.pos)
-                    }
-
-                    // 离墙三格远可能正好把路堵上，所以要走进一点
-                    if (!creep.room._importantWall.pos.inRangeTo(creep.pos, 2)) creep.goTo(creep.room._importantWall.pos)
-                }
-                else if (actionResult == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
+                if (actionResult == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
             }
             // 否则就按原计划维修
             else creep.fillDefenseStructure()

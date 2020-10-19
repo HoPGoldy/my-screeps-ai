@@ -333,3 +333,19 @@ export const assignPrototype = function(obj1: {[key: string]: any}, obj2: {[key:
         else obj1.prototype[key] = obj2.prototype[key]
     })
 }
+
+/**
+ * 在指定房间显示 cost
+ * 
+ * @param cost 要显示的 cost
+ * @param room 要显示到的房间
+ */
+export const showCost = function (cost: CostMatrix, room: Room): void {
+    for (let x = 1; x < 49; x ++) for (let y = 1; y < 49; y ++) {
+        room.visual.text(cost.get(x, y).toString(), x, y, {
+            color: '#a9b7c6',
+            font: 0.5,
+            opacity: 0.7
+        })
+    }
+}

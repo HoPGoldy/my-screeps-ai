@@ -246,18 +246,13 @@ export default class PowerCreepExtension extends PowerCreep {
     /**
      * 以下为对穿移动的相关方法，直接执行 Creep 原型上的对应方法
      */
-    
-    public move(target: DirectionConstant | Creep): CreepMoveReturnCode | ERR_INVALID_TARGET | ERR_NOT_IN_RANGE {
-        return Creep.prototype.move.call(this, target)
-    }
-    public goTo(target: RoomPosition): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND {
+
+    public goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode {
         return Creep.prototype.goTo.call(this, target)
     }
-    public requireCross(direction: DirectionConstant): Boolean {
-        return Creep.prototype.requireCross.call(this, direction)
-    }
-    private mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_NOT_FOUND {
-        return Creep.prototype.mutualCross.call(this, direction)
+
+    public setWayPoint(target: string[] | string): ScreepsReturnCode {
+        return Creep.prototype.setWayPoint.call(this, target)
     }
 }
 

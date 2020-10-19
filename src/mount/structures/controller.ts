@@ -1,6 +1,7 @@
 import { creepApi } from 'modules/creepController'
 import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
+import { costCache } from 'modules/move'
 
 /**
  * Controller 拓展
@@ -88,7 +89,11 @@ export default class ControllerExtension extends StructureController {
         if (incompleteList.length > 0) this.room.memory.delayCSList = incompleteList
         else delete this.room.memory.delayCSList
 
-        if (needBuild && !creepApi.has(`${this.room.name} builder0`)) this.room.releaseCreep('builder')
+        if (needBuild && !creepApi.has(`${this.room.name} builder0`)) {
+            this.room.releaseCreep('builder')
+            // 有新建筑发布，需要更新房间 cost 缓存
+            delete costCache[this.room.name]
+        }
     }
 
     /**

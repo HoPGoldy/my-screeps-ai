@@ -536,13 +536,7 @@ const roles: {
             if (!creep.memory.dontBuild) {
                 // 没有可建造的工地后就再也不建造
                 const buildResult = creep.buildStructure()
-                // 正在建造就禁止对穿
-                if (buildResult === OK) {
-                    if (!creep.memory.stand) {
-                        creep.room.addRestrictedPos(creep.name, creep.pos)
-                        creep.memory.stand = true
-                    }
-                }
+
                 if (buildResult === ERR_NOT_FOUND)  creep.memory.dontBuild = true
                 // 能量不足了就去 source 阶段，同时释放掉禁止通行点位
                 else if (buildResult === ERR_NOT_ENOUGH_ENERGY) {
@@ -739,7 +733,7 @@ const roles: {
 
             // 如果到了就算准备完成
             if (creep.pos.isNearTo(targetFlag.pos)) {
-                creep.room.addRestrictedPos(creep.name, creep.pos)
+                creep.memory.stand = true
                 // 检查下是否还没统计移动所需时间
                 if (!targetFlag.memory.travelTime) targetFlag.memory.travelTime = CREEP_LIFE_TIME - creep.ticksToLive
                 return true

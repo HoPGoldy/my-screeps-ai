@@ -113,17 +113,42 @@ type CreepWork = {
     [role in CreepRoleConstant]: (data: CreepData) => ICreepConfig
 }
 
+/**
+ * Creep 角色功能逻辑
+ */
 interface ICreepConfig {
-    // 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
+    /**
+     * 该 creep 是否需要
+     * 
+     * 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
+     * 该方法为空则默认持续孵化
+     */
     isNeed?: (room: Room, creepName: string, preMemory: CreepMemory) => boolean
-    // 准备阶段执行的方法, 返回 true 时代表准备完成
+
+    /**
+     * 准备阶段
+     * 
+     * creep 出生后会执行该方法来完成一些需要准备的工作，返回 true 时代表准备完成
+     * 该方法为空则直接进入 source 阶段
+     */
     prepare?: (creep: Creep) => boolean
-    // creep 获取工作所需资源时执行的方法
-    // 返回 true 则执行 target 阶段，返回其他将继续执行该方法
+
+    /**
+     * 获取工作资源阶段
+     * 
+     * 返回 true 则执行 target 阶段，返回其他将继续执行该方法
+     * 该方法为空则一直重复执行 target 阶段
+     */
     source?: (creep: Creep) => boolean
-    // creep 工作时执行的方法
-    // 返回 true 则执行 source 阶段，返回其他将继续执行该方法
+
+    /**
+     * 工作阶段
+     * 
+     * 返回 true 则执行 source 阶段，返回其他将继续执行该方法
+     * 该方法不可未空
+     */
     target: (creep: Creep) => boolean
+
     // 每个角色默认的身体组成部分
     bodys: BodyAutoConfigConstant | BodyPartConstant[]
 }
@@ -384,7 +409,8 @@ interface PowerCreep {
     
     updatePowerToRoom(): void
     _move(direction: DirectionConstant | Creep): CreepMoveReturnCode | ERR_NOT_IN_RANGE | ERR_INVALID_TARGET
-    goTo(target: RoomPosition, range?: number): CreepMoveReturnCode | ERR_NO_PATH | ERR_INVALID_TARGET | ERR_NOT_FOUND
+    goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
+    setWayPoint(target: string[] | string): ScreepsReturnCode
     requireCross(direction: DirectionConstant): Boolean
     enablePower(): OK | ERR_BUSY
     getOps(opsNumber: number): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY
@@ -420,7 +446,7 @@ interface CreepMemory {
     disableCross?: boolean
 
     // creep 是否已经准备好可以工作了
-    ready: boolean
+    ready?: boolean
     // creep 的角色
     role: CreepRoleConstant
     // 是否在工作
@@ -1164,6 +1190,18 @@ interface IBoostConfig {
  * PowerCreep 内存拓展
  */
 interface PowerCreepMemory {
+    /**
+     * 移动缓存
+     */
+    _go?: MoveInfo
+
+    // 等同于 Creep.memory.fromShard
+    fromShard?: ShardName
+    // 等同于 Creep.memory.prePos
+    prePos?: string
+
+    // pc 暂时没有角色
+    role: undefined
     // 为 true 时执行 target，否则执行 source
     working: boolean
     // 接下来要检查哪个 power
@@ -1495,7 +1533,7 @@ type SendRespawnData = {
     // 要重新孵化的 creep 的名字
     name: string
     // 要重新孵化的 creep 的内存
-    memory: CreepMemory
+    memory: CreepMemory | PowerCreepMemory
 }
 
 // 构造所有的跨 shard 请求
@@ -1641,4 +1679,24 @@ interface MoveInfo {
      * 路径旗帜名（包含后面的编号，如 waypoint1 或者 waypoint99）
      */
     wayPointFlag?: string
+}
+
+/**
+ * 是否允许对穿
+ * 
+ * @param creep 被对穿的 creep
+ * @param requireCreep 发起对穿的 creep
+ * @return 为 true 时允许对穿
+ */
+type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep | PowerCreep) => boolean
+
+/**
+ * 对穿请求的规则集合
+ * 
+ * 键为 creep 的角色类型，值为一个返回 boolean 的方法
+ * 该方法用于判断有其他 creep 向该 creep 发起对穿时是否同意对穿，在寻路时也会使用该方法确定是否要绕过一个 creep
+ * 该方法为空则使用默认规则（键为 default）
+ */
+type CrossRules = {
+    [role in CreepRoleConstant | 'default']?: AllowCrossRuleFunc
 }

@@ -200,8 +200,9 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
         },
         target: creep => {
+            if (creep.store[RESOURCE_ENERGY] === 0) return true
             let target: StructureExtension
-            
+
             // 有缓存就用缓存
             if (creep.memory.fillStructureId) {
                 target = <StructureExtension>Game.getObjectById(creep.memory.fillStructureId)
@@ -235,8 +236,6 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             const result = creep.transfer(target, RESOURCE_ENERGY)
             if (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_FULL) return true
             else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`拓展填充 ${result}`)
-
-            if (creep.store[RESOURCE_ENERGY] === 0) return true
         }
     },
 
@@ -250,6 +249,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
         },
         target: (creep, task: IFillTower) => {
+            if (creep.store[RESOURCE_ENERGY] === 0) return true
             let target: StructureTower
 
             // 有缓存的话
@@ -288,8 +288,6 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             creep.goTo(target.pos)
             const result = creep.transfer(target, RESOURCE_ENERGY)
             if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`塔填充 ${result}`)
-
-            if (creep => creep.store[RESOURCE_ENERGY] === 0) return true
         }
     },
 
