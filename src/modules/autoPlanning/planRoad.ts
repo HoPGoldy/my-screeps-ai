@@ -44,6 +44,8 @@ const getRoomCost = function (room: Room, structurePlacePlan: StructurePlanningR
         Object.keys(currentLevelLayout).forEach((structureType: BuildableStructureConstant) => {
             // 遍历该建筑下的所有预放置点位
             currentLevelLayout[structureType].map((pos: RoomPosition) => {
+                if (!pos) return
+
                 // 如果是道路，就降低 cost
                 if (structureType === STRUCTURE_ROAD) matrix.set(pos.x, pos.y, 1)
                 // 如果是 rampart 和 container就保持不变

@@ -100,6 +100,8 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
 
             // 遍历该建筑下的所有预放置点位
             currentLevelLayout[structureType].map((pos: RoomPosition) => {
+                if (!pos) return
+
                 const placeResult = pos.createConstructionSite(structureType)
 
                 // 存在需要建造的建筑

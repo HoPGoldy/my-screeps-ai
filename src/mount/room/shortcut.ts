@@ -54,7 +54,7 @@ export default class RoomShortcut extends Room {
         const sources = this.find(FIND_SOURCES)
         if (sources.length <= 0) {
             this.log(`异常访问，房间内没有找到 source`, 'roomBase', 'yellow')
-            return undefined
+            return []
         }
 
         // 缓存数据并返回

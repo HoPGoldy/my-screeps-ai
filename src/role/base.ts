@@ -29,7 +29,10 @@ const roles: {
                 })
 
                 // 找到了就把 container 当做目标
-                if (containers.length > 0) target = containers[0]
+                if (containers.length > 0) target = containers.find(container => {
+                    const stoodCreep = container.pos.lookFor(LOOK_CREEPS)
+                    return !(stoodCreep.length > 0 && stoodCreep[0].memory && stoodCreep[0].memory.role === 'harvester')
+                })
             }
 
             // 还没找到就找 container 的工地

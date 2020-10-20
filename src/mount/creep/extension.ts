@@ -21,6 +21,9 @@ export default class CreepExtension extends Creep {
             }
         }
 
+        // 还没出生就啥都不干
+        if (this.spawning) return
+
         // 获取对应配置项
         const creepConfig: ICreepConfig = roles[this.memory.role](this.memory.data)
 
@@ -336,7 +339,7 @@ export default class CreepExtension extends Creep {
         // 不是的话就用 harvest
         else result = this.harvest(target as Source)
 
-        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos)
+        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 1 })
 
         return result
     }

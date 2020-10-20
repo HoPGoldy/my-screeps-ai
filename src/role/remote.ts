@@ -917,23 +917,23 @@ const roles: {
      */
     moveTester: (data: RemoteHarvesterData): ICreepConfig => ({
         prepare: creep => {
-            creep.setWayPoint(data.sourceFlagName)
-            creep.memory.fromShard = Game.shard.name as ShardName
+            // creep.setWayPoint(data.sourceFlagName)
+            // creep.memory.fromShard = Game.shard.name as ShardName
             return true
         },
         target: creep => {
-            // const targetFlag = Game.flags[data.sourceFlagName]
-            // if (!targetFlag) {
-            //     creep.log(`找不到 ${data.sourceFlagName} 旗帜`, 'yellow')
-            //     creep.say('旗呢？')
-            //     return false
-            // }
+            const targetFlag = Game.flags[data.sourceFlagName]
+            if (!targetFlag) {
+                creep.log(`找不到 ${data.sourceFlagName} 旗帜`, 'yellow')
+                creep.say('旗呢？')
+                return false
+            }
             // console.log('移动数据', JSON.stringify(creep.memory._go))
 
             let cost1 = Game.cpu.getUsed()
-            const result = creep.goTo(undefined, {
-                // disableCross: true
-                checkTarget: true,
+            const result = creep.goTo(targetFlag.pos, {
+                disableCross: true,
+                // checkTarget: true,
                 range: 0
             })
             // creep.log(`移动消耗 ${Game.cpu.getUsed() - cost1}`)

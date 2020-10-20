@@ -12,11 +12,11 @@ import { ObserverExtension, ObserverConsole } from './observer'
 import { FactoryExtension, FactoryConsole } from './factory'
 import { TerminalExtension, TerminalConsole } from "./terminal"
 import LabExtension from "./lab"
-import StructureExtension from './structure'
+import StructuresExtension from './structure'
 
 // 拓展和原型的对应关系
 const assignMap = [
-    [ Structure, StructureExtension ],
+    [ Structure, StructuresExtension ],
     [ StructureController, ControllerExtension ],
     [ StructureSpawn, SpawnExtension ],
     [ StructureTower, TowerExtension ],

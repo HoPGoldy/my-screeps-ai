@@ -464,8 +464,6 @@ interface CreepMemory {
     // 要存放到的目标建筑
     targetId?: string
 
-    // 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞墙
-    prePos?: string
     // deposit 采集者特有，deposit 的类型
     depositType?: DepositConstant
     // 要填充的墙 id 
@@ -1197,8 +1195,6 @@ interface PowerCreepMemory {
 
     // 等同于 Creep.memory.fromShard
     fromShard?: ShardName
-    // 等同于 Creep.memory.prePos
-    prePos?: string
 
     // pc 暂时没有角色
     role: undefined
@@ -1664,6 +1660,11 @@ interface MoveInfo {
      * 上一个位置信息，形如"14/4"，用于在 creep.move 返回 OK 时检查有没有撞停
      */
     prePos?: string
+
+    /**
+     * 上一次移动的方向，用于在下个 tick 发现移动失败时检查前面时什么东西
+     */
+    lastMove?: DirectionConstant
 
     /**
      * 要移动到的目标位置，creep 会用这个字段判断目标是否变化了
