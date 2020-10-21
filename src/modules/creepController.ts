@@ -104,9 +104,8 @@ export const creepApi = {
         if (!Memory.creepConfigs) Memory.creepConfigs = {}
         if (!roles[role]) return ERR_NOT_FOUND
 
-        const creepWork = roles[role](data)
         // 不管有没有直接覆盖掉
-        Memory.creepConfigs[creepName] = { role, data, bodys: creepWork.bodys, spawnRoom }
+        Memory.creepConfigs[creepName] = { role, data, spawnRoom }
         // 如果已经存在的话就不推送孵化任务了
         if (creepName in Game.creeps) return OK
 

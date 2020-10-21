@@ -150,7 +150,7 @@ interface ICreepConfig {
     target: (creep: Creep) => boolean
 
     // 每个角色默认的身体组成部分
-    bodys: BodyAutoConfigConstant | BodyPartConstant[]
+    bodys: (room: Room, spawn: StructureSpawn) => BodyPartConstant[]
 }
 
 /**
@@ -303,7 +303,6 @@ interface HealUnitData {
 type BodyAutoConfigConstant = 
     'harvester' |
     'worker' |
-    'upgrader' |
     'manager' |
     'processor' |
     'reserver' |
@@ -942,14 +941,11 @@ interface Memory {
     creepConfigs: {
         [creepName: string]: {
             // creep 的角色名
-            role: CreepRoleConstant,
+            role: CreepRoleConstant
             // creep 的具体配置项，每个角色的配置都不相同
-            data: CreepData,
+            data: CreepData
             // 执行 creep 孵化的房间名
-            spawnRoom: string,
-            // creep 孵化时使用的身体部件
-            // 为 string 时则自动规划身体部件，为 BodyPartConstant[] 时则强制生成该身体配置
-            bodys: BodyAutoConfigConstant | BodyPartConstant[]
+            spawnRoom: string
         }
     }
 

@@ -35,6 +35,7 @@ export const bodyConfigs: BodyConfigs = {
         { [WORK]: 12, [CARRY]: 1, [MOVE]: 6 },
         { [WORK]: 12, [CARRY]: 1, [MOVE]: 6 }
     ),
+
     /**
      * 工作单位
      * 诸如 harvester、builder 之类的
@@ -45,25 +46,9 @@ export const bodyConfigs: BodyConfigs = {
         { [WORK]: 3, [CARRY]: 3, [MOVE]: 3 },
         { [WORK]: 4, [CARRY]: 4, [MOVE]: 4 },
         { [WORK]: 6, [CARRY]: 6, [MOVE]: 6 },
-        { [WORK]: 7, [CARRY]: 7, [MOVE]: 7 },
+        { [WORK]: 9, [CARRY]: 9, [MOVE]: 9 },
         { [WORK]: 12, [CARRY]: 6, [MOVE]: 9 },
         { [WORK]: 20, [CARRY]: 8, [MOVE]: 14 }
-    ),
-
-    /**
-     * 升级单位
-     * 最大的身体部件只包含 12 个 WORK
-     */
-    upgrader: getBodyConfig(
-        { [WORK]: 1, [CARRY]: 1, [MOVE]: 1 },
-        { [WORK]: 2, [CARRY]: 2, [MOVE]: 2 },
-        { [WORK]: 3, [CARRY]: 3, [MOVE]: 3 },
-        { [WORK]: 4, [CARRY]: 4, [MOVE]: 4 },
-        { [WORK]: 6, [CARRY]: 6, [MOVE]: 6 },
-        { [WORK]: 9, [CARRY]: 9, [MOVE]: 9 },
-        // 7 级的时候有了 upgrader Link，所以对移动的需求下降了
-        { [WORK]: 30, [CARRY]: 5, [MOVE]: 15 },
-        { [WORK]: 12, [CARRY]: 12, [MOVE]: 12 }
     ),
 
     /**

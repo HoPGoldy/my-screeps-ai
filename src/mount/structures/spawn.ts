@@ -1,4 +1,4 @@
-import { ROOM_TRANSFER_TASK, creepDefaultMemory, bodyConfigs, importantRoles } from 'setting'
+import { ROOM_TRANSFER_TASK, creepDefaultMemory, importantRoles } from 'setting'
 import roles from 'role'
 
 /**
@@ -68,10 +68,10 @@ export default class SpawnExtension extends StructureSpawn {
         creepMemory.role = creepConfig.role
         creepMemory.data = creepConfig.data
 
-        // 获取身体部件, 优先使用 bodys
-        const bodys = (typeof creepWork.bodys === 'string') ? this.getBodys(creepConfig.bodys as BodyAutoConfigConstant) : creepConfig.bodys as BodyPartConstant[]
+        // 获取身体部件
+        const bodys = creepWork.bodys(this.room, this)
         if (bodys.length <= 0) return ERR_NOT_ENOUGH_ENERGY
-        
+
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
         })
@@ -89,28 +89,5 @@ export default class SpawnExtension extends StructureSpawn {
             // this.log(`生成失败, ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`, 'red')
             return spawnResult
         }
-    }
-
-    /**
-     * 获取身体部件数组
-     * 
-     * @param bodyType creepConfig 中的 bodyType
-     */
-    private getBodys(bodyType: BodyAutoConfigConstant): BodyPartConstant[] {
-        const bodyConfig: BodyConfig = bodyConfigs[bodyType]
-
-        const targetLevel = Object.keys(bodyConfig).reverse().find(level => {
-            // 先通过等级粗略判断，再加上 dryRun 精确验证
-            const availableEnergyCheck = (Number(level) <= this.room.energyAvailable)
-            const dryCheck = (this.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
-
-            return availableEnergyCheck && dryCheck
-        })
-        if (!targetLevel) return [ ]
-
-        // 获取身体部件
-        const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
-
-        return bodys
     }
 }

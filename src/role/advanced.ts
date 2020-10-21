@@ -1,4 +1,5 @@
-import { ROOM_TRANSFER_TASK, boostResourceReloadLimit } from "../setting"
+import { createBodyGetter } from 'utils'
+import { ROOM_TRANSFER_TASK, boostResourceReloadLimit, bodyConfigs } from 'setting'
 
 /**
  * tranfser 触发后事处理的最小生命
@@ -34,7 +35,7 @@ const roles: {
             if (task) return transferTaskOperations[task.type].target(creep, task)
             else return true
         },
-        bodys: 'manager'
+        bodys: createBodyGetter(bodyConfigs.manager)
     }),
 
     /**
@@ -129,7 +130,7 @@ const roles: {
  
             return false
         },
-        bodys: 'processor'
+        bodys: createBodyGetter(bodyConfigs.processor)
     })
 }
 

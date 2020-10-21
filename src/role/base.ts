@@ -1,4 +1,5 @@
-import { minerHervesteLimit, ROOM_TRANSFER_TASK, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
+import { minerHervesteLimit, ROOM_TRANSFER_TASK, bodyConfigs, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
+import { calcBodyPart, createBodyGetter } from 'utils'
 import { getRoomTransferTask, transferTaskOperations } from './advanced'
 
 /**
@@ -111,7 +112,7 @@ const roles: {
             if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
             return false
         },
-        bodys: 'harvester'
+        bodys: createBodyGetter(bodyConfigs.harvester)
     }),
 
     /**
@@ -175,7 +176,7 @@ const roles: {
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
-        bodys: 'worker'
+        bodys: createBodyGetter(bodyConfigs.worker)
     }),
 
     /**
@@ -229,7 +230,7 @@ const roles: {
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
-        bodys: 'worker'
+        bodys: createBodyGetter(bodyConfigs.worker)
     }),
 
     /**
@@ -276,7 +277,7 @@ const roles: {
 
             if (creep.store[RESOURCE_ENERGY] <= 0) return true
         },
-        bodys: 'manager'
+        bodys: createBodyGetter(bodyConfigs.manager)
     }),
 
     /**
@@ -338,7 +339,15 @@ const roles: {
         target: creep => {
             if (creep.upgrade() === ERR_NOT_ENOUGH_RESOURCES) return true
         },
-        bodys: 'upgrader'
+        bodys: (room, spawn) => {
+            // 7 级和 8 级时要孵化指定尺寸的 body
+            if (room.controller && room.controller.my) {
+                if (room.controller.level === 8) return calcBodyPart({ [WORK]: 30, [CARRY]: 5, [MOVE]: 15 })
+                else if (room.controller.level === 7) return calcBodyPart({ [WORK]: 12, [CARRY]: 12, [MOVE]: 12 })
+            }
+
+            return createBodyGetter(bodyConfigs.worker)(room, spawn)
+        }
     }),
 
     /**
@@ -390,7 +399,7 @@ const roles: {
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
-        bodys: 'worker'
+        bodys: createBodyGetter(bodyConfigs.worker)
     }),
 
     /**
@@ -445,7 +454,7 @@ const roles: {
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
-        bodys: 'worker'
+        bodys: createBodyGetter(bodyConfigs.worker)
     })
 }
 

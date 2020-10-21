@@ -1,5 +1,5 @@
-import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN } from 'setting'
-import { calcBodyPart, getName } from 'utils'
+import { PB_HARVESTE_STATE, DEPOSIT_MAX_COOLDOWN, bodyConfigs } from 'setting'
+import { calcBodyPart, getName, createBodyGetter } from 'utils'
 
 /**
  * 多房间角色组
@@ -149,7 +149,7 @@ const roles: {
             }
             else creep.goTo(targetStructure.pos)
         },
-        bodys: 'manager'
+        bodys: createBodyGetter(bodyConfigs.manager)
     }),
 
     /**
@@ -233,7 +233,7 @@ const roles: {
             else if (claimResult === ERR_GCL_NOT_ENOUGH) creep.log(`CCL 不足，无法占领`)
             else creep.say(`占领 ${claimResult}`)
         },
-        bodys: [ MOVE, CLAIM ]
+        bodys: () => [ MOVE, CLAIM ]
     }),
 
     /**
@@ -272,7 +272,7 @@ const roles: {
             }
             return false
         },
-        bodys: 'reserver'
+        bodys: createBodyGetter(bodyConfigs.reserver)
     }),
 
     /**
@@ -295,7 +295,7 @@ const roles: {
 
             return false
         },
-        bodys: [ MOVE ]
+        bodys: () => [ MOVE ]
     }),
 
     /**
@@ -356,7 +356,7 @@ const roles: {
 
             if (creep.store.getUsedCapacity() === 0) return true
         },
-        bodys: 'worker'
+        bodys: createBodyGetter(bodyConfigs.worker)
     }),
 
     /**
@@ -410,7 +410,7 @@ const roles: {
             creep.upgrade()
             if (creep.store.getUsedCapacity() === 0) return true
         },
-        bodys: 'upgrader'
+        bodys: createBodyGetter(bodyConfigs.worker)
     }),
 
     /**
@@ -571,7 +571,7 @@ const roles: {
 
             return false
         },
-        bodys: 'remoteHarvester'
+        bodys: createBodyGetter(bodyConfigs.remoteHarvester)
     }),
 
     /**
@@ -682,7 +682,7 @@ const roles: {
             else if (result === ERR_INVALID_ARGS) return true
             else creep.say(`转移 ${result}`)
         },
-        bodys: 'remoteHarvester'
+        bodys: createBodyGetter(bodyConfigs.remoteHarvester)
     }),
 
     /**
@@ -798,7 +798,7 @@ const roles: {
             }
             else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
         },
-        bodys: calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
+        bodys: () => calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
     }),
 
     /**
@@ -822,7 +822,7 @@ const roles: {
             if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
             else creep.goTo(targetCreep.pos)
         },
-        bodys: calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
+        bodys: () => calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
     }),
 
     /**
@@ -902,7 +902,7 @@ const roles: {
             }
             else if (result === ERR_NOT_IN_RANGE) creep.goTo(room.terminal.pos)
         },
-        bodys: calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
+        bodys: () => calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
     }),
 
     /**
@@ -943,7 +943,7 @@ const roles: {
 
             return false
         },
-        bodys: [ MOVE ]
+        bodys: () => [ MOVE ]
     }),
 }
 
