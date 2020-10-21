@@ -198,7 +198,8 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
     [ROOM_TRANSFER_TASK.FILL_EXTENSION]: {
         source: (creep, task, sourceId) => {
             if (creep.store[RESOURCE_ENERGY] > 0) return true
-            creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
+            const result = creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
+            return result === OK
         },
         target: creep => {
             if (creep.store[RESOURCE_ENERGY] === 0) return true
@@ -247,7 +248,8 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
     [ROOM_TRANSFER_TASK.FILL_TOWER]: {
         source: (creep, task, sourceId) => {
             if (creep.store[RESOURCE_ENERGY] > 0) return true
-            creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
+            const result = creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
+            return result === OK
         },
         target: (creep, task: IFillTower) => {
             if (creep.store[RESOURCE_ENERGY] === 0) return true

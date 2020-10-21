@@ -910,7 +910,7 @@ const roles: {
      * 
      * 一直朝着旗帜移动
      * 添加：creepApi.add('happyCreep0', 'moveTester', { sourceFlagName: 'p' }, 'W49S9')
-     * 删除：creepApi.remove('happyCreep')
+     * 删除：creepApi.remove('happyCreep0')
      * 
      * @param spawnRoom 出生房间名称
      * @param flagName 目标旗帜名称
@@ -932,7 +932,7 @@ const roles: {
 
             let cost1 = Game.cpu.getUsed()
             const result = creep.goTo(targetFlag.pos, {
-                disableCross: true,
+                // disableCross: true,
                 // checkTarget: true,
                 range: 0
             })
