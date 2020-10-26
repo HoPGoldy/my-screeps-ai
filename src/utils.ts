@@ -22,7 +22,7 @@ export function calcBodyPart(bodySet: BodySet): BodyPartConstant[] {
 }
 
 /**
- * 生成通用身体布局获取函数
+ * 生成通用身体部件获取函数
  * 
  * @param bodyConfig 该 creep 对应的身体配置项
  */
