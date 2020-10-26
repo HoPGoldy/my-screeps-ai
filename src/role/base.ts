@@ -342,8 +342,8 @@ const roles: {
         bodys: (room, spawn) => {
             // 7 级和 8 级时要孵化指定尺寸的 body
             if (room.controller && room.controller.my) {
-                if (room.controller.level === 8) return calcBodyPart({ [WORK]: 30, [CARRY]: 5, [MOVE]: 15 })
-                else if (room.controller.level === 7) return calcBodyPart({ [WORK]: 12, [CARRY]: 12, [MOVE]: 12 })
+                if (room.controller.level === 8) return calcBodyPart({ [WORK]: 12, [CARRY]: 12, [MOVE]: 12 })
+                else if (room.controller.level === 7) return calcBodyPart({ [WORK]: 30, [CARRY]: 5, [MOVE]: 15 })
             }
 
             return createBodyGetter(bodyConfigs.worker)(room, spawn)
