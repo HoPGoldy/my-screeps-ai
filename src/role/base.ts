@@ -19,7 +19,7 @@ const roles: {
         prepare: creep => {
             let target: StructureContainer | Source | ConstructionSite
             // 如果有缓存的话就获取缓存
-            if (creep.memory.targetId) target = Game.getObjectById(creep.memory.sourceId as Id<StructureContainer | Source>)
+            if (creep.memory.targetId) target = Game.getObjectById(creep.memory.targetId as Id<StructureContainer | Source>)
             const source = Game.getObjectById(data.sourceId)
 
             // 没有缓存或者缓存失效了就重新获取
@@ -32,6 +32,7 @@ const roles: {
                 // 找到了就把 container 当做目标
                 if (containers.length > 0) target = containers.find(container => {
                     const stoodCreep = container.pos.lookFor(LOOK_CREEPS)
+                    // 如果两个 source 离得比较近的话，harvesterA 可能会获取到 harvesterB 的 container，然后就一直往上撞，这里筛选一下
                     return !(stoodCreep.length > 0 && stoodCreep[0].memory && stoodCreep[0].memory.role === 'harvester')
                 })
             }
@@ -67,7 +68,7 @@ const roles: {
                 creep.getEngryFrom(Game.getObjectById(data.sourceId))
                 return false
             }
-            
+
             // 获取 prepare 阶段中保存的 targetId
             let target = Game.getObjectById(creep.memory.targetId as Id<StructureContainer | Source>)
 
