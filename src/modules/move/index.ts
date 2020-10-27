@@ -327,7 +327,6 @@ const mutualCross = function (creep: Creep | PowerCreep, direction: DirectionCon
  * @param creep 被请求对穿的 creep
  * @param direction 请求该 creep 进行对穿
  * @param requireCreep 发起请求的 creep
- * @param 
  */
 const requireCross = function (creep: Creep | PowerCreep, direction: DirectionConstant, requireCreep: Creep | PowerCreep): ScreepsReturnCode {
     // creep 下没有 memory 说明 creep 已经凉了，直接移动即可
