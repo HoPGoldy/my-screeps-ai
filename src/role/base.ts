@@ -19,8 +19,8 @@ const roles: {
         prepare: creep => {
             let target: StructureContainer | Source | ConstructionSite
             // 如果有缓存的话就获取缓存
-            if (creep.memory.targetId) target = Game.getObjectById<StructureContainer | Source>(creep.memory.sourceId)
-            const source = Game.getObjectById<Source>(data.sourceId)
+            if (creep.memory.targetId) target = Game.getObjectById(creep.memory.sourceId as Id<StructureContainer | Source>)
+            const source = Game.getObjectById(data.sourceId)
 
             // 没有缓存或者缓存失效了就重新获取
             if (!target) {
@@ -69,7 +69,7 @@ const roles: {
             }
             
             // 获取 prepare 阶段中保存的 targetId
-            let target = Game.getObjectById<StructureContainer | Source>(creep.memory.targetId)
+            let target = Game.getObjectById(creep.memory.targetId as Id<StructureContainer | Source>)
 
             // 存在 container，把血量修满
             if (target && target instanceof StructureContainer) {
@@ -81,7 +81,7 @@ const roles: {
             // 不存在 container，开始新建，首先尝试获取工地缓存，没有缓存就新建工地
             let constructionSite: ConstructionSite
             if (!creep.memory.constructionSiteId) creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
-            else constructionSite = Game.getObjectById<ConstructionSite>(creep.memory.constructionSiteId)
+            else constructionSite = Game.getObjectById(creep.memory.constructionSiteId)
 
             // 没找到工地缓存或者工地没了，重新搜索
             if (!constructionSite) constructionSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER)
@@ -122,17 +122,17 @@ const roles: {
     collector: (data: HarvesterData): ICreepConfig => ({
         prepare: creep => {
             // 已经到附近了就准备完成
-            if (creep.pos.isNearTo((<Structure>Game.getObjectById(data.sourceId)).pos)) return true
+            if (creep.pos.isNearTo((Game.getObjectById(data.sourceId)).pos)) return true
             // 否则就继续移动
             else {
-                creep.goTo(Game.getObjectById<Source>(data.sourceId).pos)
+                creep.goTo(Game.getObjectById(data.sourceId).pos)
                 return false
             }
         },
         source: creep => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
-            const source = Game.getObjectById<Source>(data.sourceId)
+            const source = Game.getObjectById(data.sourceId)
             if (!source) {
                 creep.say('目标找不到!')
                 return false
@@ -163,7 +163,7 @@ const roles: {
             if (creep.ticksToLive <= 3) return true
         },
         target: creep => {
-            const target: Structure = Game.getObjectById(data.targetId)
+            const target = Game.getObjectById(data.targetId)
             // 找不到目标了，自杀并重新运行发布规划
             if (!target) {
                 creep.say('目标找不到!')
@@ -249,7 +249,7 @@ const roles: {
             if (creep.store[RESOURCE_ENERGY] > 0) return true
 
             // 获取源 container
-            let source: StructureContainer | StructureStorage = Game.getObjectById<StructureContainer>(data.sourceId)
+            let source: StructureContainer | StructureStorage = Game.getObjectById(data.sourceId as Id<StructureContainer>)
             // container 没能量了就尝试从 storage 里获取能量执行任务
             // 原因是有了 sourceLink 之后 container 会有很长一段时间没人维护（直到 container 耐久掉光）
             // 如果没有这个判断的话 filler 会在停止孵化之前有好几辈子都呆在空 container 前啥都不干
@@ -269,7 +269,7 @@ const roles: {
             // 空闲时间会尝试把能量存放到 storage 里
             if (!creep.room.storage) return false
 
-            const source = Game.getObjectById<StructureContainer>(data.sourceId)
+            const source = Game.getObjectById(data.sourceId as Id<StructureContainer>)
             // source container 还有 harvester 维护时才会把能量转移至 storage
             // 否则结合 source 阶段，filler 会在 container 等待老化时在 storage 旁边无意义举重
             if (source && source.store[RESOURCE_ENERGY] > 0) creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
@@ -299,7 +299,7 @@ const roles: {
             // 因为只会从建筑里拿，所以只要拿到了就去升级
             if (creep.store[RESOURCE_ENERGY] > 0) return true
 
-            const source: StructureTerminal | StructureStorage | StructureContainer = Game.getObjectById(data.sourceId)
+            const source = Game.getObjectById(data.sourceId)
 
             // 如果能量来源是 container
             if (source && source.structureType === STRUCTURE_CONTAINER) {
@@ -374,7 +374,7 @@ const roles: {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
             // 获取有效的能量来源
-            let source: StructureStorage | StructureTerminal | StructureContainer | Source
+            let source: AllEnergySource
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
                 if (!source) {
@@ -427,7 +427,7 @@ const roles: {
             return room.controller.checkEnemyThreat()
         },
         source: creep => {
-            const source = Game.getObjectById<StructureContainer>(data.sourceId) || creep.room.storage || creep.room.terminal
+            const source = Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal
             // 能量不足就先等待，优先满足 filler 需求
             if (source.store[RESOURCE_ENERGY] < 500) {
                 creep.say('🎮')

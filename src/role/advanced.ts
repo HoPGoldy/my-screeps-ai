@@ -144,16 +144,16 @@ export default roles
  * @param creep manager
  * @param sourceId 能量存放处
  */
-const deathPrepare = function(creep: Creep, sourceId: string): false {
+const deathPrepare = function(creep: Creep, sourceId: Id<EnergySourceStructure>): false {
     if (creep.store.getUsedCapacity() > 0) {
         for (const resourceType in creep.store) {
-            let target: StructureStorage | StructureTerminal
+            let target: EnergySourceStructure
             // 不是能量就放到 terminal 里
             if (resourceType != RESOURCE_ENERGY && resourceType != RESOURCE_POWER && creep.room.terminal) {
                 target = creep.room.terminal
             }
             // 否则就放到 storage 或者玩家指定的地方
-            else target = sourceId ? Game.getObjectById<StructureStorage>(sourceId): creep.room.storage
+            else target = sourceId ? Game.getObjectById(sourceId): creep.room.storage
 
             // 转移资源
             creep.goTo(target.pos)
@@ -207,7 +207,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
             // 有缓存就用缓存
             if (creep.memory.fillStructureId) {
-                target = <StructureExtension>Game.getObjectById(creep.memory.fillStructureId)
+                target = Game.getObjectById(creep.memory.fillStructureId as Id<StructureExtension>)
 
                 // 如果找不到对应的建筑或者已经填满了就移除缓存
                 if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) {
@@ -219,7 +219,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             // 没缓存就重新获取
             if (!target) {
                 // 获取有需求的建筑
-                target = <StructureExtension>creep.pos.findClosestByRange(FIND_MY_STRUCTURES, {
+                target = creep.pos.findClosestByRange<StructureExtension>(FIND_MY_STRUCTURES, {
                     // extension 中的能量没填满
                     filter: s => ((s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_SPAWN) && (s.store.getFreeCapacity(RESOURCE_ENERGY) > 0))
                 })
@@ -257,7 +257,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
             // 有缓存的话
             if (creep.memory.fillStructureId) {
-                target = <StructureTower>Game.getObjectById(creep.memory.fillStructureId)
+                target = Game.getObjectById(creep.memory.fillStructureId as Id<StructureTower>)
                 
                 // 如果找不到对应的建筑或者已经填到 900 了就移除缓存
                 if (!target || target.structureType !== STRUCTURE_TOWER || target.store[RESOURCE_ENERGY] > 900) {
@@ -309,7 +309,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             if (task.resourceType == RESOURCE_ENERGY) sourceStructure = creep.room.storage
             else sourceStructure = creep.room.terminal
             // 获取 nuker
-            const nuker: StructureNuker = Game.getObjectById(task.id)
+            const nuker = Game.getObjectById(task.id)
 
             // 兜底
             if (!sourceStructure || !nuker) {
@@ -341,7 +341,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
         },
         target: (creep, task: IFillNuker) => {
             // 获取 nuker 及兜底
-            let target: StructureNuker = Game.getObjectById(task.id)
+            let target = Game.getObjectById(task.id)
             if (!target) {
                 creep.room.deleteCurrentRoomTransferTask()
                 return false
@@ -404,7 +404,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 return true
             }
             
-            const targetLab: StructureLab = Game.getObjectById(targetResource.id)
+            const targetLab = Game.getObjectById(targetResource.id)
 
             // 转移资源
             creep.goTo(targetLab.pos)
@@ -487,7 +487,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
      * 任务的搬运量取决于 manager 的最大存储量，搬一次就算任务完成
      */
     [ROOM_TRANSFER_TASK.FILL_POWERSPAWN]: {
-        source: (creep, task: IFillPowerSpawn, sourceId) => {
+        source: (creep, task: IFillPowerSpawn, sourceId: Id<StructureStorage | StructureTerminal>) => {
             // 如果身上有对应资源的话就直接去填充
             if (creep.store[task.resourceType] > 0) return true
 
@@ -496,7 +496,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             if (task.resourceType == RESOURCE_ENERGY) sourceStructure = sourceId ? Game.getObjectById(sourceId) : creep.room.storage
             else sourceStructure = creep.room.terminal
             // 获取 powerspawn
-            const powerspawn: StructurePowerSpawn = Game.getObjectById(task.id)
+            const powerspawn = Game.getObjectById(task.id)
 
             // 兜底
             if (!sourceStructure || !powerspawn) {
@@ -528,7 +528,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
         },
         target: (creep, task: IFillPowerSpawn) => {
             // 获取 powerSpawn 及兜底
-            let target: StructurePowerSpawn = Game.getObjectById(task.id)
+            let target = Game.getObjectById(task.id)
             if (!target) {
                 creep.room.deleteCurrentRoomTransferTask()
                 return true
@@ -573,7 +573,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 resource = Object.keys(boostConfig.lab).find((res, index) => {
                     // 如果这个材料已经用完了就检查下一个
                     if (!terminal.store[res] || terminal.store[res] == 0) return false
-                    const lab = Game.getObjectById<StructureLab>(boostConfig.lab[res])
+                    const lab = Game.getObjectById(boostConfig.lab[res])
                     // lab 里的资源不达标就进行运输
                     if (lab && lab.store[res] < boostResourceReloadLimit) return true
     
@@ -601,7 +601,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
         target: (creep, task: IBoostGetResource) => {
             // 找到要转移的资源以及目标 lab
             const targetResource = creep.memory.taskResource
-            const targetLab: StructureLab = Game.getObjectById(creep.room.memory.boost.lab[targetResource])
+            const targetLab = Game.getObjectById(creep.room.memory.boost.lab[targetResource])
 
             // 转移资源
             creep.goTo(targetLab.pos)
@@ -634,7 +634,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             // 获取能量为空的 lab
             let targetLab: StructureLab
             for (const labId of boostLabs) {
-                const lab: StructureLab = Game.getObjectById(labId)
+                const lab = Game.getObjectById(labId)
                 if (lab && lab.store[RESOURCE_ENERGY] != LAB_ENERGY_CAPACITY) {
                     targetLab = lab
                     break
@@ -667,7 +667,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             // 获取能量为空的 lab
             let targetLab: StructureLab
             for (const labId of boostLabs) {
-                const lab: StructureLab = Game.getObjectById(labId)
+                const lab = Game.getObjectById(labId)
                 if (lab && lab.mineralType) {
                     targetLab = lab
                     break
@@ -714,17 +714,17 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
  * 
  * @param labMemory 房间中的 lab 集群内存
  */
-function getNotClearLab(labMemory: any): StructureLab {
+function getNotClearLab(labMemory: LabMemory): StructureLab {
     for (const outLabId in labMemory.outLab) {
         if (labMemory.outLab[outLabId] > 0){
-            return Game.getObjectById(outLabId)
+            return Game.getObjectById(outLabId as Id<StructureLab>)
         }
     }
 
     // 找不到的话就检查下 inLab 是否净空
     for (const labId of labMemory.inLab) {
         // 获取 inLab
-        const inLab = Game.getObjectById(labId) as StructureLab
+        const inLab = Game.getObjectById(labId)
         // manager 并非 lab 集群内部成员，所以不会对 inLab 的缺失做出响应
         if (!inLab) continue
 

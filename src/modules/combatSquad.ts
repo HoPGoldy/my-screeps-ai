@@ -262,7 +262,7 @@ const squadStrategies: {
          */
         attackStructure(squad: SquadMember, memory: SquadMemory): OK | ERR_NOT_FOUND {
             // 从内存中加载缓存建筑
-            let targets = memory.targetStructures.map(id => Game.getObjectById<Structure>(id))
+            let targets = memory.targetStructures.map(id => Game.getObjectById(id))
             targets = targets.filter(s => s)
 
             // 都杀光了，重新搜索

@@ -170,7 +170,7 @@ export default class TowerExtension extends StructureTower {
             }
             // 墙壁被攻击
             else if (log.event === EVENT_ATTACK) {
-                const target = Game.getObjectById<Structure>(log.data.targetId)
+                const target = Game.getObjectById(log.data.targetId as Id<Structure>)
                 if (!target) continue
 
                 if (target instanceof StructureRampart || target instanceof StructureWall) {

@@ -199,7 +199,7 @@ export class LinkExtension extends StructureLink {
      * @param memoryKey link 的 id 保存在哪个 room.memory 字段中
      */
     private getLinkByMemoryKey(memoryKey: string): StructureLink | null {
-        const linkId = this.room.memory[memoryKey]
+        const linkId: Id<StructureLink> = this.room.memory[memoryKey]
         if (!linkId) return null
         const link: StructureLink = Game.getObjectById(linkId)
         // 不存在说明 link 已经被摧毁了 清理并退出

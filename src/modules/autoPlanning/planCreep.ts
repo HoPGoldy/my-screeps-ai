@@ -231,7 +231,7 @@ const releasePlans: CreepReleasePlans = {
                 // 遍历现存的 container，发布填充单位
                 // 会根据 container 到基地的距离决定发布数量
                 sourceContainerIds.forEach((containerId, index) => {
-                    const container = Game.getObjectById<StructureContainer>(containerId)
+                    const container = Game.getObjectById(containerId)
                     if (!container) return
 
                     // 获取 container 到基地中心的距离

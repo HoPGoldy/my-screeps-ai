@@ -7,6 +7,18 @@ type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 type Colors = 'green' | 'blue' | 'yellow' | 'red'
 
 /**
+ * creep 能从中获取能量的建筑
+ */
+type EnergySourceStructure = StructureLink | StructureContainer | StructureTerminal | StructureStorage
+
+/**
+ * 所有能量来源
+ * 
+ * creep 将会从这些地方获取能量
+ */
+type AllEnergySource = Source | EnergySourceStructure
+
+/**
  * 绘制帮助时需要的模块信息
  */
 interface ModuleDescribe {
@@ -181,9 +193,9 @@ interface EmptyData { }
  */
 interface HarvesterData {
     // 要采集的 source id
-    sourceId: string
+    sourceId: Id<Source>
     // 把采集到的资源存到哪里存在哪里
-    targetId: string
+    targetId: Id<EnergySourceStructure>
 }
 
 /**
@@ -192,7 +204,7 @@ interface HarvesterData {
  */
 interface WorkerData {
     // 要使用的资源存放建筑 id
-    sourceId: string
+    sourceId: Id<EnergySourceStructure>
 }
 
 /**
@@ -211,17 +223,17 @@ interface RemoteHelperData {
     // 要支援的房间名
     targetRoomName: string
     // 该房间中的能量来源
-    sourceId: string
+    sourceId: Id<Source | StructureContainer | StructureStorage | StructureTerminal>
 }
 
 /**
- * 掠夺者单位的 ddata
+ * 掠夺者单位的 data
  */
 interface ReiverData {
     // 目标建筑上的旗帜名称
     flagName: string
     // 要搬运到的建筑 id
-    targetId: string
+    targetId: Id<StructureWithStore>
 }
 
 /**
@@ -245,7 +257,7 @@ interface RemoteHarvesterData {
     // 要采集的资源旗帜名称
     sourceFlagName: string
     // 资源要存放到哪个建筑里，外矿采集者必须指定该参数
-    targetId?: string
+    targetId?: Id<StructureWithStore>
     // 出生房名称，资源会被运输到该房间中
     spawnRoom?: string
 }
@@ -368,7 +380,7 @@ interface Creep {
      */
     log(content:string, color?: Colors, notify?: boolean): void
 
-    _id: string
+    _id: Id<Creep>
     work(): void
     checkEnemy(): boolean
     standBy(): void
@@ -418,7 +430,7 @@ interface PowerCreep {
 /**
  * 包含 store 属性的建筑
  */
-type StructureWithStore = StructureStorage | StructureContainer | StructureExtension | StructureFactory | StructureSpawn | StructurePowerSpawn | StructureLink | StructureTerminal | StructureNuker
+type StructureWithStore = StructureTower | StructureStorage | StructureContainer | StructureExtension | StructureFactory | StructureSpawn | StructurePowerSpawn | StructureLink | StructureTerminal | StructureNuker
 
 /**
  * creep 内存拓展
@@ -459,18 +471,18 @@ interface CreepMemory {
      */
     stand?: boolean
     // 要采集的资源 Id
-    sourceId?: string
+    sourceId?: Id<AllEnergySource>
     // 要存放到的目标建筑
-    targetId?: string
+    targetId?: Id<Source | StructureWithStore | ConstructionSite>
 
     // deposit 采集者特有，deposit 的类型
     depositType?: DepositConstant
     // 要填充的墙 id 
-    fillWallId?: string
+    fillWallId?: Id<StructureWall | StructureRampart>
     // manager 特有 要填充能量的建筑 id
-    fillStructureId?: string
+    fillStructureId?: Id<StructureWithStore>
     // 建筑工特有，当前缓存的建筑工地（目前只有外矿采集者在用）
-    constructionSiteId?: string
+    constructionSiteId?: Id<ConstructionSite>
     // 可以执行建筑的单位特有，当该值为 true 时将不会尝试建造
     dontBuild?: boolean
     // manager 特有，当前任务正在转移的资源类型
@@ -695,7 +707,7 @@ interface RoomMemory {
     powerTasks: PowerConstant[]
 
     // 建筑工的当前工地目标，用于保证多个建筑工的工作统一以及建筑工死后不会寻找新的工地
-    constructionSiteId: string
+    constructionSiteId: Id<ConstructionSite>
     // 建筑工特有，当前正在修建的建筑类型，用于在修建完成后触发对应的事件
     constructionSiteType?: StructureConstant
     // 建筑工地的坐标，用于在建造完成后进行 lookFor 来确认其是否成功修建了建筑
@@ -733,26 +745,26 @@ interface RoomMemory {
     // 数组中每一个字符串都代表了一个监听任务，形如 "0 0 power"，第一位对应 TerminalModes，第二位对应 TerminalChannels，第三位对应资源类型
     terminalTasks: string[]
     // 房间内终端缓存的订单id
-    targetOrderId?: string
+    targetOrderId?: Id<Order>
     // 房间内终端要立刻支援的房间名
     targetSupportRoom?: string
     // 当前终端要监听的资源索引
     terminalIndex: number
     
     // 房间内的资源和建筑 id
-    mineralId: string
-    factoryId: string
-    extractorId: string
-    powerSpawnId: string
-    nukerId: string
-    observerId: string
-    sourceIds: string[]
-    sourceContainersIds: string[]
+    mineralId: Id<Mineral>
+    factoryId: Id<StructureFactory>
+    extractorId: Id<StructureExtractor>
+    powerSpawnId: Id<StructurePowerSpawn>
+    nukerId: Id<StructureNuker>
+    observerId: Id<StructureObserver>
+    sourceIds: Id<Source>[]
+    sourceContainersIds: Id<StructureContainer>[]
 
     // 中央 link 的 id
-    centerLinkId?: string
+    centerLinkId?: Id<StructureLink>
     // 升级 link 的 id
-    upgradeLinkId?: string
+    upgradeLinkId?: Id<StructureLink>
 
     // 一个游戏时间，标注了 mineral 什么时候会回满
     // 由 miner 发布，Extractor 会监听这个字段，并在适当的时间重新发布 mineral
@@ -765,13 +777,13 @@ interface RoomMemory {
             // 该外矿什么时候可以恢复采集，在被入侵时触发
             disableTill?: number
             // 该外矿要把能量运到哪个建筑里，保存下来是为了后面方便自动恢复外矿采集
-            targetId: string
+            targetId: Id<StructureWithStore>
         }
     }
 
     // 当前被 repairer 或 tower 关注的墙
     focusWall: {
-        id: string
+        id: Id<StructureWall | StructureRampart>
         endTime: number
     }
 
@@ -782,28 +794,7 @@ interface RoomMemory {
     // 该房间要执行的资源共享任务
     shareTask: IRoomShareTask
 
-    /**
-     * lab 集群所需的信息
-     * @see doc/lab设计案
-     */
-    lab?: {
-        // 当前集群的工作状态
-        state: string
-        // 当前生产的目标产物索引
-        targetIndex: number
-        // 当前要生产的数量
-        targetAmount?: number
-        // 底物存放 lab 的 id
-        inLab: string[]
-        // 产物存放 lab 的 id
-        outLab: {
-            [labId: string]: number
-        }
-        // 反应进行后下次反应进行的时间，值为 Game.time + cooldown
-        reactionRunTime?: number
-        // lab 是否暂停运行
-        pause: boolean
-    }
+    lab?: LabMemory
 
     /**
      * 战争状态
@@ -820,6 +811,29 @@ interface RoomMemory {
     pausePS?: boolean
 }
 
+/**
+ * lab 集群所需的信息
+ * @see doc/lab设计案
+ */
+interface LabMemory {
+    // 当前集群的工作状态
+    state: string
+    // 当前生产的目标产物索引
+    targetIndex: number
+    // 当前要生产的数量
+    targetAmount?: number
+    // 底物存放 lab 的 id
+    inLab: Id<StructureLab>[]
+    // 产物存放 lab 及其 store 中存放的化合物数量，其键为 lab 的 id
+    outLab: {
+        [labId: string]: number
+    }
+    // 反应进行后下次反应进行的时间，值为 Game.time + cooldown
+    reactionRunTime?: number
+    // lab 是否暂停运行
+    pause: boolean
+}
+
 // 所有房间物流任务
 type RoomTransferTasks = IFillTower | IFillExtension | IFillNuker | ILabIn | ILabOut | IBoostGetResource | IBoostGetEnergy | IBoostClear | IFillPowerSpawn
 
@@ -831,20 +845,20 @@ interface IFillExtension {
 // 房间物流任务 - 填充塔
 interface IFillTower {
     type: string
-    id: string
+    id: Id<StructureTower>
 }
 
 // 房间物流任务 - 填充核弹
 interface IFillNuker {
     type: string
-    id: string
+    id: Id<StructureNuker>
     resourceType: ResourceConstant
 }
 
 // 房间物流任务 - 填充 PowerSpawn
 interface IFillPowerSpawn {
     type: string
-    id: string
+    id: Id<StructurePowerSpawn>
     resourceType: ResourceConstant
 }
 
@@ -852,7 +866,7 @@ interface IFillPowerSpawn {
 interface ILabIn {
     type: string
     resource: {
-        id: string
+        id: Id<StructureLab>
         type: ResourceConstant
         amount: number
     }[]
@@ -883,7 +897,7 @@ interface transferTaskOperation {
     // creep 工作时执行的方法
     target: (creep: Creep, task: RoomTransferTasks) => boolean
     // creep 非工作(收集资源时)执行的方法
-    source: (creep: Creep, task: RoomTransferTasks, sourceId: string) => boolean
+    source: (creep: Creep, task: RoomTransferTasks, sourceId: Id<StructureWithStore>) => boolean
 }
 
 // 房间要执行的资源共享任务
@@ -1026,7 +1040,7 @@ interface FlagMemory {
     // 公路房旗帜特有，travelTime 是否已经计算完成
     travelComplete?: boolean
     // 该旗帜下标注的资源 id
-    sourceId?: string
+    sourceId?: Id<StructureWithStore | Deposit | StructurePowerBank | Ruin>
 
     // 当前 powerbank 采集的状态
     state?: string
@@ -1088,7 +1102,6 @@ interface BodySet {
 // Link 拓展
 interface StructureLink {
     work(): void
-    to(targetId: string): void
     asCenter(): string
     asSource(): string
     asUpgrade(): string
@@ -1307,7 +1320,7 @@ interface BoostTask {
     pos: number[]
     // 要进行强化的材料以及执行强化的 lab
     lab: {
-        [resourceType: string]: string
+        [resourceType: string]: Id<StructureLab>
     }
     // 本次强化任务所用的类型
     type: BoostType
@@ -1322,9 +1335,9 @@ interface SquadBase<IN_MEMORY extends boolean> {
     // 小队前进方向
     direction: DirectionConstant
     // 目标建筑
-    targetStructures: IN_MEMORY extends true ? string[] : Structure[]
+    targetStructures: IN_MEMORY extends true ? Id<Structure>[] : Structure[]
     // 目标 creep
-    targetCreep: IN_MEMORY extends true ? string[] : (Creep | PowerCreep)[]
+    targetCreep: IN_MEMORY extends true ? Id<Creep | PowerCreep>[] : (Creep | PowerCreep)[]
 }
 
 // 小队内存
@@ -1429,13 +1442,13 @@ interface UpgraderPlanStats {
     // 控制器还有多久降级
     ticksToDowngrade: number
     // source 建造好的 container 的 id
-    sourceContainerIds: string[]
+    sourceContainerIds: Id<StructureContainer>[]
     // 房间内 storage 的 id，房间没 storage 时该值为空，下同
-    storageId?: string
+    storageId?: Id<StructureStorage>
     // 房间内 terminal 的 id，房间没 terminal 时该值为空，下同
-    terminalId?: string
+    terminalId?: Id<StructureTerminal>
     // 房间内 upgradeLink 的 id
-    upgradeLinkId?: string
+    upgradeLinkId?: Id<StructureLink>
     // storage 中有多少能量
     storageEnergy?: number
     // terminal 中有多少能量
@@ -1448,13 +1461,13 @@ interface HarvesterPlanStats {
     room: Room
     // 房间内 source 的 id 和其配套的 link id
     sources: {
-        id: string
-        linkId: string
+        id: Id<Source>
+        linkId: Id<StructureLink>
     }[]
     // 房间内 storage 的 id，房间没 storage 时该值为空，下同
-    storageId?: string
+    storageId?: Id<StructureStorage>
     // 房间内中央 link 的 id
-    centerLinkId?: string
+    centerLinkId?: Id<StructureLink>
 }
 
 // 房间中用于发布 filler manager processor 所需要的信息
@@ -1462,11 +1475,11 @@ interface TransporterPlanStats {
     // 房间对象
     room: Room
     // 房间内 storage 的 id，房间没 storage 时该值为空，下同
-    storageId?: string
+    storageId?: Id<StructureStorage>
     // 房间内中央 link 的 id
-    centerLinkId?: string
+    centerLinkId?: Id<StructureLink>
     // source 建造好的 container 的 id
-    sourceContainerIds?: string[]
+    sourceContainerIds?: Id<StructureContainer>[]
     // 基地中心点（processor的位置）坐标
     centerPos?: [ number, number ]
 }

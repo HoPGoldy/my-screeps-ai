@@ -80,7 +80,7 @@ export default class RoomShortcut extends Room {
         const targets = this.memory.sourceContainersIds
             // 遍历 id，获取 container 实例
             .map((containerId, index) => {
-                const container = Game.getObjectById<StructureContainer>(containerId)
+                const container = Game.getObjectById(containerId)
                 if (container) return container
 
                 abandonedIdIndex.push(index)

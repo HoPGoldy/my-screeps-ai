@@ -393,7 +393,7 @@ export default class TerminalExtension extends StructureTerminal {
         }
         
         // 订单合适，写入缓存并要路费
-        this.room.memory.targetOrderId = targetOrder.id
+        this.room.memory.targetOrderId = targetOrder.id as Id<Order>
 
         // 想要卖出的数量有可能比订单数量大，所以计算路费的时候要考虑到
         const cost = Game.market.calcTransactionCost(Math.min(amount, targetOrder.amount), this.room.name, targetOrder.roomName)

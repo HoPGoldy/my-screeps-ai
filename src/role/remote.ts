@@ -73,7 +73,7 @@ const roles: {
             }
 
             if (flag.room) {
-                const targetStructure = Game.getObjectById<StructureWithStore | Ruin>(flag.memory.sourceId)
+                const targetStructure = Game.getObjectById(flag.memory.sourceId as Id<StructureWithStore | Ruin>)
                 // 如果对应的房间里没有找到目标建筑就自杀并移除旗帜
                 if (!targetStructure) {
                     delete Memory.flags[data.flagName]
@@ -114,7 +114,7 @@ const roles: {
             return false
         },
         target: creep => {
-            const targetStructure = Game.getObjectById<StructureWithStore>(data.targetId)
+            const targetStructure = Game.getObjectById(data.targetId)
             if (!targetStructure) {
                 creep.log(`找不到要存放资源的建筑 ${data.targetId}`, 'yellow')
                 creep.say('搬到哪？')
@@ -326,7 +326,7 @@ const roles: {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
             // 获取有效的能量来源
-            let source: StructureStorage | StructureTerminal | StructureContainer | Source
+            let source: AllEnergySource
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
                 if (!source) {
@@ -386,7 +386,7 @@ const roles: {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
             // 获取有效的能量来源
-            let source: StructureStorage | StructureTerminal | StructureContainer | Source
+            let source: AllEnergySource
             if (!creep.memory.sourceId) {
                 source = creep.room.getAvailableSource()
                 if (!source) {
@@ -489,8 +489,8 @@ const roles: {
                     room.memory.remote[sourceFlag.pos.roomName].disableTill = Game.time + 1500
                 }
             }
-            
-            const source = Game.getObjectById<Source>(creep.memory.sourceId)
+
+            const source = Game.getObjectById(creep.memory.sourceId as Id<Source>)
             const harvestResult = creep.harvest(source)
             if (harvestResult === OK) {
                 // 如果发现 source 上限掉回 1500 了，就发布 reserver
@@ -555,7 +555,7 @@ const roles: {
                 if (road.hits < road.hitsMax) creep.repair(road)
             }
 
-            const target = Game.getObjectById<Structure>(data.targetId)
+            const target = Game.getObjectById(data.targetId)
             if (!target) {
                 creep.log(`找不到存放建筑 ${data.targetId}`, 'yellow')
                 return false
@@ -626,7 +626,7 @@ const roles: {
 
             // 获取目标
             let target: Deposit
-            if (targetFlag.memory.sourceId) target = Game.getObjectById(targetFlag.memory.sourceId)
+            if (targetFlag.memory.sourceId) target = Game.getObjectById(targetFlag.memory.sourceId as Id<Deposit>)
             else {
                 target = targetFlag.pos.lookFor(LOOK_DEPOSITS)[0]
                 
@@ -710,7 +710,7 @@ const roles: {
             if (creep.room.name === targetFlag.pos.roomName) {
                 // 有缓存了就验证下
                 if (targetFlag.memory.sourceId) {
-                    const pb = Game.getObjectById(targetFlag.memory.sourceId)
+                    const pb = Game.getObjectById(targetFlag.memory.sourceId as Id<StructurePowerBank>)
                     if (!pb) findPowerbank = false
                 }
                 // 没缓存就查找 pb
@@ -751,7 +751,7 @@ const roles: {
 
             // 获取 pb
             let powerbank: StructurePowerBank = undefined
-            if (targetFlag.memory.sourceId) powerbank = Game.getObjectById(targetFlag.memory.sourceId)
+            if (targetFlag.memory.sourceId) powerbank = Game.getObjectById(targetFlag.memory.sourceId as Id<StructurePowerBank>)
             else {
                 // 没有缓存就进行查找
                 powerbank = _.find(targetFlag.pos.lookFor(LOOK_STRUCTURES), s => s.structureType === STRUCTURE_POWER_BANK) as StructurePowerBank

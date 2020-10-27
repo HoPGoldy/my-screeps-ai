@@ -189,12 +189,6 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
             moveMemory.path = moveMemory.path.substr(1)
         }
     }
-    // 如果发生撞停或者参数异常的话说明缓存可能存在问题，移除缓存
-    else if (goResult === ERR_INVALID_TARGET || goResult == ERR_INVALID_ARGS) {
-        delete moveMemory.path
-        delete moveMemory.prePos
-        delete costCache[creep.room.name]
-    }
     // 其他异常直接报告
     else if (goResult != ERR_TIRED && goResult != ERR_BUSY) creep.say(`寻路 ${goResult}`)
 

@@ -315,7 +315,7 @@ export default class RoomConsole extends RoomExtension {
         }
 
         // 获取并分配 lab
-        const labs = this.find(FIND_MY_STRUCTURES, {
+        const labs = this.find<StructureLab>(FIND_MY_STRUCTURES, {
             filter: s => s.structureType == STRUCTURE_LAB
         })
         labs.forEach(lab => {
@@ -407,7 +407,7 @@ export default class RoomConsole extends RoomExtension {
      * 
      * @param 同上 addRemote()
      */
-    public radd(remoteRoomName: string, targetId: string): string {
+    public radd(remoteRoomName: string, targetId: Id<StructureWithStore>): string {
         let stats = `[${this.name} 外矿] `
 
         const actionResult = this.addRemote(remoteRoomName, targetId)

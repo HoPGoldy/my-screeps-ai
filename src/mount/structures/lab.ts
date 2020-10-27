@@ -99,7 +99,7 @@ export default class LabExtension extends StructureLab {
         // 遍历检查资源是否到位
         let allResourceReady = true
         for (const res of BOOST_RESOURCE[boostTask.type]) {
-            const lab = Game.getObjectById<StructureLab>(boostTask.lab[res])
+            const lab = Game.getObjectById(boostTask.lab[res])
             if (!lab) continue
 
             // 有的资源还没到位
@@ -127,7 +127,7 @@ export default class LabExtension extends StructureLab {
 
         // 遍历所有执行强化的 lab
         for (const resourceType in boostTask.lab) {
-            const lab = Game.getObjectById<StructureLab>(boostTask.lab[resourceType])
+            const lab = Game.getObjectById(boostTask.lab[resourceType])
 
             // 有 lab 能量不达标的话就发布能量填充任务
             if (lab && lab.store[RESOURCE_ENERGY] < 1000) {
@@ -154,7 +154,7 @@ export default class LabExtension extends StructureLab {
 
         // 检查是否存在没搬空的 lab
         for (const labId of boostLabs) {
-            const lab = Game.getObjectById<StructureLab>(labId)
+            const lab = Game.getObjectById(labId)
             // mineralType 不为空就说明还有资源没拿出来
             if (lab && lab.mineralType) {
                 // 发布任务
@@ -229,7 +229,7 @@ export default class LabExtension extends StructureLab {
         if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_IN)) return
 
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
-        const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId) as StructureLab)
+        const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId))
         const hasEmptyLab = inLabs.find(lab => !lab.mineralType)
         if (!hasEmptyLab) {
             this.room.memory.lab.state = LAB_STATE.WORKING
@@ -265,7 +265,7 @@ export default class LabExtension extends StructureLab {
         // 获取 inLab
         let inLabs: StructureLab[] = []
         labMemory.inLab.forEach(labId => {
-            const lab = Game.getObjectById(labId) as StructureLab
+            const lab = Game.getObjectById(labId)
             if (!lab) this.log(`错误! 找不到 inLab ${labId}`, 'red')
             else inLabs.push(lab)
         })
@@ -273,7 +273,7 @@ export default class LabExtension extends StructureLab {
 
         // 遍历 outLab 执行反应
         for (const labId in labMemory.outLab) {
-            const outLab = Game.getObjectById(labId) as StructureLab
+            const outLab = Game.getObjectById(labId as Id<StructureLab>)
             // 兜底
             if (!outLab) {
                 this.log(`错误! 找不到 outLab ${labId}, 已将其移除`, 'red')
@@ -389,7 +389,7 @@ export default class LabExtension extends StructureLab {
             let targetLab: StructureLab
             for (const outLabId in labMemory.outLab) {
                 if (labMemory.outLab[outLabId] > 0) {
-                    targetLab = Game.getObjectById(outLabId)
+                    targetLab = Game.getObjectById(outLabId as Id<StructureLab>)
                     break
                 }
             }

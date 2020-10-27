@@ -10,7 +10,7 @@ export default {
      * 
      * @param id 游戏对象的 id
      */
-    get(id: string): any {
+    get(id: Id<any>): any {
         return Game.getObjectById(id)
     },
 
