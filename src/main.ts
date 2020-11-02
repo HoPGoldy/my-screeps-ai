@@ -4,11 +4,11 @@ import creepNumberListener from './modules/creepController'
 import { execShard, saveShardData } from './modules/crossShard'
 import { ErrorMapper } from './modules/errorMapper'
 
+// 挂载拓展
+mountWork()
+
 export const loop = ErrorMapper.wrapLoop(() => {
     if (Memory.showCost) console.log(`-------------------------- [${Game.time}] -------------------------- `)
-
-    // 挂载拓展
-    mountWork()
 
     // 检查跨 shard 请求
     execShard()

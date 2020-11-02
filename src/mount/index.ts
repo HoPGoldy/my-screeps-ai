@@ -9,24 +9,18 @@ import mountStructure from './structures'
  * 挂载所有的属性和方法
  */
 export default function (): void {
-    if (!global.hasExtension) {
-        console.log('[mount] 重新挂载拓展')
+    // 存储的兜底工作
+    initStorage()
 
-        // 存储的兜底工作
-        initStorage()
+    // 挂载全部拓展
+    mountGlobal()
+    mountRoom()
+    mountRoomPostion()
+    mountCreep()
+    mountPowerCreep()
+    mountStructure()
 
-        // 挂载全部拓展
-        mountGlobal()
-        mountRoom()
-        mountRoomPostion()
-        mountCreep()
-        mountPowerCreep()
-        mountStructure()
-
-        global.hasExtension = true
-
-        workAfterMount()
-    }
+    workAfterMount()
 }
 
 /**
