@@ -75,7 +75,7 @@ export default {
      */
     base(roomName: string): string {
         const targetPos = findBaseCenterPos(roomName)
-        const firstSpawn = baseLayout[1][STRUCTURE_SPAWN][0]
+        const firstSpawn = baseLayout[0][STRUCTURE_SPAWN][0]
 
         if (targetPos.length <= 0) return `[${roomName}] 未找到合适的中心点，请确保该房间中有大于 11*11 的空地。`
         
