@@ -318,7 +318,15 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             if (!clearCarryingResource(creep)) return false
 
             // 获取应拿取的数量（能拿取的最小值）
-            let getAmount = Math.min(creep.store.getFreeCapacity(task.resourceType), sourceStructure.store[task.resourceType], nuker.store[task.resourceType])
+            let nukerStoreData = {
+                "G": 5000,
+                "energy": 300000
+            }
+            let getAmount = Math.min(
+                creep.store.getFreeCapacity(task.resourceType),
+                sourceStructure.store[task.resourceType],
+                nukerStoreData[task.resourceType] - nuker.store[task.resourceType]
+            )
 
             if (getAmount <= 0) {
                 creep.room.deleteCurrentRoomTransferTask()
@@ -366,8 +374,6 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 return false
             }
 
-            if (!clearCarryingResource(creep)) return false
-
             // 找到第一个需要从终端取出的底物
             const targetResource = task.resource.find(res => res.amount > 0)
 
@@ -376,6 +382,11 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 creep.room.deleteCurrentRoomTransferTask()
                 return false
             }
+
+            // 如果身上有对应资源的话就直接去填充
+            if (creep.store[targetResource.type] > 0) return true
+
+            if (!clearCarryingResource(creep)) return false
 
             // 获取能拿取的数量
             const getAmount = Math.min(targetResource.amount, creep.store.getFreeCapacity())
@@ -393,6 +404,10 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             if (!targetResource) {
                 creep.room.deleteCurrentRoomTransferTask()
                 return true
+            }
+            if (creep.store[targetResource.type] <= 0) {
+                console.log(creep.name, '没有资源,无法填充')
+                return
             }
 
             const targetLab: StructureLab = Game.getObjectById(targetResource.id)
