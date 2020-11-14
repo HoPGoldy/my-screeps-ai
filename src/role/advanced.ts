@@ -317,15 +317,14 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
             if (!clearCarryingResource(creep)) return false
 
+            // nuker资源已满,直接放弃此次任务
+            if (creep.store.getCapacity(task.resourceType) == nuker.store[task.resourceType]) return true
+
             // 获取应拿取的数量（能拿取的最小值）
-            let nukerStoreData = {
-                "G": 5000,
-                "energy": 300000
-            }
             let getAmount = Math.min(
                 creep.store.getFreeCapacity(task.resourceType),
                 sourceStructure.store[task.resourceType],
-                nukerStoreData[task.resourceType] - nuker.store[task.resourceType]
+                creep.store.getCapacity(task.resourceType) - nuker.store[task.resourceType]
             )
 
             if (getAmount <= 0) {
