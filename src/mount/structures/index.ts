@@ -5,7 +5,7 @@ import SpawnExtension from './spawn'
 import TowerExtension from './tower'
 import { LinkExtension, LinkConsole } from './link'
 import ExtractorExtension from './extractor'
-import StorageExtension from './storage'
+import { StorageExtension, StorageConsole } from './storage'
 import NukerExtension from './nuker'
 import { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
 import { ObserverExtension, ObserverConsole } from './observer'
@@ -28,6 +28,7 @@ const assignMap = [
     [ StructureTerminal, TerminalConsole ],
     [ StructureExtractor, ExtractorExtension ],
     [ StructureStorage, StorageExtension ],
+    [ StructureStorage, StorageConsole ],
     [ StructureLab, LabExtension ],
     [ StructureNuker, NukerExtension ],
     [ StructurePowerSpawn, PowerSpawnExtension ],

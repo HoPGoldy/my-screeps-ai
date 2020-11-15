@@ -708,3 +708,13 @@ export const LEVEL_BUILD_RAMPART = [ 3, 7, 8 ]
 // RCL 几级的时候开始放置通向 [ source, controller, mineral ] 的道路
 // 注意这个顺序要和 src\modules\autoPlanning\planRoad.ts 的默认方法返回值保持一致
 export const LEVEL_BUILD_ROAD = [ 3, 4, 6 ]
+
+/**
+ * storage 填充到其他建筑的能量填充设置的下限默认值
+ */
+export const DEFAULT_ENERGY_KEEP_LIMIT = 900000
+
+/**
+ * storage 填充到其他建筑的能量填充设置的填充量默认值
+ */
+export const DEFAULT_ENERGY_KEEP_AMOUNT = 50000

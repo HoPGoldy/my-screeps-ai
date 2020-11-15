@@ -4,11 +4,14 @@ import mountRoom from './room'
 import mountRoomPostion from './roomPosition'
 import mountGlobal from './global'
 import mountStructure from './structures'
+import { log } from 'utils'
 
 /**
  * 挂载所有的属性和方法
  */
 export default function (): void {
+    log('重新挂载拓展', ['global'], 'green')
+
     // 存储的兜底工作
     initStorage()
 
