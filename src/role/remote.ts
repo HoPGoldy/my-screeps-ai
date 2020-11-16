@@ -767,7 +767,7 @@ const roles: {
                 }
                 // 未能成功在 pb 消失前将其摧毁，任务失败，移除旗帜
                 else targetFlag.remove()
-                
+
                 // 移除采集小组
                 removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
@@ -876,7 +876,10 @@ const roles: {
                     if (creep.pickup(power) === OK) return true
                 }
                 // 地上也没了那就上天堂
-                else creep.suicide()
+                else {
+                    creep.suicide()
+                    targetFlag.remove()
+                }
             }
         },
         target: creep => {
@@ -886,15 +889,17 @@ const roles: {
                 creep.log(`找不到 terminal`, 'yellow')
                 return false
             }
-            
+
             // 存放资源
             const result = creep.transfer(room.terminal, RESOURCE_POWER)
             // 存好了就直接自杀并移除旗帜
             if (result === OK) {
-                const targetFlag = Game.flags[data.sourceFlagName]
-                targetFlag && targetFlag.remove()
                 creep.suicide()
 
+                const targetFlag = Game.flags[data.sourceFlagName]
+                if (!targetFlag) return false
+
+                targetFlag.remove()
                 // 通知 terminal 进行 power 平衡
                 room.terminal.balancePower()
 
