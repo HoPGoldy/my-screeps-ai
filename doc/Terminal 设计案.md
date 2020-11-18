@@ -108,7 +108,7 @@
 ```js
 // 有能力挖 power 的房间
 [
-    { type: RESOURCE_METAL, amount: 5000, mod: 'put', channel: 'share' }
+    { type: RESOURCE_POWER, amount: 5000, mod: 'put', channel: 'share' }
 ]
 // 没有能力挖 power 的房间
 [
