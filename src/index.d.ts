@@ -60,9 +60,6 @@ declare module NodeJS {
  * Game 对象拓展
  */
 interface Game {
-    // 本 tick 是否已经执行了 creep 数量控制器了
-    // 每 tick 只会调用一次
-    _hasRunCreepNumberController: boolean
     // 本 tick 是否需要执行保存 InterShardMemory
     _needSaveInterShardData: boolean
 }
@@ -114,7 +111,7 @@ type WarRoleConstant =
 type CreepNameGenerator = {
     [role in CreepRoleConstant]?: (room: string, index?: number, ...args: any[]) => string
 }
-    
+
 /**
  * creep 工作逻辑集合
  * 包含了每个角色应该做的工作
@@ -378,7 +375,6 @@ interface Creep {
      */
     log(content:string, color?: Colors, notify?: boolean): void
 
-    _id: Id<Creep>
     work(): void
     checkEnemy(): boolean
     standBy(): void
@@ -538,24 +534,28 @@ interface Room {
     _hasRunConstructionSite: boolean
 
     // 房间基础服务
-    factory?: StructureFactory
-    powerSpawn: StructurePowerSpawn
-    nuker: StructureNuker
-    observer: StructureObserver
-    centerLink: StructureLink
-    extractor: StructureExtractor
-    mineral: Mineral
-    sources: Source[]
-    sourceContainers: StructureContainer[]
-    _factory: StructureFactory
-    _mineral: Mineral
-    _powerspawn: StructurePowerSpawn
-    _nuker: StructureNuker
-    _sources: Source[]
-    _centerLink: StructureLink
-    _observer: StructureObserver
-    _extractor: StructureExtractor
-    _sourceContainers: StructureContainer[]
+    [STRUCTURE_FACTORY]?: StructureFactory
+    [STRUCTURE_POWER_SPAWN]?: StructurePowerSpawn
+    [STRUCTURE_NUKER]?: StructureNuker
+    [STRUCTURE_OBSERVER]?: StructureObserver
+    [STRUCTURE_EXTRACTOR]?: StructureExtractor
+
+    [STRUCTURE_SPAWN]?: StructureSpawn[]
+    [STRUCTURE_EXTENSION]?: StructureExtension[]
+    [STRUCTURE_ROAD]?: StructureRoad[]
+    [STRUCTURE_WALL]?: StructureWall[]
+    [STRUCTURE_RAMPART]?: StructureRampart[]
+    [STRUCTURE_KEEPER_LAIR]?: StructureKeeperLair[]
+    [STRUCTURE_PORTAL]?: StructurePortal[]
+    [STRUCTURE_LINK]?: StructureLink[]
+    [STRUCTURE_TOWER]?: StructureTower[]
+    [STRUCTURE_LAB]?: StructureLab[]
+    [STRUCTURE_CONTAINER]?: StructureContainer[]
+
+    mineral?: Mineral
+    sources?: Source[]
+    centerLink?: StructureLink
+    sourceContainers?: StructureContainer[]
 
     // pos 处理 api
     serializePos(pos: RoomPosition): string
@@ -642,8 +642,6 @@ interface RoomPosition {
     directionToPos(direction: DirectionConstant): RoomPosition | undefined
     getFreeSpace(): RoomPosition[]
 }
-
-type ObserverResource = 'powerBank' | 'deposit'
 
 /**
  * 工厂的任务队列中的具体任务配置
@@ -749,16 +747,8 @@ interface RoomMemory {
     // 当前终端要监听的资源索引
     terminalIndex: number
     
-    // 房间内的资源和建筑 id
-    mineralId: Id<Mineral>
-    factoryId: Id<StructureFactory>
-    extractorId: Id<StructureExtractor>
-    powerSpawnId: Id<StructurePowerSpawn>
-    nukerId: Id<StructureNuker>
-    observerId: Id<StructureObserver>
-    sourceIds: Id<Source>[]
+    // source 旁的 container id
     sourceContainersIds: Id<StructureContainer>[]
-
     // 中央 link 的 id
     centerLinkId?: Id<StructureLink>
     // 升级 link 的 id
@@ -1735,3 +1725,28 @@ type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep | Powe
 type CrossRules = {
     [role in CreepRoleConstant | 'default']?: AllowCrossRuleFunc
 }
+
+/**
+ * 所有被添加到 Room 上的快捷访问键
+ */
+type AllRoomShortcut = STRUCTURE_OBSERVER | STRUCTURE_POWER_SPAWN | STRUCTURE_EXTRACTOR | 
+    STRUCTURE_NUKER | STRUCTURE_FACTORY | STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_ROAD | 
+    STRUCTURE_WALL | STRUCTURE_RAMPART | STRUCTURE_KEEPER_LAIR | STRUCTURE_PORTAL | STRUCTURE_LINK | 
+    STRUCTURE_TOWER | STRUCTURE_LAB | STRUCTURE_CONTAINER | 'mineral' | 'source'
+/**
+ * 房间快捷访问的 id 缓存
+ */
+type StructureIdCache = {
+    /**
+     * 每个房间的建筑 id 合集
+     */
+    [roomName: string]: {
+        /**
+         * 每个建筑类型对应的 id 数组
+         * 这里不考虑建筑是单个还是多个，统一都是数组
+         */
+        [T in AllRoomShortcut]?: Id<RoomObject>[]
+    }
+}
+
+type AnyObject = { [key: string]: any }

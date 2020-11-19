@@ -2,6 +2,7 @@ import { repairSetting, minWallHits } from 'setting'
 import roles from 'role'
 import { goTo, setWayPoint } from 'modules/move'
 import { getMemoryFromCrossShard } from 'modules/crossShard'
+import { updateStructure } from 'modules/shortcut'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -196,6 +197,7 @@ export default class CreepExtension extends Creep {
                 // 检查上面是否有已经造好的同类型建筑
                 const structure = _.find(constructionSitePos.lookFor(LOOK_STRUCTURES), s => s.structureType === this.room.memory.constructionSiteType)
                 if (structure) {
+                    updateStructure(this.room.name, structure.structureType, structure.id)
                     // 如果有的话就执行回调
                     if (structure.onBuildComplete) structure.onBuildComplete()
 

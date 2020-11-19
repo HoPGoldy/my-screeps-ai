@@ -27,8 +27,6 @@ export default class ExtractorExtension extends StructureExtractor {
      * 更新 mineral id
      */
     public onBuildComplete(): void {
-        this.room.memory.extractorId = this.id
-
         // 如果终端造好了就发布矿工
         if (this.room.terminal) this.room.releaseCreep('miner')
     }

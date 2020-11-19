@@ -21,12 +21,6 @@ export default class FactoryExtension extends StructureFactory {
         }
     }
 
-    // 建筑完成
-    // 注册自己的 id 到房间
-    public onBuildComplete(): void {
-        this.room.memory.factoryId = this.id
-    }
-
     /**
      * factory 的工作总入口
      * 根据当前状态跳转到指定工作

@@ -350,7 +350,7 @@ export const getName = {
  * @param obj1 要挂载到的对象
  * @param obj2 要进行挂载的对象
  */
-export const assignPrototype = function(obj1: {[key: string]: any}, obj2: {[key: string]: any}) {
+export const assignPrototype = function(obj1: AnyObject, obj2: AnyObject) {
     Object.getOwnPropertyNames(obj2.prototype).forEach(key => {
         if (key.includes('Getter')) {
             Object.defineProperty(obj1.prototype, key.split('Getter')[0], {
@@ -360,6 +360,21 @@ export const assignPrototype = function(obj1: {[key: string]: any}, obj2: {[key:
             })
         }
         else obj1.prototype[key] = obj2.prototype[key]
+    })
+}
+
+/**
+ * 给指定对象设置访问器
+ * 
+ * @param target 要设置访问器的对象
+ * @param name 访问器的名字
+ * @param getter 访问器方法
+ */
+export const createGetter = function (target: AnyObject, name: string, getter: () => any) {
+    Object.defineProperty(target.prototype, name, {
+        get: getter,
+        enumerable: false,
+        configurable: true
     })
 }
 

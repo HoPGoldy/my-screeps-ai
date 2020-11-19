@@ -24,10 +24,6 @@ export class ObserverExtension extends StructureObserver {
         if (!(Game.time % 30)) this.updateFlagList()
     }
 
-    public onBuildComplete(): void {
-        this.room.memory.observerId = this.id
-    }
-
     /**
      * 在房间内执行搜索
      * 该方法会搜索房间中的 deposits 和 power bank，一旦发现自动插旗

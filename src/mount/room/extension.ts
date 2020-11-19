@@ -5,14 +5,13 @@
  * 这些方法主要是用于和其他模块代码进行交互
  */
 
-import RoomShortcut from './shortcut'
 import { creepApi } from 'modules/creepController'
 import { ROOM_TRANSFER_TASK, BOOST_RESOURCE, ENERGY_SHARE_LIMIT } from 'setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from 'modules/autoPlanning/planBasePos'
 import { manageStructure } from 'modules/autoPlanning'
 import { createRoomLink, log } from 'utils'
 
-export default class RoomExtension extends RoomShortcut {
+export default class RoomExtension extends Room {
     /**
      * 全局日志
      * 

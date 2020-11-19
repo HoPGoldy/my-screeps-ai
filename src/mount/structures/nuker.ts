@@ -13,11 +13,6 @@ export default class NukerExtension extends StructureNuker {
         if (!this.keepResource(RESOURCE_GHODIUM, NUKER_GHODIUM_CAPACITY, this.room.terminal, 0)) return 
     }
 
-    // 在房间基础服务中注册自己
-    public onBuildComplete(): void {
-        this.room.memory.nukerId = this.id
-    }
-
     /**
      * 将自身存储的资源维持在指定容量之上
      * 
