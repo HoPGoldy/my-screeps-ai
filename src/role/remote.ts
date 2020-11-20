@@ -992,7 +992,7 @@ const remoteHelperIsNeed = function(source: Room, target: Room, customCondition:
         // 判断自定义条件
         customCondition() ||
         // 源房间还不够 7 级并且目标房间的 spawn 已经造好了
-        (source.controller?.level < 7 && target.find(FIND_MY_SPAWNS).length > 0)
+        (source.controller?.level < 7 && target[STRUCTURE_SPAWN].length > 0)
     ) return false
 
     return true

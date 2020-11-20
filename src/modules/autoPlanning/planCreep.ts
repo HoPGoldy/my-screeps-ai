@@ -39,7 +39,7 @@ const releasePlans: CreepReleasePlans = {
             const stats: HarvesterPlanStats = {
                 room,
                 // 查找 source 及其身边的 link
-                sources: room.sources.map(s => {
+                sources: room.source.map(s => {
                     const nearLinks = s.pos.findInRange<StructureLink>(FIND_MY_STRUCTURES, 2, {
                         filter: s => s.structureType === STRUCTURE_LINK
                     })

@@ -381,7 +381,7 @@ const PowerTasks: IPowerTaskConfigs = {
             let target: Source
             if (!creep.memory.sourceIndex) {
                 // 如果有 source 没有 regen_source 任务，则将其选为目标
-                target = creep.room.sources.find((s, index) => {
+                target = creep.room.source.find((s, index) => {
                     if (!s.effects || !s.effects.map(e => e.effect).includes(PWR_REGEN_SOURCE)) {
                         // 缓存目标
                         creep.memory.sourceIndex = index
@@ -391,7 +391,7 @@ const PowerTasks: IPowerTaskConfigs = {
                 })
             }
             // 有缓存了就直接获取
-            else target = creep.room.sources[creep.memory.sourceIndex]
+            else target = creep.room.source[creep.memory.sourceIndex]
             // 两个 source 都有 regen_source 时将获取不到 target
             if (!target) return ERR_BUSY
             

@@ -142,7 +142,7 @@ const getStructureWithCache = function <TargetStructure extends RoomObject>(room
         ids = getCacheId(room.name, type)
     }
     // 还没有的话就是真没有，直接返回空
-    if (!ids || ids.length === 0) return undefined
+    if (!ids || ids.length === 0) return []
 
     // 从 id 获取建筑并更新缓存
     const target: TargetStructure[] = []
@@ -278,7 +278,7 @@ const initShortcutCache = function (room: Room): void {
     })
 
     // 把需要的建筑 id 存入全局缓存，并直接初始化 room 缓存
-    for (const type in [ ...MULTIPLE_STRUCTURES, ...SINGLE_STRUCTURES ]) {
+    for (const type of [ ...MULTIPLE_STRUCTURES, ...SINGLE_STRUCTURES ]) {
         // 如果房间内某种建筑还没有的话就填充为空数组
         structureIdCache[room.name][type] = (structureGroup[type] || []).map(s => s.id)
         room[getPrivateKey(type)] = structureGroup[type] || []

@@ -438,9 +438,7 @@ export default class RoomConsole extends RoomExtension {
      */
     public clearwall(): string {
         // 找到所有不是自己的墙壁
-        const wall = this.find(FIND_STRUCTURES, {
-            filter: s => s.structureType === STRUCTURE_WALL || (s.structureType === STRUCTURE_RAMPART && !s.my)
-        })
+        const wall = [...this[STRUCTURE_WALL], ...this[STRUCTURE_RAMPART]].filter(s => !s.my)
         if (wall.length <= 0) return `[${this.name}] 未找到墙壁`
 
         wall.forEach(w => w.destroy())

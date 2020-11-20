@@ -123,9 +123,7 @@ export default class ControllerExtension extends StructureController {
      */
     public checkEnemyThreat(): boolean {
         // 这里并没有搜索 PC，因为 PC 不是敌人主力
-        const enemy = this.room._enemys || this.room.find(FIND_HOSTILE_CREEPS, {
-            filter: whiteListFilter
-        })
+        const enemy = this.room._enemys || this.room.find(FIND_HOSTILE_CREEPS, { filter: whiteListFilter })
         if (enemy.length <= 0) return false
 
         // 如果来的都是入侵者的话，就算撑破天了也不管

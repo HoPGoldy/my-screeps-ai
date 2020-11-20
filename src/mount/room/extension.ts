@@ -258,7 +258,7 @@ export default class RoomExtension extends Room {
         }
 
         // 没有就选边上有空位的 source
-        return this.sources.find(source => {
+        return this.source.find(source => {
             const freeCount = source.pos.getFreeSpace().length
             const harvestCount = source.pos.findInRange(FIND_CREEPS, 1).length
 

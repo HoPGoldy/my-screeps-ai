@@ -89,11 +89,11 @@ export default class CreepControl extends RoomConsole {
         // 发布 upgrader 和 builder
         creepApi.add(`${remoteRoomName} RemoteUpgrader`, 'remoteUpgrader', {
             targetRoomName: remoteRoomName,
-            sourceId: room.sources[0].id
+            sourceId: room.source[0].id
         }, this.name)
         creepApi.add(`${remoteRoomName} RemoteBuilder`, 'remoteBuilder', {
             targetRoomName: remoteRoomName,
-            sourceId: room.sources.length >= 2 ? room.sources[1].id : room.sources[0].id
+            sourceId: room.source.length >= 2 ? room.source[1].id : room.source[0].id
         }, this.name)
     }
 

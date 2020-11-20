@@ -203,7 +203,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
         },
         target: creep => {
             if (creep.store[RESOURCE_ENERGY] === 0) return true
-            let target: StructureExtension
+            let target: StructureExtension | StructureSpawn
 
             // 有缓存就用缓存
             if (creep.memory.fillStructureId) {
@@ -218,11 +218,13 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
             // 没缓存就重新获取
             if (!target) {
-                // 获取有需求的建筑
-                target = creep.pos.findClosestByRange<StructureExtension>(FIND_MY_STRUCTURES, {
-                    // extension 中的能量没填满
-                    filter: s => ((s.structureType == STRUCTURE_EXTENSION || s.structureType == STRUCTURE_SPAWN) && (s.store.getFreeCapacity(RESOURCE_ENERGY) > 0))
+                // 找到能量没填满的 extension 或者 spawn
+                const needFillStructure = [...creep.room[STRUCTURE_EXTENSION], ...creep.room[STRUCTURE_SPAWN]].filter(s => {
+                    return s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
                 })
+                // 获取有需求的建筑
+                target = creep.pos.findClosestByRange(needFillStructure)
+
                 if (!target) {
                     // 都填满了，任务完成
                     creep.room.deleteCurrentRoomTransferTask()
@@ -272,9 +274,8 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 target = Game.getObjectById(task.id)
                 if (!target || target.store[RESOURCE_ENERGY] > 900) {
                     // 然后再检查下还有没有其他 tower 没填充
-                    const towers = creep.room.find(FIND_MY_STRUCTURES, {
-                        filter: s => s.structureType === STRUCTURE_TOWER && s.store[RESOURCE_ENERGY] <= 900
-                    })
+                    const towers = creep.room[STRUCTURE_TOWER].filter(tower => tower.store[RESOURCE_ENERGY] <= 900)
+
                     // 如果还没找到的话就算完成任务了
                     if (towers.length <= 0) {
                         creep.room.deleteCurrentRoomTransferTask()

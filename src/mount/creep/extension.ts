@@ -206,7 +206,7 @@ export default class CreepExtension extends Creep {
                         this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
                     }
                     // 如果修好的是 source container 的话，就执行注册
-                    else if (structure instanceof StructureContainer && this.room.sources.find(s => structure.pos.isNearTo(s))) {
+                    else if (structure instanceof StructureContainer && this.room.source.find(s => structure.pos.isNearTo(s))) {
                         this.room.registerContainer(structure)
                     }
                 }
@@ -293,10 +293,8 @@ export default class CreepExtension extends Creep {
         // 该属性不存在 或者 当前时间已经大于关注时间 就刷新
         if (!focusWall || (focusWall && Game.time >= focusWall.endTime)) {
             // 获取所有没填满的墙
-            const walls = <(StructureWall | StructureRampart)[]>this.room.find(FIND_STRUCTURES, {
-                filter: s => (s.hits < s.hitsMax) && 
-                    (s.structureType == STRUCTURE_WALL || s.structureType == STRUCTURE_RAMPART)
-            })
+            const walls = [...this.room[STRUCTURE_WALL], ...this.room[STRUCTURE_RAMPART]].filter(s => s.hits < s.hitsMax)
+
             // 没有目标就啥都不干
             if (walls.length <= 0) return false
 

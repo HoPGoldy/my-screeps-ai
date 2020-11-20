@@ -40,11 +40,7 @@ const getImpassableCostMatrix = function (room: Room): CostMatrix {
     }
 
     // 获取无法通过的墙壁
-    const impassableWalls = room.find(FIND_STRUCTURES, {
-        // 建造好的墙壁和不属于自己的 rampart
-        filter: s => s.structureType === STRUCTURE_WALL ||
-            (s.structureType === STRUCTURE_RAMPART && !s.my)
-    })
+    const impassableWalls = [...room[STRUCTURE_WALL], ...room[STRUCTURE_RAMPART]].filter(s => !s.my)
 
     // 添加进 cost
     impassableWalls.forEach(wall => matrix.set(wall.pos.x, wall.pos.y, 255))

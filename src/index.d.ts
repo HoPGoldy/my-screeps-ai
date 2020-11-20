@@ -553,7 +553,7 @@ interface Room {
     [STRUCTURE_CONTAINER]?: StructureContainer[]
 
     mineral?: Mineral
-    sources?: Source[]
+    source?: Source[]
     centerLink?: StructureLink
     sourceContainers?: StructureContainer[]
 
