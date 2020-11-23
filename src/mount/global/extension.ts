@@ -50,7 +50,7 @@ export default {
             // 如果有就列出显示
             if (room[source] && amount > 0) return `${room.name} => ${amount}`
             else return false
-        }).filter(res => res).join('\n')
+        }).filter(Boolean).join('\n')
 
         log += `\n共计: ${total}`
         return log

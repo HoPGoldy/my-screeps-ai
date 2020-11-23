@@ -270,7 +270,7 @@ export default [
                 stats.push(`[开采中 DEPO] ${depoNumber ? depoPos : '无'}`)
 
                 return stats.join(' ')
-            }).filter(stats => stats).join('\n')
+            }).filter(Boolean).join('\n')
 
             return stats
         }
@@ -312,7 +312,7 @@ export default [
                     else log += 'TERMINAL: X '
     
                     return log
-                }).filter(log => log)
+                }).filter(Boolean)
             ]
 
             return logs.join('\n')
