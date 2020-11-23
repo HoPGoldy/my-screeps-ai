@@ -540,11 +540,10 @@ const roles: {
                 if (buildResult === ERR_NOT_FOUND)  creep.memory.dontBuild = true
                 // 能量不足了就去 source 阶段，同时释放掉禁止通行点位
                 else if (buildResult === ERR_NOT_ENOUGH_ENERGY) {
-                    creep.room.removeRestrictedPos(creep.name)
                     delete creep.memory.stand
                     return true
                 }
-                
+
                 return false
             }
 
@@ -747,7 +746,6 @@ const roles: {
                 removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
                 return false
             }
-            if (creep.ticksToLive <= 1) creep.room.removeRestrictedPos(creep.name)
 
             // 获取 pb
             let powerbank: StructurePowerBank = undefined
@@ -974,7 +972,6 @@ const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName
 
     // 自杀并释放采集位置
     creep.suicide()
-    creep.room.removeRestrictedPos(creep.name)
 }
 
 /**

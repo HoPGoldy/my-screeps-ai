@@ -615,11 +615,6 @@ interface Room {
     boost(boostType: string, boostConfig: IBoostConfig): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
     boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
 
-    // 禁止通行点位 api
-    addRestrictedPos(creepName: string, pos: RoomPosition): void
-    getRestrictedPos(): { [creepName: string]: string }
-    removeRestrictedPos(creepName: string): void
-
     // 战争相关
     startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET
     stopWar(): OK | ERR_NOT_FOUND

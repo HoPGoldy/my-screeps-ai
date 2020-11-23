@@ -106,36 +106,6 @@ export default class RoomExtension extends Room {
     }
 
     /**
-     * 添加禁止通行位置
-     * 
-     * @param creepName 禁止通行点位的注册者
-     * @param pos 禁止通行的位置
-     */
-    public addRestrictedPos(creepName: string, pos: RoomPosition): void {
-        if (!this.memory.restrictedPos) this.memory.restrictedPos = {}
-
-        this.memory.restrictedPos[creepName] = this.serializePos(pos)
-    }
-
-    /**
-     * 获取房间内的禁止通行点位
-     */
-    public getRestrictedPos(): { [creepName: string]: string } {
-        return this.memory.restrictedPos
-    }
-
-    /**
-     * 将指定位置从禁止通行点位中移除
-     * 
-     * @param creepName 要是否点位的注册者名称
-     */
-    public removeRestrictedPos(creepName: string): void {
-        if (!this.memory.restrictedPos) this.memory.restrictedPos = {}
-
-        delete this.memory.restrictedPos[creepName]
-    }
-
-    /**
      * 将指定位置序列化为字符串
      * 形如: 12/32/E1N2
      * 
@@ -143,6 +113,19 @@ export default class RoomExtension extends Room {
      */
     public serializePos(pos: RoomPosition): string {
         return `${pos.x}/${pos.y}/${pos.roomName}`
+    }
+
+    /**
+     * 将位置序列化字符串转换为位置
+     * 位置序列化字符串形如: 12/32/E1N2
+     * 
+     * @param posStr 要进行转换的字符串
+     */
+    public unserializePos(posStr: string): RoomPosition | undefined {
+        // 形如 ["12", "32", "E1N2"]
+        const infos = posStr.split('/')
+
+        return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
     }
 
     /**
@@ -227,19 +210,6 @@ export default class RoomExtension extends Room {
         this.controller.unclaim()
 
         return this.name + ' 房间已移除'
-    }
-
-    /**
-     * 将位置序列化字符串转换为位置
-     * 位置序列化字符串形如: 12/32/E1N2
-     * 
-     * @param posStr 要进行转换的字符串
-     */
-    public unserializePos(posStr: string): RoomPosition | undefined {
-        // 形如 ["12", "32", "E1N2"]
-        const infos = posStr.split('/')
-
-        return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
     }
 
     /**

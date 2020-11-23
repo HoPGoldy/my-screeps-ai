@@ -55,16 +55,7 @@ export default class CreepExtension extends Creep {
         // 状态变化了就释放工作位置
         if (stateChange) {
             this.memory.working = !this.memory.working
-            if (this.memory.stand) {
-                this.room.removeRestrictedPos(this.name)
-                delete this.memory.stand
-            }
-        }
-
-        // 快死时的处理
-        if (this.ticksToLive <= 1) {
-            // 如果还在工作，就释放掉自己的工作位置
-            if (this.memory.stand) this.room.removeRestrictedPos(this.name)
+            if (this.memory.stand) delete this.memory.stand
         }
     }
 
@@ -468,10 +459,7 @@ export default class CreepExtension extends Creep {
             this.moveTo(attackFlag)
             
             // 如果之前在拆墙则移除刚才所在的禁止通行点位
-            if (this.memory.stand) {
-                this.room.removeRestrictedPos(this.name)
-                delete this.memory.stand
-            }
+            if (this.memory.stand) delete this.memory.stand
         }
 
         const result = this.dismantle(structures[0])
