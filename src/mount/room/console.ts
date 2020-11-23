@@ -296,20 +296,18 @@ export default class RoomConsole extends RoomExtension {
          */
         const lab1Flag = Game.flags['lab1']
         const lab2Flag = Game.flags['lab2']
-        if (!lab1Flag || !lab2Flag) return `[lab 集群] 初始化失败，请新建名为 [lab1] 和 [lab2] 的旗帜`
+        if (!lab1Flag || !lab2Flag) return `[lab 集群] 初始化失败，请在底物存放 Lab 上新建名为 [lab1] 和 [lab2] 的旗帜`
         if (lab1Flag.pos.roomName != this.name || lab2Flag.pos.roomName != this.name) return `[lab 集群] 初始化失败，旗帜不在本房间内，请进行检查`
 
         // 初始化内存, 之前有就刷新 id 缓存，没有就新建
         if (this.memory.lab) {
             this.memory.lab.inLab = []
-            this.memory.lab.outLab = {}
         }
         else {
             this.memory.lab = {
                 state: 'getTarget',
                 targetIndex: 1,
                 inLab: [],
-                outLab: {},
                 pause: false
             }
         }
@@ -320,13 +318,12 @@ export default class RoomConsole extends RoomExtension {
         })
         labs.forEach(lab => {
             if (lab.pos.isEqualTo(lab1Flag.pos) || lab.pos.isEqualTo(lab2Flag.pos)) this.memory.lab.inLab.push(lab.id)
-            else this.memory.lab.outLab[lab.id] = 0
         })
 
         lab1Flag.remove()
         lab2Flag.remove()
 
-        return `[${this.name} lab] 初始化成功`
+        return `[${this.name} lab] 初始化成功，稍后将自动运行生产规划`
     }
 
     /**
@@ -365,10 +362,6 @@ export default class RoomConsole extends RoomExtension {
         // 在工作就显示工作状态
         if (memory.state === LAB_STATE.WORKING) {
             logs.push(`[工作进程] 目标 ${res.target} 剩余生产/当前存量/目标存量 ${memory.targetAmount}/${currentAmount}/${res.number}`)
-        }
-        // 做完了就显示总数
-        else if (memory.state === LAB_STATE.PUT_RESOURCE) {
-            logs.push(`正在将 ${res.target} 转移至 terminal，数量：${Object.values(memory.outLab).reduce((p, n) => p + n)}`)
         }
 
         return logs.join(' ')

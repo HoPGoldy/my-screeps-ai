@@ -818,10 +818,6 @@ interface LabMemory {
     targetAmount?: number
     // 底物存放 lab 的 id
     inLab: Id<StructureLab>[]
-    // 产物存放 lab 及其 store 中存放的化合物数量，其键为 lab 的 id
-    outLab: {
-        [labId: string]: number
-    }
     // 反应进行后下次反应进行的时间，值为 Game.time + cooldown
     reactionRunTime?: number
     // lab 是否暂停运行
