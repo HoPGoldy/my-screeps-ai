@@ -874,7 +874,6 @@ interface ILabIn {
 // 房间物流任务 - lab 产物移出
 interface ILabOut {
     type: string
-    resourceType: ResourceConstant
 }
 
 // 房间物流任务 - boost 资源填充

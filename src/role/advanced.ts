@@ -379,7 +379,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
             // 找到第一个需要从终端取出的底物
             const targetResource = task.resource.find(res => res.amount > 0)
-            
+
             // 找不到了就说明都成功转移了
             if (!targetResource) {
                 creep.room.deleteCurrentRoomTransferTask()
@@ -404,7 +404,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
                 creep.room.deleteCurrentRoomTransferTask()
                 return true
             }
-            
+
             const targetLab = Game.getObjectById(targetResource.id)
 
             // 转移资源
@@ -423,14 +423,12 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
 
     /**
      * lab 产物移出任务
-     * 将 lab 的反应产物统一从 outLab 中移动到 terminal 中
+     * 把 lab 中所有的资源都转移到 terminal 中
      */
     [ROOM_TRANSFER_TASK.LAB_OUT]: {
         source: (creep, task: ILabOut) => {
-            const labMemory = creep.room.memory.lab
-
-            // 获取还有资源的 lab
-            let targetLab = getNotClearLab(labMemory)
+            // 获取还有资源的 lab（mineralType 有值就代表其中还有资源）
+            let targetLab = creep.room[STRUCTURE_LAB].find(lab => lab.mineralType)
 
             // 还找不到或者目标里没有化合物了，说明已经搬空，执行 target
             if (!targetLab || !targetLab.mineralType) return true
@@ -441,9 +439,8 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             creep.goTo(targetLab.pos)
             const result = creep.withdraw(targetLab, targetLab.mineralType)
 
-            // 正常转移资源则更新 memory 数量信息
+            // 拿到资源了就看下有没有拿满，满了就开始往回运
             if (result === OK) {
-                if (targetLab.id in labMemory.outLab) creep.room.memory.lab.outLab[targetLab.id] = targetLab.mineralType ? targetLab.store[targetLab.mineralType] : 0
                 if (creep.store.getFreeCapacity() === 0) return true
             }
             // 满了也先去转移资源
@@ -460,25 +457,21 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             }
 
             // 指定资源类型及目标
-            let resourceType = task.resourceType
-            let target: StructureTerminal | StructureStorage = terminal
-
-            // 如果是能量就优先放到 storage 里
-            if (creep.store[RESOURCE_ENERGY] > 0) {
-                resourceType = RESOURCE_ENERGY
-                target = creep.room.storage || terminal
+            // 因为在 source 阶段已经清空身上的能量了，所以这里不会是能量
+            const resourceType = Object.keys(creep.store)[0] as ResourceConstant
+            // 没值了就说明自己身上已经空了，检查下还有没有没搬空的 lab，没有的话就完成任务
+            if (!resourceType) {
+                if (creep.room[STRUCTURE_LAB].find(lab => lab.mineralType) === undefined) {
+                    creep.room.deleteCurrentRoomTransferTask()
+                }
+                return true
             }
 
             // 转移资源
             creep.goTo(terminal.pos)
-            const result = creep.transfer(target, resourceType)
+            const result = creep.transfer(terminal, resourceType)
 
-            if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
-                // 转移完之后就检查下还有没有没搬空的 lab，没有的话就完成任务
-                if (getNotClearLab(creep.room.memory.lab) === undefined) creep.room.deleteCurrentRoomTransferTask()
-                return true
-            }
-            else if (result != ERR_NOT_IN_RANGE) creep.say(`labout ${result}`)
+            if (result != ERR_NOT_IN_RANGE && result != OK) creep.say(`labout ${result}`)
         }
     },
 
@@ -708,32 +701,6 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             else if (result != ERR_NOT_IN_RANGE) creep.say(`强化清理 ${result}`)
         }
     },
-}
-
-/**
- * 获取还没有清空的 lab
- * 
- * @param labMemory 房间中的 lab 集群内存
- */
-function getNotClearLab(labMemory: LabMemory): StructureLab {
-    for (const outLabId in labMemory.outLab) {
-        if (labMemory.outLab[outLabId] > 0){
-            return Game.getObjectById(outLabId as Id<StructureLab>)
-        }
-    }
-
-    // 找不到的话就检查下 inLab 是否净空
-    for (const labId of labMemory.inLab) {
-        // 获取 inLab
-        const inLab = Game.getObjectById(labId)
-        // manager 并非 lab 集群内部成员，所以不会对 inLab 的缺失做出响应
-        if (!inLab) continue
-
-        // 如果有剩余资源的话就拿出来
-        if (inLab.mineralType) return inLab
-    }
-
-    return undefined
 }
 
 /**
