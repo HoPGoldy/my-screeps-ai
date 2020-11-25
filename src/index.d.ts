@@ -1740,3 +1740,47 @@ type StructureIdCache = {
 }
 
 type AnyObject = { [key: string]: any }
+
+/**
+ * 延迟任务的数据
+ */
+interface DelayTaskData {
+    /**
+     * 必须为延迟任务分配一个房间名
+     * 执行回调时会自动将其转换为房间对象
+     */
+    roomName: string
+}
+
+/**
+ * 所有延迟任务的名称和数据的对应 map
+ */
+interface DelayTaskTypes {
+    /**
+     * 维修工延迟孵化
+     */
+    repairer: DelayTaskData
+}
+
+/**
+ * 所有延迟任务的名字
+ */
+type AllDelayTaskName = keyof DelayTaskTypes
+
+/**
+ * 延迟任务的回调
+ * 
+ * @param data 任务的数据
+ * @param room 该任务对应的房间对象，由数据中的 roomName 获取
+ */
+type DelayTaskCallback = <K extends AllDelayTaskName>(data: DelayTaskTypes[K], room: Room | undefined) => void
+
+/**
+ * 添加延迟任务
+ */
+type AddDelayTask = <K extends AllDelayTaskName>(name: K, data: DelayTaskTypes[K], callTime: number) => void
+
+/**
+ * 添加延迟任务回调
+ */
+type AddDelayCallback = <K extends AllDelayTaskName>(name: K, callback: DelayTaskCallback) => void
