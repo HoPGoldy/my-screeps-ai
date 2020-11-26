@@ -16,6 +16,7 @@ const resourcePrice = {}
  */
 export default class TerminalExtension extends StructureTerminal {
     public work(): void {
+        if (!this.room.controller.owner) return
         // 没有冷却好或者不到 10 tick 就跳过
         if (this.cooldown !== 0 || Game.time % 10) return
         
@@ -136,8 +137,7 @@ export default class TerminalExtension extends StructureTerminal {
             }
 
             // 路费够了就执行转移
-            if (!this.room.controller.owner) return
-            const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.room.controller.owner.username} 的资源共享 - ${this.room.name}`)
+            const sendResult = this.send(task.resourceType, task.amount, task.target, `HaveFun! 来自 ${this.owner.username} 的资源共享 - ${this.room.name}`)
 
             if (sendResult == OK) {
                 delete this.room.memory.shareTask
