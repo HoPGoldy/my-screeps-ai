@@ -99,7 +99,7 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
             const crossResult = moveOpt.disableCross ? ERR_BUSY : mutualCross(creep, moveMemory.lastMove, fontCreep)
 
             // 对穿失败说明撞墙上了或者前面的 creep 拒绝对穿，重新寻路
-            if (crossRules === ERR_BUSY) {
+            if (crossResult === ERR_BUSY) {
                 moveMemory.path = findPath(creep, targetPos, { disableRouteCache: true })
                 delete moveMemory.prePos
             }
@@ -433,7 +433,7 @@ const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, move
                     !(crossRules[otherCreep.memory.role] || crossRules.default)(otherCreep, creep)
                 ) {
                     costs.set(otherCreep.pos.x, otherCreep.pos.y, 255)
-                    // creep.log(`躲避 ${otherCreep.name} 位置 [${otherCreep.pos.x}, ${otherCreep.pos.y}]`)
+                    // creep.log(`${creep.name} 躲避 ${otherCreep.name} 位置 [${otherCreep.pos.x}, ${otherCreep.pos.y}]`)
                 }
             })
             // 躲避房间中的非己方 powercreep
