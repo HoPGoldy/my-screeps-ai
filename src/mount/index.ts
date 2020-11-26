@@ -34,6 +34,7 @@ function initStorage() {
     else delete Memory.rooms.undefined
 
     if (!Memory.stats) Memory.stats = { rooms: {} }
+    if (!Memory.delayTasks) Memory.delayTasks = []
     if (!Memory.creepConfigs) Memory.creepConfigs = {}
     if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
 }

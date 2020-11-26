@@ -946,6 +946,11 @@ interface Memory {
     }
 
     /**
+     * 延迟任务存储
+     */
+    delayTasks: DelayTaskMemory[]
+
+    /**
      * 所有 creep 的配置项，每次 creep 死亡或者新增时都会通过这个表来完成初始化
      */
     creepConfigs: {
@@ -1757,9 +1762,13 @@ interface DelayTaskData {
  */
 interface DelayTaskTypes {
     /**
-     * 维修工延迟孵化
+     * 维修工延迟孵化任务
      */
-    repairer: DelayTaskData
+    spawnRepairer: DelayTaskData
+    /**
+     * 挖矿工延迟孵化任务
+     */
+    spawnMiner: DelayTaskData
 }
 
 /**
@@ -1773,14 +1782,15 @@ type AllDelayTaskName = keyof DelayTaskTypes
  * @param data 任务的数据
  * @param room 该任务对应的房间对象，由数据中的 roomName 获取
  */
-type DelayTaskCallback = <K extends AllDelayTaskName>(data: DelayTaskTypes[K], room: Room | undefined) => void
+type DelayTaskCallback<K extends AllDelayTaskName> = (room: Room | undefined, data: DelayTaskTypes[K]) => void
 
-/**
- * 添加延迟任务
- */
-type AddDelayTask = <K extends AllDelayTaskName>(name: K, data: DelayTaskTypes[K], callTime: number) => void
-
-/**
- * 添加延迟任务回调
- */
-type AddDelayCallback = <K extends AllDelayTaskName>(name: K, callback: DelayTaskCallback) => void
+interface DelayTaskMemory {
+    /**
+     * 该任务被调用的 Game.time
+     */
+    call: number
+    /**
+     * 被 JSON.stringify 压缩成字符串的任务数据，其值为任务名 + 空格 + 任务数据
+     */
+    data: string
+}
