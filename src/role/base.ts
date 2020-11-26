@@ -1,3 +1,4 @@
+import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
 import { minerHervesteLimit, ROOM_TRANSFER_TASK, bodyConfigs, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { calcBodyPart, createBodyGetter } from 'utils'
 import { getRoomTransferTask, transferTaskOperations } from './advanced'
@@ -404,12 +405,12 @@ const roles: {
     }),
 
     /**
-     * 维修者
-     * 从指定结构中获取能量 > 维修房间内的建筑
-     * 主要用途：
-     * 在低等级时从 container 中拿能量刷墙（container 消失后自动移除）
+     * 刷墙者
+     * 从指定结构中获取能量 > 维修房间内的墙壁
+     * 
+     * 在低等级时从 container 中拿能量刷墙
      * 在敌人进攻时孵化并针对性刷墙
-     * 在解决能量爆仓问题（暂未开发）
+     * 8 级之后每 5000t 孵化一次进行刷墙
      * 
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
@@ -417,15 +418,30 @@ const roles: {
     repairer: (data: WorkerData): ICreepConfig => ({
         // 根据敌人威胁决定是否继续生成
         isNeed: room => {
-            const source = Game.getObjectById(data.sourceId)
+            // cpu 快吃完了就不孵化
+            if (Game.cpu.bucket < 700) {
+                addSpawnRepairerTask(room.name)
+                return false
+            }
 
-            // 如果能量来源没了就删除自己
-            if (!source) return false
-            // 如果能量来源是 container 的话说明还在发展期，只要 container 在就一直孵化
-            else if (source && source instanceof StructureContainer) return true
+            // 房间里有威胁就孵化
+            if (room.controller.checkEnemyThreat()) return true
 
-            // 否则就看当前房间里有没有威胁，有的话就继续孵化并刷墙
-            return room.controller.checkEnemyThreat()
+            // RCL 到 7 就不孵化了，因为要拿能量去升级（到 8 时会有其他模块重新发布 repairer）
+            if (room.controller.level === 7) return false
+            // RCL 8 之后 5000 tick 孵化一次
+            else if (room.controller.level >= 8) {
+                addSpawnRepairerTask(room.name)
+                return false
+            }
+
+            // 如果能量来源没了就重新规划
+            if (!Game.getObjectById(data.sourceId)) {
+                room.releaseCreep('repairer')
+                return false
+            }
+
+            return true
         },
         source: creep => {
             const source = Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal
@@ -460,3 +476,22 @@ const roles: {
 }
 
 export default roles
+
+/**
+ * 注册 repairer 的延迟孵化任务
+ */
+addDelayCallback('spawnRepairer', room => {
+    // cpu 还是不够的话就延迟发布
+    if (Game.cpu.bucket < 700) return addSpawnRepairerTask(room.name)
+
+    room && room.releaseCreep('repairer')
+})
+
+/**
+ * 给指定房间添加 repairer 的延迟孵化任务
+ * 
+ * @param roomName 添加到的房间名
+ */
+const addSpawnRepairerTask = function (roomName) {
+    addDelayTask('spawnRepairer', { roomName }, Game.time + 5000)
+}

@@ -46,6 +46,7 @@ export default class ControllerExtension extends StructureController {
         // 8 级之后重新规划升级单位
         else if (level === 8) {
             this.room.releaseCreep('upgrader')
+            this.room.releaseCreep('repairer')
         }
 
         // 规划布局
