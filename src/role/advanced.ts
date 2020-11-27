@@ -11,14 +11,14 @@ const TRANSFER_DEATH_LIMIT = 20
  * 本角色组包括了有 Storage 和 Link 的房间内运维所需的角色
  */
 const roles: {
-    [role in AdvancedRoleConstant]: (data: CreepData) => ICreepConfig
+    [role in AdvancedRoleConstant]: (data: CreepData) => CreepConfig
 } = {
     /**
      * 房间物流运输者
      * 执行 ROOM_TRANSFER_TASK 中定义的任务
      * 任务处理逻辑定义在 transferTaskOperations 中
      */
-    manager: (data: WorkerData): ICreepConfig => ({
+    manager: (data: WorkerData): CreepConfig => ({
         source: creep => {
             if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, data.sourceId)
 
@@ -47,7 +47,7 @@ const roles: {
      * @param y 要移动到的 y 坐标
      * @param centerLinkId 中央 link 的 id
      */
-    processor: (data: ProcessorData): ICreepConfig => ({
+    processor: (data: ProcessorData): CreepConfig => ({
         // 移动到指定位置
         prepare: creep => {
             if (creep.pos.isEqualTo(data.x, data.y)) return true

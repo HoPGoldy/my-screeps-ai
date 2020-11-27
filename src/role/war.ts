@@ -6,14 +6,14 @@ import { bodyConfigs } from 'setting'
  * 本角色组包括了对外战斗和房间防御所需要的角色
  */
 const roles: {
-    [role in WarRoleConstant]: (data: CreepData) => ICreepConfig
+    [role in WarRoleConstant]: (data: CreepData) => CreepConfig
 } = {
     /**
      * 士兵
      * 会一直向旗帜发起进攻,
      * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
      */
-    soldier: (data: WarUnitData): ICreepConfig => ({
+    soldier: (data: WarUnitData): CreepConfig => ({
         ...battleBase(data.targetFlagName, data.keepSpawn),
         target: creep => {
             creep.attackFlag(data.targetFlagName)
@@ -41,7 +41,7 @@ const roles: {
      * @param creepsName 要治疗的 creep 名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到目标 creep 出现
      */
-    doctor: (data: HealUnitData): ICreepConfig => ({
+    doctor: (data: HealUnitData): CreepConfig => ({
         isNeed: () => data.keepSpawn,
         prepare: creep => {
             // 治疗单位不允许发起对穿
@@ -68,7 +68,7 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param creepsName 要治疗的 creep 名称
      */
-    boostDoctor: (data: HealUnitData): ICreepConfig => ({
+    boostDoctor: (data: HealUnitData): CreepConfig => ({
         isNeed: () => data.keepSpawn,
         prepare: creep => {
             // 治疗单位不允许发起对穿
@@ -96,7 +96,7 @@ const roles: {
      * @param flagName 要攻击的旗帜名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    dismantler: (data: WarUnitData): ICreepConfig => ({
+    dismantler: (data: WarUnitData): CreepConfig => ({
         ...battleBase(data.targetFlagName, data.keepSpawn),
         target: creep => creep.dismantleFlag(data.targetFlagName, data.healerName),
         bodys: createBodyGetter(bodyConfigs.dismantler)
@@ -111,7 +111,7 @@ const roles: {
      * @param flagName 要攻击的旗帜名称
      * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
      */
-    boostDismantler: (data: WarUnitData): ICreepConfig => ({
+    boostDismantler: (data: WarUnitData): CreepConfig => ({
         ...battleBase(data.targetFlagName, data.keepSpawn),
         ...boostPrepare(),
         target: creep => creep.dismantleFlag(data.targetFlagName, data.healerName),
@@ -127,7 +127,7 @@ const roles: {
      * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能力越强，默认为 6 (0~6)
      * @param flagName 要攻击的旗帜名称
      */
-    apocalypse: (data: ApocalypseData): ICreepConfig => {
+    apocalypse: (data: ApocalypseData): CreepConfig => {
         // 越界就置为 6
         if (data.bearTowerNum < 0 || data.bearTowerNum > 6) data.bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
@@ -183,7 +183,7 @@ const roles: {
      * 会自动攻击房间内的敌对单位
      * 注意身体部件不会自动适配，也就是说低等级房间无法造出来这个单位。原因在于低等级房间就算能造出来小 creep 也等于送人头。
      */
-    defender: (): ICreepConfig => ({
+    defender: (): CreepConfig => ({
         // 委托 controller 判断房间内是否有威胁
         isNeed: room => {
             const needSpawn = room.controller.checkEnemyThreat()

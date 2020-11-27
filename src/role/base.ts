@@ -8,13 +8,13 @@ import { getRoomTransferTask, transferTaskOperations } from './advanced'
  * 本角色组包括了在没有 Storage 和 Link 的房间内运维所需的角色
  */
 const roles: {
-    [role in BaseRoleConstant]: (data: CreepData) => ICreepConfig
+    [role in BaseRoleConstant]: (data: CreepData) => CreepConfig
 } = {
     /**
      * 采集者
      * 从指定 source 中获取能量 > 将能量存放到身下的 container 中
      */
-    harvester: (data: HarvesterData): ICreepConfig => ({
+    harvester: (data: HarvesterData): CreepConfig => ({
         // 向 container 或者 source 移动
         // 在这个阶段中，targetId 是指 container 或 conatiner 的工地或 source
         prepare: creep => {
@@ -121,7 +121,7 @@ const roles: {
      * 收集者
      * 从指定 source 中获取资源 > 将资源转移到指定建筑中
      */
-    collector: (data: HarvesterData): ICreepConfig => ({
+    collector: (data: HarvesterData): CreepConfig => ({
         prepare: creep => {
             // 已经到附近了就准备完成
             if (creep.pos.isNearTo((Game.getObjectById(data.sourceId)).pos)) return true
@@ -185,7 +185,7 @@ const roles: {
      * 矿工
      * 从房间的 mineral 中获取资源 > 将资源转移到指定建筑中(默认为 terminal)
      */
-    miner: (data: HarvesterData): ICreepConfig => ({
+    miner: (data: HarvesterData): CreepConfig => ({
         // 检查矿床里是不是还有矿
         isNeed: room => {
             // 房间中的矿床是否还有剩余产量
@@ -240,7 +240,7 @@ const roles: {
      * 从 container 中获取能量 > 执行房间物流任务
      * 在空闲时间会尝试把能量运输至 storage
      */
-    filler: (data: WorkerData): ICreepConfig => ({
+    filler: (data: WorkerData): CreepConfig => ({
         // 能量来源（container）没了就自觉放弃
         isNeed: room => {
             // 这里调用 room.sourceContainers 可以移除掉过期的 container id
@@ -287,7 +287,7 @@ const roles: {
      * 不会采集能量，只会从指定目标获取能量
      * 从指定建筑中获取能量 > 升级 controller
      */
-    upgrader: (data: WorkerData): ICreepConfig => ({
+    upgrader: (data: WorkerData): CreepConfig => ({
         isNeed: (room) => {
             if (!room.controller) return false
             // 小于 8 级就一直孵化
@@ -360,7 +360,7 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
-    builder: (data: WorkerData): ICreepConfig => ({
+    builder: (data: WorkerData): CreepConfig => ({
         // 工地都建完就就使命完成
         isNeed: room => {
             const targets: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
@@ -415,7 +415,7 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param sourceId 要挖的矿 id
      */
-    repairer: (data: WorkerData): ICreepConfig => ({
+    repairer: (data: WorkerData): CreepConfig => ({
         // 根据敌人威胁决定是否继续生成
         isNeed: room => {
             // cpu 快吃完了就不孵化

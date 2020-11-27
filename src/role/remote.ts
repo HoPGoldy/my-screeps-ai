@@ -6,7 +6,7 @@ import { calcBodyPart, getName, createBodyGetter } from 'utils'
  * 本角色组包括了多房间拓展所需要的角色
  */
 const roles: {
-    [role in RemoteRoleConstant]: (data: CreepData) => ICreepConfig
+    [role in RemoteRoleConstant]: (data: CreepData) => CreepConfig
 } = {
     /**
      * 掠夺者
@@ -18,7 +18,7 @@ const roles: {
      * @param flagName 目标建筑上的旗帜名称
      * @param targetStructureId 要搬运到的建筑 id
      */
-    reiver: (data: ReiverData): ICreepConfig => ({
+    reiver: (data: ReiverData): CreepConfig => ({
         // 要搬运资源的目标旗帜消失了就不再生成
         isNeed: () => data.flagName in Game.flags, 
         // 如果已经统计了移动
@@ -159,7 +159,7 @@ const roles: {
      * data:
      * @param targetRoomName 要占领的目标房间
      */ 
-    claimer: (data: RemoteDeclarerData): ICreepConfig => ({
+    claimer: (data: RemoteDeclarerData): CreepConfig => ({
         // 该 creep 死了不会再次孵化
         isNeed: () => false,
         // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
@@ -243,7 +243,7 @@ const roles: {
      * 准备阶段：向指定房间控制器移动
      * 阶段A：预定控制器
      */
-    reserver: (data: RemoteDeclarerData): ICreepConfig => ({
+    reserver: (data: RemoteDeclarerData): CreepConfig => ({
         // 该 creep 死了就不会再次孵化
         isNeed: () => false,
         // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
@@ -283,7 +283,7 @@ const roles: {
      * @param targetRoomName 要签名的目标房间名
      * @param signText 要签名的内容
      */
-    signer: (data: RemoteDeclarerData): ICreepConfig => ({
+    signer: (data: RemoteDeclarerData): CreepConfig => ({
         isNeed: () => false,
         target: creep => {
             if (creep.room.name === data.targetRoomName) {
@@ -303,7 +303,7 @@ const roles: {
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      * 如果都造好的话就升级控制器
      */
-    remoteBuilder: (data: RemoteHelperData): ICreepConfig => ({
+    remoteBuilder: (data: RemoteHelperData): CreepConfig => ({
         isNeed: room => {
             const target = Game.rooms[data.targetRoomName]
             // 如果房间造好了 terminal，自己的使命就完成了
@@ -363,7 +363,7 @@ const roles: {
      * 支援 - 采矿者
      * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
      */
-    remoteUpgrader: (data: RemoteHelperData): ICreepConfig => ({
+    remoteUpgrader: (data: RemoteHelperData): CreepConfig => ({
         isNeed: room => {
             const target = Game.rooms[data.targetRoomName]
             // 目标房间到 6 了就算任务完成
@@ -417,7 +417,7 @@ const roles: {
      * 外矿采集者
      * 从指定矿中挖矿 > 将矿转移到建筑中
      */
-    remoteHarvester: (data: RemoteHarvesterData): ICreepConfig => ({
+    remoteHarvester: (data: RemoteHarvesterData): CreepConfig => ({
         // 如果外矿目前有入侵者就不生成
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
@@ -580,7 +580,7 @@ const roles: {
      * @property {} sourceFlagName 旗帜名，要插在 deposit 上
      * @property {} spawnRoom 出生房间名
      */
-    depositHarvester: (data: RemoteHarvesterData): ICreepConfig => ({
+    depositHarvester: (data: RemoteHarvesterData): CreepConfig => ({
         isNeed: room => {
             // 旗帜效验, 没有旗帜则不生成
             const targetFlag = Game.flags[data.sourceFlagName]
@@ -691,7 +691,7 @@ const roles: {
      * 
      * @property {} sourceFlagName 旗帜名，要插在 powerBank 上
      */
-    pbAttacker: (data: pbAttackerData): ICreepConfig => ({
+    pbAttacker: (data: pbAttackerData): CreepConfig => ({
         prepare: creep => {
             const targetFlag = Game.flags[data.sourceFlagName]
             if (!targetFlag) {
@@ -807,7 +807,7 @@ const roles: {
      * 
      * @property {} creepName 要治疗的 pbAttacker 的名字
      */
-    pbHealer: (data: HealUnitData): ICreepConfig => ({
+    pbHealer: (data: HealUnitData): CreepConfig => ({
         target: creep => {
             const targetCreep = Game.creeps[data.creepName]
             // 对象没了就殉情
@@ -831,7 +831,7 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
      */
-    pbCarrier: (data: RemoteHarvesterData): ICreepConfig => ({
+    pbCarrier: (data: RemoteHarvesterData): CreepConfig => ({
         // carrier 并不会重复生成
         isNeed: () => false,
         // 移动到目标三格之内就算准备完成
@@ -918,7 +918,7 @@ const roles: {
      * @param spawnRoom 出生房间名称
      * @param flagName 目标旗帜名称
      */
-    moveTester: (data: RemoteHarvesterData): ICreepConfig => ({
+    moveTester: (data: RemoteHarvesterData): CreepConfig => ({
         prepare: creep => {
             // creep.setWayPoint(data.sourceFlagName)
             // creep.memory.fromShard = Game.shard.name as ShardName

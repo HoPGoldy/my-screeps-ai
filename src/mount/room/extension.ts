@@ -35,7 +35,7 @@ export default class RoomExtension extends Room {
      * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
      * @returns 任务的排队位置, 0 是最前面，负数为添加失败，-1 为已有同种任务,-2 为目标建筑无法容纳任务数量
      */
-    public addCenterTask(task: ITransferTask, priority: number = null): number {
+    public addCenterTask(task: CenterTransferTask, priority: number = null): number {
         if (this.hasCenterTask(task.submit)) return -1
         // 由于这里的目标建筑限制型和非限制型存储都有，这里一律作为非限制性检查来减少代码量
         if (this[task.target] && (this[task.target].store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) < task.amount) return -2
@@ -267,7 +267,7 @@ export default class RoomExtension extends Room {
      * 
      * @returns 有任务返回任务, 没有返回 null
      */
-    public getCenterTask(): ITransferTask | null {
+    public getCenterTask(): CenterTransferTask | null {
         if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
         
         if (this.memory.centerTransferTasks.length <= 0) {

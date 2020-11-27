@@ -262,7 +262,7 @@ export default class PowerCreepExtension extends PowerCreep {
  * @property PWR_* 常量之一，代表对应的任务
  * @value power 任务的具体配置项
  */
-const PowerTasks: IPowerTaskConfigs = {
+const PowerTasks: PowerTaskConfigs = {
     /**
      * 房间初始化任务，会在房间 power 任务队列初始化时同时添加
      * 该任务必定为房间的第一个 power 任务

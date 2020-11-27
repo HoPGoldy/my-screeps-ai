@@ -236,7 +236,7 @@ export const repairSetting = {
 }
 
 // 从反应目标产物获取其底物的对应表
-export const reactionSource: IReactionSource = {
+export const reactionSource: ReactionSource = {
     // 三级化合物
     [RESOURCE_CATALYZED_GHODIUM_ACID]: [ RESOURCE_GHODIUM_ACID, RESOURCE_CATALYST ], 
     [RESOURCE_CATALYZED_GHODIUM_ALKALIDE]: [ RESOURCE_GHODIUM_ALKALIDE, RESOURCE_CATALYST ], 
@@ -515,7 +515,7 @@ export const factoryEnergyLimit = 300000
  * 工厂不同沉积物 1-5 等级对应的顶级产物
  */
 export const factoryTopTargets: {
-    [resType: string]: ITopTargetConfig
+    [resType: string]: TopTargetConfig
 } = {
     // 机械产业
     [RESOURCE_METAL]: {
