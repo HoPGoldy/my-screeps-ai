@@ -207,8 +207,13 @@ export const saveShardData = function () {
  * @param type 跨 shard 请求的类型
  * @param data 跨 shard 请求携带的数据
  */
-export const addCrossShardRequest = function (name: string, to: ShardName, type: CrossShardRequestType, data: CrossShardRequestData) {
-    selfData[name] = { to, type, data } as CrossShardRequest
+export const addCrossShardRequest = function <K extends CrossShardRequestType>(
+    name: string,
+    to: ShardName,
+    type: K,
+    data: CrossShardDatas[K]
+) {
+    selfData[name] = { to, type, data }
     Game._needSaveInterShardData = true
 }
 

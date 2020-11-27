@@ -6,7 +6,7 @@ type ShardName = 'shard0' | 'shard1' | 'shard2' | 'shard3'
 /**
  * 跨 shard 请求构造器
  */
-interface CrossShardRequestConstructor<RequestType, RequestData> {
+interface CrossShardRequestConstructor<K extends CrossShardRequestType> {
     /**
      * 要处理请求的 shard
      */
@@ -14,61 +14,60 @@ interface CrossShardRequestConstructor<RequestType, RequestData> {
     /**
      * 该请求的类型
      */
-    type: RequestType,
+    type: K,
     /**
      * 该请求携带的数据
      */
-    data: RequestData
+    data: CrossShardDatas[K]
 }
 
 /**
- * 跨 shard 请求 - 发送 creep
+ * 所有的跨 shard 数据（键为对应的信息 type）
  */
-type SendCreep = 'sendCreep'
-type SendCreepData = {
+interface CrossShardDatas {
     /**
-     * 要发送 creep 的名字
+     * 跨 shard 请求 - 发送 creep
      */
-    name: string
+    sendCreep: {
+        /**
+         * 要发送 creep 的名字
+         */
+        name: string
+        /**
+         * 要发送 creep 的内存
+         */
+        memory: CreepMemory
+    }
     /**
-     * 要发送 creep 的内存
+     * 跨 shard 请求 - 提交重新孵化任务
      */
-    memory: CreepMemory
+    sendRespawn: {
+        /**
+         * 要重新孵化的 creep 的名字
+         */
+        name: string
+        /**
+         * 要重新孵化的 creep 的内存
+         */
+        memory: CreepMemory | PowerCreepMemory
+    }
 }
 
 /**
- * 跨 shard 请求 - 提交重新孵化任务
+ * 所有的跨 shard 请求
  */
-type SendRespawn = 'sendRespawn'
-type SendRespawnData = {
-    /**
-     * 要重新孵化的 creep 的名字
-     */
-    name: string
-    /**
-     * 要重新孵化的 creep 的内存
-     */
-    memory: CreepMemory | PowerCreepMemory
-}
+type CrossShardRequest = CrossShardRequestConstructor<CrossShardRequestType>
 
 /**
- * 构造所有的跨 shard 请求
+ * 所有跨 shard 请求的类型
  */
-type CrossShardRequest = 
-    CrossShardRequestConstructor<SendCreep, SendCreepData> |
-    CrossShardRequestConstructor<SendRespawn, SendRespawnData>
-
-/**
- * 所有跨 shard 请求的类型和数据
- */
-type CrossShardRequestType = SendCreep | SendRespawn
-type CrossShardRequestData = SendCreepData | SendRespawnData
+type CrossShardRequestType = keyof CrossShardDatas
 
 /**
  * 所有跨 shard 请求的执行策略
  */
 type CrossShardRequestStrategies = {
-    [type in CrossShardRequestType]: (data: CrossShardRequestData) => ScreepsReturnCode
+    [type in CrossShardRequestType]: (data: CrossShardDatas[type]) => ScreepsReturnCode
 }
 
 /**
