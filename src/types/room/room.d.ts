@@ -12,13 +12,6 @@ interface RoomMemory {
      */
     spawnList?: string[]
     /**
-     * 该房间禁止通行点的存储
-     * 键为注册禁止通行点位的 creep 名称，值为禁止通行点位 RoomPosition 对象的序列字符串
-     */
-    restrictedPos?: {
-        [creepName: string]: string
-    }
-    /**
      * 需要放置的工地（CS）队列
      */
     delayCSList: string[]
@@ -212,10 +205,6 @@ interface Room {
      * 在 Lab.work 中调用，一个房间只会执行一次
      */
     _hasRunLab: boolean
-    /**
-     * 该房间是否已经运行过工地作业了
-     */
-    _hasRunConstructionSite: boolean
 
     /**
      * 建筑快捷访问

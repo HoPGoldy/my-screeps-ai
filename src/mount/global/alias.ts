@@ -171,16 +171,6 @@ export default [
             return logs.join('\n')
         }
     },
-    // 释放所有禁止通行点位
-    {
-        alias: 'clearpos',
-        exec: function(): string {
-            Object.values(Game.rooms).map(room => {
-                if (room.memory.restrictedPos) room.memory.restrictedPos = {}
-            })
-            return '禁止通行点位已释放'
-        }
-    },
     // 显示当前商品生产状态
     {
         alias: 'comm',
