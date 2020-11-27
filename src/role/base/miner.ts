@@ -1,4 +1,5 @@
-import { bodyConfigs, minerHervesteLimit } from 'setting'
+import { minerHervesteLimit } from 'setting'
+import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**

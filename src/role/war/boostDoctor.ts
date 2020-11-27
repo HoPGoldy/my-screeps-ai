@@ -1,5 +1,5 @@
 import { calcBodyPart } from 'utils'
-import { boostPrepare } from './utils'
+import { boostPrepare } from './configPart'
 
 /**
  * 强化 - HEAL

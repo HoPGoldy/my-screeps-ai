@@ -1,5 +1,5 @@
 import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
-import { bodyConfigs } from 'setting'
+import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**

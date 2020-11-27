@@ -1,6 +1,6 @@
-import { bodyConfigs } from 'setting'
+import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
-import { battleBase } from './utils'
+import { battleBase } from './configPart'
 
 /**
  * 士兵

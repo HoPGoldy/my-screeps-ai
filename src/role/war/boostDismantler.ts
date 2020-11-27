@@ -1,5 +1,5 @@
 import { calcBodyPart } from 'utils'
-import { battleBase, boostPrepare } from './utils'
+import { battleBase, boostPrepare } from './configPart'
 
 /**
  * 强化 - 拆除者

@@ -1,5 +1,5 @@
 import { calcBodyPart } from 'utils'
-import { boostPrepare } from './utils'
+import { boostPrepare } from './configPart'
 
 /**
  * 防御单位

@@ -1,4 +1,4 @@
-import { bodyConfigs } from 'setting'
+import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 import { getRoomTransferTask, transferTaskOperations } from './transferTaskOperations'
 

@@ -1,5 +1,5 @@
-import { battleBase } from './utils'
-import { bodyConfigs } from 'setting'
+import { battleBase } from './configPart'
+import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**

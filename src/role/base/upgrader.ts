@@ -1,4 +1,5 @@
-import { bodyConfigs, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
+import { UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
+import { bodyConfigs } from '../bodyConfigs'
 import { calcBodyPart, createBodyGetter } from 'utils'
 
 /**

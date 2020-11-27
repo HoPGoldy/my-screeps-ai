@@ -1,5 +1,5 @@
 import { remoteHelperIsNeed } from './utils'
-import { bodyConfigs } from 'setting'
+import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**

@@ -1,6 +1,7 @@
 import { getRoomTransferTask, transferTaskOperations } from 'role/advanced/transferTaskOperations'
-import { bodyConfigs, ROOM_TRANSFER_TASK } from 'setting'
+import { ROOM_TRANSFER_TASK } from 'setting'
 import { createBodyGetter } from 'utils'
+import { bodyConfigs } from '../bodyConfigs'
 
 /**
  * 填充单位
