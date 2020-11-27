@@ -1,55 +1,53 @@
 /**
  * 所有的 creep 角色
  */
-type CreepRoleConstant = BaseRoleConstant | AdvancedRoleConstant | RemoteRoleConstant | WarRoleConstant
+type CreepRoleConstant = keyof RoleDatas
 
-/**
- * 房间基础运营
- */
-type BaseRoleConstant = 
-    'harvester' |
-    'collector' |
-    'miner' |
-    'upgrader' |
-    'filler' |
-    'builder' |
-    'repairer'
+interface RoleDatas {
+    /**
+     * 房间基础运营
+     */
+    harvester: HarvesterData
+    collector: HarvesterData
+    miner: HarvesterData
+    upgrader: WorkerData
+    filler: WorkerData
+    builder: WorkerData
+    repairer: WorkerData
 
-/**
- * 房间高级运营
- */
-type AdvancedRoleConstant = 
-    'manager' |
-    'processor'
+    /**
+     * 房间高级运营
+     */
+    manager: WorkerData
+    processor: ProcessorData
 
-/**
- * 外派单位
- */
-type RemoteRoleConstant = 
-    'claimer' |
-    'reserver' |
-    'signer' |
-    'remoteBuilder' |
-    'remoteUpgrader' |
-    'remoteHarvester' |
-    'depositHarvester' |
-    'pbAttacker' |
-    'pbHealer' |
-    'pbCarrier' |
-    'moveTester' |
-    'reiver'
+    /**
+     * 外派单位
+     */
+    claimer: RemoteDeclarerData
+    reserver: RemoteDeclarerData
+    signer: RemoteDeclarerData
+    remoteBuilder: RemoteHelperData
+    remoteUpgrader: RemoteHelperData
+    remoteHarvester: RemoteHarvesterData
+    depositHarvester: RemoteHarvesterData
+    pbAttacker: pbAttackerData
+    pbHealer: HealUnitData
+    pbCarrier: RemoteHarvesterData
+    moveTester: RemoteHarvesterData
+    reiver: ReiverData
 
-/**
- * 战斗单位
- */
-type WarRoleConstant =
-    'soldier' |
-    'doctor' |
-    'boostDoctor' |
-    'dismantler' |
-    'boostDismantler' |
-    'apocalypse' |
-    'defender'
+    /**
+     * 战斗单位
+     */
+    soldier: WarUnitData
+    doctor: HealUnitData
+    boostDoctor: HealUnitData
+    dismantler: WarUnitData
+    boostDismantler: WarUnitData
+    apocalypse: ApocalypseData
+    defender: EmptyData
+}
 
 /**
  * creep 名字生成器集合
@@ -64,7 +62,7 @@ type CreepNameGenerator = {
  * 包含了每个角色应该做的工作
  */
 type CreepWork = {
-    [role in CreepRoleConstant]: (data: CreepData) => CreepConfig
+    [role in CreepRoleConstant]: CreepConfigGenerator<role>
 }
 
 /**
@@ -104,6 +102,11 @@ interface CreepConfig {
      */
     bodys: (room: Room, spawn: StructureSpawn) => BodyPartConstant[]
 }
+
+/**
+ * 生成 creep 配置项的函数
+ */
+type CreepConfigGenerator<Role extends CreepRoleConstant> = (data: RoleDatas[Role]) => CreepConfig
 
 /**
  * Creep 配置项在内存中的存储

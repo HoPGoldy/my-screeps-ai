@@ -26,7 +26,8 @@ export default class CreepExtension extends Creep {
         if (this.spawning) return
 
         // 获取对应配置项
-        const creepConfig: CreepConfig = roles[this.memory.role](this.memory.data)
+        const getCreepConfig: CreepConfigGenerator<CreepRoleConstant> = roles[this.memory.role]
+        const creepConfig: CreepConfig = getCreepConfig(this.memory.data)
 
         // 没准备的时候就执行准备阶段
         if (!this.memory.ready) {

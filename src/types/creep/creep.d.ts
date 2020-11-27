@@ -31,7 +31,7 @@ interface CreepMemory {
     /**
      * creep 在工作时需要的自定义配置，在孵化时由 spawn 复制
      */
-    data?: CreepData
+    data?: RoleDatas[CreepRoleConstant]
     /**
      * 该 Creep 是否在进行工作（站着不动）
      */

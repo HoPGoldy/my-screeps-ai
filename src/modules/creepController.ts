@@ -69,7 +69,8 @@ export const handleNotExistCreep = function (creepName: string, creepMemory: Cre
         return
     }
 
-    const creepWork = roles[creepConfig.role](creepConfig.data)
+    const getCreepConfig: CreepConfigGenerator<CreepRoleConstant> = roles[creepConfig.role]
+    const creepWork = getCreepConfig(creepConfig.data)
 
     // 通过 isNeed 阶段判断该 creep 是否要继续孵化
     // 没有提供 isNeed 阶段的话则默认需要重新孵化

@@ -205,6 +205,6 @@ const mergeStructurePlan = function (origin: StructurePlanningResult, newData: R
  * @param role 要发布的角色名
  * @param number 要发布的数量，部分角色将无视该值
  */
-export const releaseCreep = function (room: Room, role: BaseRoleConstant | AdvancedRoleConstant, number: number = 1): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
+export const releaseCreep = function (room: Room, role: CreepRoleConstant, number: number = 1): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
     return roleToRelease[role](room, number)
 }

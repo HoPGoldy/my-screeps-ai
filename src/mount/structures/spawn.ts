@@ -54,13 +54,14 @@ export default class SpawnExtension extends StructureSpawn {
      * @param configName 对应的配置名称
      * @returns Spawn.spawnCreep 的返回值
      */
-    private mySpawnCreep(configName): MySpawnReturnCode {
+    private mySpawnCreep(configName: string): MySpawnReturnCode {
         // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
         const creepConfig = Memory.creepConfigs[configName]
 
         if (!creepConfig) return OK
         // 找不到他的工作逻辑的话也直接移除任务
-        const creepWork = roles[creepConfig.role](creepConfig.data)
+        const getCreepConfig: CreepConfigGenerator<CreepRoleConstant> = roles[creepConfig.role]
+        const creepWork = getCreepConfig(creepConfig.data)
         if (!creepWork) return OK
 
         // 设置 creep 内存

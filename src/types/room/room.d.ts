@@ -249,7 +249,7 @@ interface Room {
     /**
      * creep 发布 api
      */
-    releaseCreep(role: BaseRoleConstant | AdvancedRoleConstant, number?: number): ScreepsReturnCode
+    releaseCreep(role: CreepRoleConstant, number?: number): ScreepsReturnCode
     addRemoteCreepGroup(remoteRoomName: string)
     addRemoteReserver(remoteRoomName): void
     addRemoteHelper(remoteRoomName): void

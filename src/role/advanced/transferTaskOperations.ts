@@ -1,190 +1,4 @@
-import { createBodyGetter } from 'utils'
-import { ROOM_TRANSFER_TASK, boostResourceReloadLimit, bodyConfigs } from 'setting'
-
-/**
- * tranfser 触发后事处理的最小生命
- */
-const TRANSFER_DEATH_LIMIT = 20
-
-/**
- * 高级房间运营角色组
- * 本角色组包括了有 Storage 和 Link 的房间内运维所需的角色
- */
-const roles: {
-    [role in AdvancedRoleConstant]: (data: CreepData) => CreepConfig
-} = {
-    /**
-     * 房间物流运输者
-     * 执行 ROOM_TRANSFER_TASK 中定义的任务
-     * 任务处理逻辑定义在 transferTaskOperations 中
-     */
-    manager: (data: WorkerData): CreepConfig => ({
-        source: creep => {
-            if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, data.sourceId)
-
-            const task = getRoomTransferTask(creep.room)
-
-            // 有任务就执行
-            if (task) return transferTaskOperations[task.type].source(creep, task, data.sourceId)
-            else creep.say('💤')
-        },
-        target: creep => {
-            const task = getRoomTransferTask(creep.room)
-
-            // 有任务就执行
-            if (task) return transferTaskOperations[task.type].target(creep, task)
-            else return true
-        },
-        bodys: createBodyGetter(bodyConfigs.manager)
-    }),
-
-    /**
-     * 中心搬运者
-     * 从房间的中央任务队列 Room.memory.centerTransferTasks 中取出任务并执行
-     * 
-     * @param spawnRoom 出生房间名称
-     * @param x 要移动到的 x 坐标
-     * @param y 要移动到的 y 坐标
-     * @param centerLinkId 中央 link 的 id
-     */
-    processor: (data: ProcessorData): CreepConfig => ({
-        // 移动到指定位置
-        prepare: creep => {
-            if (creep.pos.isEqualTo(data.x, data.y)) return true
-            else {
-                creep.goTo(new RoomPosition(data.x, data.y, creep.room.name), { range: 0 })
-                return false
-            }
-        },
-        // 从中央任务队列中取出任务并执行
-        source: creep => {
-            // 快死了就拒绝执行任务
-            if (creep.ticksToLive <= 5) return false
-            // 获取任务
-            const task = creep.room.getCenterTask()
-            if (!task) return false
-
-            // 通过房间基础服务获取对应的建筑
-            const structure: AnyStructure = creep.room[task.source]
-            if (!structure) {
-                creep.room.deleteCurrentCenterTask()
-                return false
-            }
-
-            // 获取取出数量
-            let withdrawAmount = creep.store.getFreeCapacity()
-            if (withdrawAmount > task.amount) withdrawAmount = task.amount
-            // 尝试取出资源
-            const result = creep.withdraw(structure, task.resourceType, withdrawAmount)
-            if (result === OK) return true
-            // 资源不足就移除任务
-            else if (result === ERR_NOT_ENOUGH_RESOURCES) creep.room.deleteCurrentCenterTask()
-            // 够不到就移动过去
-            else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos, { range: 1 })
-            else if (result === ERR_FULL) return true
-            else {
-                creep.log(`source 阶段取出异常，错误码 ${result}`, 'red')
-                creep.room.hangCenterTask()
-            }
-
-            return false
-        },
-        // 将资源移动到指定建筑
-        target: creep => {
-            // 没有任务就返回 source 阶段待命
-            const task = creep.room.getCenterTask()
-            if (!task) return true
-
-            // 提前获取携带量
-            const amount: number = creep.store.getUsedCapacity(task.resourceType)
-
-            // 通过房间基础服务获取对应的建筑
-            const structure: AnyStructure = creep.room[task.target]
-            if (!structure) {
-                creep.room.deleteCurrentCenterTask()
-                return false
-            }
-            
-            const result = creep.transfer(structure, task.resourceType)
-            // 如果转移完成则增加任务进度
-            if (result === OK) {
-                creep.room.handleCenterTask(amount)
-                return true
-            }
-            // 如果目标建筑物太远了，就移动过去
-            else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos, { range: 1 })
-            else if (result === ERR_FULL) {
-                creep.log(`${task.target} 满了`)
-                if (task.target === STRUCTURE_TERMINAL) Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
-                creep.room.hangCenterTask()
-            }
-            // 资源不足就返回 source 阶段
-            else if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.say(`取出资源`)
-                return true
-            }
-            else {
-                creep.say(`存入 ${result}`)
-                creep.room.hangCenterTask()
-            }
- 
-            return false
-        },
-        bodys: createBodyGetter(bodyConfigs.processor)
-    })
-}
-
-export default roles
-
-/**
- * 快死时的后事处理
- * 将资源存放在对应的地方
- * 存完了就自杀
- * 
- * @param creep manager
- * @param sourceId 能量存放处
- */
-const deathPrepare = function(creep: Creep, sourceId: Id<EnergySourceStructure>): false {
-    if (creep.store.getUsedCapacity() > 0) {
-        for (const resourceType in creep.store) {
-            let target: EnergySourceStructure
-            // 不是能量就放到 terminal 里
-            if (resourceType != RESOURCE_ENERGY && resourceType != RESOURCE_POWER && creep.room.terminal) {
-                target = creep.room.terminal
-            }
-            // 否则就放到 storage 或者玩家指定的地方
-            else target = sourceId ? Game.getObjectById(sourceId): creep.room.storage
-
-            // 转移资源
-            creep.goTo(target.pos)
-            creep.transfer(target, <ResourceConstant>resourceType)
-            
-            return false
-        }
-    }
-    else creep.suicide()
-
-    return false
-}
-
-/**
- * 获取指定房间的物流任务
- * 
- * @param room 要获取物流任务的房间名
- */
-export const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
-    const task = room.getRoomTransferTask()
-    if (!task) return null
-
-    // 如果任务类型不对就移除任务并报错退出
-    if (!transferTaskOperations.hasOwnProperty(task.type)) {
-        room.deleteCurrentRoomTransferTask()
-        room.log(`发现未定义的房间物流任务 ${task.type}, 已移除`, 'manager', 'yellow')
-        return null
-    }
-
-    return task
-}
+import { boostResourceReloadLimit, ROOM_TRANSFER_TASK } from 'setting'
 
 /**
  * manager 在应对不同类型的任务时执行的操作
@@ -700,7 +514,26 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
             // 正常转移资源则更新任务
             else if (result != ERR_NOT_IN_RANGE) creep.say(`强化清理 ${result}`)
         }
-    },
+    }
+}
+
+/**
+ * 获取指定房间的物流任务
+ * 
+ * @param room 要获取物流任务的房间名
+ */
+export const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
+    const task = room.getRoomTransferTask()
+    if (!task) return null
+
+    // 如果任务类型不对就移除任务并报错退出
+    if (!transferTaskOperations.hasOwnProperty(task.type)) {
+        room.deleteCurrentRoomTransferTask()
+        room.log(`发现未定义的房间物流任务 ${task.type}, 已移除`, 'manager', 'yellow')
+        return null
+    }
+
+    return task
 }
 
 /**
@@ -710,7 +543,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
  * @param creep 要净空的 creep
  * @returns 为 true 时代表已经处理完成，可以继续执行任务
  */
-function clearCarryingEnergy(creep: Creep): boolean {
+const clearCarryingEnergy = function (creep: Creep): boolean {
     if (creep.store[RESOURCE_ENERGY] > 0) {
         // 能放下就放，放不下说明能量太多了，直接扔掉
         if (creep.room.storage && creep.room.storage.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY]) creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
