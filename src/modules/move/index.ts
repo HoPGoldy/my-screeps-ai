@@ -31,8 +31,12 @@ const wayPointCache: { [creepName: string]: RoomPosition } = {}
 export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt = {}) {
     const cost1 = Game.cpu.getUsed()
     const result = goToInner(creep, targetPos, moveOpt)
-    Memory.moveUseCpu = Memory.moveUseCpu === undefined ? 0 : (Memory.moveUseCpu + Game.cpu.getUsed() - cost1)
-    Memory.moveNumber = Memory.moveNumber === undefined ? 0 : Memory.moveNumber + 1
+
+    const moveUseCpu = Game.cpu.getUsed() - cost1
+    if (moveUseCpu > 0.2) {
+        Memory.moveUseCpu = Memory.moveUseCpu === undefined ? 0 : (Memory.moveUseCpu + moveUseCpu)
+        Memory.moveNumber = Memory.moveNumber === undefined ? 0 : Memory.moveNumber + 1
+    }
 
     return result
 }
@@ -93,6 +97,8 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
             if (!fontCreep || !fontCreep.my || Object.keys(fontCreep.memory).length <= 0) {
                 delete moveMemory.path
                 delete moveMemory.prePos
+                // 撞地形上了说明房间 cost 过期了
+                delete costCache[creep.room.name]
                 return ERR_INVALID_TARGET
             }
             // 尝试对穿，如果自己禁用了对穿的话则直接重新寻路
@@ -107,7 +113,7 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
                 // creep.log('撞停！重新寻路！' + crossResult)
                 delete moveMemory.path
                 delete moveMemory.prePos
-                // 撞地形上了说明房间 cost 过期了
+                // 不知道撞到了啥，反正重新加载房间缓存
                 delete costCache[creep.room.name]
             }
 
