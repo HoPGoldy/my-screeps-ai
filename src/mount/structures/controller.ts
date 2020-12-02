@@ -2,6 +2,7 @@ import { creepApi } from 'modules/creepController'
 import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
 import { costCache } from 'modules/move'
+import { LEVEL_BUILD_RAMPART } from 'setting'
 
 /**
  * Controller 拓展
@@ -42,6 +43,10 @@ export default class ControllerExtension extends StructureController {
             this.room.releaseCreep('harvester')
             // 多发布一个 build 协助建造
             this.room.releaseCreep('builder', 1)
+        }
+        else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
+            // 开始刷墙后就开始生刷墙工
+            this.room.releaseCreep('repairer', 2)
         }
         // 8 级之后重新规划升级单位
         else if (level === 8) {
