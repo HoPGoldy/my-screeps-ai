@@ -235,7 +235,10 @@ const releasePlans: CreepReleasePlans = {
                     if (!container) return
 
                     // 获取 container 到基地中心的距离
-                    const range = container.pos.findPathTo(centerPos[0], centerPos[1]).length
+                    const range = centerPos ?
+                        container.pos.findPathTo(centerPos[0], centerPos[1]).length :
+                        // 没有设置基地中心点，使用第一个 spawn 的位置
+                        container.pos.findPathTo(room[STRUCTURE_SPAWN][0].pos.x, room[STRUCTURE_SPAWN][0].pos.y).length 
 
                     // 根据获取合适的人数
                     const numberConfig = FILLER_WITH_CONTAINER_RANGE.find(config => range > config.range)
