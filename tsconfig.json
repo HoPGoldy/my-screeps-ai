@@ -5,6 +5,7 @@
         "outDir": "dist/",
         "baseUrl": "src/",
         "sourceMap": true,
+        "removeComments": true,
         "allowSyntheticDefaultImports": true
     },
     "include": [
