@@ -10,10 +10,13 @@ import { createBodyGetter } from 'utils'
  * @param flagName 要攻击的旗帜名称
  * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
  */
-const dismantler: CreepConfigGenerator<'dismantler'> = data => ({
-    ...battleBase(data.targetFlagName, data.keepSpawn),
-    target: creep => creep.dismantleFlag(data.targetFlagName, data.healerName),
+const dismantler: CreepConfig<'dismantler'> = {
+    ...battleBase(),
+    target: creep => {
+        const { targetFlagName, healerName } = creep.memory.data as RoleDatas['dismantler']
+        return creep.dismantleFlag(targetFlagName, healerName)
+    },
     bodys: createBodyGetter(bodyConfigs.dismantler)
-})
+}
 
 export default dismantler

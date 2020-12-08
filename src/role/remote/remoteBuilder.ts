@@ -7,17 +7,18 @@ import { createBodyGetter } from 'utils'
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  * 如果都造好的话就升级控制器
  */
-const remoteBuilder: CreepConfigGenerator<'remoteBuilder'> = data => ({
-    isNeed: room => {
-        const target = Game.rooms[data.targetRoomName]
+const remoteBuilder: CreepConfig<'remoteBuilder'> = {
+    isNeed: (room, preMemory) => {
+        const target = Game.rooms[preMemory.data.targetRoomName]
         // 如果房间造好了 terminal，自己的使命就完成了
         return remoteHelperIsNeed(room, target, () => target.terminal && target.terminal.my)
     },
     // 向指定房间移动
     prepare: creep => {
+        const { targetRoomName } = creep.memory.data
         // 只要进入房间则准备结束
-        if (creep.room.name !== data.targetRoomName) {
-            creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
+        if (creep.room.name !== targetRoomName) {
+            creep.goTo(new RoomPosition(25, 25, targetRoomName))
             return false
         }
         else {
@@ -61,6 +62,6 @@ const remoteBuilder: CreepConfigGenerator<'remoteBuilder'> = data => ({
         if (creep.store.getUsedCapacity() === 0) return true
     },
     bodys: createBodyGetter(bodyConfigs.worker)
-})
+}
 
 export default remoteBuilder

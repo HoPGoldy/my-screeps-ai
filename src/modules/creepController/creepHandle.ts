@@ -9,7 +9,7 @@ import creepApi from './creepApi'
  * @param creepName creep 名字
  * @param creepMemory creep 死时的内存
  */
-export const handleNotExistCreep = function (creepName: string, creepMemory: CreepMemory) {
+export const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMemory) {
     const creepConfig = Memory.creepConfigs[creepName]
     // 获取配置项
     if (!creepConfig) {
@@ -26,12 +26,11 @@ export const handleNotExistCreep = function (creepName: string, creepMemory: Cre
         return
     }
 
-    const getCreepConfig: CreepConfigGenerator<CreepRoleConstant> = roles[creepConfig.role]
-    const creepWork = getCreepConfig(creepConfig.data)
+    const creepWork: CreepConfig<CreepRoleConstant> = roles[creepConfig.role]
 
     // 通过 isNeed 阶段判断该 creep 是否要继续孵化
     // 没有提供 isNeed 阶段的话则默认需要重新孵化
-    if (creepWork.isNeed && !creepWork.isNeed(spawnRoom, creepName, creepMemory)) {
+    if (creepWork.isNeed && !creepWork.isNeed(spawnRoom, creepMemory)) {
         // creep 不需要了，遗弃该 creep
         creepApi.remove(creepName)
         delete Memory.creeps[creepName]

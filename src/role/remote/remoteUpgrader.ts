@@ -6,17 +6,19 @@ import { remoteHelperIsNeed } from './utils'
  * 支援 - 采矿者
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  */
-const remoteUpgrader: CreepConfigGenerator<'remoteUpgrader'> = data => ({
-    isNeed: room => {
-        const target = Game.rooms[data.targetRoomName]
+const remoteUpgrader: CreepConfig<'remoteUpgrader'> = {
+    isNeed: (room, preMemory) => {
+        const target = Game.rooms[preMemory.data.targetRoomName]
         // 目标房间到 6 了就算任务完成
         return remoteHelperIsNeed(room, target, () =>  target.controller.level >= 6)
     },
     // 向指定房间移动
     prepare: creep => {
+        const { targetRoomName } = creep.memory.data
+
         // 只要进入房间则准备结束
-        if (creep.room.name !== data.targetRoomName) {
-            creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
+        if (creep.room.name !== targetRoomName) {
+            creep.goTo(new RoomPosition(25, 25, targetRoomName))
             return false
         }
         else {
@@ -54,6 +56,6 @@ const remoteUpgrader: CreepConfigGenerator<'remoteUpgrader'> = data => ({
         if (creep.store.getUsedCapacity() === 0) return true
     },
     bodys: createBodyGetter(bodyConfigs.worker)
-})
+}
 
 export default remoteUpgrader

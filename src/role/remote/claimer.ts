@@ -7,14 +7,15 @@ import { getName } from 'utils'
  * data:
  * @param targetRoomName 要占领的目标房间
  */ 
-const claimer: CreepConfigGenerator<'claimer'> = data => ({
+const claimer: CreepConfig<'claimer'> = {
     // 该 creep 死了不会再次孵化
     isNeed: () => false,
     // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
     prepare: creep => {
+        const { targetRoomName } = creep.memory.data
         // 只要进入房间则准备结束
-        if (creep.room.name !== data.targetRoomName) {
-            creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
+        if (creep.room.name !== targetRoomName) {
+            creep.goTo(new RoomPosition(25, 25, targetRoomName))
             return false
         }
         // 进入房间之后运行基地选址规划
@@ -46,14 +47,16 @@ const claimer: CreepConfigGenerator<'claimer'> = data => ({
         const claimResult = creep.claimController(controller)
         if (claimResult === ERR_NOT_IN_RANGE) creep.goTo(controller.pos)
         else if (claimResult === OK) {
-            creep.log(`新房间 ${data.targetRoomName} 占领成功！已向源房间 ${data.spawnRoom} 请求支援单位`, 'green')
+            const { targetRoomName, signText, spawnRoom: spawnRoomName } = creep.memory.data
+
+            creep.log(`新房间 ${targetRoomName} 占领成功！已向源房间 ${spawnRoomName} 请求支援单位`, 'green')
 
             // 占领成功，发布支援组
-            const spawnRoom = Game.rooms[data.spawnRoom]
-            if (spawnRoom) spawnRoom.addRemoteHelper(data.targetRoomName)
+            const spawnRoom = Game.rooms[spawnRoomName]
+            if (spawnRoom) spawnRoom.addRemoteHelper(targetRoomName)
 
             // 添加签名
-            if (data.signText) creep.signController(controller, data.signText)
+            if (signText) creep.signController(controller, signText)
 
             const flag = Game.flags[getName.flagBaseCenter(creep.room.name)]
             // 用户已经指定了旗帜了
@@ -82,6 +85,6 @@ const claimer: CreepConfigGenerator<'claimer'> = data => ({
         else creep.say(`占领 ${claimResult}`)
     },
     bodys: () => [ MOVE, CLAIM ]
-})
+}
 
 export default claimer

@@ -9,8 +9,8 @@ import { boostPrepare } from './configPart'
  * @param spawnRoom 出生房间名称
  * @param creepsName 要治疗的 creep 名称
  */
-const boostDoctor: CreepConfigGenerator<'boostDoctor'> = data => ({
-    isNeed: () => data.keepSpawn,
+const boostDoctor: CreepConfig<'boostDoctor'> = {
+    isNeed: (room, preMemory) => preMemory.data.keepSpawn,
     prepare: creep => {
         // 治疗单位不允许发起对穿
         if (!creep.memory.disableCross) creep.memory.disableCross = true
@@ -18,7 +18,7 @@ const boostDoctor: CreepConfigGenerator<'boostDoctor'> = data => ({
         return boostPrepare().prepare(creep)
     },
     target: creep => {
-        const target = Game.creeps[data.creepName]
+        const target = Game.creeps[creep.memory.data.creepName]
         if (!target) {
             creep.say('💤')
             return false
@@ -27,6 +27,6 @@ const boostDoctor: CreepConfigGenerator<'boostDoctor'> = data => ({
         return false
     },
     bodys: () => calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
-})
+}
 
 export default boostDoctor

@@ -7,13 +7,16 @@ import { calcBodyPart, createBodyGetter } from 'utils'
  * 不会采集能量，只会从指定目标获取能量
  * 从指定建筑中获取能量 > 升级 controller
  */
-const upgrader: CreepConfigGenerator<'upgrader'> = data => ({
+const upgrader: CreepConfig<'upgrader'> = {
     isNeed: (room) => {
         if (!room.controller) return false
         // 小于 8 级就一直孵化
         if (room.controller.level < 8) return true
         // 大于 8 级就看 bucket，cpu 够就继续孵化
-        else if (Game.cpu.bucket >= 700 && room.storage && room.storage.store[RESOURCE_ENERGY] > UPGRADER_WITH_ENERGY_LEVEL_8) return true
+        else if (
+            Game.cpu.bucket >= 700 &&
+            room.storage && room.storage.store[RESOURCE_ENERGY] > UPGRADER_WITH_ENERGY_LEVEL_8
+        ) return true
 
         return false
     },
@@ -21,7 +24,7 @@ const upgrader: CreepConfigGenerator<'upgrader'> = data => ({
         // 因为只会从建筑里拿，所以只要拿到了就去升级
         if (creep.store[RESOURCE_ENERGY] > 0) return true
 
-        const source = Game.getObjectById(data.sourceId)
+        const source = Game.getObjectById(creep.memory.data.sourceId)
 
         // 如果能量来源是 container
         if (source && source.structureType === STRUCTURE_CONTAINER) {
@@ -70,6 +73,6 @@ const upgrader: CreepConfigGenerator<'upgrader'> = data => ({
 
         return createBodyGetter(bodyConfigs.worker)(room, spawn)
     }
-})
+}
 
 export default upgrader

@@ -7,12 +7,13 @@ import { battleBase } from './configPart'
  * 会一直向旗帜发起进攻,
  * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
  */
-const soldier: CreepConfigGenerator<'soldier'> = data => ({
-    ...battleBase(data.targetFlagName, data.keepSpawn),
+const soldier: CreepConfig<'soldier'> = {
+    ...battleBase(),
     target: creep => {
-        creep.attackFlag(data.targetFlagName)
+        const { targetFlagName } = creep.memory.data
+        creep.attackFlag(targetFlagName)
 
-        const targetFlag = creep.getFlag(data.targetFlagName)
+        const targetFlag = creep.getFlag(targetFlagName)
         if (!targetFlag) {
             creep.say('旗呢?')
             return false
@@ -25,6 +26,6 @@ const soldier: CreepConfigGenerator<'soldier'> = data => ({
         return false
     },
     bodys: createBodyGetter(bodyConfigs.attacker)
-})
+}
 
 export default soldier

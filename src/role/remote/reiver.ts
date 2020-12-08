@@ -11,14 +11,16 @@ import { createBodyGetter } from 'utils'
  * @param flagName 目标建筑上的旗帜名称
  * @param targetStructureId 要搬运到的建筑 id
  */
-const reiver: CreepConfigGenerator<'reiver'> = data => ({
+const reiver: CreepConfig<'reiver'> = {
     // 要搬运资源的目标旗帜消失了就不再生成
-    isNeed: () => data.flagName in Game.flags, 
+    isNeed: (room, preMemory) => preMemory.data.flagName in Game.flags, 
     // 如果已经统计了移动
     prepare: creep => {
-        const flag = Game.flags[data.flagName]
+        const { flagName } = creep.memory.data
+
+        const flag = Game.flags[flagName]
         if (!flag) {
-            creep.log(`未找到名为 ${data.flagName} 的旗帜，请在目标建筑上新建`)
+            creep.log(`未找到名为 ${flagName} 的旗帜，请在目标建筑上新建`)
             return false
         }
 
@@ -59,7 +61,8 @@ const reiver: CreepConfigGenerator<'reiver'> = data => ({
         return false
     },
     source: creep => {
-        const flag = Game.flags[data.flagName]
+        const { flagName } = creep.memory.data
+        const flag = Game.flags[flagName]
         if (!flag) {
             creep.suicide()
             return false
@@ -69,7 +72,7 @@ const reiver: CreepConfigGenerator<'reiver'> = data => ({
             const targetStructure = Game.getObjectById(flag.memory.sourceId as Id<StructureWithStore | Ruin>)
             // 如果对应的房间里没有找到目标建筑就自杀并移除旗帜
             if (!targetStructure) {
-                delete Memory.flags[data.flagName]
+                delete Memory.flags[flagName]
                 flag.remove()
                 creep.suicide()
                 return false
@@ -98,7 +101,7 @@ const reiver: CreepConfigGenerator<'reiver'> = data => ({
             }
 
             // 上面的遍历完了就说明搬空了，移除旗帜并执行 target
-            delete Memory.flags[data.flagName]
+            delete Memory.flags[flagName]
             flag.remove()
             return true
         }
@@ -107,9 +110,10 @@ const reiver: CreepConfigGenerator<'reiver'> = data => ({
         return false
     },
     target: creep => {
-        const targetStructure = Game.getObjectById(data.targetId)
+        const { targetId, flagName } = creep.memory.data
+        const targetStructure = Game.getObjectById(targetId)
         if (!targetStructure) {
-            creep.log(`找不到要存放资源的建筑 ${data.targetId}`, 'yellow')
+            creep.log(`找不到要存放资源的建筑 ${targetId}`, 'yellow')
             creep.say('搬到哪？')
             return false
         }
@@ -127,7 +131,7 @@ const reiver: CreepConfigGenerator<'reiver'> = data => ({
             }
 
             // 上面的遍历完了就说明放完了，检查生命值，如果还够搬一趟的就过去，否则自杀
-            const flag = Game.flags[data.flagName] 
+            const flag = Game.flags[flagName] 
             if (!flag) {
                 creep.suicide()
                 return false
@@ -143,6 +147,6 @@ const reiver: CreepConfigGenerator<'reiver'> = data => ({
         else creep.goTo(targetStructure.pos)
     },
     bodys: createBodyGetter(bodyConfigs.manager)
-})
+}
 
 export default reiver

@@ -3,6 +3,11 @@
  */
 type CreepRoleConstant = keyof RoleDatas
 
+/**
+ * 所有 creep 角色的 data
+ */
+type CreepData = RoleDatas[CreepRoleConstant]
+
 interface RoleDatas {
     /**
      * 房间基础运营
@@ -62,51 +67,62 @@ type CreepNameGenerator = {
  * 包含了每个角色应该做的工作
  */
 type CreepWork = {
-    [role in CreepRoleConstant]: CreepConfigGenerator<role>
+    [role in CreepRoleConstant]: CreepConfig<role>
 }
 
 /**
  * Creep 角色功能逻辑
  */
-interface CreepConfig {
+interface CreepConfig<Role extends CreepRoleConstant> {
     /**
      * 该 creep 是否需要
      * 
      * 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
      * 该方法为空则默认持续孵化
      */
-    isNeed?: (room: Room, creepName: string, preMemory: CreepMemory) => boolean
+    isNeed?: (room: Room, preMemory: MyCreepMemory<Role>) => boolean
     /**
      * 准备阶段
      * 
      * creep 出生后会执行该方法来完成一些需要准备的工作，返回 true 时代表准备完成
      * 该方法为空则直接进入 source 阶段
      */
-    prepare?: (creep: Creep) => boolean
+    prepare?: (creep: MyCreep<Role>) => boolean
     /**
      * 获取工作资源阶段
      * 
      * 返回 true 则执行 target 阶段，返回其他将继续执行该方法
      * 该方法为空则一直重复执行 target 阶段
      */
-    source?: (creep: Creep) => boolean
+    source?: (creep: MyCreep<Role>) => boolean
     /**
      * 工作阶段
      * 
      * 返回 true 则执行 source 阶段，返回其他将继续执行该方法
      * 该方法不可未空
      */
-    target: (creep: Creep) => boolean
+    target: (creep: MyCreep<Role>) => boolean
     /**
      * 每个角色默认的身体组成部分
      */
-    bodys: (room: Room, spawn: StructureSpawn) => BodyPartConstant[]
+    bodys: (room: Room, spawn: StructureSpawn, data: RoleDatas[Role]) => BodyPartConstant[]
 }
 
 /**
- * 生成 creep 配置项的函数
+ * 自定义的 creep
+ * 用于指定不同角色中包含的不同 creep 内存
  */
-type CreepConfigGenerator<Role extends CreepRoleConstant> = (data: RoleDatas[Role]) => CreepConfig
+declare class MyCreep<Role extends CreepRoleConstant = CreepRoleConstant> extends Creep {
+    memory: MyCreepMemory<Role>
+}
+
+/**
+ * 自定义 creep 内存
+ * 用于指定不同角色中包含的不同 creep data 对象
+ */
+interface MyCreepMemory<Role extends CreepRoleConstant = CreepRoleConstant> extends CreepMemory {
+    data: RoleDatas[Role]
+}
 
 /**
  * Creep 配置项在内存中的存储
@@ -125,23 +141,6 @@ interface CreepConfigMemory {
      */
     spawnRoom: string
 }
-
-/**
- * 所有 creep 角色的 data
- */
-type CreepData = 
-    EmptyData |
-    ReiverData |
-    HarvesterData | 
-    WorkerData | 
-    ProcessorData | 
-    RemoteHelperData | 
-    RemoteDeclarerData |
-    RemoteHarvesterData |
-    pbAttackerData |
-    WarUnitData |
-    ApocalypseData |
-    HealUnitData
 
 /**
  * 有些角色不需要 data

@@ -9,12 +9,12 @@ import { calcBodyPart } from 'utils'
  * @param spawnRoom 出生房间名称
  * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
  */
-const pbCarrier: CreepConfigGenerator<'pbCarrier'> = data => ({
+const pbCarrier: CreepConfig<'pbCarrier'> = {
     // carrier 并不会重复生成
     isNeed: () => false,
     // 移动到目标三格之内就算准备完成
     prepare: creep => {
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const targetFlag = Game.flags[creep.memory.data.sourceFlagName]
         if (!targetFlag) {
             creep.suicide()
             return false
@@ -25,7 +25,7 @@ const pbCarrier: CreepConfigGenerator<'pbCarrier'> = data => ({
         return creep.pos.inRangeTo(targetFlag.pos, 3)
     },
     source: creep => {
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const targetFlag = Game.flags[creep.memory.data.sourceFlagName]
         if (!targetFlag) {
             creep.suicide()
             return false
@@ -59,8 +59,10 @@ const pbCarrier: CreepConfigGenerator<'pbCarrier'> = data => ({
         }
     },
     target: creep => {
+        const { spawnRoom: spawnRoomName, sourceFlagName } = creep.memory.data
+
         // 获取资源运输目标房间并兜底
-        const room = Game.rooms[data.spawnRoom]
+        const room = Game.rooms[spawnRoomName]
         if (!room || !room.terminal) {
             creep.log(`找不到 terminal`, 'yellow')
             return false
@@ -72,7 +74,7 @@ const pbCarrier: CreepConfigGenerator<'pbCarrier'> = data => ({
         if (result === OK) {
             creep.suicide()
 
-            const targetFlag = Game.flags[data.sourceFlagName]
+            const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) return false
 
             targetFlag.remove()
@@ -84,6 +86,6 @@ const pbCarrier: CreepConfigGenerator<'pbCarrier'> = data => ({
         else if (result === ERR_NOT_IN_RANGE) creep.goTo(room.terminal.pos)
     },
     bodys: () => calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
-})
+}
 
 export default pbCarrier

@@ -6,7 +6,7 @@ import { createBodyGetter } from 'utils'
  * 只有在有工地时才会生成
  * 从指定结构中获取能量 > 查找建筑工地并建造
  */
-const builder: CreepConfigGenerator<'builder'> = data => ({
+const builder: CreepConfig<'builder'> = {
     // 工地都建完就就使命完成
     isNeed: room => {
         const targets: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
@@ -14,7 +14,7 @@ const builder: CreepConfigGenerator<'builder'> = data => ({
     },
     // 把 data 里的 sourceId 挪到外边方便修改
     prepare: creep => {
-        creep.memory.sourceId = data.sourceId
+        creep.memory.sourceId = creep.memory.data.sourceId
         return true
     },
     // 根据 sourceId 对应的能量来源里的剩余能量来自动选择新的能量来源
@@ -48,6 +48,6 @@ const builder: CreepConfigGenerator<'builder'> = data => ({
         if (creep.store.getUsedCapacity() === 0) return true
     },
     bodys: createBodyGetter(bodyConfigs.worker)
-})
+}
 
 export default builder

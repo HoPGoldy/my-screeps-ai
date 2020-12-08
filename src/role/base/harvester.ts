@@ -5,7 +5,7 @@ import { createBodyGetter } from 'utils'
  * 采集者
  * 从指定 source 中获取能量 > 将能量存放到身下的 container 中
  */
-const harvester: CreepConfigGenerator<'harvester'> = data => ({
+const harvester: CreepConfig<'harvester'> = {
     /**
      * 向 container 或者 source 移动
      * 在这个阶段中，targetId 是指 container 或 conatiner 的工地或 source
@@ -14,7 +14,7 @@ const harvester: CreepConfigGenerator<'harvester'> = data => ({
         let target: StructureContainer | Source | ConstructionSite
         // 如果有缓存的话就获取缓存
         if (creep.memory.targetId) target = Game.getObjectById(creep.memory.targetId as Id<StructureContainer | Source>)
-        const source = Game.getObjectById(data.sourceId)
+        const source = Game.getObjectById(creep.memory.data.sourceId)
 
         // 没有缓存或者缓存失效了就重新获取
         if (!target) {
@@ -59,7 +59,7 @@ const harvester: CreepConfigGenerator<'harvester'> = data => ({
 
         // 没有能量就进行采集，因为是维护阶段，所以允许采集一下工作一下
         if (creep.store[RESOURCE_ENERGY] <= 0) {
-            creep.getEngryFrom(Game.getObjectById(data.sourceId))
+            creep.getEngryFrom(Game.getObjectById(creep.memory.data.sourceId))
             return false
         }
 
@@ -101,13 +101,13 @@ const harvester: CreepConfigGenerator<'harvester'> = data => ({
     },
     // 采集阶段会无脑采集，过量的能量会掉在 container 上然后被接住存起来
     target: creep => {
-        creep.getEngryFrom(Game.getObjectById(data.sourceId))
+        creep.getEngryFrom(Game.getObjectById(creep.memory.data.sourceId))
 
         // 快死了就把身上的能量丢出去，这样就会存到下面的 container 里，否则变成墓碑后能量无法被 container 自动回收
         if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
         return false
     },
     bodys: createBodyGetter(bodyConfigs.harvester)
-})
+}
 
 export default harvester

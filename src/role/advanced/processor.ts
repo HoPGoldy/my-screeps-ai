@@ -10,12 +10,14 @@ import { createBodyGetter } from 'utils'
  * @param y 要移动到的 y 坐标
  * @param centerLinkId 中央 link 的 id
  */
-const processor: CreepConfigGenerator<'processor'> = data => ({
+const processor: CreepConfig<'processor'> = {
     // 移动到指定位置
     prepare: creep => {
-        if (creep.pos.isEqualTo(data.x, data.y)) return true
+        const { x, y } = creep.memory.data
+
+        if (creep.pos.isEqualTo(x, y)) return true
         else {
-            creep.goTo(new RoomPosition(data.x, data.y, creep.room.name), { range: 0 })
+            creep.goTo(new RoomPosition(x, y, creep.room.name), { range: 0 })
             return false
         }
     },
@@ -94,6 +96,6 @@ const processor: CreepConfigGenerator<'processor'> = data => ({
         return false
     },
     bodys: createBodyGetter(bodyConfigs.processor)
-})
+}
 
 export default processor

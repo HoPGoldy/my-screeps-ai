@@ -12,14 +12,15 @@ const TRANSFER_DEATH_LIMIT = 20
  * 执行 ROOM_TRANSFER_TASK 中定义的任务
  * 任务处理逻辑定义在 transferTaskOperations 中
  */
-const manager: CreepConfigGenerator<'manager'> = data => ({
+const manager: CreepConfig<'manager'> = {
     source: creep => {
-        if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, data.sourceId)
+        const { sourceId } = creep.memory.data
+        if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, sourceId)
 
         const task = getRoomTransferTask(creep.room)
 
         // 有任务就执行
-        if (task) return transferTaskOperations[task.type].source(creep, task, data.sourceId)
+        if (task) return transferTaskOperations[task.type].source(creep, task, sourceId)
         else creep.say('💤')
     },
     target: creep => {
@@ -30,7 +31,7 @@ const manager: CreepConfigGenerator<'manager'> = data => ({
         else return true
     },
     bodys: createBodyGetter(bodyConfigs.manager)
-})
+}
 
 
 

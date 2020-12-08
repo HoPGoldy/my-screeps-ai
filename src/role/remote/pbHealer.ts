@@ -8,9 +8,9 @@ import { calcBodyPart } from 'utils'
  * 
  * @property {} creepName 要治疗的 pbAttacker 的名字
  */
-const pbHealer: CreepConfigGenerator<'pbHealer'> = data => ({
+const pbHealer: CreepConfig<'pbHealer'> = {
     target: creep => {
-        const targetCreep = Game.creeps[data.creepName]
+        const targetCreep = Game.creeps[creep.memory.data.creepName]
         // 对象没了就殉情
         if (!targetCreep) {
             creep.suicide()
@@ -22,6 +22,6 @@ const pbHealer: CreepConfigGenerator<'pbHealer'> = data => ({
         else creep.goTo(targetCreep.pos)
     },
     bodys: () => calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
-})
+}
 
 export default pbHealer

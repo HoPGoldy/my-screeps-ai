@@ -36,7 +36,7 @@ interface CrossShardDatas {
         /**
          * 要发送 creep 的内存
          */
-        memory: CreepMemory
+        memory: MyCreepMemory
     }
     /**
      * 跨 shard 请求 - 提交重新孵化任务
@@ -49,7 +49,7 @@ interface CrossShardDatas {
         /**
          * 要重新孵化的 creep 的内存
          */
-        memory: CreepMemory | PowerCreepMemory
+        memory: MyCreepMemory
     }
 }
 

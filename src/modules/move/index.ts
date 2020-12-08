@@ -171,7 +171,7 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
                 `sendCreep${creep.name}${Game.time}`,
                 portal.destination.shard as ShardName,
                 'sendCreep',
-                { name, memory }
+                { name, memory: memory as MyCreepMemory }
             )
 
             // 主动释放掉自己的内存，从而避免 creepController 认为自己去世了而直接重新孵化

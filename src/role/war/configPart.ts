@@ -43,15 +43,17 @@ export const boostPrepare = () => ({
  * 
  * @param flagName 目标旗帜名称
  */
-export const battleBase = (flagName: string, keepSpawn: boolean) => ({
+export const battleBase = <Role extends 'soldier' | 'dismantler' | 'boostDismantler' | 'apocalypse'>() => ({
     // 根据玩家配置决定是否持续生成
-    isNeed: () => keepSpawn,
+    isNeed: (room, preMemory: MyCreepMemory<Role>) => preMemory.data.keepSpawn,
     /**
      * 获取旗帜，然后向指定房间移动
      * 同时保证自己的健康状态
      */
-    source: (creep: Creep) => {
-        const targetFlag = creep.getFlag(flagName)
+    source: (creep: MyCreep<Role>) => {
+        const { targetFlagName } = creep.memory.data
+
+        const targetFlag = creep.getFlag(targetFlagName)
         if (!targetFlag) {
             creep.say('旗呢?')
             return false

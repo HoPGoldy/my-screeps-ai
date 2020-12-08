@@ -9,10 +9,10 @@ import { createBodyGetter } from 'utils'
  * @property {} sourceFlagName 旗帜名，要插在 deposit 上
  * @property {} spawnRoom 出生房间名
  */
-const depositHarvester: CreepConfigGenerator<'depositHarvester'> = data => ({
-    isNeed: room => {
+const depositHarvester: CreepConfig<'depositHarvester'> = {
+    isNeed: (room, preMemory) => {
         // 旗帜效验, 没有旗帜则不生成
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const targetFlag = Game.flags[preMemory.data.sourceFlagName]
         if (!targetFlag) return false
 
         // 冷却时长过长则放弃该 deposit
@@ -23,10 +23,11 @@ const depositHarvester: CreepConfigGenerator<'depositHarvester'> = data => ({
         return true
     },
     source: creep => {
+        const { sourceFlagName } = creep.memory.data
         // 旗帜效验, 没有旗帜则原地待命
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const targetFlag = Game.flags[sourceFlagName]
         if (!targetFlag) {
-            creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜，creep 已移除`)
+            creep.log(`找不到名称为 ${sourceFlagName} 的旗帜，creep 已移除`)
             creep.suicide()
             return false
         }
@@ -80,7 +81,9 @@ const depositHarvester: CreepConfigGenerator<'depositHarvester'> = data => ({
         else creep.say(`采集 ${harvestResult}`)
     },
     target: creep => {
-        const room = Game.rooms[data.spawnRoom]
+        const { spawnRoom, sourceFlagName } = creep.memory.data
+
+        const room = Game.rooms[spawnRoom]
         if (!room || !room.terminal) {
             creep.log(`[${creep.name}] 找不到存放建筑`, 'yellow')
             return false
@@ -90,7 +93,7 @@ const depositHarvester: CreepConfigGenerator<'depositHarvester'> = data => ({
         const result = creep.transfer(room.terminal, creep.memory.depositType)
         if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
             // 获取旗帜，旗帜没了就自杀
-            const targetFlag = Game.flags[data.sourceFlagName]
+            const targetFlag = Game.flags[sourceFlagName]
             if (!targetFlag) {
                 creep.suicide()
                 return false
@@ -111,6 +114,6 @@ const depositHarvester: CreepConfigGenerator<'depositHarvester'> = data => ({
         else creep.say(`转移 ${result}`)
     },
     bodys: createBodyGetter(bodyConfigs.remoteHarvester)
-})
+}
 
 export default depositHarvester

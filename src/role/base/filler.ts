@@ -8,18 +8,19 @@ import { bodyConfigs } from '../bodyConfigs'
  * 从 container 中获取能量 > 执行房间物流任务
  * 在空闲时间会尝试把能量运输至 storage
  */
-const filler: CreepConfigGenerator<'filler'> = data => ({
+const filler: CreepConfig<'filler'> = {
     // 能量来源（container）没了就自觉放弃
-    isNeed: room => {
+    isNeed: (room, preMemory) => {
         // 这里调用 room.sourceContainers 可以移除掉过期的 container id
-        return !!room.sourceContainers.find(container => container.id === data.sourceId)
+        return !!room.sourceContainers.find(container => container.id === preMemory.data.sourceId)
     },
     // 一直尝试从 container 里获取能量，不过拿到了就走
     source: creep => {
         if (creep.store[RESOURCE_ENERGY] > 0) return true
 
+        const { sourceId } = creep.memory.data
         // 获取源 container
-        let source: StructureContainer | StructureStorage = Game.getObjectById(data.sourceId as Id<StructureContainer>)
+        let source: StructureContainer | StructureStorage = Game.getObjectById(sourceId as Id<StructureContainer>)
         // container 没能量了就尝试从 storage 里获取能量执行任务
         // 原因是有了 sourceLink 之后 container 会有很长一段时间没人维护（直到 container 耐久掉光）
         // 如果没有这个判断的话 filler 会在停止孵化之前有好几辈子都呆在空 container 前啥都不干
@@ -39,7 +40,7 @@ const filler: CreepConfigGenerator<'filler'> = data => ({
         // 空闲时间会尝试把能量存放到 storage 里
         if (!creep.room.storage) return false
 
-        const source = Game.getObjectById(data.sourceId as Id<StructureContainer>)
+        const source = Game.getObjectById(creep.memory.data.sourceId as Id<StructureContainer>)
         // source container 还有 harvester 维护时才会把能量转移至 storage
         // 否则结合 source 阶段，filler 会在 container 等待老化时在 storage 旁边无意义举重
         if (source && source.store[RESOURCE_ENERGY] > 0) creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
@@ -48,6 +49,6 @@ const filler: CreepConfigGenerator<'filler'> = data => ({
         if (creep.store[RESOURCE_ENERGY] <= 0) return true
     },
     bodys: createBodyGetter(bodyConfigs.manager)
-})
+}
 
 export default filler

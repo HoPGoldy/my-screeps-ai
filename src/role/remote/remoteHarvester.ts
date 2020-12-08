@@ -5,13 +5,15 @@ import { createBodyGetter } from 'utils'
  * 外矿采集者
  * 从指定矿中挖矿 > 将矿转移到建筑中
  */
-const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
+const remoteHarvester: CreepConfig<'remoteHarvester'> = {
     // 如果外矿目前有入侵者就不生成
-    isNeed: room => {
+    isNeed: (room, preMemory) => {
+        const { sourceFlagName } = preMemory.data
+
         // 旗帜效验, 没有旗帜则不生成
-        const sourceFlag = Game.flags[data.sourceFlagName]
+        const sourceFlag = Game.flags[sourceFlagName]
         if (!sourceFlag) {
-            room.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`, 'remoteHarvester')
+            room.log(`找不到名称为 ${sourceFlagName} 的旗帜`, 'remoteHarvester')
             return false
         }
 
@@ -25,10 +27,12 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
     },
     // 获取旗帜附近的 source
     prepare: creep => {
+        const { sourceFlagName } = creep.memory.data
+
         if (!creep.memory.sourceId) {
-            const sourceFlag = Game.flags[data.sourceFlagName]
+            const sourceFlag = Game.flags[sourceFlagName]
             if (!sourceFlag) {
-                creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
+                creep.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
                 return false
             }
 
@@ -39,7 +43,7 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
                 sourceFlag.memory.roomName = sourceFlag.room.name
                 const sources = sourceFlag.pos.lookFor(LOOK_SOURCES)
                 if (sources.length <= 0) {
-                    creep.log(`${data.sourceFlagName} 附近没有找到 source`)
+                    creep.log(`${sourceFlagName} 附近没有找到 source`)
                     return false
                 }
                 // 找到 source 后就写入内存
@@ -56,19 +60,20 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
     },
     // 向旗帜出发
     source: creep => {
+        const { sourceFlagName, spawnRoom } = creep.memory.data
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) return true
 
-        const sourceFlag = Game.flags[data.sourceFlagName]
+        const sourceFlag = Game.flags[sourceFlagName]
         if (!sourceFlag) {
-            creep.log(`找不到名称为 ${data.sourceFlagName} 的旗帜`)
+            creep.log(`找不到名称为 ${sourceFlagName} 的旗帜`)
             return false
         }
 
         // 掉血了就说明被攻击了，直接投降，告诉基地 1500 之后再孵化我
         if (creep.hits < creep.hitsMax) {
-            const room = Game.rooms[data.spawnRoom]
+            const room = Game.rooms[spawnRoom]
             if (!room) {
-                creep.log(`找不到 ${data.spawnRoom}`)
+                creep.log(`找不到 ${spawnRoom}`)
                 return false
             }
             // 如果还没有设置重生时间的话
@@ -83,7 +88,7 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
         if (harvestResult === OK) {
             // 如果发现 source 上限掉回 1500 了，就发布 reserver
             if (source.energyCapacity === SOURCE_ENERGY_NEUTRAL_CAPACITY) {
-                Game.rooms[data.spawnRoom].addRemoteReserver(creep.room.name)
+                Game.rooms[spawnRoom].addRemoteReserver(creep.room.name)
             }
         }
         // 一旦被 core 占领就不再生成
@@ -94,9 +99,9 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
 
             // 发现入侵者 core
             if (core.length > 0) {
-                const room = Game.rooms[data.spawnRoom]
+                const room = Game.rooms[spawnRoom]
                 if (!room) {
-                    creep.log(`找不到 ${data.spawnRoom}`)
+                    creep.log(`找不到 ${spawnRoom}`)
                     return false
                 }
 
@@ -120,6 +125,8 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
         }
     },
     target: creep => {
+        const { targetId } = creep.memory.data
+
         // dontBuild 为 false 时表明还在建造阶段
         if (!creep.memory.dontBuild) {
             // 没有可建造的工地后就再也不建造
@@ -142,9 +149,9 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
             if (road.hits < road.hitsMax) creep.repair(road)
         }
 
-        const target = Game.getObjectById(data.targetId)
+        const target = Game.getObjectById(targetId)
         if (!target) {
-            creep.log(`找不到存放建筑 ${data.targetId}`, 'yellow')
+            creep.log(`找不到存放建筑 ${targetId}`, 'yellow')
             return false
         }
         
@@ -159,6 +166,6 @@ const remoteHarvester: CreepConfigGenerator<'remoteHarvester'> = data => ({
         return false
     },
     bodys: createBodyGetter(bodyConfigs.remoteHarvester)
-})
+}
 
 export default remoteHarvester

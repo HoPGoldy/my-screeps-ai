@@ -28,19 +28,20 @@ export default function creepNumberListener(): void {
             continue
         }
 
-        const { fromShard } = Memory.creeps[name]
+        const creepMemory = Memory.creeps[name] as MyCreepMemory
+        const { fromShard } = creepMemory
 
         // 有 fromShard 这个字段说明是跨 shard creep，只要不是自己 shard 的，统统发送跨 shard 重生任务
         // 有 fromShard 字段并且该字段又等于自己 shard 的名字，说明该跨 shard creep 死在了本 shard 的路上
         if (fromShard && fromShard !== Game.shard.name) {
             // console.log(`向 ${fromShard} 发送 sendRespawn 任务`, JSON.stringify({ name, memory: Memory.creeps[name] }))
             addCrossShardRequest(`respawnCreep ${name}`, fromShard, 'sendRespawn', {
-                name, memory: Memory.creeps[name]
+                name, memory: creepMemory
             })
 
             delete Memory.creeps[name]
         }
         // 如果 creep 凉在了本 shard
-        else handleNotExistCreep(name, Memory.creeps[name])
+        else handleNotExistCreep(name, creepMemory)
     }
 }

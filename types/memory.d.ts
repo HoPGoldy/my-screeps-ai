@@ -77,7 +77,7 @@ interface Memory {
      * 因为有可能出现内存到了但是 creep 还没到的情况，这时候 creepController 就会以为这个 creep 死掉了从而直接把内存回收掉
      */
     crossShardCreeps: {
-        [creepName: string]: CreepMemory
+        [creepName: string]: MyCreepMemory
     }
     /**
      * 全局统计信息

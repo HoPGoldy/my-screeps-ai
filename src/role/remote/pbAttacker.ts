@@ -8,13 +8,15 @@ import { calcBodyPart } from 'utils'
  * 
  * @property {} sourceFlagName 旗帜名，要插在 powerBank 上
  */
-const pbAttacker: CreepConfigGenerator<'pbAttacker'> = data => ({
+const pbAttacker: CreepConfig<'pbAttacker'> = {
     prepare: creep => {
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const { sourceFlagName, healerCreepName, spawnRoom } = creep.memory.data
+
+        const targetFlag = Game.flags[sourceFlagName]
         if (!targetFlag) {
             creep.say('旗呢？')
             // 移除采集小组
-            removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
+            removeSelfGroup(creep, healerCreepName, spawnRoom)
             return false
         }
 
@@ -43,7 +45,7 @@ const pbAttacker: CreepConfigGenerator<'pbAttacker'> = data => ({
         if (!findPowerbank) {
             targetFlag.remove()
             // 移除采集小组
-            removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
+            removeSelfGroup(creep, healerCreepName, spawnRoom)
             return false
         }
 
@@ -58,9 +60,11 @@ const pbAttacker: CreepConfigGenerator<'pbAttacker'> = data => ({
         return false
     },
     target: creep => {
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const { sourceFlagName, healerCreepName, spawnRoom: spawnRoomName } = creep.memory.data
+
+        const targetFlag = Game.flags[sourceFlagName]
         if (!targetFlag) {
-            removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
+            removeSelfGroup(creep, healerCreepName, spawnRoomName)
             return false
         }
 
@@ -84,7 +88,7 @@ const pbAttacker: CreepConfigGenerator<'pbAttacker'> = data => ({
             else targetFlag.remove()
 
             // 移除采集小组
-            removeSelfGroup(creep, data.healerCreepName, data.spawnRoom)
+            removeSelfGroup(creep, healerCreepName, spawnRoomName)
             return false
         }
 
@@ -96,16 +100,19 @@ const pbAttacker: CreepConfigGenerator<'pbAttacker'> = data => ({
              * @danger 注意下面这个计算式是固定两组在采集时的准备时间计算，如果更多单位一起开采的话会出现 pb 拆完但是 manager 还没到位的情况发生
              * 下面这个 150 是 pbCarrier 的孵化时间，50 为冗余时间，600 是 attacker 的攻击力，2 代表两组同时攻击
              */
-            if ((targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && (powerbank.hits <= (targetFlag.memory.travelTime + 150 + 50) * 600 * 2)) {
+            if (
+                (targetFlag.memory.state != PB_HARVESTE_STATE.PREPARE) && 
+                (powerbank.hits <= (targetFlag.memory.travelTime + 150 + 50) * 600 * 2)
+            ) {
                 // 发布运输小组
-                const spawnRoom = Game.rooms[data.spawnRoom]
+                const spawnRoom = Game.rooms[spawnRoomName]
                 if (!spawnRoom) {
                     creep.say('家呢？')
                     return false
                 }
 
                 // 下面这个 1600 是 [ CARRY: 32, MOVE: 16 ] 的 pbCarrier 的最大运输量
-                spawnRoom.spawnPbCarrierGroup(data.sourceFlagName, Math.ceil(powerbank.power / 1600))
+                spawnRoom.spawnPbCarrierGroup(sourceFlagName, Math.ceil(powerbank.power / 1600))
 
                 // 设置为新状态
                 targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
@@ -114,7 +121,7 @@ const pbAttacker: CreepConfigGenerator<'pbAttacker'> = data => ({
         else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
     },
     bodys: () => calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
-})
+}
 
 /**
  * pbAttacker 移除自身采集小组并自杀的封装

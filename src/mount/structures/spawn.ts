@@ -60,8 +60,7 @@ export default class SpawnExtension extends StructureSpawn {
 
         if (!creepConfig) return OK
         // 找不到他的工作逻辑的话也直接移除任务
-        const getCreepConfig: CreepConfigGenerator<CreepRoleConstant> = roles[creepConfig.role]
-        const creepWork = getCreepConfig(creepConfig.data)
+        const creepWork: CreepConfig<CreepRoleConstant> = roles[creepConfig.role]
         if (!creepWork) return OK
 
         // 设置 creep 内存
@@ -70,7 +69,7 @@ export default class SpawnExtension extends StructureSpawn {
         creepMemory.data = creepConfig.data
 
         // 获取身体部件
-        const bodys = creepWork.bodys(this.room, this)
+        const bodys = creepWork.bodys(this.room, this, creepConfig.data)
         if (bodys.length <= 0) return ERR_NOT_ENOUGH_ENERGY
 
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {

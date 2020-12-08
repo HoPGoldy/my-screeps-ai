@@ -10,9 +10,9 @@ import { createBodyGetter } from 'utils'
  * 在敌人进攻时孵化并针对性刷墙
  * 8 级之后每 5000t 孵化一次进行刷墙
  */
-const repairer: CreepConfigGenerator<'repairer'> = data => ({
+const repairer: CreepConfig<'repairer'> = {
     // 根据敌人威胁决定是否继续生成
-    isNeed: room => {
+    isNeed: (room, preMemory) => {
         // cpu 快吃完了就不孵化
         if (Game.cpu.bucket < 700) {
             addSpawnRepairerTask(room.name)
@@ -31,7 +31,7 @@ const repairer: CreepConfigGenerator<'repairer'> = data => ({
         }
 
         // 如果能量来源没了就重新规划
-        if (!Game.getObjectById(data.sourceId)) {
+        if (!Game.getObjectById(preMemory.data.sourceId)) {
             room.releaseCreep('repairer')
             return false
         }
@@ -39,7 +39,7 @@ const repairer: CreepConfigGenerator<'repairer'> = data => ({
         return true
     },
     source: creep => {
-        const source = Game.getObjectById(data.sourceId) || creep.room.storage || creep.room.terminal
+        const source = Game.getObjectById(creep.memory.data.sourceId) || creep.room.storage || creep.room.terminal
         // 能量不足就先等待，优先满足 filler 需求
         if (source.store[RESOURCE_ENERGY] < 500) {
             creep.say('🎮')
@@ -67,7 +67,7 @@ const repairer: CreepConfigGenerator<'repairer'> = data => ({
         if (creep.store.getUsedCapacity() === 0) return true
     },
     bodys: createBodyGetter(bodyConfigs.worker)
-})
+}
 
 /**
  * 注册 repairer 的延迟孵化任务

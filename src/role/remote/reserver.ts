@@ -8,21 +8,23 @@ import { createBodyGetter } from 'utils'
  * 准备阶段：向指定房间控制器移动
  * 阶段A：预定控制器
  */
-const reserver: CreepConfigGenerator<'reserver'> = data => ({
+const reserver: CreepConfig<'reserver'> = {
     // 该 creep 死了就不会再次孵化
     isNeed: () => false,
     // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野
     prepare: creep => {
+        const { targetRoomName } = creep.memory.data
+
         // 只要进入房间则准备结束
-        if (creep.room.name !== data.targetRoomName) {
-            creep.goTo(new RoomPosition(25, 25, data.targetRoomName))
+        if (creep.room.name !== targetRoomName) {
+            creep.goTo(new RoomPosition(25, 25, targetRoomName))
             return false
         }
         else return true
     },
     // 一直进行预定
     target: creep => {
-        const targetRoom = Game.rooms[data.targetRoomName]
+        const targetRoom = Game.rooms[creep.memory.data.targetRoomName]
         if (!targetRoom) return false
         const controller = targetRoom.controller
         if (!controller) return false
@@ -38,6 +40,6 @@ const reserver: CreepConfigGenerator<'reserver'> = data => ({
         return false
     },
     bodys: createBodyGetter(bodyConfigs.reserver)
-})
+}
 
 export default reserver

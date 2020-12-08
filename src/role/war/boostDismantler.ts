@@ -10,11 +10,14 @@ import { battleBase, boostPrepare } from './configPart'
  * @param flagName 要攻击的旗帜名称
  * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
  */
-const boostDismantler: CreepConfigGenerator<'boostDismantler'> = data => ({
-    ...battleBase(data.targetFlagName, data.keepSpawn),
+const boostDismantler: CreepConfig<'boostDismantler'> = {
+    ...battleBase(),
     ...boostPrepare(),
-    target: creep => creep.dismantleFlag(data.targetFlagName, data.healerName),
+    target: creep => {
+        const { targetFlagName, healerName } = creep.memory.data
+        return creep.dismantleFlag(targetFlagName, healerName)
+    },
     bodys: () => calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
-})
+}
 
 export default boostDismantler

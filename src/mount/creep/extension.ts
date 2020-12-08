@@ -5,7 +5,7 @@ import { getMemoryFromCrossShard } from 'modules/crossShard'
 import { updateStructure } from 'modules/shortcut'
 
 // creep 原型拓展
-export default class CreepExtension extends Creep {
+export default class CreepExtension extends MyCreep {
     /**
      * creep 主要工作
      */
@@ -26,8 +26,7 @@ export default class CreepExtension extends Creep {
         if (this.spawning) return
 
         // 获取对应配置项
-        const getCreepConfig: CreepConfigGenerator<CreepRoleConstant> = roles[this.memory.role]
-        const creepConfig: CreepConfig = getCreepConfig(this.memory.data)
+        const creepConfig: CreepConfig<CreepRoleConstant> = roles[this.memory.role]
 
         // 没准备的时候就执行准备阶段
         if (!this.memory.ready) {

@@ -8,16 +8,18 @@
  * @param spawnRoom 出生房间名称
  * @param flagName 目标旗帜名称
  */
-const moveTester: CreepConfigGenerator<'moveTester'> = data => ({
+const moveTester: CreepConfig<'moveTester'> = {
     prepare: creep => {
         // creep.setWayPoint(data.sourceFlagName)
         // creep.memory.fromShard = Game.shard.name as ShardName
         return true
     },
     target: creep => {
-        const targetFlag = Game.flags[data.sourceFlagName]
+        const { sourceFlagName } = creep.memory.data
+
+        const targetFlag = Game.flags[sourceFlagName]
         if (!targetFlag) {
-            creep.log(`找不到 ${data.sourceFlagName} 旗帜`, 'yellow')
+            creep.log(`找不到 ${sourceFlagName} 旗帜`, 'yellow')
             creep.say('旗呢？')
             return false
         }
@@ -37,6 +39,6 @@ const moveTester: CreepConfigGenerator<'moveTester'> = data => ({
         return false
     },
     bodys: () => [ MOVE ]
-})
+}
 
 export default moveTester
