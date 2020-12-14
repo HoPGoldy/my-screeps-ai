@@ -69,7 +69,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
         }
 
         // 存放资源
-        const result = creep.transfer(room.terminal, RESOURCE_POWER)
+        const result = creep.transferTo(room.terminal, RESOURCE_POWER)
         // 存好了就直接自杀并移除旗帜
         if (result === OK) {
             creep.suicide()
@@ -83,7 +83,6 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
 
             return true
         }
-        else if (result === ERR_NOT_IN_RANGE) creep.goTo(room.terminal.pos)
     },
     bodys: () => calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
 }

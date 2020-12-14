@@ -127,7 +127,7 @@ interface Creep {
     buildStructure(): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: StructureWithStore | Source): ScreepsReturnCode
-    transferTo(target: Structure, RESOURCE: ResourceConstant): ScreepsReturnCode
+    transferTo(target: Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
     attackFlag(flagName: string): boolean
     rangedAttackFlag(flagName: string): boolean
     smass(): void

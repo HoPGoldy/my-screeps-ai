@@ -154,12 +154,11 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
             creep.log(`找不到存放建筑 ${targetId}`, 'yellow')
             return false
         }
-        
+
         // 再把剩余能量运回去
-        const result = creep.transfer(target, RESOURCE_ENERGY)
+        const result = creep.transferTo(target, RESOURCE_ENERGY, { range: 1 })
         // 报自己身上资源不足了就说明能量放完了
         if (result === ERR_NOT_ENOUGH_RESOURCES) return true
-        else if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 1 })
         else if (result === ERR_FULL) creep.say('满了啊')
         else if (result !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${result}`, 'red')
 

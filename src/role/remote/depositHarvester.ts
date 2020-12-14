@@ -90,7 +90,7 @@ const depositHarvester: CreepConfig<'depositHarvester'> = {
         }
 
         // 转移并检测返回值
-        const result = creep.transfer(room.terminal, creep.memory.depositType)
+        const result = creep.transferTo(room.terminal, creep.memory.depositType, { range: 1 })
         if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {
             // 获取旗帜，旗帜没了就自杀
             const targetFlag = Game.flags[sourceFlagName]
@@ -109,7 +109,6 @@ const depositHarvester: CreepConfig<'depositHarvester'> = {
             // 时间充足就回去继续采集
             return true
         }
-        if (result === ERR_NOT_IN_RANGE) creep.goTo(room.terminal.pos, { range: 1 })
         else if (result === ERR_INVALID_ARGS) return true
         else creep.say(`转移 ${result}`)
     },

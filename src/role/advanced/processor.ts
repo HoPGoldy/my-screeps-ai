@@ -70,14 +70,12 @@ const processor: CreepConfig<'processor'> = {
             return false
         }
         
-        const result = creep.transfer(structure, task.resourceType)
+        const result = creep.transferTo(structure, task.resourceType, { range: 1 })
         // 如果转移完成则增加任务进度
         if (result === OK) {
             creep.room.handleCenterTask(amount)
             return true
         }
-        // 如果目标建筑物太远了，就移动过去
-        else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos, { range: 1 })
         else if (result === ERR_FULL) {
             creep.log(`${task.target} 满了`)
             if (task.target === STRUCTURE_TERMINAL) Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
