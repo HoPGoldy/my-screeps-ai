@@ -1,5 +1,6 @@
 import { createHelp } from 'modules/help'
 import { DEFAULT_ENERGY_KEEP_AMOUNT, DEFAULT_ENERGY_KEEP_LIMIT, ENERGY_SHARE_LIMIT } from 'setting'
+import { setRoomStats } from 'modules/stateCollector'
 
 /**
  * Storage 拓展
@@ -70,9 +71,7 @@ class StorageExtension extends StructureStorage {
      * 统计自己存储中的剩余能量
      */
     private stateScanner(): void {
-        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
-
-        Memory.stats.rooms[this.room.name].energy = this.store[RESOURCE_ENERGY]
+        setRoomStats(this.room.name, () => ({ energy: this.store[RESOURCE_ENERGY] }))
     }
 
     /**

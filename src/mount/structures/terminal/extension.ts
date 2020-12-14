@@ -1,4 +1,5 @@
 import { DEAL_RATIO, terminalModes, terminalChannels } from 'setting'
+import { setRoomStats } from 'modules/stateCollector'
 
 /**
  * 全局缓存的订单价格表
@@ -53,9 +54,7 @@ export default class TerminalExtension extends StructureTerminal {
      */
     private stateScanner(): void {
         if (Game.time % 20) return
-        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
-
-        Memory.stats.rooms[this.room.name].power = this.store[RESOURCE_POWER]
+        setRoomStats(this.room.name, () => ({ power: this.store[RESOURCE_POWER] }))
     }
 
     /**

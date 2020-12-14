@@ -1,6 +1,7 @@
 import { creepApi } from 'modules/creepController'
 import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
+import { setRoomStats } from 'modules/stateCollector'
 import { costCache } from 'modules/move'
 import { LEVEL_BUILD_RAMPART } from 'setting'
 
@@ -109,14 +110,15 @@ export default class ControllerExtension extends StructureController {
      */
     private stateScanner(): boolean {
         let hasLevelChange = false
-        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
-
-        // 统计升级进度
-        Memory.stats.rooms[this.room.name].controllerRatio = (this.progress / this.progressTotal) * 100
-
-        // 统计房间等级
-        if (Memory.stats.rooms[this.room.name].controllerLevel !== this.level) hasLevelChange = true
-        Memory.stats.rooms[this.room.name].controllerLevel = this.level
+        setRoomStats(this.room.name, stats => {
+            hasLevelChange = stats.controllerLevel !== this.level
+            return {
+                // 统计升级进度
+                controllerRatio: (this.progress / this.progressTotal) * 100,
+                // 统计房间等级
+                controllerLevel: this.level
+            }
+        })
 
         return hasLevelChange
     }

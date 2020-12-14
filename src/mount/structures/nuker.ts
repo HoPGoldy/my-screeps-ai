@@ -1,4 +1,5 @@
-import { ROOM_TRANSFER_TASK } from "setting"
+import { ROOM_TRANSFER_TASK } from 'setting'
+import { setRoomStats } from 'modules/stateCollector'
 
 // nuker 拓展
 export default class NukerExtension extends StructureNuker {
@@ -42,10 +43,10 @@ export default class NukerExtension extends StructureNuker {
      */
     private stateScanner(): void {
         if (Game.time % 20) return
-        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
-
-        Memory.stats.rooms[this.room.name].nukerEnergy = this.store[RESOURCE_ENERGY]
-        Memory.stats.rooms[this.room.name].nukerG = this.store[RESOURCE_GHODIUM]
-        Memory.stats.rooms[this.room.name].nukerCooldown = this.cooldown
+        setRoomStats(this.room.name, () => ({
+            nukerEnergy: this.store[RESOURCE_ENERGY],
+            nukerG: this.store[RESOURCE_GHODIUM],
+            nukerCooldown: this.cooldown
+        }))
     }
 }

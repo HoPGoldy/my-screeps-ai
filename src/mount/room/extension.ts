@@ -376,16 +376,7 @@ export default class RoomExtension extends Room {
      * 并统计至 Memory.stats
      */
     public deleteCurrentRoomTransferTask(): void {
-        const finishedTask = this.memory.transferTasks.shift()
-
-        // // 先兜底
-        if (!Memory.stats) Memory.stats = { rooms: {} }
-        if (!Memory.stats.roomTaskNumber) Memory.stats.roomTaskNumber = {}
-
-        // 如果这个任务之前已经有过记录的话就增 1
-        if (Memory.stats.roomTaskNumber[finishedTask.type]) Memory.stats.roomTaskNumber[finishedTask.type] += 1
-        // 没有就设为 1
-        else Memory.stats.roomTaskNumber[finishedTask.type] = 1
+        this.memory.transferTasks.shift()
     }
 
     /**

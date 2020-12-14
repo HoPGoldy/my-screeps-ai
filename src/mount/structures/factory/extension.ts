@@ -1,4 +1,5 @@
 import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit, commodityMax } from 'setting'
+import { setRoomStats } from 'modules/stateCollector'
 
 /**
  * Factory 原型拓展
@@ -115,15 +116,9 @@ export default class FactoryExtension extends StructureFactory {
      * @param res 要更新数量的资源
      */
     private updateStats(res: ResourceConstant) {
-        if (!Memory.stats || !Memory.stats.rooms) Memory.stats = { rooms: {} }
-        if (!Memory.stats.rooms[this.room.name]) Memory.stats.rooms[this.room.name] = {}
-
-        // 该产物的现存数量
-        let amount = this.store[res]
-        if (this.room.terminal) amount += this.room.terminal.store[res] || 0
-
-        // 更新数量
-        Memory.stats.rooms[this.room.name][res] = amount
+        setRoomStats(this.room.name, () => ({
+            [res]: (this.store[res] + this.room.terminal?.store[res]) || 0
+        }))
     }
 
     /**

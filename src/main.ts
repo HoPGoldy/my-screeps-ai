@@ -1,5 +1,6 @@
 import mountWork from './mount'
-import { doing, stateScanner, generatePixel } from './utils'
+import { doing, generatePixel } from './utils'
+import { stateScanner } from './modules/stateCollector'
 import creepNumberListener from './modules/creepController'
 import { execShard, saveShardData } from './modules/crossShard'
 import { ErrorMapper } from './modules/errorMapper'
