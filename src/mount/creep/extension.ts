@@ -5,7 +5,7 @@ import { getMemoryFromCrossShard } from 'modules/crossShard'
 import { updateStructure } from 'modules/shortcut'
 
 // creep 原型拓展
-export default class CreepExtension extends MyCreep {
+export default class CreepExtension extends Creep {
     /**
      * creep 主要工作
      */
@@ -31,7 +31,7 @@ export default class CreepExtension extends MyCreep {
         // 没准备的时候就执行准备阶段
         if (!this.memory.ready) {
             // 有准备阶段配置则执行
-            if (creepConfig.prepare) this.memory.ready = creepConfig.prepare(this)
+            if (creepConfig.prepare) this.memory.ready = creepConfig.prepare(this as MyCreep)
             // 没有就直接准备完成
             else this.memory.ready = true
         }
@@ -46,10 +46,10 @@ export default class CreepExtension extends MyCreep {
         // 执行对应阶段
         // 阶段执行结果返回 true 就说明需要更换 working 状态
         if (working) {
-            if (creepConfig.target && creepConfig.target(this)) stateChange = true
+            if (creepConfig.target && creepConfig.target(this as MyCreep)) stateChange = true
         }
         else {
-            if (creepConfig.source && creepConfig.source(this)) stateChange = true
+            if (creepConfig.source && creepConfig.source(this as MyCreep)) stateChange = true
         }
 
         // 状态变化了就释放工作位置
