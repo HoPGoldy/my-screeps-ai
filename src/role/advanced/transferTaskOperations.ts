@@ -515,7 +515,7 @@ export const transferTaskOperations: { [taskType: string]: transferTaskOperation
  * 
  * @param room 要获取物流任务的房间名
  */
-export const getRoomTransferTask = function(room: Room): RoomTransferTasks | null {
+export const getRoomTransferTask = function(room: Room): RoomTransportTasks | null {
     const task = room.getRoomTransferTask()
     if (!task) return null
 

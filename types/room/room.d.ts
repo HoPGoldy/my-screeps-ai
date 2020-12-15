@@ -34,7 +34,7 @@ interface RoomMemory {
     /**
      * 房间物流任务队列
      */
-    transferTasks: RoomTransferTasks[]
+    transferTasks: RoomTransportTasks[]
     /**
      * 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
      * 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
@@ -278,9 +278,9 @@ interface Room {
     /**
      * 房间物流 api
      */
-    addRoomTransferTask(task: RoomTransferTasks, priority?: number): number
+    addRoomTransferTask(task: RoomTransportTasks, priority?: number): number
     hasRoomTransferTask(taskType: string): boolean
-    getRoomTransferTask(): RoomTransferTasks | null
+    getRoomTransferTask(): RoomTransportTasks | null
     handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
     deleteCurrentRoomTransferTask(): void
 

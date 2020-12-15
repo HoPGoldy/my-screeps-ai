@@ -305,7 +305,7 @@ export default class RoomExtension extends Room {
      * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
      * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
      */
-    public addRoomTransferTask(task: RoomTransferTasks, priority: number = null): number {
+    public addRoomTransferTask(task: RoomTransportTasks, priority: number = null): number {
         if (this.hasRoomTransferTask(task.type)) return -1
 
         // 默认追加到队列末尾
@@ -336,7 +336,7 @@ export default class RoomExtension extends Room {
     /**
      * 获取当前的房间物流任务
      */
-    public getRoomTransferTask(): RoomTransferTasks | null {
+    public getRoomTransferTask(): RoomTransportTasks | null {
         if (!this.memory.transferTasks) this.memory.transferTasks = []
         
         if (this.memory.transferTasks.length <= 0) {
