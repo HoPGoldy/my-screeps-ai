@@ -36,6 +36,11 @@ interface RoomMemory {
      */
     transferTasks: RoomTransportTasks[]
     /**
+     * 房间物流任务的备份数据
+     * 会在全局重置时通过该数据重建物流任务
+     */
+    transport: string
+    /**
      * 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
      * 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
      */
@@ -283,6 +288,8 @@ interface Room {
     getRoomTransferTask(): RoomTransportTasks | null
     handleLabInTask(resourceType: ResourceConstant, amount: number): boolean
     deleteCurrentRoomTransferTask(): void
+
+    transport: RoomTransportType
 
     /**
      * 工厂 api
