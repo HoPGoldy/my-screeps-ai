@@ -98,6 +98,10 @@ interface CreepMemory {
      *  rangeSoldier 特有，是否启用 massAttack
      */
     massMode?: boolean
+    /**
+     * manager 特有，当前正在执行的工作
+     */
+    transportTask?: AllTransportTaskType
 }
 
 /**

@@ -109,17 +109,17 @@ interface TransportTaskBase<T extends string> {
 /**
  * 从内存 transport 字段解析出来的存储格式
  */
-type TransportData = { [taskType in AllTransportTaskType]?: TransportTasks[taskType] }
+type TransportData = TransportTasks[AllTransportTaskType][]
 
-interface transferTaskOperation {
+interface TransportAction<TaskType extends AllTransportTaskType> {
     /**
      * creep 工作时执行的方法
      */
-    target: (creep: Creep, task: RoomTransportTasks) => boolean
+    target: (creep: Creep, task: TransportTasks[TaskType]) => boolean
     /**
      * creep 非工作(收集资源时)执行的方法
      */
-    source: (creep: Creep, task: RoomTransportTasks, sourceId: Id<StructureWithStore>) => boolean
+    source: (creep: Creep, task: TransportTasks[TaskType], sourceId: Id<StructureWithStore>) => boolean
 }
 
 interface RoomTransportType {
@@ -128,7 +128,7 @@ interface RoomTransportType {
     /**
      * 获取应该执行的任务
      */
-    getTask(creep: Creep) 
+    getWork(creep: Creep) 
 
     /**
      * 是否存在某个任务
