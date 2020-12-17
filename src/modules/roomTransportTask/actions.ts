@@ -549,5 +549,5 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  */
 const finishTask = function (creep: MyCreep<'manager'>): void {
     const { workRoom } = creep.memory.data
-    Game.rooms[workRoom]?.transport.removeTask(creep.memory.transportTask)
+    Game.rooms[workRoom]?.transport.removeTask(creep.memory.transportTaskKey)
 }

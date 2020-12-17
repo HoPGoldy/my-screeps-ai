@@ -1,3 +1,4 @@
+import { setRoomStats } from 'modules/stateCollector'
 import { noTask, transportActions } from './actions'
 
 export default class RoomTransport implements RoomTransportType {
@@ -25,9 +26,9 @@ export default class RoomTransport implements RoomTransportType {
      * 添加一个物流任务
      * 允许添加多个同类型物流任务，所以如果只想发布唯一任务的话，在发布前需要自行检查是否已经包含任务
      * 
-     * @returns 是否已覆盖同种任务
+     * @returns 该物流任务的唯一索引
      */
-    public addTask(task: RoomTransportTasks): void {
+    public addTask(task: RoomTransportTasks): number {
         task.key = new Date().getTime() + (this.tasks.length * 0.1)
         // 发布任务的时候为了方便可以不填这个，这里给它补上
         if (!task.executor) task.executor = []
@@ -42,6 +43,8 @@ export default class RoomTransport implements RoomTransportType {
         this.tasks.splice(insertIndex, 0, task)
         this.dispatchTask()
         this.saveTask()
+
+        return task.key
     }
 
     /**
@@ -86,26 +89,24 @@ export default class RoomTransport implements RoomTransportType {
         while (i <= this.tasks.length - 1 || j >= 0) {
             const task = this.tasks[i]
             // 工作人数符合要求，检查下一个
-            if (task.executor.length >= task.need) continue
+            if (task.executor.length > 0) continue
 
-            // 执行人数不足，遍历不足的次数尝试补满
-            for (let k = 0; k < task.need - task.executor.length; k ++) {
-                // 从优先级低的任务抽人
-                while (j >= 0 || k >= task.need - task.executor.length) {
-                    const lowTask = this.tasks[j]
-                    if (task.executor.length <= task.need) {
-                        j --
-                        continue
-                    }
-
-                    // 从人多的低级任务里抽调一个人到高优先级任务
-                    const freeCreepId = lowTask.executor.shift()
-                    const freeCreep = Game.getObjectById(freeCreepId)
-                    if(!freeCreep) continue
-
-                    this.giveTask(freeCreep, task)
-                    k ++
+            // 从优先级低的任务抽人
+            while (j >= 0) {
+                const lowTask = this.tasks[j]
+                // 人手不够，检查优先级略高的任务
+                if (lowTask.executor.length <= 0) {
+                    j --
+                    continue
                 }
+
+                // 从人多的低级任务里抽调一个人到高优先级任务
+                const freeCreepId = lowTask.executor.shift()
+                const freeCreep = Game.getObjectById(freeCreepId)
+                // 这里没有 j--，因为这个任务的执行 creep 有可能有两个以上，要重新走一遍流程
+                if(!freeCreep) continue
+
+                this.giveTask(freeCreep, task)
             }
 
             i ++
@@ -121,7 +122,7 @@ export default class RoomTransport implements RoomTransportType {
         // 把执行该任务的 creep 分配到缺人做的任务上
         if (creeps.length > 0) {
             for (const processingTask of this.tasks) {
-                if (processingTask.executor.length = processingTask.need) continue
+                if (processingTask.executor.length > 0) continue
                 
                 // 当前任务缺人
                 this.giveTask(creeps.shift(), processingTask)
@@ -139,10 +140,12 @@ export default class RoomTransport implements RoomTransportType {
     }
 
     /**
-     * 获取应该执行的任务
+     * 获取应该执行的任务逻辑
+     * 获取后请在本 tick 直接执行，不要进行存储
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
     public getWork(creep: MyCreep<'manager'>): TransportAction {
+        this.count('transporterLifeTime')
         let task = this.getTask(creep.memory.transportTaskKey)
 
         // 是新人，分配任务
@@ -155,6 +158,9 @@ export default class RoomTransport implements RoomTransportType {
             task = this.getTask(creep.memory.transportTaskKey)
         }
         const actionGenerator: TransportActionGenerator = transportActions[task.type]
+
+        // 这里增加工作时长，所以要在本 tick 执行下面的逻辑，就算不执行也会被认为在工作
+        this.count('transporterWorkingTime')
         // 分配完后获取任务执行逻辑
         return actionGenerator(creep, task)
     }
@@ -164,31 +170,24 @@ export default class RoomTransport implements RoomTransportType {
      * 
      * @returns 存在则返回该任务及其在 this.tasks 中的索引，不存在则返回 undefined
      */
-    public hasTask(taskType: AllTransportTaskType): [ TransportTasks[AllTransportTaskType], number ] | undefined {
-        let taskIndex: number
-        const task = this.tasks.find((task, index) => {
-            if (task.type === taskType) return false
-            taskIndex = index
-            return true
-        })
-
-        return taskIndex ? [ task, taskIndex ] : undefined
+    public hasTask(taskType: AllTransportTaskType): boolean {
+        return !!this.tasks.find(task => task.type === taskType)
     }
 
     /**
      * 移除一个任务
+     * 
+     * @param taskKey 要移除的任务索引
      */
-    public removeTask(taskType: AllTransportTaskType): OK | ERR_NOT_FOUND {
-        const taskInfo = this.hasTask(taskType)
-        if (!taskInfo) return ERR_NOT_FOUND
+    public removeTask(taskKey: number): OK | ERR_NOT_FOUND {
+        this.tasks = this.tasks.filter(task => {
+            if (task.key !== taskKey) return true
 
-        const [ finishedTask, taskIndex ] = taskInfo
-        // 删除任务
-        this.tasks.splice(taskIndex, 1)
-
-        // 给干完活的搬运工重新分配任务
-        const extraCreeps = finishedTask.executor.map(id => Game.getObjectById(id)).filter(Boolean)
-        this.giveJob(...extraCreeps)
+            // 给干完活的搬运工重新分配任务
+            const extraCreeps = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
+            this.giveJob(...extraCreeps)
+            return false
+        })
 
         this.saveTask()
         return OK
@@ -203,5 +202,17 @@ export default class RoomTransport implements RoomTransportType {
     private giveTask(creep: Creep, task: TransportTasks[AllTransportTaskType]): void {
         task.executor.push(creep.id)
         creep.memory.transportTaskKey = task.key
+    }
+
+    /**
+     * 搬运工生命 / 工作时长统计
+     * 
+     * @param timeProp 要增加哪个计数（生命时长还是工作时长）
+     */
+    private count(timeProp: 'transporterLifeTime' | 'transporterWorkingTime'): void {
+        setRoomStats(
+            this.roomName,
+            stats => ({ [timeProp]: stats[timeProp] + 1 })
+        )
     }
 }

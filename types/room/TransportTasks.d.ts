@@ -95,11 +95,6 @@ interface TransportTaskBase<T extends string> {
      */
     priority?: number
     /**
-     * 该任务需要多少搬运工执行
-     * 若为空则不会为该任务新增 creep
-     */
-    need?: number
-    /**
      * 正在执行该任务的搬运工 id
      */
     executor?: Id<Creep>[]
@@ -130,8 +125,9 @@ interface RoomTransportType {
      * 填写一个新的房间物流任务
      * 
      * @param task 要添加的物流任务
+     * @returns taskKey 该任务的唯一索引
      */
-    addTask(task: RoomTransportTasks): void 
+    addTask(task: RoomTransportTasks): number 
     /**
      * 获取应该执行的任务
      */
@@ -143,7 +139,7 @@ interface RoomTransportType {
     /**
      * 移除一个任务
      */
-    removeTask(taskType: AllTransportTaskType): OK | ERR_NOT_FOUND
+    removeTask(taskKey: number): OK | ERR_NOT_FOUND
 }
 
 /**

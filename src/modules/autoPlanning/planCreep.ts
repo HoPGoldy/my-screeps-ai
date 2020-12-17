@@ -392,9 +392,10 @@ export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number:
      * @param room 要发布角色的房间
      */
     'builder': function(room: Room, num: number = 2) {
+        const source: StructureWithStore = room.getAvailableSource(false)
         for (let i = 0; i < num; i ++) {
             creepApi.add(`${room.name} builder${i}`, 'builder', {
-                sourceId: room.getAvailableSource()?.id,
+                sourceId: source?.id,
                 workRoom: room.name
             }, room.name)
         }

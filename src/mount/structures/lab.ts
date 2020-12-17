@@ -350,6 +350,8 @@ export default class LabExtension extends StructureLab {
      * @returns 是否成功添加了物流任务
      */
     private addTransferTask(type: 'labIn' | 'labOut'): boolean {
+        if (this.room.transport.hasTask(type)) return true
+
         const labMemory = this.room.memory.lab
         // 底物移入任务
         if (type == 'labIn') {

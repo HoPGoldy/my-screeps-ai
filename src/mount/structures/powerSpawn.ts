@@ -36,7 +36,7 @@ export class PowerSpawnExtension extends StructurePowerSpawn {
         if (this.store[resource] >= amount) return true
 
         // 检查来源是否符合规则，符合则发布资源转移任务
-        if (source && source.store.getUsedCapacity(resource) > sourceLimit) {
+        if (source && source.store.getUsedCapacity(resource) > sourceLimit && !this.room.transport.hasTask('fillPowerSpawn')) {
             this.room.transport.addTask({
                 type: 'fillPowerSpawn',
                 id: this.id,

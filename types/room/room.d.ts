@@ -322,7 +322,8 @@ interface Room {
     /**
      * 获取房间中的有效能量来源
      */
-    getAvailableSource(): StructureTerminal | StructureStorage | StructureContainer | Source
+    getAvailableSource(includeSource?: true): AllEnergySource
+    getAvailableSource(includeSource?: false): EnergySourceStructure
 
     /**
      * 自动规划相关
