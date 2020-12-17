@@ -61,7 +61,6 @@ interface TransportTasks {
         resource: {
             id: Id<StructureLab>
             type: ResourceConstant
-            amount: number
         }[]
     }
     /**
@@ -103,7 +102,11 @@ interface TransportTaskBase<T extends string> {
     /**
      * 正在执行该任务的搬运工 id
      */
-    executor: Id<Creep>[]
+    executor?: Id<Creep>[]
+    /**
+     * 该任务的唯一索引
+     */
+    key?: number
 }
 
 /**
@@ -111,32 +114,42 @@ interface TransportTaskBase<T extends string> {
  */
 type TransportData = TransportTasks[AllTransportTaskType][]
 
-interface TransportAction<TaskType extends AllTransportTaskType> {
+interface TransportAction {
     /**
      * creep 工作时执行的方法
      */
-    target: (creep: Creep, task: TransportTasks[TaskType]) => boolean
+    target: () => boolean
     /**
      * creep 非工作(收集资源时)执行的方法
      */
-    source: (creep: Creep, task: TransportTasks[TaskType], sourceId: Id<StructureWithStore>) => boolean
+    source: () => boolean
 }
 
 interface RoomTransportType {
-    addTask(task: RoomTransportTasks): boolean 
-
+    /**
+     * 填写一个新的房间物流任务
+     * 
+     * @param task 要添加的物流任务
+     */
+    addTask(task: RoomTransportTasks): void 
     /**
      * 获取应该执行的任务
      */
-    getWork(creep: Creep) 
-
+    getWork(creep: Creep): TransportAction
     /**
      * 是否存在某个任务
      */
     hasTask(taskType: AllTransportTaskType)
-
     /**
      * 移除一个任务
      */
     removeTask(taskType: AllTransportTaskType): OK | ERR_NOT_FOUND
 }
+
+/**
+ * 物流搬运任务逻辑的生成函数
+ */
+type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskType> = (
+    creep: MyCreep<'manager'>,
+    task: TransportTasks[T]
+) => TransportAction

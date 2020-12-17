@@ -218,7 +218,7 @@ export default class CreepControl extends RoomConsole {
      * @param sourceFlagName 要搜刮的建筑上插好的旗帜名
      * @param targetStructureId 要把资源存放到的建筑 id
      */
-    public spawnReiver(sourceFlagName: string = '', targetStructureId: string = ''): string {
+    public spawnReiver(sourceFlagName: string = '', targetStructureId: Id<StructureWithStore> = undefined): string {
         if (!targetStructureId && !this.terminal) return `[${this.name}] 发布失败，请填写要存放到的建筑 id`
         const reiverName = `${this.name} reiver ${Game.time}`
         creepApi.add(reiverName, 'reiver', {

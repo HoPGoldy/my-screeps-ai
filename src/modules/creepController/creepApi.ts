@@ -17,7 +17,12 @@ export default {
      * @returns ERR_NOT_FOUND 未找到对应的 creepWork
      * @returns ERR_NOT_OWNER 孵化房间不是自己的或者无法进行孵化
      */
-    add(creepName: string, role: CreepRoleConstant, data: CreepData, spawnRoom: string): OK | ERR_NOT_FOUND | ERR_NOT_OWNER {
+    add<Role extends CreepRoleConstant = CreepRoleConstant>(
+        creepName: string,
+        role: Role,
+        data: RoleDatas[Role],
+        spawnRoom: string
+    ): OK | ERR_NOT_FOUND | ERR_NOT_OWNER {
         if (!Memory.creepConfigs) Memory.creepConfigs = {}
         if (!roles[role]) return ERR_NOT_FOUND
 

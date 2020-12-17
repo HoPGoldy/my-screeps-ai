@@ -20,7 +20,7 @@ export default class SpawnExtension extends StructureSpawn {
              * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > **移除任务** > tick 末期开始孵化 > extension 扣除能量
              */
             if (this.spawning.needTime - this.spawning.remainingTime == 1) {
-                this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_EXTENSION }, 1)
+                this.room.transport.addTask({ type: 'fillExtension', priority: 10 })
                 
                 if (
                     // 非战争状态下直接发布 power 填 extension 任务

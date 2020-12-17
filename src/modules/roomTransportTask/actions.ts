@@ -1,10 +1,21 @@
 import { boostResourceReloadLimit } from 'setting'
 
 /**
+ * 没有任务时的行为逻辑
+ */
+export const noTask = creep => ({
+    source: () => {
+        creep.say('💤')
+        return false
+    },
+    target: () => true
+})
+
+/**
  * 搬运工在执行各种类型的物流任务时的对应逻辑
  */
-const transportActions: {
-    [TaskType in AllTransportTaskType]: (creep: MyCreep<'manager'>, task: TransportTasks[TaskType]) => TransportAction<TaskType>
+export const transportActions: {
+    [TaskType in AllTransportTaskType]: TransportActionGenerator<TaskType>
 } = {
     /**
      * extension 填充任务
@@ -43,7 +54,7 @@ const transportActions: {
 
                 if (!target) {
                     // 都填满了，任务完成
-                    creep.room.deleteCurrentRoomTransferTask()
+                    finishTask(creep)
                     return true
                 }
 
@@ -94,7 +105,7 @@ const transportActions: {
 
                     // 如果还没找到的话就算完成任务了
                     if (towers.length <= 0) {
-                        creep.room.deleteCurrentRoomTransferTask()
+                        finishTask(creep)
                         return true
                     }
                     target = creep.pos.findClosestByRange(towers) as StructureTower
@@ -129,7 +140,7 @@ const transportActions: {
 
             // 兜底
             if (!sourceStructure || !nuker) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`nuker 填充任务，未找到 Storage 或者 Nuker`)
                 return false
             }
@@ -144,7 +155,7 @@ const transportActions: {
             )
 
             if (getAmount <= 0) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`nuker 填充任务，资源不足`)
                 return false
             }
@@ -159,14 +170,14 @@ const transportActions: {
             // 获取 nuker 及兜底
             let target = Game.getObjectById(task.id)
             if (!target) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return false
             }
 
             // 转移资源
             const result = creep.transferTo(target, task.resourceType)
             if (result === OK) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return true
             }
             else if (result != ERR_NOT_IN_RANGE) creep.say(`核弹填充 ${result}`)
@@ -184,7 +195,7 @@ const transportActions: {
             // 获取 terminal
             const terminal = creep.room.terminal
             if (!terminal) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`labin, 未找到 terminal，任务已移除`)
                 return false
             }
@@ -192,44 +203,41 @@ const transportActions: {
             if (!clearCarryingEnergy(creep)) return false
 
             // 找到第一个需要从终端取出的底物
-            const targetResource = task.resource.find(res => res.amount > 0)
+            const targetResource = task.resource.find(res => !Game.getObjectById(res.id)?.mineralType)
 
             // 找不到了就说明都成功转移了
             if (!targetResource) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return false
             }
 
-            // 获取能拿取的数量
-            const getAmount = Math.min(targetResource.amount, creep.store.getFreeCapacity())
-
             creep.goTo(terminal.pos)
-            const result = creep.withdraw(terminal, targetResource.type, getAmount)
+            const result = creep.withdraw(terminal, targetResource.type)
             if (result === OK) return true
             else if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
             }
             else if (result != ERR_NOT_IN_RANGE) creep.say(`labInA ${result}`)
         },
         target: () => {
-            const targetResource = task.resource.find(res => res.amount > 0)
+            const targetResource = task.resource.find(res => !Game.getObjectById(res.id)?.mineralType)
             // 找不到了就说明都成功转移了
             if (!targetResource) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return true
             }
 
             const targetLab = Game.getObjectById(targetResource.id)
+            // 找不到目标 lab，说明有可能被拆掉了，放弃该任务
+            if (!targetLab) {
+                finishTask(creep)
+                return true
+            }
 
             // 转移资源
             const result = creep.transferTo(targetLab, targetResource.type)
             // 正常转移资源则更新任务
-            if (result === OK) {
-                // 这里直接更新到 0 的原因是因为这样可以最大化运载效率
-                // 保证在产物移出的时候可以一次就拿完
-                creep.room.handleLabInTask(targetResource.type, 0)
-                return true
-            }
+            if (result === OK) return true
             else if (result != ERR_NOT_IN_RANGE) creep.say(`labInB ${result}`)
         }
     }),
@@ -264,7 +272,7 @@ const transportActions: {
             const terminal = creep.room.terminal
 
             if (!terminal) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`labout, 未找到 terminal，任务已移除`)
                 return false
             }
@@ -275,7 +283,7 @@ const transportActions: {
             // 没值了就说明自己身上已经空了，检查下还有没有没搬空的 lab，没有的话就完成任务
             if (!resourceType) {
                 if (creep.room[STRUCTURE_LAB].find(lab => lab.mineralType) === undefined) {
-                    creep.room.deleteCurrentRoomTransferTask()
+                    finishTask(creep)
                 }
                 return true
             }
@@ -299,7 +307,7 @@ const transportActions: {
 
             const { sourceId } = creep.memory.data
             // 获取资源存储建筑
-            let sourceStructure: EnergySourceStructure
+            let sourceStructure: StructureWithStore
             if (task.resourceType == RESOURCE_ENERGY) sourceStructure = sourceId ? Game.getObjectById(sourceId) : creep.room.storage
             else sourceStructure = creep.room.terminal
             // 获取 powerspawn
@@ -307,7 +315,7 @@ const transportActions: {
 
             // 兜底
             if (!sourceStructure || !powerspawn) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`powerSpawn 填充任务，未找到 storage/terminal 或者 powerSpawn`)
                 return false
             }
@@ -322,7 +330,7 @@ const transportActions: {
             )
 
             if (getAmount <= 0) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`powerSpawn 填充任务，${task.resourceType} 资源不足`)
                 return false
             }
@@ -337,7 +345,7 @@ const transportActions: {
             // 获取 powerSpawn 及兜底
             let target = Game.getObjectById(task.id)
             if (!target) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return true
             }
 
@@ -345,7 +353,7 @@ const transportActions: {
             const result = creep.transferTo(target, task.resourceType)
 
             if (result === OK) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return true
             }
             else if (result === ERR_NOT_ENOUGH_RESOURCES) return true
@@ -363,7 +371,7 @@ const transportActions: {
             // 获取 terminal
             const terminal = creep.room.terminal
             if (!terminal) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`boostGetResource, 未找到 terminal，任务已移除`)
                 return false
             }
@@ -389,7 +397,7 @@ const transportActions: {
                 if (resource) creep.memory.taskResource = resource
                 // 找不到了就说明都成功转移了
                 else {
-                    creep.room.deleteCurrentRoomTransferTask()
+                    finishTask(creep)
                     return false
                 }
             }
@@ -450,7 +458,7 @@ const transportActions: {
 
             // 找不到就说明任务完成
             if (!targetLab) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return true
             }
 
@@ -483,7 +491,7 @@ const transportActions: {
 
             // 找不到就说明任务完成
             if (!targetLab) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 return false
             }
 
@@ -500,7 +508,7 @@ const transportActions: {
             const terminal = creep.room.terminal
 
             if (!terminal) {
-                creep.room.deleteCurrentRoomTransferTask()
+                finishTask(creep)
                 creep.log(`boostClear, 未找到 terminal，任务已移除`)
                 return true
             }
@@ -534,4 +542,12 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
     return true
 }
 
-export default transportActions
+/**
+ * creep 完成自己正在执行的工作
+ * 
+ * @param creep 要完成工作的 creep
+ */
+const finishTask = function (creep: MyCreep<'manager'>): void {
+    const { workRoom } = creep.memory.data
+    Game.rooms[workRoom]?.transport.removeTask(creep.memory.transportTask)
+}

@@ -186,7 +186,8 @@ export default class TowerExtension extends StructureTower {
                     // 如果没有维修者的话就进行发布
                     repairerList.forEach(index => {
                         creepApi.add(`${repairCreepName} ${index}`, 'repairer', {
-                            sourceId: this.room.storage ? this.room.storage.id : '',
+                            sourceId: this.room.storage ? this.room.storage.id : undefined,
+                            workRoom: this.room.name
                         }, this.room.name)
                     })
                 }
@@ -344,7 +345,7 @@ export default class TowerExtension extends StructureTower {
      */
     private requireEnergy(lowerLimit: number = 900): void {
         if (this.store[RESOURCE_ENERGY] <= lowerLimit) {
-            this.room.addRoomTransferTask({ type: ROOM_TRANSFER_TASK.FILL_TOWER, id: this.id })
+            this.room.transport.addTask({ type: 'fillTower', id: this.id })
         }
     }
 }

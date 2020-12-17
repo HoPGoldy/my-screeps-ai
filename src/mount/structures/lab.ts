@@ -109,10 +109,8 @@ export default class LabExtension extends StructureLab {
             this.room.memory.boost.state = 'labGetEnergy'
         }
         // 否则就发布任务
-        else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) {
-            this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE
-            })
+        else if (!this.room.transport.hasTask('boostGetResource')) {
+            this.room.transport.addTask({ type: 'boostGetResource' })
         }
     }
 
@@ -127,11 +125,9 @@ export default class LabExtension extends StructureLab {
             const lab = Game.getObjectById(boostTask.lab[resourceType])
 
             // 有 lab 能量不达标的话就发布能量填充任务
-            if (lab && lab.store[RESOURCE_ENERGY] < 1000) {
+            if (lab && lab.store[RESOURCE_ENERGY] < 1000 && !this.room.transport.hasTask('boostGetEnergy')) {
                 // 有 lab 能量不满的话就发布任务
-                this.room.addRoomTransferTask({
-                    type: ROOM_TRANSFER_TASK.BOOST_GET_ENERGY
-                })
+                this.room.transport.addTask({ type: 'boostGetEnergy' })
                 return
             }
         }
@@ -153,11 +149,9 @@ export default class LabExtension extends StructureLab {
         for (const labId of boostLabs) {
             const lab = Game.getObjectById(labId)
             // mineralType 不为空就说明还有资源没拿出来
-            if (lab && lab.mineralType) {
+            if (lab && lab.mineralType && !this.room.transport.hasTask('boostClear')) {
                 // 发布任务
-                this.room.addRoomTransferTask({
-                    type: ROOM_TRANSFER_TASK.BOOST_CLEAR
-                })
+                this.room.transport.addTask({ type: 'boostClear' })
                 return
             }
         }
@@ -165,9 +159,9 @@ export default class LabExtension extends StructureLab {
         // 检查是否有 boostGetResource 任务存在
         // 这里检查它的目的是防止 manager 还在执行 BOOST_GET_RESOURCE 任务，如果过早的完成 boost 进程的话
         // 就会出现 lab 集群已经回到了 GET_TARGET 阶段但是 lab 里还有材料存在
-        if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_GET_RESOURCE)) return
+        if (this.room.transport.hasTask('boostGetResource')) return
         // lab 净空并且 boost clear 物流任务完成，就算是彻底完成了 boost 进程
-        else if (!this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.BOOST_CLEAR)) {
+        else if (!this.room.transport.hasTask('boostClear')) {
             this.log(`材料回收完成`, 'green')
             delete this.room.memory.boost
             if (this.room.memory.lab) this.room.memory.lab.state = LAB_STATE.GET_TARGET
@@ -223,7 +217,7 @@ export default class LabExtension extends StructureLab {
      */
     private labGetResource(): void {
         // 检查是否有能量移入任务
-        if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_IN)) return
+        if (this.room.transport.hasTask('labIn')) return
 
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
         const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId))
@@ -247,7 +241,7 @@ export default class LabExtension extends StructureLab {
             this.setNextIndex()
         }
         // 没有就正常发布底物填充任务
-        else this.addTransferTask(ROOM_TRANSFER_TASK.LAB_IN)
+        else this.addTransferTask('labIn')
     }
 
     /**
@@ -296,13 +290,13 @@ export default class LabExtension extends StructureLab {
      */
     private labPutResource(): void {
         // 检查是否已经有正在执行的移出任务嘛
-        if (this.room.hasRoomTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)) return
+        if (this.room.transport.hasTask('labOut')) return
 
         // 检查资源有没有全部转移出去
         for (const lab of this.room[STRUCTURE_LAB]) {
             if (lab.mineralType) {
                 // 没有的话就发布移出任务
-                this.addTransferTask(ROOM_TRANSFER_TASK.LAB_OUT)
+                this.addTransferTask('labOut')
                 return
             }
         }
@@ -352,33 +346,29 @@ export default class LabExtension extends StructureLab {
      * 向房间物流队列推送任务
      * 任务包括：in(底物填充)、out(产物移出)
      * 
-     * @param taskType 要添加的任务类型
+     * @param type 要添加的任务类型
      * @returns 是否成功添加了物流任务
      */
-    private addTransferTask(taskType: string): boolean {
+    private addTransferTask(type: 'labIn' | 'labOut'): boolean {
         const labMemory = this.room.memory.lab
         // 底物移入任务
-        if (taskType == ROOM_TRANSFER_TASK.LAB_IN) {
+        if (type == 'labIn') {
             // 获取目标产物
-            const targetResource = labTarget[this.room.memory.lab.targetIndex].target
+            const targetResource = labTarget[labMemory.targetIndex].target
             // 获取底物及其数量
             const resource = reactionSource[targetResource].map((res, index) => ({
-                id: this.room.memory.lab.inLab[index],
-                type: <ResourceConstant>res,
-                amount: this.room.memory.lab.targetAmount
+                id: labMemory.inLab[index],
+                type: <ResourceConstant>res
             }))
 
             // 发布任务
-            return (this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.LAB_IN,
-                resource: resource
-            }) == -1) ? false : true
+            this.room.transport.addTask({ type, resource })
+            return true
         }
         // 产物移出任务
-        else if (taskType == ROOM_TRANSFER_TASK.LAB_OUT) {
-            return (this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.LAB_OUT
-            }) == -1) ? false : true
+        else if (type == 'labOut') {
+            this.room.transport.addTask({ type })
+            return true
         }
         else return false
     }

@@ -14,16 +14,16 @@ interface RoleDatas {
      */
     harvester: HarvesterData
     collector: HarvesterData
-    miner: HarvesterData
+    miner: MinerData
     upgrader: WorkerData
-    filler: WorkerData
+    filler: transporterData
     builder: WorkerData
     repairer: WorkerData
 
     /**
      * 房间高级运营
      */
-    manager: WorkerData
+    manager: transporterData
     processor: ProcessorData
 
     /**
@@ -159,7 +159,21 @@ interface HarvesterData {
     /**
      * 把采集到的资源存到哪里存在哪里
      */
-    targetId: Id<EnergySourceStructure>
+    targetId?: Id<EnergySourceStructure>
+}
+
+/**
+ * 矿工 data
+ */
+interface MinerData {
+    /**
+     * 要采集的 mineral id
+     */
+    sourceId: Id<Mineral>
+    /**
+     * 把采集到的资源存到哪里存在哪里
+     */
+    targetId?: Id<EnergySourceStructure>
 }
 
 /**
@@ -170,7 +184,27 @@ interface WorkerData {
     /**
      * 要使用的资源存放建筑 id
      */
-    sourceId: Id<EnergySourceStructure>
+    sourceId?: Id<EnergySourceStructure>
+    /**
+     * 该 creep 的工作房间
+     * 例如一个外矿搬运者需要知道自己的老家在哪里
+     */
+    workRoom: string
+}
+
+/**
+ * 运输单位的 data
+ */
+interface transporterData {
+    /**
+     * 要使用的资源存放建筑 id
+     */
+    sourceId: Id<StructureWithStore>
+    /**
+     * 该 creep 的工作房间
+     * 例如一个外矿搬运者需要知道自己的老家在哪里
+     */
+    workRoom: string
 }
 
 /**

@@ -1,4 +1,4 @@
-import transportActions from './actions'
+import { noTask, transportActions } from './actions'
 
 export default class RoomTransport implements RoomTransportType {
     /**
@@ -23,38 +23,25 @@ export default class RoomTransport implements RoomTransportType {
 
     /**
      * 添加一个物流任务
-     * 如果之前已经有同种任务的话将会进行覆盖
+     * 允许添加多个同类型物流任务，所以如果只想发布唯一任务的话，在发布前需要自行检查是否已经包含任务
      * 
      * @returns 是否已覆盖同种任务
      */
-    public addTask(task: RoomTransportTasks): boolean {
+    public addTask(task: RoomTransportTasks): void {
+        task.key = new Date().getTime() + (this.tasks.length * 0.1)
+        // 发布任务的时候为了方便可以不填这个，这里给它补上
         if (!task.executor) task.executor = []
 
-        const oldTaskInfo = this.hasTask(task.type)
-        // 没有同种任务，直接添加
-        if (!oldTaskInfo) {
-            // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
-            let insertIndex = this.tasks.length
-            this.tasks.find((task, index) => {
-                if (task.priority < task.priority) insertIndex = index
-            })
+        // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
+        let insertIndex = this.tasks.length
+        this.tasks.find((task, index) => {
+            if (task.priority < task.priority) insertIndex = index
+        })
 
-            // 在目标索引位置插入新任务并重新分配任务
-            this.tasks.splice(insertIndex, 0, task)
-            this.dispatchTask()
-            this.saveTask()
-            return false
-        }
-
-        const [ oldTask, oldTaskIndex ] = oldTaskInfo
-        this.tasks.splice(oldTaskIndex, 1, task)
-        // 如果优先级或者需要执行人数变了，就重新分配任务
-        if (oldTask.priority !== task.priority || oldTask.need !== task.need) {
-            this.dispatchTask()
-            this.saveTask()
-        }
-
-        return true
+        // 在目标索引位置插入新任务并重新分配任务
+        this.tasks.splice(insertIndex, 0, task)
+        this.dispatchTask()
+        this.saveTask()
     }
 
     /**
@@ -63,11 +50,11 @@ export default class RoomTransport implements RoomTransportType {
      * @param taskType 要查询的任务类型
      * @returns 对应的任务，没有的话则返回 undefined
      */
-    public getTask<T extends AllTransportTaskType>(taskType: T): TransportTasks[T] | undefined {
-        if (!taskType) return undefined
+    public getTask(taskKey: number): RoomTransportTasks | undefined {
+        if (!taskKey) return undefined
 
-        return this.tasks.find(task => task.type === taskType) as TransportTasks[T]
-    } 
+        return this.tasks.find(task => task.key === taskKey) as RoomTransportTasks
+    }
 
     /**
      * 从内存中重建物流任务队列
@@ -155,19 +142,21 @@ export default class RoomTransport implements RoomTransportType {
      * 获取应该执行的任务
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
-    public getWork(creep: MyCreep<'manager'>): TransportAction<AllTransportTaskType> {
-        let task = this.getTask(creep.memory.transportTask)
+    public getWork(creep: MyCreep<'manager'>): TransportAction {
+        let task = this.getTask(creep.memory.transportTaskKey)
 
         // 是新人，分配任务
         if (!task) {
+            if (this.tasks.length <= 0) return noTask(creep)
+
             this.giveJob(creep)
             this.saveTask()
             // 分配完后重新获取任务
-            task = this.getTask(creep.memory.transportTask)
+            task = this.getTask(creep.memory.transportTaskKey)
         }
-
+        const actionGenerator: TransportActionGenerator = transportActions[task.type]
         // 分配完后获取任务执行逻辑
-        return transportActions[task.type](creep, task)
+        return actionGenerator(creep, task)
     }
 
     /**
@@ -213,6 +202,6 @@ export default class RoomTransport implements RoomTransportType {
      */
     private giveTask(creep: Creep, task: TransportTasks[AllTransportTaskType]): void {
         task.executor.push(creep.id)
-        creep.memory.transportTask = task.type
+        creep.memory.transportTaskKey = task.key
     }
 }

@@ -28,8 +28,8 @@ export default class NukerExtension extends StructureNuker {
 
         // 检查来源是否符合规则，符合则发布资源转移任务
         if (source && source.store.getUsedCapacity(resource) > sourceLimit) {
-            this.room.addRoomTransferTask({
-                type: ROOM_TRANSFER_TASK.FILL_NUKER,
+            this.room.transport.addTask({
+                type: 'fillNuker',
                 id: this.id,
                 resourceType: resource
             })

@@ -1,6 +1,5 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
-import { getRoomTransferTask, transferTaskOperations } from './transferTaskOperations'
 
 /**
  * manager 触发后事处理的最小生命
@@ -14,26 +13,17 @@ const TRANSFER_DEATH_LIMIT = 20
  */
 const manager: CreepConfig<'manager'> = {
     source: creep => {
-        const { sourceId } = creep.memory.data
+        const { sourceId, workRoom } = creep.memory.data
         if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, sourceId)
 
-        const task = getRoomTransferTask(creep.room)
-
-        // 有任务就执行
-        if (task) return transferTaskOperations[task.type].source(creep, task, sourceId)
-        else creep.say('💤')
+        return Game.rooms[workRoom]?.transport.getWork(creep).source()
     },
     target: creep => {
-        const task = getRoomTransferTask(creep.room)
-
-        // 有任务就执行
-        if (task) return transferTaskOperations[task.type].target(creep, task)
-        else return true
+        const { workRoom } = creep.memory.data
+        return Game.rooms[workRoom]?.transport.getWork(creep).target()
     },
     bodys: createBodyGetter(bodyConfigs.manager)
 }
-
-
 
 /**
  * 快死时的后事处理
@@ -43,10 +33,10 @@ const manager: CreepConfig<'manager'> = {
  * @param creep manager
  * @param sourceId 能量存放处
  */
-const deathPrepare = function(creep: Creep, sourceId: Id<EnergySourceStructure>): false {
+const deathPrepare = function(creep: Creep, sourceId: Id<StructureWithStore>): false {
     if (creep.store.getUsedCapacity() > 0) {
         for (const resourceType in creep.store) {
-            let target: EnergySourceStructure
+            let target: StructureWithStore
             // 不是能量就放到 terminal 里
             if (resourceType != RESOURCE_ENERGY && resourceType != RESOURCE_POWER && creep.room.terminal) {
                 target = creep.room.terminal

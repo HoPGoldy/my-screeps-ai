@@ -25,8 +25,11 @@ Function.prototype.setNextPlan = function(nextPlan): PlanNodeFunction {
  * @param indexs creep 的名称后缀，数组长度即为要发布的 upgrader 数量
  * @param sourceId 能量来源 id
  */
-const addUpgrader = function(roomName: string, indexs: number[], sourceId: string): void {
-    indexs.forEach(i => creepApi.add(`${roomName} upgrader${i}`, 'upgrader', { sourceId }, roomName))
+const addUpgrader = function(roomName: string, indexs: number[], sourceId: Id<EnergySourceStructure>): void {
+    indexs.forEach(i => creepApi.add(`${roomName} upgrader${i}`, 'upgrader', {
+        sourceId,
+        workRoom: roomName
+    }, roomName))
 }
 
 const releasePlans: CreepReleasePlans = {
@@ -247,7 +250,8 @@ const releasePlans: CreepReleasePlans = {
                     // 发布对应数量的 filler
                     for (let i = 0; i < numberConfig.num; i++) {
                         creepApi.add(`${room.name} filler${index}${i}`, 'filler', {
-                            sourceId: containerId
+                            sourceId: containerId,
+                            workRoom: room.name
                         }, room.name)
                     }
                 })
@@ -264,7 +268,8 @@ const releasePlans: CreepReleasePlans = {
 
                 // 发布房间物流管理单位
                 creepApi.add(`${room.name} manager`, 'manager', {
-                    sourceId: storageId
+                    sourceId: storageId,
+                    workRoom: room.name
                 }, room.name)
 
                 room.log(`发布 manager`, 'transporter', 'green')
@@ -362,7 +367,7 @@ export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number:
      * @param num 要发布的刷墙工数量
      */
     'repairer': function(room: Room, num: number = 1): OK | ERR_NOT_ENOUGH_ENERGY {
-        let sources: string[] = undefined
+        let sources: Id<EnergySourceStructure>[] = undefined
         
         // 优先使用 container 中的能量
         if (!sources && room.sourceContainers.length > 0) sources = room.sourceContainers.map(c => c.id)
@@ -375,6 +380,7 @@ export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number:
         for (let i = 0; i < num; i ++) {
             creepApi.add(`${room.name} repair${i}`, 'repairer', {
                 sourceId: sources[i % sources.length],
+                workRoom: room.name
             }, room.name)
         }
 
@@ -388,7 +394,8 @@ export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number:
     'builder': function(room: Room, num: number = 2) {
         for (let i = 0; i < num; i ++) {
             creepApi.add(`${room.name} builder${i}`, 'builder', {
-                sourceId: room.getAvailableSource()?.id
+                sourceId: room.getAvailableSource()?.id,
+                workRoom: room.name
             }, room.name)
         }
 
