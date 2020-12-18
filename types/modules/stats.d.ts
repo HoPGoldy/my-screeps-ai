@@ -62,12 +62,4 @@ interface RoomStats {
      * 升级工的生命总时长
      */
     upgraderLifeTime: number
-    /**
-     * 搬运工的工作时长
-     */
-    transporterWorkingTime: number
-    /**
-     * 搬运工的生命总时长
-     */
-    transporterLifeTime: number
 }

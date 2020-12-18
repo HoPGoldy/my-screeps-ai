@@ -15,7 +15,7 @@ const transportManagers: { [roomName: string]: RoomTransport } = {}
 /**
  * 向房间原型挂载物流对象
  */
-export const mountTransport = function () {
+export default function () {
     Object.defineProperty(Room.prototype, 'transport', {
         get() {
             if (!(this.name in transportManagers)) {

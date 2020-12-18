@@ -23,9 +23,7 @@ export const setRoomStats = function (roomName: string, getNewStats: (stats: Roo
             controllerRatio: 0,
             controllerLevel: 0,
             upgraderWorkingTime: 0,
-            upgraderLifeTime: 0,
-            transporterWorkingTime: 0,
-            transporterLifeTime: 0
+            upgraderLifeTime: 0
         }
     }
 
