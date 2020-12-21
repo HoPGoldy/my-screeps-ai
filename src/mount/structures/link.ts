@@ -31,6 +31,8 @@ export class LinkExtension extends StructureLink {
         const center = this.room.memory.center
         if (center && this.pos.isNearTo(new RoomPosition(center[0], center[1], this.room.name))) {
             this.asCenter()
+            // 发布配套的中央搬运工
+            this.room.releaseCreep('processor')
             return
         }
 

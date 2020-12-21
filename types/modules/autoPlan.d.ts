@@ -153,7 +153,6 @@ interface ReleasePlanConstructor<T> {
 interface CreepReleasePlans {
     harvester: ReleasePlanConstructor<HarvesterPlanStats>
     upgrader: ReleasePlanConstructor<UpgraderPlanStats>
-    transporter: ReleasePlanConstructor<TransporterPlanStats>
 }
 
 /**

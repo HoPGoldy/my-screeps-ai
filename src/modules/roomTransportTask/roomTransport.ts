@@ -27,7 +27,7 @@ export default class RoomTransport implements RoomTransportType {
     /**
      * 本物流对象所处的房间名
      */
-    roomName: string
+    readonly roomName: string
 
     /**
      * 当前正在执行的所有物流任务
@@ -67,8 +67,8 @@ export default class RoomTransport implements RoomTransportType {
 
         // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
         let insertIndex = this.tasks.length
-        this.tasks.find((task, index) => {
-            if (task.priority < task.priority) insertIndex = index
+        this.tasks.find((existTask, index) => {
+            if (existTask.priority < task.priority) insertIndex = index
         })
 
         // 在目标索引位置插入新任务并重新分配任务
@@ -95,7 +95,7 @@ export default class RoomTransport implements RoomTransportType {
      * 从内存中重建物流任务队列
      */
     private initTask() {
-        if (!Memory.rooms) return;
+        if (!Memory.rooms || Memory.rooms[this.roomName]) return;
         // 从内存中解析数据
         const transportTaskDatas: TransportData = JSON.parse(Memory.rooms[this.roomName].transport || '[]')
         this.tasks = transportTaskDatas

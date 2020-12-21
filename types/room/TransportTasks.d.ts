@@ -140,6 +140,10 @@ interface RoomTransportType {
      * 移除一个任务
      */
     removeTask(taskKey: number): OK | ERR_NOT_FOUND
+    /**
+     * 获取该房间的搬运工调整期望
+     */
+    getExpect(): number
 }
 
 /**

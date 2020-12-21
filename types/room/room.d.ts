@@ -166,6 +166,10 @@ interface RoomMemory {
             limit: number
         }
     }
+    /**
+     * 当前本房间物流单位的数量
+     */
+    transporterNumber?: number
 }
 
 /**

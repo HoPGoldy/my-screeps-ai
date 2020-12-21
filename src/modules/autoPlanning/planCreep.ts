@@ -207,89 +207,6 @@ const releasePlans: CreepReleasePlans = {
                 return true
             }
         ]
-    },
-
-    /**
-     * 发布资源运输单位的相关逻辑
-     */
-    transporter: {
-        // 状态收集
-        getStats(room: Room): TransporterPlanStats {
-            const stats: TransporterPlanStats = {
-                room,
-                sourceContainerIds: room.sourceContainers.map(container => container.id) || []
-            }
-
-            if (room.storage) stats.storageId = room.storage.id
-            if (room.centerLink) stats.centerLinkId = room.centerLink.id
-            if (room.memory.center) stats.centerPos = room.memory.center
-
-            return stats
-        },
-        // 发布计划
-        plans: [
-            // container 修建完成
-            ({ room, sourceContainerIds, centerPos }: TransporterPlanStats) => {
-                let releaseNumber = 0
-                // 遍历现存的 container，发布填充单位
-                // 会根据 container 到基地的距离决定发布数量
-                sourceContainerIds.forEach((containerId, index) => {
-                    const container = Game.getObjectById(containerId)
-                    if (!container) return
-
-                    // 获取 container 到基地中心的距离
-                    const range = centerPos ?
-                        container.pos.findPathTo(centerPos[0], centerPos[1]).length :
-                        // 没有设置基地中心点，使用第一个 spawn 的位置
-                        container.pos.findPathTo(room[STRUCTURE_SPAWN][0].pos.x, room[STRUCTURE_SPAWN][0].pos.y).length 
-
-                    // 根据获取合适的人数
-                    const numberConfig = FILLER_WITH_CONTAINER_RANGE.find(config => range > config.range)
-                    releaseNumber += numberConfig.num
-
-                    // 发布对应数量的 filler
-                    for (let i = 0; i < numberConfig.num; i++) {
-                        creepApi.add(`${room.name} filler${index}${i}`, 'filler', {
-                            sourceId: containerId,
-                            workRoom: room.name
-                        }, room.name)
-                    }
-                })
-
-                room.log(`发布 filler * ${releaseNumber}`, 'transporter', 'green')
-                // 发布并没有完成，继续检查是否可以发布 manager 和 processor
-                return false
-            },
-
-            // storage 修建完成
-            ({ room, storageId }: TransporterPlanStats) => {
-                // 如果没有 storage 的话，那么 manager 和 processor 就都没有吧要发布了，所以这里直接返回发布完成
-                if (!storageId) return true
-
-                // 发布房间物流管理单位
-                creepApi.add(`${room.name} manager`, 'manager', {
-                    sourceId: storageId,
-                    workRoom: room.name
-                }, room.name)
-
-                room.log(`发布 manager`, 'transporter', 'green')
-                return false
-            },
-
-            // centerLink 修建完成
-            ({ room, centerLinkId, centerPos }: TransporterPlanStats) => {
-                if (!centerLinkId || !centerPos) return true
-
-                // 发布中央运输单位
-                creepApi.add(`${room.name} processor`, 'processor', {
-                    x: centerPos[0],
-                    y: centerPos[1]
-                }, room.name)
-
-                room.log(`发布 processor`, 'transporter', 'green')
-                return true
-            },
-        ]
     }
 }
 
@@ -314,24 +231,45 @@ const releaseHarvester = function(room: Room): OK {
 }
 
 /**
- * 发布运输者
- * @param room 要发布角色的房间
- */
-const releaseTransporter = function(room: Room): OK {
-    // 不需要提前移除，因为运输者的数量不会发生大范围波动
-    planChains.transporter(releasePlans.transporter.getStats(room))
-    return OK
-}
-
-/**
  * 房间运营角色名对应的发布逻辑
  */
 export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number: number) => OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY } = {
     'harvester': releaseHarvester,
     'collector': releaseHarvester,
-    'filler': releaseTransporter,
-    'manager': releaseTransporter,
-    'processor': releaseTransporter,
+
+    /**
+     * 发布搬运工
+     * @param room 要发布角色的房间
+     * @param number 要发布的数量
+     */
+    'manager': function(room: Room, number: number): OK {
+        for (let i = 0; i < number; i++) {
+            if (creepApi.has(`${room.name} manager${i}`)) continue
+            creepApi.add(`${room.name} manager${i}`, 'manager', { workRoom: room.name }, room.name)
+        }
+
+        let extraIndex = number
+        // 移除多余的搬运工
+        while (creepApi.has(`${room.name} manager${extraIndex}`)) {
+            creepApi.remove(`${room.name} manager${extraIndex}`)
+            extraIndex += 1
+        }
+
+        return OK
+    },
+
+    /**
+     * 发布中央运输单位
+     * @param room 要发布角色的房间（memory 需要包含 center 字段）
+     */
+    'processor': function(room: Room): OK | ERR_NOT_FOUND {
+        if (!room.memory.center) return ERR_NOT_FOUND
+
+        const [ x, y ] = room.memory.center 
+        creepApi.add(`${room.name} processor`, 'processor', { x, y }, room.name)
+
+        return OK
+    },
 
     /**
      * 发布升级者
@@ -340,7 +278,7 @@ export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number:
     'upgrader': function(room: Room): OK {
         // 先移除所有的配置项
         for (let i = 0; i < MAX_UPGRADER_NUM; i++) creepApi.remove(`${room.name} upgrader${i}`)
-    
+
         // 然后重新发布
         planChains.upgrader(releasePlans.upgrader.getStats(room))
         return OK
