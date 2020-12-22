@@ -45,8 +45,8 @@ export default class ControllerExtension extends StructureController {
         // 刚占领，添加最基础的角色组
         if (level === 1) {
             this.room.releaseCreep('harvester')
-            // 多发布一个 build 协助建造
-            this.room.releaseCreep('builder', 1)
+            // 发布 build 建造 container
+            this.room.releaseCreep('builder', 4)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
             // 开始刷墙后就开始生刷墙工

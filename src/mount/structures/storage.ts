@@ -79,8 +79,18 @@ class StorageExtension extends StructureStorage {
      */
     public onBuildComplete(): void {
         this.room.releaseCreep('harvester')
-        this.room.releaseCreep('manager')
         this.room.releaseCreep('upgrader')
+
+        this.room.sourceContainers.forEach(container => {
+            // 添加从 container 到自己的能量搬运任务
+            // 虽然没指定任务完成条件，但是后面 container 是会被主动摧毁的（link 造好后），这时对应的搬运任务就会被释放掉
+            this.room.transport.addTask({
+                type: 'transport',
+                from: container.id,
+                to: this.id,
+                resourceType: RESOURCE_ENERGY
+            })
+        })
     }
 }
 

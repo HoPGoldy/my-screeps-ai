@@ -18,16 +18,88 @@ export const transportActions: {
     [TaskType in AllTransportTaskType]: TransportActionGenerator<TaskType>
 } = {
     /**
+     * 基础搬运任务
+     * 从一个地方（建筑）搬运东西到另一个地方（建筑）
+     */
+    transport: (creep, task) => ({
+        source: () => {
+            if (creep.store[task.resourceType] > 0) return true
+
+            // 是 id，从建筑获取
+            if (typeof task.from === 'string') {
+                // 获取目标建筑
+                const targetStructure = Game.getObjectById(task.from)
+                if (!targetStructure) finishTask(creep)
+                
+                // 检查下有没有资源
+                const resAmount = targetStructure.store[task.resourceType]
+                if (!resAmount) {
+                    // 如果任务有结束条件的话就结束，没有就等会
+                    if (task.endWith && task.endWith === 'clear') finishTask(creep)
+                    else creep.say('🏓')
+                    return false
+                }
+
+                // 移动到目的地，获取资源
+                creep.goTo(targetStructure.pos, { range: 1 })
+                const result = creep.withdraw(targetStructure, task.resourceType)
+                return result === OK
+            }
+            // 是位置，尝试捡一下
+            else {
+                // 获取目标位置
+                const [ x, y, roomName ] = task.from as [number, number, string]
+                const targetPos = new RoomPosition(x, y, roomName)
+
+                // 检查下有没有资源
+                const targetRes = targetPos.lookFor(LOOK_RESOURCES).find(res => res.resourceType === task.resourceType)
+                if (!targetRes) {
+                    // 如果任务有结束条件的话就结束，没有就等会
+                    if (task.endWith && task.endWith === 'clear') finishTask(creep)
+                    else creep.say('🎨')
+                    return false
+                }
+
+                // 移动到目的地，捡起资源
+                creep.goTo(targetPos, { range: 1 })
+                const result = creep.pickup(targetRes)
+                return result === OK
+            }
+        },
+        target: () => {
+            if (creep.store[task.resourceType] <= 0) return true
+
+            // 是 id，存放到只当建筑
+            if (typeof task.to === 'string') {
+                // 获取目标建筑
+                const targetStructure = Game.getObjectById(task.to)
+                if (!targetStructure) finishTask(creep)
+
+                // 移动到目的地，获取资源
+                creep.goTo(targetStructure.pos, { range: 1 })
+                const result = creep.transfer(targetStructure, task.resourceType)
+                return result === OK
+            }
+            // 是位置，走到地方然后扔下去
+            else {
+                // 获取目标位置
+                const [ x, y, roomName ] = task.to as [number, number, string]
+                const targetPos = new RoomPosition(x, y, roomName)
+
+                // 移动到目的地，捡起资源
+                creep.goTo(targetPos, { range: 1 })
+                const result = creep.drop(task.resourceType)
+                return result === OK
+            }
+        }
+    }),
+
+    /**
      * extension 填充任务
      * 维持正常孵化的任务
      */
     fillExtension: creep => ({
-        source: () => {
-            if (creep.store[RESOURCE_ENERGY] > 0) return true
-            const { sourceId } = creep.memory.data
-            const result = creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
-            return result === OK
-        },
+        source: () => getEnergy(creep),
         target: () => {
             if (creep.store[RESOURCE_ENERGY] === 0) return true
             let target: StructureExtension | StructureSpawn
@@ -74,12 +146,7 @@ export const transportActions: {
      * 维持房间内所有 tower 的能量
      */
     fillTower: (creep, task) => ({
-        source: () => {
-            const { sourceId } = creep.memory.data
-            if (creep.store[RESOURCE_ENERGY] > 0) return true
-            const result = creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
-            return result === OK
-        },
+        source: () => getEnergy(creep),
         target: () => {
             if (creep.store[RESOURCE_ENERGY] === 0) return true
             let target: StructureTower
@@ -94,7 +161,7 @@ export const transportActions: {
                     target = undefined 
                 }
             }
-            
+
             // 有缓存的话
             if (!target) {
                 // 先检查下任务发布 tower 能量是否足够
@@ -533,7 +600,9 @@ export const transportActions: {
 const clearCarryingEnergy = function (creep: Creep): boolean {
     if (creep.store[RESOURCE_ENERGY] > 0) {
         // 能放下就放，放不下说明能量太多了，直接扔掉
-        if (creep.room.storage && creep.room.storage.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY]) creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
+        if (creep.room.storage && creep.room.storage.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY]) {
+            creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
+        }
         else creep.drop(RESOURCE_ENERGY)
 
         return false
@@ -550,4 +619,35 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
 const finishTask = function (creep: MyCreep<'manager'>): void {
     const { workRoom } = creep.memory.data
     Game.rooms[workRoom]?.transport.removeTask(creep.memory.transportTaskKey)
+}
+
+/**
+ * 搬运工去房间内获取能量
+ * 
+ * @param creep 要获取能量的 creep
+ * @returns 身上是否已经有足够的能量了
+ */
+const getEnergy = function (creep: MyCreep<'manager'>): boolean {
+    if (creep.store[RESOURCE_ENERGY] > 10) return true
+
+    // 从内存中找到缓存的能量来源
+    const { sourceId, workRoom } = creep.memory.data
+    let sourceStructure = Game.getObjectById(sourceId)
+
+    // 来源建筑不可用，更新来源
+    if (!sourceStructure || sourceStructure.store[RESOURCE_ENERGY] <= 0) {
+        sourceStructure = Game.rooms[workRoom].getAvailableSource(false)
+
+        // 更新失败，现在房间里没有可用的能量源，挂机
+        if (!sourceStructure) {
+            creep.say('⛳')
+            return false
+        }
+
+        creep.memory.data.sourceId = sourceStructure.id
+    }
+
+    // 获取能量
+    const result = creep.getEngryFrom(sourceStructure)
+    return result === OK
 }

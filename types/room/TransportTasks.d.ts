@@ -31,6 +31,28 @@ type RoomTransportTasks = TransportTasks[AllTransportTaskType]
  */
 interface TransportTasks {
     /**
+     * 基础搬运任务
+     */
+    transport: TransportTaskBase<'transport'> & {
+        /**
+         * 从哪里搬运，数字元组代表一个位置
+         */
+        from: [number, number, string] | Id<StructureWithStore>
+        /**
+         * 搬运到哪里
+         */
+        to: [number, number, string] | Id<StructureWithStore>
+        /**
+         * 搬运啥
+         */
+        resourceType: ResourceConstant
+        /**
+         * 怎么算完成任务：clear 代表目标位置不存在该资源就完成任务
+         * 该字段的话该任务将永远不会结束，需要外部模块手动取消
+         */
+        endWith?: 'clear'
+    }
+    /**
      * 填充 spawn 及 extension
      */
     fillExtension: TransportTaskBase<'fillExtension'>

@@ -68,7 +68,11 @@ export default class RoomTransport implements RoomTransportType {
         // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
         let insertIndex = this.tasks.length
         this.tasks.find((existTask, index) => {
-            if (existTask.priority < task.priority) insertIndex = index
+            // 老任务的优先级更高，不能在这里插入
+            if (existTask.priority >= task.priority) return false
+
+            insertIndex = index
+            return true
         })
 
         // 在目标索引位置插入新任务并重新分配任务
@@ -163,11 +167,11 @@ export default class RoomTransport implements RoomTransportType {
         }
 
         // 还没分完的话就依次分给优先度高的任务
-        if (creeps.length > 0) {
-            for (let i = 0; i < creeps.length; i ++) {
-                // 不检查是否缺人，直接分（因为缺人的任务在上面已经分完了）
-                this.giveTask(creeps.shift(), this.tasks[i % this.tasks.length])
-            }
+        let i = 0
+        while (creeps.length > 0) {
+            // 不检查是否缺人，直接分（因为缺人的任务在上面已经分完了）
+            this.giveTask(creeps.shift(), this.tasks[i % this.tasks.length])
+            i ++
         }
     }
 
@@ -240,7 +244,7 @@ export default class RoomTransport implements RoomTransportType {
             return (this.totalWorkTime / this.totalLifeTime) >= opt.proportion
         })
 
-        return currentExpect?.expect || -2
+        return currentExpect?.expect !== undefined ? currentExpect.expect : -2
     }
 
     /**
