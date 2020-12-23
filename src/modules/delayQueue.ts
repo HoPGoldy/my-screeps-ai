@@ -55,7 +55,7 @@ export const addDelayCallback = function <K extends AllDelayTaskName>(
  */
 export const manageDelayTask = function (): void {
     // 用 filter 更新所有还没有执行的任务
-    Memory.delayTasks = Memory.delayTasks.filter(task => {
+    Memory.delayTasks = (Memory.delayTasks || []).filter(task => {
         if (Game.time < task.call) return true
 
         // 解析任务，如果已经注册了回调的话就执行

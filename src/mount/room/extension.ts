@@ -10,6 +10,7 @@ import { ROOM_TRANSFER_TASK, BOOST_RESOURCE, ENERGY_SHARE_LIMIT } from 'setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from 'modules/autoPlanning/planBasePos'
 import { manageStructure } from 'modules/autoPlanning'
 import { createRoomLink, log } from 'utils'
+import { updateStructure } from 'modules/shortcut'
 
 export default class RoomExtension extends Room {
     /**
@@ -298,63 +299,6 @@ export default class RoomExtension extends Room {
      */
     public deleteCurrentCenterTask(): void {
         this.memory.centerTransferTasks.shift()
-    }
-
-    /**
-     * 向房间物流任务队列推送新的任务
-     * 
-     * @param task 要添加的任务
-     * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
-     * @returns 任务的排队位置, 0 是最前面，-1 为添加失败（已有同种任务）
-     */
-    public addRoomTransferTask(task: RoomTransportTasks, priority: number = null): number {
-        if (this.hasRoomTransferTask(task.type)) return -1
-
-        // 默认追加到队列末尾
-        if (!priority) {
-            this.memory.transferTasks.push(task)
-            return this.memory.transferTasks.length - 1
-        }
-        // 追加到队列指定位置
-        else {
-            this.memory.transferTasks.splice(priority, 0, task)
-            return priority < this.memory.transferTasks.length ? priority : this.memory.transferTasks.length - 1
-        }
-    }
-
-    /**
-     * 是否有相同的房间物流任务
-     * 房间物流队列中一种任务只允许同时存在一个
-     * 
-     * @param taskType 任务类型
-     */
-    public hasRoomTransferTask(taskType: string): boolean {
-        if (!this.memory.transferTasks) this.memory.transferTasks = []
-        
-        const task = this.memory.transferTasks.find(task => task.type === taskType)
-        return task ? true : false
-    }
-
-    /**
-     * 获取当前的房间物流任务
-     */
-    public getRoomTransferTask(): RoomTransportTasks | null {
-        if (!this.memory.transferTasks) this.memory.transferTasks = []
-        
-        if (this.memory.transferTasks.length <= 0) {
-            return null
-        }
-        else {
-            return this.memory.transferTasks[0]
-        }
-    }
-
-    /**
-     * 移除当前处理的房间物流任务
-     * 并统计至 Memory.stats
-     */
-    public deleteCurrentRoomTransferTask(): void {
-        this.memory.transferTasks.shift()
     }
 
     /**
@@ -702,6 +646,8 @@ export default class RoomExtension extends Room {
         if (!this.memory.sourceContainersIds) this.memory.sourceContainersIds = []
         // 去重，防止推入了多个相同的 container
         this.memory.sourceContainersIds = _.uniq([ ...this.memory.sourceContainersIds, container.id])
+        // 更新建筑缓存
+        updateStructure(this.name, STRUCTURE_CONTAINER, container.id)
 
         // 触发对应的 creep 发布规划
         this.releaseCreep('manager', this.memory.sourceContainersIds.length * 3)

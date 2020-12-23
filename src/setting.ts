@@ -530,7 +530,7 @@ export const FILLER_WITH_CONTAINER_RANGE = [
 ]
 
 // 用于维持房间能量正常运转的重要角色
-export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'collector', 'filler', 'manager', 'processor' ]
+export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'collector', 'manager', 'processor' ]
 
 /**
  * 所有的 shard 名称，用于跨 shard 通讯，

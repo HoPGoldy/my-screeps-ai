@@ -122,16 +122,20 @@ export default class RoomTransport implements RoomTransportType {
         let i = 0, j = this.tasks.length - 1
 
         // 这里没用碰撞指针，是因为有可能存在低优先度任务缺人但是高优先度任务人多的情况
-        while (i <= this.tasks.length - 1 || j >= 0) {
+        while (i <= this.tasks.length - 1 && j >= 0) {
             const task = this.tasks[i]
             // 工作人数符合要求，检查下一个
-            if (task.executor.length > 0) continue
+            if (task.executor.length > 0) {
+                i ++
+                continue
+            }
 
             // 从优先级低的任务抽人
-            while (j >= 0) {
+            while (j >= 0 && task.executor.length <= 0) {
                 const lowTask = this.tasks[j]
-                // 人手不够，检查优先级略高的任务
-                if (lowTask.executor.length <= 0) {
+                // 人手不够，检查优先级更高的任务
+                // 后面这个 (j > i ? 0 : 1) 的意思是：低优先任务往高优先任务调人允许把人全调走，但是高优先往低优先调人至少会保留一个人
+                if (j === i || lowTask.executor.length <= (j > i ? 0 : 1)) {
                     j --
                     continue
                 }

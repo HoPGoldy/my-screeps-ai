@@ -21,7 +21,7 @@ export default class SpawnExtension extends StructureSpawn {
              */
             if (this.spawning.needTime - this.spawning.remainingTime == 1) {
                 if (!this.room.transport.hasTask('fillExtension')) this.room.transport.addTask({ type: 'fillExtension', priority: 10 })
-                
+
                 if (
                     // 非战争状态下直接发布 power 填 extension 任务
                     !this.room.memory.war ||

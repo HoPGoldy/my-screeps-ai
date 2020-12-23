@@ -16,7 +16,6 @@ interface RoleDatas {
     collector: HarvesterData
     miner: MinerData
     upgrader: WorkerData
-    filler: transporterData
     builder: WorkerData
     repairer: WorkerData
 

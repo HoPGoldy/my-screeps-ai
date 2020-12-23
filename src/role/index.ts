@@ -1,7 +1,6 @@
 import harvester from './base/harvester'
 import collector from './base/collector'
 import builder from './base/builder'
-import filler from './base/filler'
 import miner from './base/miner'
 import repairer from './base/repairer'
 import upgrader from './base/upgrader'
@@ -35,7 +34,7 @@ const creepWork: CreepWork = {
      * 初级房间运维角色组
      * 包括了在没有 Storage 和 Link 的房间内运维所需的角色
      */
-    harvester, collector, builder, filler, miner, repairer, upgrader,
+    harvester, collector, builder, miner, repairer, upgrader,
 
     /**
      * 高级房间运营角色组
