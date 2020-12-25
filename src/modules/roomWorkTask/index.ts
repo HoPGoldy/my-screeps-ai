@@ -5,24 +5,24 @@
  * 但是该模块不负责中央集群的物流任务
  */
 
-import RoomTransport from './taskController'
+import RoomWork from './taskController'
 
 /**
  * 所有的房间物流对象都被存放到这里
  */
-const transportControllers: { [roomName: string]: RoomTransport } = {}
+const workControllers: { [roomName: string]: RoomWork } = {}
 
 /**
  * 向房间原型挂载物流对象
  */
 export default function () {
-    Object.defineProperty(Room.prototype, 'transport', {
+    Object.defineProperty(Room.prototype, 'work', {
         get() {
-            if (!(this.name in transportControllers)) {
-                transportControllers[this.name] = new RoomTransport(this.name)
+            if (!(this.name in workControllers)) {
+                workControllers[this.name] = new RoomWork(this.name)
             }
 
-            return transportControllers[this.name]
+            return workControllers[this.name]
         },
         enumerable: false,
         configurable: true

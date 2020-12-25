@@ -32,7 +32,7 @@ export default class RoomTransport implements RoomTransportType {
     /**
      * 当前正在执行的所有物流任务
      */
-    tasks: TransportTasks[AllTransportTaskType][] = []
+    tasks: AllRoomTransportTask[] = []
 
     /**
      * 本房间的搬运工总生命时长
@@ -60,7 +60,7 @@ export default class RoomTransport implements RoomTransportType {
      * 
      * @returns 该物流任务的唯一索引
      */
-    public addTask(task: RoomTransportTasks): number {
+    public addTask(task: AllRoomTransportTask): number {
         task.key = new Date().getTime() + (this.tasks.length * 0.1)
         // 发布任务的时候为了方便可以不填这个，这里给它补上
         if (!task.executor) task.executor = []
@@ -89,10 +89,10 @@ export default class RoomTransport implements RoomTransportType {
      * @param taskType 要查询的任务类型
      * @returns 对应的任务，没有的话则返回 undefined
      */
-    public getTask(taskKey: number): RoomTransportTasks | undefined {
+    public getTask(taskKey: number): AllRoomTransportTask | undefined {
         if (!taskKey) return undefined
 
-        return this.tasks.find(task => task.key === taskKey) as RoomTransportTasks
+        return this.tasks.find(task => task.key === taskKey) as AllRoomTransportTask
     }
 
     /**
@@ -101,8 +101,8 @@ export default class RoomTransport implements RoomTransportType {
     private initTask() {
         if (!Memory.rooms || Memory.rooms[this.roomName]) return;
         // 从内存中解析数据
-        const transportTaskDatas: TransportData = JSON.parse(Memory.rooms[this.roomName].transport || '[]')
-        this.tasks = transportTaskDatas
+        const taskDatas: TransportData = JSON.parse(Memory.rooms[this.roomName].transportTasks || '[]')
+        this.tasks = taskDatas
     }
 
     /**
@@ -110,7 +110,7 @@ export default class RoomTransport implements RoomTransportType {
      */
     private saveTask() {
         if (!Memory.rooms) Memory.rooms = {}
-        Memory.rooms[this.roomName].transport = JSON.stringify(this.tasks)
+        Memory.rooms[this.roomName].transportTasks = JSON.stringify(this.tasks)
     }
 
     /**
@@ -158,25 +158,18 @@ export default class RoomTransport implements RoomTransportType {
      * 
      * @param creeps 要分配任务的 creep 
      */
-    private giveJob(...creeps: Creep[]) {
-        // 把执行该任务的 creep 分配到缺人做的任务上
-        if (creeps.length > 0) {
-            for (const processingTask of this.tasks) {
-                if (processingTask.executor.length > 0) continue
-                
-                // 当前任务缺人
-                this.giveTask(creeps.shift(), processingTask)
-                if (creeps.length <= 0) break
+    private giveJob(creeps: Creep[]): void {
+        let needRedispath = false
+
+        // 直接塞到优先级最低的任务里，后面会重新分派
+        for (const creep of creeps) {
+            for (let i = this.tasks.length - 1; i > 0; i--) {
+                this.tasks[i].executor.push(creep.id)
+                needRedispath = true
             }
         }
 
-        // 还没分完的话就依次分给优先度高的任务
-        let i = 0
-        while (creeps.length > 0) {
-            // 不检查是否缺人，直接分（因为缺人的任务在上面已经分完了）
-            this.giveTask(creeps.shift(), this.tasks[i % this.tasks.length])
-            i ++
-        }
+        needRedispath && this.dispatchTask()
     }
 
     /**
@@ -184,7 +177,7 @@ export default class RoomTransport implements RoomTransportType {
      * 获取后请在本 tick 直接执行，不要进行存储
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
-    public getWork(creep: MyCreep<'manager'>): TransportAction {
+    public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
         this.totalLifeTime += 1
         let task = this.getTask(creep.memory.transportTaskKey)
 
@@ -193,7 +186,7 @@ export default class RoomTransport implements RoomTransportType {
             // 这里直接返回了，所以摸鱼时不会增加工作时长
             if (this.tasks.length <= 0) return noTask(creep)
 
-            this.giveJob(creep)
+            this.giveJob([creep])
             this.saveTask()
             // 分配完后重新获取任务
             task = this.getTask(creep.memory.transportTaskKey)
@@ -226,7 +219,7 @@ export default class RoomTransport implements RoomTransportType {
 
             // 给干完活的搬运工重新分配任务
             const extraCreeps = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
-            this.giveJob(...extraCreeps)
+            this.giveJob(extraCreeps)
             return false
         })
 

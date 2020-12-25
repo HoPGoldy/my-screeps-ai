@@ -1,3 +1,5 @@
+import RoomWork from "modules/roomWorkTask/taskController";
+
 /**
  * 房间内存
  */
@@ -35,7 +37,12 @@ interface RoomMemory {
      * 房间物流任务的备份数据
      * 会在全局重置时通过该数据重建物流任务
      */
-    transport: string
+    transportTasks: string
+    /**
+     * 房间工作任务的备份数据
+     * 会在全局重置时通过该数据重建工作任务
+     */
+    workTasks: string
     /**
      * 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
      * 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
@@ -286,6 +293,11 @@ interface Room {
     transport: RoomTransportType
 
     /**
+     * 房间工作 api
+     */
+    work: RoomWorkType
+
+    /**
      * 工厂 api
      */
     setFactoryTarget(resourceType: ResourceConstant): string
@@ -335,4 +347,39 @@ interface Room {
 interface RoomPosition {
     directionToPos(direction: DirectionConstant): RoomPosition | undefined
     getFreeSpace(): RoomPosition[]
+}
+
+/**
+ * 房间任务基础信息
+ * 该任务是物流任务和工作任务的基础
+ */
+interface RoomTask<T extends string> {
+    /**
+     * 该任务的类型
+     */
+    type: T,
+    /**
+     * 该任务的优先级
+     * 若为空则按照发布顺序进行排序
+     */
+    priority?: number
+    /**
+     * 正在执行该任务的creep id
+     */
+    executor?: Id<Creep>[]
+    /**
+     * 该任务的唯一索引
+     */
+    key?: number
+}
+
+interface RoomTaskAction {
+    /**
+     * creep 工作时执行的方法
+     */
+    target: () => boolean
+    /**
+     * creep 非工作(收集资源时)执行的方法
+     */
+    source: () => boolean
 }

@@ -1,22 +1,4 @@
 /**
- * 物流任务数据
- */
-interface TransportTask {
-    /**
-     * 搬多少
-     * 如果该值为空的话每次搬运工都将拿取自己能携带的最大值
-     */
-    amount?: number
-    resource: ResourceConstant
-    target: TransportTarget<'id', Id<Structure>> | TransportTarget<'constant', StructureConstant>
-}
-
-interface TransportTarget<Type extends string, Data> {
-    data: Data
-    type: Type
-}
-
-/**
  * 所有的物流任务类型
  */
 type AllTransportTaskType = keyof TransportTasks
@@ -24,7 +6,7 @@ type AllTransportTaskType = keyof TransportTasks
 /**
  * 所有的房间物流任务
  */
-type RoomTransportTasks = TransportTasks[AllTransportTaskType]
+type AllRoomTransportTask = TransportTasks[AllTransportTaskType]
 
 /**
  * 所有的物流任务
@@ -33,7 +15,7 @@ interface TransportTasks {
     /**
      * 基础搬运任务
      */
-    transport: TransportTaskBase<'transport'> & {
+    transport: RoomTask<'transport'> & {
         /**
          * 从哪里搬运，数字元组代表一个位置
          */
@@ -55,31 +37,31 @@ interface TransportTasks {
     /**
      * 填充 spawn 及 extension
      */
-    fillExtension: TransportTaskBase<'fillExtension'>
+    fillExtension: RoomTask<'fillExtension'>
     /**
      * 填充 tower
      */
-    fillTower: TransportTaskBase<'fillTower'> & {
+    fillTower: RoomTask<'fillTower'> & {
         id: Id<StructureTower>
     }
     /**
      * 填充 nuker
      */
-    fillNuker: TransportTaskBase<'fillNuker'> & {
+    fillNuker: RoomTask<'fillNuker'> & {
         id: Id<StructureNuker>
         resourceType: ResourceConstant
     }
     /**
      * 填充 powerSpawn
      */
-    fillPowerSpawn: TransportTaskBase<'fillPowerSpawn'> & {
+    fillPowerSpawn: RoomTask<'fillPowerSpawn'> & {
         id: Id<StructurePowerSpawn>
         resourceType: ResourceConstant
     }
     /**
      * lab 填充底物
      */
-    labIn: TransportTaskBase<'labIn'> & {
+    labIn: RoomTask<'labIn'> & {
         resource: {
             id: Id<StructureLab>
             type: ResourceConstant
@@ -88,59 +70,25 @@ interface TransportTasks {
     /**
      * lab 移出产物
      */
-    labOut: TransportTaskBase<'labOut'>
+    labOut: RoomTask<'labOut'>
     /**
      * boost 填充资源
      */
-    boostGetResource: TransportTaskBase<'boostGetResource'>
+    boostGetResource: RoomTask<'boostGetResource'>
     /**
      * boost 填充能量
      */
-    boostGetEnergy: TransportTaskBase<'boostGetEnergy'>
+    boostGetEnergy: RoomTask<'boostGetEnergy'>
     /**
      * boost 清理资源
      */
-    boostClear: TransportTaskBase<'boostClear'>
-}
-
-/**
- * 物流任务基础信息
- */
-interface TransportTaskBase<T extends string> {
-    /**
-     * 该物流任务的类型
-     */
-    type: T,
-    /**
-     * 该物流任务的优先级
-     * 若为空则按照发布顺序进行排序
-     */
-    priority?: number
-    /**
-     * 正在执行该任务的搬运工 id
-     */
-    executor?: Id<Creep>[]
-    /**
-     * 该任务的唯一索引
-     */
-    key?: number
+    boostClear: RoomTask<'boostClear'>
 }
 
 /**
  * 从内存 transport 字段解析出来的存储格式
  */
 type TransportData = TransportTasks[AllTransportTaskType][]
-
-interface TransportAction {
-    /**
-     * creep 工作时执行的方法
-     */
-    target: () => boolean
-    /**
-     * creep 非工作(收集资源时)执行的方法
-     */
-    source: () => boolean
-}
 
 interface RoomTransportType {
     /**
@@ -149,11 +97,11 @@ interface RoomTransportType {
      * @param task 要添加的物流任务
      * @returns taskKey 该任务的唯一索引
      */
-    addTask(task: RoomTransportTasks): number 
+    addTask(task: AllRoomTransportTask): number 
     /**
      * 获取应该执行的任务
      */
-    getWork(creep: Creep): TransportAction
+    getWork(creep: Creep): RoomTaskAction
     /**
      * 是否存在某个任务
      */
@@ -174,4 +122,4 @@ interface RoomTransportType {
 type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskType> = (
     creep: MyCreep<'manager'>,
     task: TransportTasks[T]
-) => TransportAction
+) => RoomTaskAction
