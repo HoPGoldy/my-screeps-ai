@@ -1,5 +1,3 @@
-import RoomWork from "modules/roomWorkTask/taskController";
-
 /**
  * 房间内存
  */

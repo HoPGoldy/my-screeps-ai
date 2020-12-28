@@ -124,7 +124,7 @@ export default class RoomWork implements RoomWorkType {
      * 
      * @param creeps 要分配任务的 creep 
      */
-    private giveJob(...creeps: Creep[]) {
+    private giveJob(creeps: Creep[]) {
         // 把执行该任务的 creep 分配到缺人做的任务上
         if (creeps.length > 0) {
             for (const processingTask of this.tasks) {
@@ -159,7 +159,7 @@ export default class RoomWork implements RoomWorkType {
             // 这里直接返回了，所以摸鱼时不会增加工作时长
             if (this.tasks.length <= 0) return noTask(creep)
 
-            this.giveJob(creep)
+            this.giveJob([creep])
             this.saveTask()
             // 分配完后重新获取任务
             task = this.getTask(creep.memory.workTaskType)
@@ -187,13 +187,15 @@ export default class RoomWork implements RoomWorkType {
      * @param taskType 要移除的任务类型
      */
     public removeTask(taskType: AllWorkTaskType): OK | ERR_NOT_FOUND {
-        this.tasks = this.tasks.filter(task => {
-            if (task.type !== taskType) return true
+        this.tasks.find((task, index) => {
+            if (task.type !== taskType) return false
 
+            // 删除该任务
+            this.tasks.splice(index, 1)
             // 给干完活的搬运工重新分配任务
             const extraCreeps = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
-            this.giveJob(...extraCreeps)
-            return false
+            this.giveJob(extraCreeps)
+            return true
         })
 
         this.saveTask()
