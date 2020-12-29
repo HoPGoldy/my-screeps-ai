@@ -1,3 +1,4 @@
+import { getRoomAvailableSource } from 'modules/energyController'
 import { MAX_UPGRADER_NUM, MAX_HARVESTER_NUM, UPGRADE_WITH_TERMINAL, UPGRADE_WITH_STORAGE, FILLER_WITH_CONTAINER_RANGE, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { creepApi } from '../creepController'
 
@@ -330,7 +331,7 @@ export const roleToRelease: { [role in CreepRoleConstant]?: (room: Room, number:
      * @param room 要发布角色的房间
      */
     'builder': function(room: Room, num: number = 2) {
-        const source: StructureWithStore = room.getAvailableSource(false)
+        const source: StructureWithStore = getRoomAvailableSource(room, { includeSource: false })
         for (let i = 0; i < num; i ++) {
             creepApi.add(`${room.name} builder${i}`, 'builder', {
                 sourceId: source?.id,

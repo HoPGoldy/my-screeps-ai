@@ -214,32 +214,6 @@ export default class RoomExtension extends Room {
     }
 
     /**
-     * 查找房间中的有效能量来源
-     */
-    public getAvailableSource(includeSource?: true): AllEnergySource
-    public getAvailableSource(includeSource?: false): EnergySourceStructure
-    public getAvailableSource(includeSource: boolean = true): AllEnergySource | EnergySourceStructure {
-        // terminal 或 storage 里有能量就优先用
-        if (this.terminal && this.terminal.store[RESOURCE_ENERGY] > 10000) return this.terminal
-        if (this.storage && this.storage.store[RESOURCE_ENERGY] > 100000) return this.storage
-        // 如果有 container
-        if (this[STRUCTURE_CONTAINER].length > 0) {
-            // 能量必须够多才会选用
-            const availableContainer = this[STRUCTURE_CONTAINER].filter(container => container.store[RESOURCE_ENERGY] > 300)
-            // 挑个能量多的 container
-            if (availableContainer.length > 0) return _.max(availableContainer, container => container.store[RESOURCE_ENERGY])
-        }
-
-        // 没有就选边上有空位的 source
-        return includeSource ? this.source.find(source => {
-            const freeCount = source.pos.getFreeSpace().length
-            const harvestCount = source.pos.findInRange(FIND_CREEPS, 1).length
-
-            return freeCount - harvestCount > 0
-        }) : undefined
-    }
-
-    /**
      * 每个建筑同时只能提交一个任务
      * 
      * @param submit 提交者的身份

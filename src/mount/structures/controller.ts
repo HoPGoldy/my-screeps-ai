@@ -4,6 +4,7 @@ import { whiteListFilter } from 'utils'
 import { setRoomStats } from 'modules/stateCollector'
 import { costCache } from 'modules/move'
 import { LEVEL_BUILD_RAMPART } from 'setting'
+import { countEnergyChangeRatio } from 'modules/energyController'
 
 /**
  * Controller 拓展
@@ -136,6 +137,9 @@ export default class ControllerExtension extends StructureController {
                 controllerLevel: this.level
             }
         })
+
+        // 统计本房间能量状态
+        countEnergyChangeRatio(this.room.name)
 
         return hasLevelChange
     }

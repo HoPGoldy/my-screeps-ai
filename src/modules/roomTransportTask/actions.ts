@@ -1,3 +1,4 @@
+import { getRoomAvailableSource } from 'modules/energyController'
 import { boostResourceReloadLimit } from 'setting'
 
 /**
@@ -661,7 +662,7 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransportT
 
     // 来源建筑不可用，更新来源
     if (!sourceStructure || sourceStructure.store[RESOURCE_ENERGY] <= 0) {
-        sourceStructure = Game.rooms[workRoom].getAvailableSource(false)
+        sourceStructure = getRoomAvailableSource(Game.rooms[workRoom], { includeSource: false, ignoreLimit: true })
 
         // 更新失败，现在房间里没有可用的能量源，挂机
         if (!sourceStructure) {

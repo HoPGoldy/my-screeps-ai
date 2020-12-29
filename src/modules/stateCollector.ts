@@ -15,15 +15,15 @@
 export const setRoomStats = function (roomName: string, getNewStats: (stats: RoomStats) => Partial<RoomStats>): void {
     if (!Memory.stats.rooms[roomName]) {
         Memory.stats.rooms[roomName] = {
-            energy: 0,
             power: 0,
             nukerEnergy: 0,
             nukerG: 0,
             nukerCooldown: 0,
             controllerRatio: 0,
             controllerLevel: 0,
-            upgraderWorkingTime: 0,
-            upgraderLifeTime: 0
+            totalEnergy: 0,
+            energyCalcTime: 0,
+            energyGetRate: NaN
         }
     }
 
@@ -61,7 +61,7 @@ export const initGlobalStats = function (): void {
  * 负责搜集关于 cpu、memory、GCL、GPL 的相关信息
  * 详情见 ./doc/Grafana 统计信息.md
  */
-export function stateScanner(): void {
+export const stateScanner = function (): void {
     if (Game.time % 20) return 
     
     // 统计 GCL / GPL 的升级百分比和等级

@@ -32,10 +32,6 @@ interface StatsMemory {
  */
 interface RoomStats {
     /**
-     * storage 中的能量剩余量
-     */
-    energy: number
-    /**
      * 终端中的 power 数量
      */
     power: number
@@ -55,11 +51,16 @@ interface RoomStats {
      */
     [commRes: string]: number
     /**
-     * 升级工的工作时长
+     * 本房间的总可用能量（包括 storage、terminal、container）
      */
-    upgraderWorkingTime: number
+    totalEnergy: number
     /**
-     * 升级工的生命总时长
+     * totalEnergy 统计时的 Game.time，用于计算下面的获取速率
      */
-    upgraderLifeTime: number
+    energyCalcTime: number
+    /**
+     * 能量获取速率
+     * 例如 100 代表 100 点能量/tick，值为负代表负增长
+     */
+    energyGetRate: number
 }

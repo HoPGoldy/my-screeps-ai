@@ -13,7 +13,6 @@ class StorageExtension extends StructureStorage {
         if (Game.time % 20) return
 
         this.energyKeeper()
-        this.stateScanner()
 
         if (Game.time % 10000) return
         // 定时运行规划
@@ -65,13 +64,6 @@ class StorageExtension extends StructureStorage {
     public removeEnergyKeep(): OK {
         delete this.room.memory.energyKeepInfo
         return OK
-    }
-
-    /**
-     * 统计自己存储中的剩余能量
-     */
-    private stateScanner(): void {
-        setRoomStats(this.room.name, () => ({ energy: this.store[RESOURCE_ENERGY] }))
     }
 
     /**

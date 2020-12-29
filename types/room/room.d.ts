@@ -324,12 +324,6 @@ interface Room {
     stopWar(): OK | ERR_NOT_FOUND
 
     /**
-     * 获取房间中的有效能量来源
-     */
-    getAvailableSource(includeSource?: true): AllEnergySource
-    getAvailableSource(includeSource?: false): EnergySourceStructure
-
-    /**
      * 自动规划相关
      */
     findBaseCenterPos(): RoomPosition[]
