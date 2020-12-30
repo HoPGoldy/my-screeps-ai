@@ -363,6 +363,10 @@ interface RoomTask<T extends string> {
      * 该任务的唯一索引
      */
     key?: number
+    /**
+     * 该任务需要的特殊身体部件
+     */
+    require?: string
 }
 
 interface RoomTaskAction {

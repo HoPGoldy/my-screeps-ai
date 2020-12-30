@@ -116,7 +116,127 @@ export default class RoomWork implements RoomWorkType {
      * 给当前现存的任务按照优先级重新分配 creep
      */
     private dispatchTask() {
+        // 找到所有缺人手的任务
+        let unstartTasks = this.tasks.filter(task => task.executor.length <= 0)
+        
+        // 生成遍历索引，例如任务数组长度为 5，将返回 4 3 2 1 0 1 2 3 4
+        const forItem = [
+            ...[...Array(this.tasks.length).keys()].reverse(),
+            ...[...Array(this.tasks.length).keys()].splice(1)
+        ]
+        // 先优先级从低往高遍历，让额外的工人往高优先级任务富集
+        // 然后优先级从高到低遍历，避免高优先级任务很多人而低优先级任务没人做
+        for (let i of forItem) {
+            const currentTask = this.tasks[i]
 
+            // 没有多余工人，检查下一个任务
+            if (currentTask.executor.length <= 1) continue
+
+            const extraWorkers = this.getExtraWorker(currentTask)
+            // 把多余的工人分配到缺人的任务上
+            // 如果自己帮不了的话，就会把任务存放到 cantHelpTask 交给下个任务帮忙
+            const cantHelpTask = []
+            for (let j = 0; j < unstartTasks.length; j++) {
+                const checkTask = unstartTasks[j]
+
+                // 检查下自己有没有该任务缺的人，有就分一个给他
+                const neededWorker = extraWorkers[String(checkTask.require)]
+                if (neededWorker && neededWorker.length > 0) {
+                    checkTask.executor.push(neededWorker.shift().id)
+                }
+                // 该任务是特殊任务并且自己没有对应类型的，就分一个普通工人过去
+                else if (checkTask.require) {
+                    checkTask.executor.push(extraWorkers['undefined'].shift().id)
+                }
+                else cantHelpTask.push(checkTask)
+
+                // 如果人都分完了就结束多余工人分配
+                if (Object.values(extraWorkers).every(workers => workers.length <= 0)) {
+                    cantHelpTask.push(...unstartTasks.splice(j + 1))
+                    break
+                }
+            }
+
+            // 安置所有的未分配单位
+            Object.keys(extraWorkers).forEach(workerType => {
+                if (extraWorkers[workerType].length <= 0) true
+
+                // 这里需要检查下，额外的工人必须是符合最高优先级任务需求的才能分给最高级任务，不然就继续去做原先的任务
+                const pushTarget = (workerType === this.tasks[0].require || workerType === 'undefined')
+                    ? this.tasks[0] : currentTask
+
+                pushTarget.executor.push(...extraWorkers[workerType].map(creep => creep.id))
+            })
+
+            unstartTasks = cantHelpTask
+            // 如果还有没完成的任务，就继续进行循环
+            if (unstartTasks.length <= 0) break
+        }
+
+        // 如果现在还有没做完的任务的话，就说明人手不够了，从低等级任务调人
+        // 这里调人和上面的区别在于，上面会保留至少一个，这里会直接把最后一个调过去
+        if (unstartTasks.length > 0) {
+            for (let i = this.tasks.length - 1; i >= 0; i--) {
+                const lowTask = this.tasks[i]
+
+                // lowTask 是当前优先级最低的任务，而 unstartTasks[0] 是这个数组里优先级最高的任务
+                // 如果优先级最低的 lowTask 都比 unstartTasks[0] 高的话，那就没有必要比下去了，后面的肯定也是更高
+                if (lowTask.priority >= unstartTasks[0].priority) break
+
+                // 如果这个任务也没人的话就检查下一个任务
+                // 这里只对比 lowTask.executor[0] 的身体类型是因为走到这一步时每个任务肯定只有一个工人了
+                // （不然早在上面的循环里分配给 unstartTasks 了）
+                if (lowTask.executor.length <= 0) continue
+
+                const worker = Game.getObjectById(lowTask.executor[0])
+                // 唯一干活的还是个死人（太可怜了），移除并检查下一个
+                if (!worker) {
+                    lowTask.executor.shift()
+                    continue
+                }
+                // 工人类型不符合，检查下一个
+                if (worker.memory.bodyType !== lowTask.require) continue
+
+                // 低优先级任务把自己的工人传递给高优先级任务
+                unstartTasks[0].executor.push(lowTask.executor.shift())
+                // 移除这个已经分配完的任务
+                unstartTasks.shift()
+                if (unstartTasks.length <= 0) break
+            }
+        }
+    }
+
+    /**
+     * 从任务中剥离额外的工人
+     * 会修改传入任务的执行工人数组
+     * 
+     * @param task 要剥离额外工人的任务
+     */
+    private getExtraWorker(task: AllRoomWorkTask): _.Dictionary<Creep[]> {
+        const workingCreep = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
+
+        // 是特殊任务
+        if (task.require) {
+            // 找到需要的工人
+            const requireWorker = workingCreep.find((worker, index) => {
+                if (worker.memory.bodyType !== task.require) return false
+
+                task.executor.splice(index, 1)
+                return true
+            })
+
+            // 如果有的话就把其他的工人返回出去
+            if (requireWorker) {
+                const extraWorkers = workingCreep
+                task.executor = [requireWorker.id]
+
+                return _.groupBy(extraWorkers, w => w.memory.bodyType)
+            }
+        }
+
+        task.executor = [workingCreep[0].id]
+        // 不是特殊任务，或者是特殊任务但是没有对应的特殊工人
+        return _.groupBy(workingCreep.splice(1), w => w.memory.bodyType)
     }
 
     /**
