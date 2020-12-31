@@ -1,27 +1,22 @@
+import { getRoomStats } from 'modules/stateCollector'
 import { noTask, transportActions } from './actions'
 
 /**
- * 工人工作时长占比到调整期望的 map
- * 例如工作时长占比为 0.71（71% 的时间都在工作），就会触发 proportion 为 0.7 时对应的 expect 字段
+ * 能量获取速率到调整期望的 map
+ * 能量获取速率越高，工人数量就越多
  * 
- * @property {} proportion 工作时长占比
+ * @todo 下面的速率到期望的值还需要实测确定
+ * 
+ * @property {} rate 能量获取速率
  * @property {} expect 对应的期望
  */
 const WORK_PROPORTION_TO_EXPECT = [
-    { proportion: 0.9, expect: 2 },
-    { proportion: 0.8, expect: 1 },
-    { proportion: 0.7, expect: 0 },
-    { proportion: 0.4, expect: -1 },
-    { proportion: 0, expect: -2 }
+    { rate: 50, expect: 2 },
+    { rate: 10, expect: 1 },
+    { rate: -10, expect: 0 },
+    { rate: -50, expect: -1 },
+    { rate: -100, expect: -2 }
 ]
-
-/**
- * 期望调整的统计下限
- * 因为工人调整期望值来源于 totalLifeTime 和 totalWorkTime 的统计数据
- * 当这两个值还太小时会造成期望不够准确
- * 所以在 totalLifeTime 大于该值时才会调整工人数量
- */
-const REGULATE_LIMIT = 500
 
 export default class RoomWork implements RoomWorkType {
     /**
@@ -33,16 +28,6 @@ export default class RoomWork implements RoomWorkType {
      * 当前正在执行的所有工作任务
      */
     tasks: AllRoomWorkTask[] = []
-
-    /**
-     * 本房间的工作单位总生命时长
-     */
-    totalLifeTime: number = 0
-
-    /**
-     * 本房间的工作单位总工作时长
-     */
-    totalWorkTime: number = 0
 
     /**
      * 构造- 管理指定房间的工作任务
@@ -267,11 +252,9 @@ export default class RoomWork implements RoomWorkType {
 
     /**
      * 获取应该执行的任务逻辑
-     * 获取后请在本 tick 直接执行，不要进行存储
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
     public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
-        this.totalLifeTime += 1
         let task = this.getTask(creep.memory.workTaskType)
 
         // 是新人，分配任务
@@ -286,8 +269,6 @@ export default class RoomWork implements RoomWorkType {
         }
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
-        // 这里增加工作时长，所以要在本 tick 执行下面的逻辑，就算不执行也会被认为在工作
-        this.totalWorkTime += 1
         // 分配完后获取任务执行逻辑
         return actionGenerator(creep, task)
     }
@@ -328,7 +309,14 @@ export default class RoomWork implements RoomWorkType {
      * 返回 0 代表不需要调整工作单位数量
      */
     public getExpect(): number {
-        return 0
+        const stats = getRoomStats(this.roomName)
+        // 没有统计或者能量获取速率为零，不调整搬运工数量
+        if (!stats || !stats.energyGetRate) return 0
+
+        // 工作时长占比从高到底找到期望调整的搬运工数量
+        const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => stats.energyGetRate >= opt.rate)
+
+        return currentExpect?.expect !== undefined ? currentExpect.expect : -2
     }
 
     /**
