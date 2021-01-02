@@ -111,7 +111,7 @@ export default class RoomWork implements RoomWorkType {
         ]
         // 先优先级从低往高遍历，让额外的工人往高优先级任务富集
         // 然后优先级从高到低遍历，避免高优先级任务很多人而低优先级任务没人做
-        for (let i of forItem) {
+        for (const i of forItem) {
             const currentTask = this.tasks[i]
 
             // 没有多余工人，检查下一个任务
@@ -146,9 +146,14 @@ export default class RoomWork implements RoomWorkType {
             Object.keys(extraWorkers).forEach(workerType => {
                 if (extraWorkers[workerType].length <= 0) true
 
-                // 这里需要检查下，额外的工人必须是符合最高优先级任务需求的才能分给最高级任务，不然就继续去做原先的任务
-                const pushTarget = (workerType === this.tasks[0].require || workerType === 'undefined')
-                    ? this.tasks[0] : currentTask
+                // 这里需要检查下
+                const pushTarget = (
+                    // 如果最高级任务只需要一个，就不往最高级分了
+                    !this.tasks[0].need1 ||
+                    // 或者额外的工人必须是符合最高优先级任务需求的才能分给最高级任务，不然就继续去做原先的任务
+                    workerType === this.tasks[0].require ||
+                    workerType === 'undefined'
+                ) ? this.tasks[0] : currentTask
 
                 pushTarget.executor.push(...extraWorkers[workerType].map(creep => creep.id))
             })
@@ -230,24 +235,24 @@ export default class RoomWork implements RoomWorkType {
      * @param creeps 要分配任务的 creep 
      */
     private giveJob(creeps: Creep[]) {
-        // 把执行该任务的 creep 分配到缺人做的任务上
-        if (creeps.length > 0) {
-            for (const processingTask of this.tasks) {
-                if (processingTask.executor.length > 0) continue
+        let needRedispath = false
 
-                // 当前任务缺人
-                this.giveTask(creeps.shift(), processingTask)
-                if (creeps.length <= 0) break
+        // 直接塞到优先级最低的任务里，后面会重新分派
+        for (const creep of creeps) {
+            for (let i = this.tasks.length - 1; i > 0; i--) {
+                if (
+                    // 身体类型不符合需求
+                    this.tasks[i].require !== creep.memory.bodyType ||
+                    // 或者该任务只需要一个工作单位
+                    this.tasks[i].need1 && this.tasks[i].executor.length > 1
+                ) continue
+
+                this.tasks[i].executor.push(creep.id)
+                needRedispath = true
             }
         }
 
-        // 还没分完的话就依次分给优先度高的任务
-        let i = 0
-        while (creeps.length > 0) {
-            // 不检查是否缺人，直接分（因为缺人的任务在上面已经分完了）
-            this.giveTask(creeps.shift(), this.tasks[i % this.tasks.length])
-            i ++
-        }
+        needRedispath && this.dispatchTask()
     }
 
     /**
@@ -317,16 +322,5 @@ export default class RoomWork implements RoomWorkType {
         const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => stats.energyGetRate >= opt.rate)
 
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
-    }
-
-    /**
-     * 给指定 creep 分配任务
-     * 
-     * @param creep 要分配任务的 creep
-     * @param task 该 creep 要执行的任务
-     */
-    private giveTask(creep: Creep, task: AllRoomWorkTask): void {
-        task.executor.push(creep.id)
-        creep.memory.transportTaskKey = task.key
     }
 }

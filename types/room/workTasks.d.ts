@@ -8,6 +8,29 @@ type AllWorkTaskType = keyof WorkTasks
  */
 type AllRoomWorkTask = WorkTasks[AllWorkTaskType]
 
+// 三种采集单位行为
+
+/**
+ * 采集行为：启动模式
+ * 会采集能量然后运送会 spawn 和 extension
+ */
+type HarvestModeStart = 1
+/**
+ * 采集行为：简单模式
+ * 会无脑采集能量，配合 container 使用
+ */
+type HarvestModeSimple = 2
+/**
+ * 采集行为：转移模式
+ * 会采集能量然后存放到指定建筑，配合 link 使用
+ */
+type HarvestModeTransport = 3
+
+/**
+ * 所有能量采集单位的行为模式
+ */
+type HarvestMode = HarvestModeStart | HarvestModeSimple | HarvestModeTransport
+
 /**
  * 所有的物流任务
  */
@@ -15,7 +38,20 @@ interface WorkTasks {
     /**
      * 能量采集任务
      */
-    harvest: RoomTask<'harvest'>
+    harvest: RoomTask<'harvest'> & {
+        /**
+         * 要采集的 source id
+         */
+        id: Id<Source>
+        /**
+         * 在 HarvestModeTransport 模式下要存放到的 link id
+         */
+        targetId: Id<StructureLink>
+        /**
+         * 采集的行为模式
+         */
+        mode: HarvestMode
+    }
     /**
      * 元素采集任务
      */

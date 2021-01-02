@@ -146,7 +146,8 @@ export default class RoomTransport implements RoomTransportType {
                 // 这里没有 j--，因为这个任务的执行 creep 有可能有两个以上，要重新走一遍流程
                 if(!freeCreep) continue
 
-                this.giveTask(freeCreep, task)
+                task.executor.push(freeCreep.id)
+                freeCreep.memory.transportTaskKey = task.key
             }
 
             i ++
@@ -164,6 +165,9 @@ export default class RoomTransport implements RoomTransportType {
         // 直接塞到优先级最低的任务里，后面会重新分派
         for (const creep of creeps) {
             for (let i = this.tasks.length - 1; i > 0; i--) {
+                // 或者该任务只需要一个工作单位，分给下一个任务
+                if (this.tasks[i].need1 && this.tasks[i].executor.length > 1) continue
+
                 this.tasks[i].executor.push(creep.id)
                 needRedispath = true
             }
@@ -242,17 +246,6 @@ export default class RoomTransport implements RoomTransportType {
         })
 
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
-    }
-
-    /**
-     * 给指定 creep 分配任务
-     * 
-     * @param creep 要分配任务的 creep
-     * @param task 该 creep 要执行的任务
-     */
-    private giveTask(creep: Creep, task: TransportTasks[AllTransportTaskType]): void {
-        task.executor.push(creep.id)
-        creep.memory.transportTaskKey = task.key
     }
 
     /**

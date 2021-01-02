@@ -367,6 +367,10 @@ interface RoomTask<T extends string> {
      * 该任务需要的特殊身体部件
      */
     require?: string
+    /**
+     * 该任务强制只需要一个人去做
+     */
+    need1?: boolean
 }
 
 interface RoomTaskAction {

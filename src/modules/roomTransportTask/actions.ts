@@ -112,43 +112,13 @@ export const transportActions: {
         source: () => getEnergy(creep, transport),
         target: () => {
             transport.countWorkTime()
-            if (creep.store[RESOURCE_ENERGY] === 0) return true
-            let target: StructureExtension | StructureSpawn
+            const result = fillSpawnStructure(creep)
 
-            // 有缓存就用缓存
-            if (creep.memory.fillStructureId) {
-                target = Game.getObjectById(creep.memory.fillStructureId as Id<StructureExtension>)
-
-                // 如果找不到对应的建筑或者已经填满了就移除缓存
-                if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) {
-                    delete creep.memory.fillStructureId
-                    target = undefined
-                }
+            if (result === ERR_NOT_FOUND) {
+                finishTask(creep)
+                return true
             }
-
-            // 没缓存就重新获取
-            if (!target) {
-                // 找到能量没填满的 extension 或者 spawn
-                const needFillStructure = [...creep.room[STRUCTURE_EXTENSION], ...creep.room[STRUCTURE_SPAWN]].filter(s => {
-                    return s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
-                })
-                // 获取有需求的建筑
-                target = creep.pos.findClosestByRange(needFillStructure)
-
-                if (!target) {
-                    // 都填满了，任务完成
-                    finishTask(creep)
-                    return true
-                }
-
-                // 写入缓存
-                creep.memory.fillStructureId = target.id
-            }
-
-            // 有的话就填充能量
-            const result = creep.transferTo(target, RESOURCE_ENERGY)
-            if (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_FULL) return true
-            else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`拓展填充 ${result}`)
+            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
         }
     }),
 
@@ -677,4 +647,50 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransportT
     const result = creep.getEngryFrom(sourceStructure)
     transport.countWorkTime()
     return result === OK
+}
+
+/**
+ * 填充房间内的 spawn 和 extension
+ * 
+ * @param creep 要执行任务的单位
+ * @returns 正在填充时返回 OK，没有需要填充的建筑返回 ERR_NOT_FOUND，没有能量返回 ERR_NOT_ENOUGH_ENERGY
+ */
+export const fillSpawnStructure = function (creep: Creep): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
+    if (creep.store[RESOURCE_ENERGY] === 0) return ERR_NOT_ENOUGH_ENERGY
+    let target: StructureExtension | StructureSpawn
+
+    // 有缓存就用缓存
+    if (creep.memory.fillStructureId) {
+        target = Game.getObjectById(creep.memory.fillStructureId as Id<StructureExtension>)
+
+        // 如果找不到对应的建筑或者已经填满了就移除缓存
+        if (!target || target.structureType !== STRUCTURE_EXTENSION || target.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) {
+            delete creep.memory.fillStructureId
+            target = undefined
+        }
+    }
+
+    // 没缓存就重新获取
+    if (!target) {
+        // 找到能量没填满的 extension 或者 spawn
+        const needFillStructure = [...creep.room[STRUCTURE_EXTENSION], ...creep.room[STRUCTURE_SPAWN]].filter(s => {
+            return s.store.getFreeCapacity(RESOURCE_ENERGY) > 0
+        })
+        // 获取有需求的建筑
+        target = creep.pos.findClosestByRange(needFillStructure)
+
+        if (!target) return ERR_NOT_FOUND
+
+        // 写入缓存
+        creep.memory.fillStructureId = target.id
+    }
+
+    // 有的话就填充能量
+    const result = creep.transferTo(target, RESOURCE_ENERGY)
+
+    if (result === ERR_NOT_ENOUGH_RESOURCES) return ERR_NOT_ENOUGH_ENERGY
+    // 装满了就移除缓存，等下个 tick 重新搜索
+    else if (result === ERR_FULL) delete creep.memory.fillStructureId
+    else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`拓展填充 ${result}`)
+    return OK
 }

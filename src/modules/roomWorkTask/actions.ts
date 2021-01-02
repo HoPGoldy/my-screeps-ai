@@ -1,4 +1,16 @@
-import { getRoomAvailableSource } from "modules/energyController"
+import { getRoomAvailableSource } from 'modules/energyController'
+import { fillSpawnStructure } from 'modules/roomTransportTask/actions'
+
+// 采集单位的行为模式
+const HARVEST_MODE: {
+    START: HarvestModeStart,
+    SIMPLE: HarvestModeSimple,
+    TRANSPORT: HarvestModeTransport
+} = {
+    START: 1,
+    SIMPLE: 2,
+    TRANSPORT: 3
+}
 
 /**
  * 没有任务时的行为逻辑
@@ -22,9 +34,74 @@ export const transportActions: {
      */
     harvest: (creep, task) => ({
         source: () => {
-            return true
+            if (
+                // 如果是简单模式的话就永远不会进入 target 阶段
+                task.mode !== HARVEST_MODE.SIMPLE &&
+                // 身上装满了
+                creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
+            ) return true
+
+            const source = Game.getObjectById(creep.memory.data.sourceId)
+            const result = creep.getEngryFrom(source)
+            
+            if (task.mode === HARVEST_MODE.SIMPLE) {
+                // 快死了就把身上的能量丢出去，这样就会存到下面的 container 里，否则变成墓碑后能量无法被 container 自动回收
+                if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
+            }
+            // 转移模式下会尝试请求 power 强化 source
+            else if (task.mode === HARVEST_MODE.TRANSPORT) {
+                if (result === ERR_NOT_ENOUGH_RESOURCES) {
+                    // 如果满足下列条件就重新发送 regen_source 任务
+                    if (
+                        // creep 允许重新发布任务
+                        (!creep.memory.regenSource || creep.memory.regenSource < Game.time) &&
+                        // source 上没有效果
+                        (!source.effects || !source.effects[PWR_REGEN_SOURCE])
+                    ) {
+                        // 并且房间内的 pc 支持这个任务
+                        if (creep.room.memory.powers && creep.room.memory.powers.split(' ').includes(String(PWR_REGEN_SOURCE))) {
+                            // 添加 power 任务，设置重新尝试时间
+                            creep.room.addPowerTask(PWR_REGEN_SOURCE)
+                            creep.memory.regenSource = Game.time + 300
+                        }
+                        else creep.memory.regenSource = Game.time + 1000
+                    }
+                }
+
+                // 快死了就把能量移出去
+                if (creep.ticksToLive < 2) return true
+            }
         },
         target: () => {
+            if (creep.store.getUsedCapacity() === 0) return true
+
+            // 启动模式下搬运能量到 spawn 和 extension
+            if (task.mode === HARVEST_MODE.START) {
+                const result = fillSpawnStructure(creep)
+
+                if (result === ERR_NOT_FOUND) {
+                    creep.say('💤')
+                    return true
+                }
+                else if (result === ERR_NOT_ENOUGH_ENERGY) return true
+            }
+            // 简单模式下只会无脑采集
+            else if (task.mode === HARVEST_MODE.SIMPLE) return true
+            // 转移模式下转移到对应的建筑
+            else if (task.mode === HARVEST_MODE.TRANSPORT) {
+                const target = Game.getObjectById(task.targetId) || creep.room.storage
+
+                if (!target) {
+                    creep.say('我目标呢？')
+                    return false
+                }
+
+                creep.transferTo(target, RESOURCE_ENERGY)
+            }
+            else {
+                creep.say('这活我干不了啊')
+                creep.log(`发现未知的 task.mode: ${task.mode}`, 'yellow')
+            }
             return true
         }
     }),
