@@ -59,3 +59,10 @@ type CenterStructures = STRUCTURE_STORAGE | STRUCTURE_TERMINAL | STRUCTURE_FACTO
 interface IPathMap {
     [propName: string]: string
 }
+
+/**
+ * 所有包含 id 字段的游戏对象
+ */
+interface ObjectWithId<T extends unknown = unknown> extends RoomObject {
+    id: Id<T>
+}

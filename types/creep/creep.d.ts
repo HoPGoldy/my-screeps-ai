@@ -50,6 +50,10 @@ interface CreepMemory {
      */
     targetId?: Id<Source | StructureWithStore | ConstructionSite>
     /**
+     * 要维修的建筑 id，维修单位特有
+     */
+    repairStructureId?: Id<AnyStructure>
+    /**
      * deposit 采集者特有，deposit 的类型
      */
     depositType?: DepositConstant

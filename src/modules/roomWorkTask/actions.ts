@@ -1,6 +1,12 @@
 import { getRoomAvailableSource } from 'modules/energyController'
 import { fillSpawnStructure } from 'modules/roomTransportTask/actions'
+import { useCache } from 'utils'
 import { addSpawnMinerTask } from './delayTask'
+
+/**
+ * @warning 在任务完成时要及时清除该任务在 creep 内存中留下的缓存
+ * 防止影响后续任务行为
+ */
 
 // 采集单位的行为模式
 const HARVEST_MODE: {
@@ -143,36 +149,68 @@ export const transportActions: {
     /**
      * 升级任务
      */
-    upgrade: (creep, task) => ({
-        source: () => {
-            return true
-        },
-        target: () => {
-            return true
-        }
+    upgrade: (creep) => ({
+        source: () => getEnergy(creep),
+        target: () => creep.upgrade() === ERR_NOT_ENOUGH_RESOURCES
     }),
 
     /**
      * 建造任务
      */
-    build: (creep, task) => ({
-        source: () => {
-            return true
-        },
+    build: (creep, task, taskType, workController) => ({
+        source: () => getEnergy(creep),
         target: () => {
-            return true
+            // 有新墙就先刷新墙
+            if (creep.memory.fillWallId) creep.steadyWall()
+            // 没有就建其他工地，如果找不到工地了，就算任务完成
+            else if (creep.buildStructure() === ERR_NOT_FOUND) {
+                workController.removeTask(taskType)
+                return true
+            }
+
+            if (creep.store.getUsedCapacity() === 0) return true
         }
     }),
 
     /**
      * 维修任务
      */
-    repair: (creep, task) => ({
-        source: () => {
-            return true
-        },
+    repair: (creep, task, taskType, workController) => ({
+        source: () => getEnergy(creep),
         target: () => {
-            return true
+            const room = Game.rooms[creep.memory.data.workRoom]
+            if (!room) {
+                workController.removeTask(taskType)
+                return true
+            }
+
+            // 找到受损建筑
+            const target: AnyStructure = useCache(() => {
+                const damagedStructures = room.find(FIND_STRUCTURES, {
+                    filter: s => s.hits < s.hitsMax &&
+                        // 墙壁在刷墙任务里维护
+                        s.structureType != STRUCTURE_RAMPART &&
+                        s.structureType != STRUCTURE_WALL
+                })
+
+                // 找到最近的受损建筑并更新缓存
+                if (damagedStructures.length > 0) return creep.pos.findClosestByRange(damagedStructures)
+            }, creep.memory, 'repairStructureId')
+
+            // 没有需要维修的建筑，任务完成
+            if (!target) {
+                workController.removeTask(taskType)
+                delete creep.memory.repairStructureId
+                return true
+            }
+            
+            const result = creep.repair(target)
+
+            if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 2 })
+            else if (result !== OK) {
+                creep.say(`给我修傻了${result}`)
+                creep.log(`维修任务异常，repair 返回值: ${result}`)
+            }
         }
     }),
 
@@ -180,11 +218,22 @@ export const transportActions: {
      * 刷墙任务
      */
     fillWall: (creep, task) => ({
-        source: () => {
-            return true
-        },
+        source: () => getEnergy(creep),
         target: () => {
-            return true
+            let importantWall = creep.room._importantWall
+            // 先尝试获取焦点墙，有最新的就更新缓存，没有就用缓存中的墙
+            if (importantWall) creep.memory.fillWallId = importantWall.id
+            else if (creep.memory.fillWallId) importantWall = Game.getObjectById(creep.memory.fillWallId)
+
+            // 有焦点墙就优先刷
+            if (importantWall) {
+                const actionResult = creep.repair(creep.room._importantWall)
+                if (actionResult == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
+            }
+            // 否则就按原计划维修
+            else creep.fillDefenseStructure()
+
+            if (creep.store.getUsedCapacity() === 0) return true
         }
     })
 }
@@ -195,27 +244,33 @@ export const transportActions: {
  * @param creep 要获取能量的 creep
  * @returns 身上是否已经有足够的能量了
  */
-const getEnergy = function (creep: MyCreep<'manager'>): boolean {
-    if (creep.store[RESOURCE_ENERGY] > 10) return true
+const getEnergy = function (creep: MyCreep<'worker'>): boolean {
+    // 因为只会从建筑里拿，所以只要拿到了就去升级
+    // 切换至 target 阶段时会移除缓存，保证下一次获取能量时重新搜索，避免出现一堆人都去挤一个的情况发生
+    if (creep.store[RESOURCE_ENERGY] > 10) {
+        delete creep.memory.sourceId
+        return true
+    }
 
-    // 从内存中找到缓存的能量来源
-    const { sourceId, workRoom } = creep.memory.data
-    let sourceStructure = Game.getObjectById(sourceId)
-
-    // 来源建筑不可用，更新来源
-    if (!sourceStructure || sourceStructure.store[RESOURCE_ENERGY] <= 0) {
-        sourceStructure = getRoomAvailableSource(Game.rooms[workRoom], { includeSource: false })
-
-        // 更新失败，现在房间里没有可用的能量源，挂机
-        if (!sourceStructure) {
-            creep.say('⛳')
+    // 获取有效的能量来源
+    let source: AllEnergySource
+    if (!creep.memory.sourceId) {
+        source = getRoomAvailableSource(creep.room)
+        if (!source) {
+            creep.say('没能量了，歇会')
             return false
         }
 
-        creep.memory.data.sourceId = sourceStructure.id
+        creep.memory.sourceId = source.id
     }
+    else source = Game.getObjectById(creep.memory.sourceId)
 
-    // 获取能量
-    const result = creep.getEngryFrom(sourceStructure)
-    return result === OK
+    const result = creep.getEngryFrom(source)
+
+    // 之前用的能量来源没能量了就更新来源
+    if (result === OK) {
+        delete creep.memory.sourceId
+        return true
+    }
+    else if (result === ERR_NOT_ENOUGH_RESOURCES) delete creep.memory.sourceId
 }

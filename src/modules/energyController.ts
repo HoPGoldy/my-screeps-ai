@@ -14,7 +14,7 @@ import { setRoomStats } from './stateCollector'
 const ENERGY_USE_LIMIT = {
     TERMINAL: 10000,
     STORAGE: 100000,
-    CONTAINER: 300
+    CONTAINER: 400
 }
 
 /**
