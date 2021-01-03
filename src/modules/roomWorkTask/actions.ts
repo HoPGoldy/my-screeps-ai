@@ -1,5 +1,6 @@
 import { getRoomAvailableSource } from 'modules/energyController'
 import { fillSpawnStructure } from 'modules/roomTransportTask/actions'
+import { addSpawnMinerTask } from './delayTask'
 
 // 采集单位的行为模式
 const HARVEST_MODE: {
@@ -31,6 +32,7 @@ export const transportActions: {
 } = {
     /**
      * 能量采集任务
+     * 能量采集任务永远不会主动清除
      */
     harvest: (creep, task) => ({
         source: () => {
@@ -109,13 +111,33 @@ export const transportActions: {
     /**
      * 元素采集任务
      */
-    mine: (creep, task) => ({
+    mine: (creep, task, taskType, workController) => ({
         source: () => {
-            return true
+            if (creep.store.getFreeCapacity() === 0) return true
+
+            // 采矿
+            const mineral = Game.rooms[creep.memory.data.workRoom]?.mineral
+            // 找不到矿或者矿采集完了，添加延迟孵化并结束任务
+            if (!mineral || mineral.mineralAmount <= 0) {
+                addSpawnMinerTask(mineral.room.name, mineral.ticksToRegeneration)
+                workController.removeTask(taskType)
+            }
+
+            const harvestResult = creep.harvest(mineral)
+            if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(mineral.pos)
         },
         target: () => {
-            return true
-        }
+            const target: StructureTerminal = Game.rooms[creep.memory.data.workRoom]?.terminal
+            if (!target) {
+                creep.say('放哪？')
+                workController.removeTask(taskType)
+                return false
+            }
+    
+            creep.transferTo(target, Object.keys(creep.store)[0] as ResourceConstant)
+    
+            if (creep.store.getUsedCapacity() === 0) return true
+        },
     }),
 
     /**
@@ -165,16 +187,6 @@ export const transportActions: {
             return true
         }
     })
-}
-
-/**
- * creep 完成自己正在执行的工作
- * 
- * @param creep 要完成工作的 creep
- */
-const finishTask = function (creep: MyCreep<'manager'>): void {
-    const { workRoom } = creep.memory.data
-    Game.rooms[workRoom]?.transport.removeTask(creep.memory.transportTaskKey)
 }
 
 /**

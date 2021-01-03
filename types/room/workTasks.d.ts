@@ -105,9 +105,11 @@ interface RoomWorkType {
 }
 
 /**
- * 物流搬运任务逻辑的生成函数
+ * 工作任务逻辑的生成函数
  */
 type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
-    creep: MyCreep<'manager'>,
-    task: WorkTasks[T]
+    creep: MyCreep<'worker'>,
+    task: WorkTasks[T],
+    taskType: AllWorkTaskType,
+    workController: RoomWorkType
 ) => RoomTaskAction

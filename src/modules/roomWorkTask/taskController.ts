@@ -259,23 +259,24 @@ export default class RoomWork implements RoomWorkType {
      * 获取应该执行的任务逻辑
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
-    public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
-        let task = this.getTask(creep.memory.workTaskType)
+    public getWork(creep: MyCreep<'worker'>): RoomTaskAction {
+        const taskType = creep.memory.workTaskType
+        let task = this.getTask(taskType)
 
         // 是新人，分配任务
         if (!task) {
-            // 这里直接返回了，所以摸鱼时不会增加工作时长
+            // 任务队列为空，不需要执行工作
             if (this.tasks.length <= 0) return noTask(creep)
 
             this.giveJob([creep])
             this.saveTask()
             // 分配完后重新获取任务
-            task = this.getTask(creep.memory.workTaskType)
+            task = this.getTask(taskType)
         }
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
         // 分配完后获取任务执行逻辑
-        return actionGenerator(creep, task)
+        return actionGenerator(creep, task, taskType, this)
     }
 
     /**

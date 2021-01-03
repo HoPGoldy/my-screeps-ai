@@ -126,5 +126,6 @@ interface RoomTransportType {
 type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskType> = (
     creep: MyCreep<'manager'>,
     task: TransportTasks[T],
+    taskKey: number,
     transportController: RoomTransportType
 ) => RoomTaskAction

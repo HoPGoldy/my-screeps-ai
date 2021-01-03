@@ -12,6 +12,7 @@ interface RoleDatas {
     /**
      * 房间基础运营
      */
+    worker: WorkerData
     harvester: HarvesterData
     collector: HarvesterData
     miner: MinerData

@@ -183,7 +183,8 @@ export default class RoomTransport implements RoomTransportType {
      */
     public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
         this.totalLifeTime += 1
-        let task = this.getTask(creep.memory.transportTaskKey)
+        const taskKey = creep.memory.transportTaskKey
+        let task = this.getTask(taskKey)
 
         // 是新人，分配任务
         if (!task) {
@@ -193,12 +194,12 @@ export default class RoomTransport implements RoomTransportType {
             this.giveJob([creep])
             this.saveTask()
             // 分配完后重新获取任务
-            task = this.getTask(creep.memory.transportTaskKey)
+            task = this.getTask(taskKey)
         }
         const actionGenerator: TransportActionGenerator = transportActions[task.type]
 
         // 分配完后获取任务执行逻辑
-        return actionGenerator(creep, task, this)
+        return actionGenerator(creep, task, taskKey, this)
     }
 
     /**
