@@ -45,44 +45,9 @@ export class LinkExtension extends StructureLink {
         this.clearRegister()
 
         // 更新采集任务
-        this.planHarvestTask()
+        this.room.work.planEnergyHarvestTask()
 
         return `${this} 已注册为源 link，已重定向对应 harvester 的存放目标`
-    }
-
-    /**
-     * 更新整个房间内的能量采集任务
-     */
-    private planHarvestTask(): void {
-        const harvestKeys = (this.room.memory.harvestKeys || '').split(',')
-
-        // 这两者不相等肯定出问题了
-        if (harvestKeys.length !== this.room.source.length) {
-            this.log(`异常的采集任务数量，已重置 [source 数量] ${this.room.source.length} [采集任务数量] ${harvestKeys.length}`, 'yellow')
-            this.room.work.removeTask('harvest')
-        }
-
-        this.room.source.map((source, index) => {
-            // 找到附近的 link
-            const nearLink = this.room[STRUCTURE_LINK].find(link => source.pos.inRangeTo(link, 2))
-
-            const baseTask: WorkTasks['harvest'] = {
-                key: Number(harvestKeys[index]),
-                type: 'harvest',
-                id: source.id,
-                mode: HARVEST_MODE.SIMPLE,
-                // 这个很重要，一定要保证这个优先级是最高的
-                priority: 10,
-                need1: true
-            }
-
-            // 如果没有 link 的话就还是原来的模式
-            if (!nearLink) this.room.work.updateTask(baseTask)
-
-            baseTask.targetId = nearLink.id
-            baseTask.mode = HARVEST_MODE.TRANSPORT
-            this.room.work.updateTask(baseTask)
-        })
     }
 
     /**

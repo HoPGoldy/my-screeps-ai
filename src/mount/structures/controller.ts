@@ -43,20 +43,7 @@ export default class ControllerExtension extends StructureController {
     public onLevelChange(level: number): void {
         // 刚占领，添加工作单位
         if (level === 1) {
-            const existKeys = (this.room.memory.harvestKeys || '').split(',')
-            // 根据 source 的数量发布对应的采集任务，并把任务索引回存到 memory 以供后面修改
-            this.room.memory.harvestKeys = this.room.source.map((source, index) => {
-                return this.room.work.updateTask({
-                    key: Number(existKeys[index]),
-                    type: `harvest`,
-                    id: source.id,
-                    mode: HARVEST_MODE.START,
-                    // 这个很重要，一定要保证这个优先级是最高的
-                    priority: 10,
-                    need1: true
-                })
-            }).join(',')
-
+            this.room.work.planEnergyHarvestTask()
             this.room.releaseCreep('worker', 6)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {

@@ -170,11 +170,6 @@ interface RoomMemory {
      * 当前房间工作单位的数量
      */
     workerNumber?: number
-    /**
-     * 当前房间的source采集任务索引
-     * 其格式为 12312,3213123
-     */
-    harvestKeys: string
 }
 
 /**

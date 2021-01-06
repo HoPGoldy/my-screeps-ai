@@ -106,7 +106,7 @@ export default class RoomWork implements RoomWorkType {
     private dispatchTask() {
         // 找到所有缺人手的任务
         let unstartTasks = this.tasks.filter(task => task.executor.length <= 0)
-        
+
         // 生成遍历索引，例如任务数组长度为 5，将返回 4 3 2 1 0 1 2 3 4
         const forItem = [
             ...[...Array(this.tasks.length).keys()].reverse(),
@@ -393,6 +393,7 @@ export default class RoomWork implements RoomWorkType {
 
     /**
      * 规划能量采集任务
+     * 该方法会将能量采集任务的优先级设置为 10，请确保其他的任务优先级不会长时间超过该值
      * 
      * 因为能量采集任务设置起来比较麻烦，这里提供一个通用的自适应设置方法（不强制使用，也可以自己实现）
      * 调用一次即可根据房间内的 link、container 之类的设置所有的能量采集任务
@@ -405,7 +406,8 @@ export default class RoomWork implements RoomWorkType {
             return undefined
         }
 
-        const harvestTasks = room.source.map((source, index) => {
+        // 规划出新的采集任务
+        const harvestTasks = room.source.map(source => {
             const task: WorkTasks['harvest'] = {
                 type: 'harvest',
                 id: source.id,
@@ -436,8 +438,23 @@ export default class RoomWork implements RoomWorkType {
             }
 
             // 啥都没有，起始模式
+            return task
         })
 
-        // const harvestTasks = this.tasks.filter(task => task.type === 'harvest')
+        // 找到已经存在的任务并进行配对
+        const existHarvestTasks = this.tasks.filter(task => task.type === 'harvest') as WorkTasks['harvest'][]
+
+        for (const newTask of harvestTasks) {
+            // 找一下这个 source 对应的上个任务
+            const matchedTask = existHarvestTasks.find(task => task.id === newTask.id)
+
+            // 如果有匹配到的任务，直接把新的属性签进去，因为浅拷贝的关系这个修改会同步到 this.tasks 里
+            if (matchedTask) Object.assign(matchedTask, newTask)
+            // 没找到的话就新建任务
+            else this.addTask(newTask)
+        }
+
+        const logs = harvestTasks.map(task => `[source ${task.id}] 模式 ${task.mode}`).join(' ')
+        room.log(`能量采集规划完成, ${logs}`)
     }
 }

@@ -108,6 +108,10 @@ interface RoomWorkType {
      * 获取该房间的搬运工调整期望
      */
     getExpect(): number
+    /**
+     * 自动规划能量采集任务
+     */
+    planEnergyHarvestTask(): void
 }
 
 /**
