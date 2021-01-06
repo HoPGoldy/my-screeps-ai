@@ -82,8 +82,6 @@ type WorkTaskData = WorkTasks[AllWorkTaskType][]
 interface RoomWorkType {
     /**
      * 填写一个新的房间物流任务
-     * 
-     * @param task 要添加的物流任务
      */
     addTask(task: AllRoomWorkTask): void 
     /**
@@ -97,7 +95,11 @@ interface RoomWorkType {
     /**
      * 移除一个任务
      */
-    removeTask(taskType: AllWorkTaskType): OK | ERR_NOT_FOUND
+    removeTask(taskKey: number): OK | ERR_NOT_FOUND
+    /**
+     * 更新指定任务
+     */
+    updateTask(newTask: AllRoomWorkTask, addWhenNotFound?: boolean): void
     /**
      * 获取该房间的搬运工调整期望
      */
@@ -110,6 +112,6 @@ interface RoomWorkType {
 type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
     creep: MyCreep<'worker'>,
     task: WorkTasks[T],
-    taskType: AllWorkTaskType,
+    taskKey: number,
     workController: RoomWorkType
 ) => RoomTaskAction

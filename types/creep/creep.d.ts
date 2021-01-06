@@ -108,13 +108,9 @@ interface CreepMemory {
      */
     massMode?: boolean
     /**
-     * manager 特有，当前正在执行的物流任务索引
+     * 运营单位特有，当前正在执行的物流 / 工作任务索引
      */
-    transportTaskKey?: number
-    /**
-     * worker 特有，当前正在执行的工作任务类型
-     */
-    workTaskType?: AllWorkTaskType
+    taskKey?: number
 }
 
 /**

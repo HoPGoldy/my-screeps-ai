@@ -84,14 +84,13 @@ export default class RoomTransport implements RoomTransportType {
     }
 
     /**
-     * 通过任务类型获取指定任务
+     * 通过任务索引获取指定任务
      * 
-     * @param taskType 要查询的任务类型
+     * @param taskKey 要查询的任务索引
      * @returns 对应的任务，没有的话则返回 undefined
      */
     public getTask(taskKey: number): AllRoomTransportTask | undefined {
         if (!taskKey) return undefined
-
         return this.tasks.find(task => task.key === taskKey) as AllRoomTransportTask
     }
 
@@ -147,7 +146,7 @@ export default class RoomTransport implements RoomTransportType {
                 if(!freeCreep) continue
 
                 task.executor.push(freeCreep.id)
-                freeCreep.memory.transportTaskKey = task.key
+                freeCreep.memory.taskKey = task.key
             }
 
             i ++
@@ -183,7 +182,7 @@ export default class RoomTransport implements RoomTransportType {
      */
     public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
         this.totalLifeTime += 1
-        const taskKey = creep.memory.transportTaskKey
+        const { taskKey } = creep.memory
         let task = this.getTask(taskKey)
 
         // 是新人，分配任务

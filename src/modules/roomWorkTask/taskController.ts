@@ -41,14 +41,14 @@ export default class RoomWork implements RoomWorkType {
 
     /**
      * 添加一个工作任务
-     * 不允许添加相同类型的任务，若添加时已存在同类型任务将会进行覆盖
+     * 允许添加多个同类型物流任务，所以如果只想发布唯一任务的话，在发布前需要自行检查是否已经包含任务
+     * 
+     * @returns 该工作任务的唯一索引
      */
-    public addTask(task: AllRoomWorkTask): void {
+    public addTask(task: AllRoomWorkTask): number {
+        task.key = new Date().getTime() + (this.tasks.length * 0.1)
         // 发布任务的时候为了方便可以不填这个，这里给它补上
         if (!task.executor) task.executor = []
-
-        // 如果存在原始任务的话就剔除
-        this.tasks = this.tasks.filter(existTask => existTask.type !== task.type)
 
         // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
         let insertIndex = this.tasks.length
@@ -64,18 +64,19 @@ export default class RoomWork implements RoomWorkType {
         this.tasks.splice(insertIndex, 0, task)
         this.dispatchTask()
         this.saveTask()
+
+        return task.key
     }
 
     /**
-     * 通过任务类型获取指定任务
+     * 通过任务索引获取指定任务
      * 
-     * @param taskType 要查询的任务类型
+     * @param taskKey 要查询的任务索引
      * @returns 对应的任务，没有的话则返回 undefined
      */
-    public getTask(taskType: AllWorkTaskType): AllRoomWorkTask | undefined {
-        if (!taskType) return undefined
-
-        return this.tasks.find(task => task.type === taskType) as AllRoomWorkTask
+    public getTask(taskKey: number): AllRoomWorkTask | undefined {
+        if (!taskKey) return undefined
+        return this.tasks.find(task => task.key === taskKey) as AllRoomWorkTask
     }
 
     /**
@@ -131,7 +132,7 @@ export default class RoomWork implements RoomWorkType {
                 }
                 // 该任务是特殊任务并且自己没有对应类型的，就分一个普通工人过去
                 else if (checkTask.require) {
-                    checkTask.executor.push(extraWorkers['undefined'].shift().id)
+                    this.setCreepTask(extraWorkers['undefined'].shift(), checkTask)
                 }
                 else cantHelpTask.push(checkTask)
 
@@ -146,16 +147,18 @@ export default class RoomWork implements RoomWorkType {
             Object.keys(extraWorkers).forEach(workerType => {
                 if (extraWorkers[workerType].length <= 0) true
 
-                // 这里需要检查下
-                const pushTarget = (
-                    // 如果最高级任务只需要一个，就不往最高级分了
-                    !this.tasks[0].need1 ||
-                    // 或者额外的工人必须是符合最高优先级任务需求的才能分给最高级任务，不然就继续去做原先的任务
-                    workerType === this.tasks[0].require ||
-                    workerType === 'undefined'
-                ) ? this.tasks[0] : currentTask
-
-                pushTarget.executor.push(...extraWorkers[workerType].map(creep => creep.id))
+                // 先找到可以接受未分配单位的最高级任务，任务要满足如下条件：
+                const pushTarget = this.tasks.find(task => (
+                    // 允许多人同时工作
+                    !task.need1 &&
+                    // 工人类型是自己需要的
+                    workerType === task.require &&
+                    // 优先级更高
+                    task.priority > currentTask.priority
+                )) || currentTask
+                
+                // 分配单位
+                extraWorkers[workerType].map(creep => this.setCreepTask(creep, pushTarget))
             })
 
             unstartTasks = cantHelpTask
@@ -188,7 +191,9 @@ export default class RoomWork implements RoomWorkType {
                 if (worker.memory.bodyType !== lowTask.require) continue
 
                 // 低优先级任务把自己的工人传递给高优先级任务
-                unstartTasks[0].executor.push(lowTask.executor.shift())
+                lowTask.executor.shift()
+                // 这里的 worker 就是上面这句 shift 出去的工人
+                this.setCreepTask(worker, unstartTasks[0])
                 // 移除这个已经分配完的任务
                 unstartTasks.shift()
                 if (unstartTasks.length <= 0) break
@@ -260,8 +265,8 @@ export default class RoomWork implements RoomWorkType {
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
     public getWork(creep: MyCreep<'worker'>): RoomTaskAction {
-        const taskType = creep.memory.workTaskType
-        let task = this.getTask(taskType)
+        const { taskKey } = creep.memory
+        let task = this.getTask(taskKey)
 
         // 是新人，分配任务
         if (!task) {
@@ -271,12 +276,12 @@ export default class RoomWork implements RoomWorkType {
             this.giveJob([creep])
             this.saveTask()
             // 分配完后重新获取任务
-            task = this.getTask(taskType)
+            task = this.getTask(taskKey)
         }
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
         // 分配完后获取任务执行逻辑
-        return actionGenerator(creep, task, taskType, this)
+        return actionGenerator(creep, task, taskKey, this)
     }
 
     /**
@@ -289,13 +294,46 @@ export default class RoomWork implements RoomWorkType {
     }
 
     /**
+     * 更新指定任务
+     * 如果任务包含 key 的话将使用 key 进行匹配
+     * 否则的话将更新 taskType 符合的任务（如果包含多个同类型的任务的话则都会更新）
+     * 
+     * @param newTask 要更新的任务
+     * @param addWhenNotFound 当没有匹配到任务时是否新建任务，默认为 true
+     */
+    public updateTask(newTask: AllRoomWorkTask, addWhenNotFound: boolean = true): void {
+        // 是否找到了要更新的任务
+        let notFound = true
+        // 是否需要重新分派任务
+        let needRedispath = false
+
+        // 查找并更新任务
+        this.tasks = this.tasks.map(task => {
+            if (task.key !== newTask.key && task.type !== newTask.type) return task
+
+            notFound = false
+            // 状态变化就需要重新分派
+            if (
+                task.priority !== newTask.priority ||
+                task.need1 !== newTask.need1
+            ) needRedispath = true
+
+            return Object.assign(task, newTask)
+        })
+
+        // 没找到就尝试更新、找到了就尝试重新分配
+        if (notFound && addWhenNotFound) this.addTask(newTask)
+        else if (needRedispath) this.dispatchTask()
+    }
+
+    /**
      * 移除一个任务
      * 
-     * @param taskType 要移除的任务类型
+     * @param taskKey 要移除的任务索引
      */
-    public removeTask(taskType: AllWorkTaskType): OK | ERR_NOT_FOUND {
+    public removeTask(taskKey: number): OK | ERR_NOT_FOUND {
         this.tasks.find((task, index) => {
-            if (task.type !== taskType) return false
+            if (task.key !== taskKey) return false
 
             // 删除该任务
             this.tasks.splice(index, 1)
@@ -307,6 +345,22 @@ export default class RoomWork implements RoomWorkType {
 
         this.saveTask()
         return OK
+    }
+
+    /**
+     * 向指定任务安排指定工作单位
+     * 
+     * @param creep 要分配的 creep
+     * @param task 要分配到的任务
+     */
+    private setCreepTask(creep: Creep, task: AllRoomWorkTask): void {
+        if (!creep || !task) {
+            Game.rooms[this.roomName].log(`错误的工作分配 ${creep} > ${task}`, 'workTask', 'red')
+            return
+        }
+
+        task.executor.push(creep.id)
+        creep.memory.taskKey = task.key
     }
 
     /**
