@@ -1,4 +1,5 @@
 import { createHelp } from 'modules/help'
+import { HARVEST_MODE } from 'setting'
 
 // Link 原型拓展
 export class LinkExtension extends StructureLink {
@@ -20,9 +21,8 @@ export class LinkExtension extends StructureLink {
      * 分配默认职责，玩家不同意默认职责的话也可以手动调用 .as... 方法重新分配职责
      */
     public onBuildComplete(): void {
-        // 如果附近有 Source 就转换为 SourceLink
-        const inRangeSources = this.pos.findInRange(FIND_SOURCES, 2)
-        if (inRangeSources.length > 0) {
+        // 如果附近有 controller 就转换为 UpgradeLink
+        if (this.room.controller.pos.inRangeTo(this, 2)) {
             this.asSource()
             return
         }
@@ -31,12 +31,10 @@ export class LinkExtension extends StructureLink {
         const center = this.room.memory.center
         if (center && this.pos.isNearTo(new RoomPosition(center[0], center[1], this.room.name))) {
             this.asCenter()
-            // 发布配套的中央搬运工
-            this.room.releaseCreep('processor')
             return
         }
 
-        // 否则就默认转换为 UpgraderLink
+        // 否则就默认转换为 SourceLink（因为有外矿 link，而这种 link 边上是没有 source 的）
         this.asUpgrade()
     }
 
@@ -46,10 +44,45 @@ export class LinkExtension extends StructureLink {
     public asSource(): string {
         this.clearRegister()
 
-        // 更新 harvester
-        this.room.releaseCreep('harvester')
+        // 更新采集任务
+        this.planHarvestTask()
 
         return `${this} 已注册为源 link，已重定向对应 harvester 的存放目标`
+    }
+
+    /**
+     * 更新整个房间内的能量采集任务
+     */
+    private planHarvestTask(): void {
+        const harvestKeys = (this.room.memory.harvestKeys || '').split(',')
+
+        // 这两者不相等肯定出问题了
+        if (harvestKeys.length !== this.room.source.length) {
+            this.log(`异常的采集任务数量，已重置 [source 数量] ${this.room.source.length} [采集任务数量] ${harvestKeys.length}`, 'yellow')
+            this.room.work.removeTask('harvest')
+        }
+
+        this.room.source.map((source, index) => {
+            // 找到附近的 link
+            const nearLink = this.room[STRUCTURE_LINK].find(link => source.pos.inRangeTo(link, 2))
+
+            const baseTask: WorkTasks['harvest'] = {
+                key: Number(harvestKeys[index]),
+                type: 'harvest',
+                id: source.id,
+                mode: HARVEST_MODE.SIMPLE,
+                // 这个很重要，一定要保证这个优先级是最高的
+                priority: 10,
+                need1: true
+            }
+
+            // 如果没有 link 的话就还是原来的模式
+            if (!nearLink) this.room.work.updateTask(baseTask)
+
+            baseTask.targetId = nearLink.id
+            baseTask.mode = HARVEST_MODE.TRANSPORT
+            this.room.work.updateTask(baseTask)
+        })
     }
 
     /**
@@ -61,7 +94,6 @@ export class LinkExtension extends StructureLink {
 
         // 注册中央 link 的同时发布 processor
         this.room.releaseCreep('processor')
-        this.room.releaseCreep('harvester')
 
         return `${this} 已注册为中央 link，发布 processor 并调整采集单位`
     }
@@ -76,7 +108,6 @@ export class LinkExtension extends StructureLink {
         this.clearRegister()
 
         this.room.memory.upgradeLinkId = this.id
-        this.room.releaseCreep('upgrader')
         return `${this} 已注册为升级 link`
     }
 

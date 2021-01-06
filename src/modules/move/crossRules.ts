@@ -32,17 +32,10 @@ const crossRules: CrossRules = {
     // 中央处理单位在携带有资源时不允许对穿
     processor: creep => !creep.memory.working,
 
-    // 采集单位在工作时不允许任何 creep 对穿
-    harvester: noCrossWithWork,
-    collector: noCrossWithWork,
-
-    // upgrader / vuilder 和 remoteHelper 功能重叠，所以这里不会在工作时允许对方对穿
-    // 其实下面四个的判断规则要复杂一点，例如 upgrader 允许正在建造的 builder 对穿，但是不允许升级控制器的 builder 对穿
+    // 工作单位在工作时不允许任何 creep 对穿
+    // 其实对应的判断规则要复杂一点，例如执行 upgrade 任务时允许正在建造的工作对穿，但是不允许其他执行升级任务的单位对穿
     // 但是为了节省性能，这里直接一把梭，如果真有需求可以再添上
-    upgrader: noCrossWithWork,
-    remoteUpgrader: noCrossWithWork,
-    builder: noCrossWithWork,
-    remoteBuilder: noCrossWithWork
+    worker: noCrossWithWork
 }
 
 export default crossRules

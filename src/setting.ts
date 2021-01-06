@@ -67,7 +67,7 @@ export const baseLayout: BaseLayout = [
 
 // creep 的默认内存
 export const creepDefaultMemory: CreepMemory = {
-    role: 'harvester', 
+    role: 'worker', 
     ready: false, 
     working: false
 }
@@ -435,7 +435,7 @@ export const commodityMax = {
  * miner 的矿物采集上限
  * 当 terminal 中的资源多余这个值时，miner 将不再继续采矿
  */
-export const minerHervesteLimit = 200000
+export const MINE_LIMIT = 200000
 
 /**
  * 交易时的购买区间限制
@@ -530,7 +530,7 @@ export const FILLER_WITH_CONTAINER_RANGE = [
 ]
 
 // 用于维持房间能量正常运转的重要角色
-export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'collector', 'manager', 'processor' ]
+export const importantRoles: CreepRoleConstant[] = [ 'manager', 'processor' ]
 
 /**
  * 所有的 shard 名称，用于跨 shard 通讯，
@@ -567,3 +567,16 @@ export const DEFAULT_ENERGY_KEEP_LIMIT = 900000
  * storage 填充到其他建筑的能量填充设置的填充量默认值
  */
 export const DEFAULT_ENERGY_KEEP_AMOUNT = 50000
+
+/**
+ * source 采集单位的行为模式
+ */
+export const HARVEST_MODE: {
+    START: HarvestModeStart,
+    SIMPLE: HarvestModeSimple,
+    TRANSPORT: HarvestModeTransport
+} = {
+    START: 1,
+    SIMPLE: 2,
+    TRANSPORT: 3
+}

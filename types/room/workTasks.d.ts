@@ -44,9 +44,9 @@ interface WorkTasks {
          */
         id: Id<Source>
         /**
-         * 在 HarvestModeTransport 模式下要存放到的 link id
+         * 在非初始模式下要存放能量到的位置
          */
-        targetId: Id<StructureLink>
+        targetId?: Id<StructureLink | StructureContainer>
         /**
          * 采集的行为模式
          */
@@ -83,7 +83,11 @@ interface RoomWorkType {
     /**
      * 填写一个新的房间物流任务
      */
-    addTask(task: AllRoomWorkTask): void 
+    addTask(task: AllRoomWorkTask): void
+    /**
+     * 根据 taskKey 获取指定任务
+     */
+    getTask(taskKey: number): AllRoomWorkTask | undefined
     /**
      * 获取应该执行的任务
      */
@@ -95,11 +99,11 @@ interface RoomWorkType {
     /**
      * 移除一个任务
      */
-    removeTask(taskKey: number): OK | ERR_NOT_FOUND
+    removeTask(taskIndex: number | AllWorkTaskType): OK | ERR_NOT_FOUND
     /**
      * 更新指定任务
      */
-    updateTask(newTask: AllRoomWorkTask, addWhenNotFound?: boolean): void
+    updateTask(newTask: AllRoomWorkTask, addWhenNotFound?: boolean): number
     /**
      * 获取该房间的搬运工调整期望
      */
@@ -115,3 +119,8 @@ type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
     taskKey: number,
     workController: RoomWorkType
 ) => RoomTaskAction
+
+/**
+ * 特殊身体类型
+ */
+type SepicalBodyType = 'upgrade7' | 'upgrade8' | 'harvestSimple'

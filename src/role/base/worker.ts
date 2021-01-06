@@ -1,4 +1,4 @@
-import { bodyConfigs } from '../bodyConfigs'
+import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**
@@ -15,7 +15,12 @@ const worker: CreepConfig<'worker'> = {
         const { workRoom } = creep.memory.data
         return Game.rooms[workRoom]?.work.getWork(creep).target()
     },
-    bodys: createBodyGetter(bodyConfigs.worker)
+    bodys: (room, spawn, data) => {
+        // 指定了特殊身体部件的话就生成对应的
+        if (data.bodyType) return specialBodyConfig[data.bodyType](room, spawn)
+        // 否则就使用默认的身体部件
+        return createBodyGetter(bodyConfigs.worker)(room, spawn)
+    }
 }
 
 export default worker

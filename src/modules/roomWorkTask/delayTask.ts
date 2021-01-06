@@ -3,38 +3,45 @@
  */
 
 import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
+import { MINE_LIMIT } from 'setting'
 
 /**
- * 注册 repairer 的延迟孵化任务
+ * 注册刷墙工的延迟孵化任务
  */
-addDelayCallback('spawnRepairer', room => {
+addDelayCallback('spawnFiller', room => {
     if (!room) return
 
     // cpu 还是不够的话就延迟发布
     if (Game.cpu.bucket < 700) return addSpawnRepairerTask(room.name)
 
-    room.releaseCreep('repairer')
+    room.work.updateTask({ type: 'fillWall' })
 })
 
 /**
  * 注册 miner 的延迟孵化任务
  */
 addDelayCallback('spawnMiner', room => {
-    if (!room) return
+    // 房间或终端没了就不在孵化
+    if (!room || !room.terminal) return
 
-    // cpu 不够的话就延迟发布
-    if (Game.cpu.bucket < 700) return addSpawnMinerTask(room.name, 1000)
+    // 满足以下条件时就延迟发布
+    if (
+        // cpu 不够
+        Game.cpu.bucket < 700 ||
+        // 矿采太多了
+        room.terminal.store[room.mineral.mineralType] >= MINE_LIMIT
+    ) return addSpawnMinerTask(room.name, 1000)
 
-    room.releaseCreep('miner')
+    room.work.updateTask({ type: 'mine' })
 })
 
 /**
- * 给指定房间添加 repairer 的延迟孵化任务
+ * 给指定房间添加刷墙工的延迟孵化任务
  * 
  * @param roomName 添加到的房间名
  */
 export const addSpawnRepairerTask = function (roomName) {
-    addDelayTask('spawnRepairer', { roomName }, Game.time + 5000)
+    addDelayTask('spawnFiller', { roomName }, Game.time + 5000)
 }
 
 /**

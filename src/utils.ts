@@ -26,12 +26,10 @@ export function calcBodyPart(bodySet: BodySet): BodyPartConstant[] {
  * 
  * @param bodyConfig 该 creep 对应的身体配置项
  */
-export function createBodyGetter(bodyConfig: BodyConfig): (room: Room, spawn: StructureSpawn) => BodyPartConstant[] {
+export function createBodyGetter(bodyConfig: BodyConfig): BodyPartGenerator {
     /**
      * 获取身体部件数组
      * 根据房间中现存的能量选择给定好的体型
-     * 
-     * @param bodyType 
      */
     return function(room: Room, spawn: StructureSpawn): BodyPartConstant[] {
         const targetLevel = Object.keys(bodyConfig).reverse().find(level => {

@@ -2,22 +2,12 @@ import { getRoomAvailableSource } from 'modules/energyController'
 import { fillSpawnStructure } from 'modules/roomTransportTask/actions'
 import { useCache } from 'utils'
 import { addSpawnMinerTask } from './delayTask'
+import { HARVEST_MODE } from 'setting'
 
 /**
  * @warning 在任务完成时要及时清除该任务在 creep 内存中留下的缓存
  * 防止影响后续任务行为
  */
-
-// 采集单位的行为模式
-const HARVEST_MODE: {
-    START: HarvestModeStart,
-    SIMPLE: HarvestModeSimple,
-    TRANSPORT: HarvestModeTransport
-} = {
-    START: 1,
-    SIMPLE: 2,
-    TRANSPORT: 3
-}
 
 /**
  * 没有任务时的行为逻辑
@@ -49,9 +39,9 @@ export const transportActions: {
                 creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
             ) return true
 
-            const source = Game.getObjectById(creep.memory.data.sourceId)
+            const source = Game.getObjectById(task.id)
             const result = creep.getEngryFrom(source)
-            
+
             if (task.mode === HARVEST_MODE.SIMPLE) {
                 // 快死了就把身上的能量丢出去，这样就会存到下面的 container 里，否则变成墓碑后能量无法被 container 自动回收
                 if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)

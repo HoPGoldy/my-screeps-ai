@@ -215,16 +215,21 @@ export default class RoomTransport implements RoomTransportType {
      * 
      * @param taskKey 要移除的任务索引
      */
-    public removeTask(taskKey: number): OK | ERR_NOT_FOUND {
-        this.tasks.find((task, index) => {
-            if (task.key !== taskKey) return false
+    public removeTask(taskIndex: number): OK | ERR_NOT_FOUND
+    public removeTask(taskIndex: AllTransportTaskType): OK | ERR_NOT_FOUND
+    public removeTask(taskIndex: number | AllTransportTaskType): OK | ERR_NOT_FOUND {
+        this.tasks = this.tasks.filter(task => {
+            if (typeof taskIndex === 'number') {
+                if (task.key !== taskIndex) return true
+            }
+            else {
+                if (task.type !== taskIndex) return true
+            }
 
-            // 删除该任务
-            this.tasks.splice(index, 1)
             // 给干完活的搬运工重新分配任务
             const extraCreeps = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
             this.giveJob(extraCreeps)
-            return true
+            return false
         })
 
         this.saveTask()

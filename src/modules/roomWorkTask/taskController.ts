@@ -1,5 +1,7 @@
+import { log } from 'utils'
 import { getRoomStats } from 'modules/stateCollector'
 import { noTask, transportActions } from './actions'
+import { HARVEST_MODE } from 'setting'
 
 /**
  * 能量获取速率到调整期望的 map
@@ -300,30 +302,35 @@ export default class RoomWork implements RoomWorkType {
      * 
      * @param newTask 要更新的任务
      * @param addWhenNotFound 当没有匹配到任务时是否新建任务，默认为 true
+     * @returns 被更新任务的索引，如果新建了任务则返回新任务的索引，若更新了多个任务的话则返回最后一个任务的索引
      */
-    public updateTask(newTask: AllRoomWorkTask, addWhenNotFound: boolean = true): void {
+    public updateTask(newTask: AllRoomWorkTask, addWhenNotFound: boolean = true): number {
         // 是否找到了要更新的任务
         let notFound = true
         // 是否需要重新分派任务
         let needRedispath = false
+        // 要更新任务的索引
+        let taskKey = newTask.key
 
         // 查找并更新任务
         this.tasks = this.tasks.map(task => {
             if (task.key !== newTask.key && task.type !== newTask.type) return task
 
             notFound = false
+            taskKey = newTask.key || task.key
             // 状态变化就需要重新分派
-            if (
-                task.priority !== newTask.priority ||
-                task.need1 !== newTask.need1
-            ) needRedispath = true
+            if (task.priority !== newTask.priority || task.need1 !== newTask.need1) {
+                needRedispath = true
+            }
 
             return Object.assign(task, newTask)
         })
 
         // 没找到就尝试更新、找到了就尝试重新分配
-        if (notFound && addWhenNotFound) this.addTask(newTask)
+        if (notFound && addWhenNotFound) taskKey = this.addTask(newTask)
         else if (needRedispath) this.dispatchTask()
+
+        return taskKey
     }
 
     /**
@@ -331,16 +338,21 @@ export default class RoomWork implements RoomWorkType {
      * 
      * @param taskKey 要移除的任务索引
      */
-    public removeTask(taskKey: number): OK | ERR_NOT_FOUND {
-        this.tasks.find((task, index) => {
-            if (task.key !== taskKey) return false
+    public removeTask(taskIndex: number): OK | ERR_NOT_FOUND
+    public removeTask(taskIndex: AllWorkTaskType): OK | ERR_NOT_FOUND
+    public removeTask(taskIndex: number | AllWorkTaskType): OK | ERR_NOT_FOUND {
+        this.tasks = this.tasks.filter(task => {
+            if (typeof taskIndex === 'number') {
+                if (task.key !== taskIndex) return true
+            }
+            else {
+                if (task.type !== taskIndex) return true
+            }
 
-            // 删除该任务
-            this.tasks.splice(index, 1)
             // 给干完活的搬运工重新分配任务
             const extraCreeps = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
             this.giveJob(extraCreeps)
-            return true
+            return false
         })
 
         this.saveTask()
@@ -377,5 +389,55 @@ export default class RoomWork implements RoomWorkType {
         const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => stats.energyGetRate >= opt.rate)
 
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
+    }
+
+    /**
+     * 规划能量采集任务
+     * 
+     * 因为能量采集任务设置起来比较麻烦，这里提供一个通用的自适应设置方法（不强制使用，也可以自己实现）
+     * 调用一次即可根据房间内的 link、container 之类的设置所有的能量采集任务
+     * 如果没有的话将新建任务
+     */
+    public planEnergyHarvestTask() {
+        const room = Game.rooms[this.roomName]
+        if (!room) {
+            log(`无法访问指定房间 ${this.roomName}，取消能量采集任务规划`, ['workerTask'], 'red')
+            return undefined
+        }
+
+        const harvestTasks = room.source.map((source, index) => {
+            const task: WorkTasks['harvest'] = {
+                type: 'harvest',
+                id: source.id,
+                mode: HARVEST_MODE.START,
+                // 这个很重要，一定要保证这个优先级是最高的
+                priority: 10,
+                need1: true
+            }
+
+            // 找到附近的 link
+            const nearLink = room[STRUCTURE_LINK].find(link => source.pos.inRangeTo(link, 2))
+
+            // 有 link，TRANSPORT 模式
+            if (nearLink) {
+                task.targetId = nearLink.id
+                task.mode = HARVEST_MODE.TRANSPORT
+                return task
+            }
+
+            // 找到附近的 container
+            const nearContainer = room[STRUCTURE_CONTAINER].find(container => source.pos.inRangeTo(container, 1))
+
+            // 有 container，SIMPLE 模式
+            if (nearContainer) {
+                task.targetId = nearContainer.id
+                task.mode = HARVEST_MODE.SIMPLE
+                return task
+            }
+
+            // 啥都没有，起始模式
+        })
+
+        // const harvestTasks = this.tasks.filter(task => task.type === 'harvest')
     }
 }

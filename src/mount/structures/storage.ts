@@ -1,6 +1,5 @@
 import { createHelp } from 'modules/help'
 import { DEFAULT_ENERGY_KEEP_AMOUNT, DEFAULT_ENERGY_KEEP_LIMIT, ENERGY_SHARE_LIMIT } from 'setting'
-import { setRoomStats } from 'modules/stateCollector'
 
 /**
  * Storage 拓展
@@ -15,8 +14,6 @@ class StorageExtension extends StructureStorage {
         this.energyKeeper()
 
         if (Game.time % 10000) return
-        // 定时运行规划
-        this.room.releaseCreep('upgrader')
         // 能量太多就提供资源共享
         if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.shareAddSource(RESOURCE_ENERGY)
     }
@@ -70,9 +67,6 @@ class StorageExtension extends StructureStorage {
      * 建筑完成时以自己为中心发布新的 creep 运维组
      */
     public onBuildComplete(): void {
-        this.room.releaseCreep('harvester')
-        this.room.releaseCreep('upgrader')
-
         this.room.sourceContainers.forEach(container => {
             // 添加从 container 到自己的能量搬运任务
             // 虽然没指定任务完成条件，但是后面 container 是会被主动摧毁的（link 造好后），这时对应的搬运任务就会被释放掉

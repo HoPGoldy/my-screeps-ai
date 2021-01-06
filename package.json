@@ -31,7 +31,7 @@
     "rollup-plugin-copy": "^3.3.0",
     "rollup-plugin-screeps": "^1.0.1",
     "rollup-plugin-typescript2": "^0.27.1",
-    "typescript": "^3.9.7"
+    "typescript": "^4.1.3"
   },
   "dependencies": {
     "source-map": "^0.6.1"

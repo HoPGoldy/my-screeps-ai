@@ -10,19 +10,9 @@ type CreepData = RoleDatas[CreepRoleConstant]
 
 interface RoleDatas {
     /**
-     * 房间基础运营
+     * 房间运营
      */
     worker: WorkerData
-    harvester: HarvesterData
-    collector: HarvesterData
-    miner: MinerData
-    upgrader: WorkerData
-    builder: WorkerData
-    repairer: WorkerData
-
-    /**
-     * 房间高级运营
-     */
     manager: transporterData
     processor: ProcessorData
 
@@ -178,13 +168,12 @@ interface MinerData {
 
 /**
  * 工作单位的 data
- * 由于由确定的工作目标所以不需要 targetId
  */
 interface WorkerData {
     /**
-     * 要使用的资源存放建筑 id
+     * 该工作单位的特殊身体部件
      */
-    sourceId?: Id<EnergySourceStructure>
+    bodyType?: SepicalBodyType
     /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里

@@ -14,13 +14,17 @@ interface DelayTaskData {
  */
 interface DelayTaskTypes {
     /**
-     * 维修工延迟孵化任务
+     * 刷墙工延迟孵化任务
      */
-    spawnRepairer: DelayTaskData
+    spawnFiller: DelayTaskData
     /**
      * 挖矿工延迟孵化任务
      */
     spawnMiner: DelayTaskData
+    /**
+     * 升级工延迟孵化任务
+     */
+    spawnUpgrader: DelayTaskData
 }
 
 /**

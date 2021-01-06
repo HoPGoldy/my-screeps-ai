@@ -1,13 +1,6 @@
 import worker from './base/worker'
-import harvester from './base/harvester'
-import collector from './base/collector'
-import builder from './base/builder'
-import miner from './base/miner'
-import repairer from './base/repairer'
-import upgrader from './base/upgrader'
-
-import manager from './advanced/manager'
-import processor from './advanced/processor'
+import manager from './base/manager'
+import processor from './base/processor'
 
 import claimer from './remote/claimer'
 import depositHarvester from './remote/depositHarvester'
@@ -32,16 +25,10 @@ import soldier from './war/soldier'
 
 const creepWork: CreepWork = {
     /**
-     * 初级房间运维角色组
-     * 包括了在没有 Storage 和 Link 的房间内运维所需的角色
+     * 房间运维角色组
+     * 包括了维持房间正常运行所需的单位
      */
-    worker, harvester, collector, builder, miner, repairer, upgrader,
-
-    /**
-     * 高级房间运营角色组
-     * 本角色组包括了有 Storage 和 Link 的房间内运维所需的角色
-     */
-    manager, processor,
+    worker, manager, processor,
 
     /**
      * 外派角色组

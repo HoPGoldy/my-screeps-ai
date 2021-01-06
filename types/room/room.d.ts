@@ -106,11 +106,6 @@ interface RoomMemory {
      */
     upgradeLinkId?: Id<StructureLink>
     /**
-     * 一个 Game.time，标注了 mineral 什么时候会回满
-     * 由 miner 发布，Extractor 会监听这个字段，并在适当的时间重新发布 mineral
-     */
-    mineralCooldown: number
-    /**
      * 外矿专用内存字段
      */
     remote: {
@@ -168,9 +163,18 @@ interface RoomMemory {
         }
     }
     /**
-     * 当前本房间物流单位的数量
+     * 当前房间物流单位的数量
      */
     transporterNumber?: number
+    /**
+     * 当前房间工作单位的数量
+     */
+    workerNumber?: number
+    /**
+     * 当前房间的source采集任务索引
+     * 其格式为 12312,3213123
+     */
+    harvestKeys: string
 }
 
 /**

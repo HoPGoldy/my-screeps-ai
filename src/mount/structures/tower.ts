@@ -182,14 +182,10 @@ export default class TowerExtension extends StructureTower {
 
                     this.log(`墙体被攻击!孵化维修单位`, 'yellow')
                     // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
-                    const repairerList = this.room.controller.level >= 7 ? [1, 2, 3] : [1, 2, 3, 4, 5, 6, 7, 8]
-                    // 如果没有维修者的话就进行发布
-                    repairerList.forEach(index => {
-                        creepApi.add(`${repairCreepName} ${index}`, 'repairer', {
-                            sourceId: this.room.storage ? this.room.storage.id : undefined,
-                            workRoom: this.room.name
-                        }, this.room.name)
-                    })
+                    const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
+                    // 提高刷墙任务优先级并孵化额外工作单位
+                    this.room.work.updateTask({ type: 'fillWall', priority: 9 })
+                    this.room.releaseCreep('worker', newWorkerNumber)
                 }
             }
         }

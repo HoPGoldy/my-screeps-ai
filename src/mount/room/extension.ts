@@ -628,7 +628,7 @@ export default class RoomExtension extends Room {
 
         // 触发对应的 creep 发布规划
         this.releaseCreep('manager', this.memory.sourceContainersIds.length * 3)
-        this.releaseCreep('upgrader')
+        this.work.updateTask({ type: 'upgrade' })
 
         return OK
     }

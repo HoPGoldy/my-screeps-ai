@@ -31,3 +31,9 @@ type BodyConfig = {
 type BodyConfigs = {
     [type in BodyAutoConfigConstant]: BodyConfig
 }
+
+/**
+ * 身体部件生成函数
+ * 接受房间和要执行孵化的 spawn 信息，返回可以生成的身体部件数组
+ */
+type BodyPartGenerator = (room: Room, spawn: StructureSpawn) => BodyPartConstant[]

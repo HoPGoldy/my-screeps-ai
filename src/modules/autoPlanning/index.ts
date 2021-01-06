@@ -118,8 +118,8 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
         })
     }
 
-    // 有需要建造的，发布建造者
-    if (needBuild) releaseCreep(room, 'builder', 3)
+    // 有需要建造的，发布建造任务
+    if (needBuild) room.work.updateTask({ type: 'build', priority: 9 })
 
     // 存档到房间
     if (delayQueue.length > 0) room.memory.delayCSList = delayQueue

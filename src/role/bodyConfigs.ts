@@ -2,7 +2,7 @@
  * 包含可复用的 creep 角色身体配置项
  */
 
-import { calcBodyPart } from 'utils'
+import { calcBodyPart, createBodyGetter } from 'utils'
 
 /**
  * 快速生成 creep 身体部件配置项
@@ -151,4 +151,31 @@ export const bodyConfigs: BodyConfigs = {
         { [WORK]: 7, [CARRY]: 15, [MOVE]: 11 },
         { [WORK]: 11, [CARRY]: 15, [MOVE]: 19 }
     )
+}
+
+/**
+ * 特殊的身体部件类型及其对应的身体部件数组
+ */
+export const specialBodyConfig: { [type in SepicalBodyType]: BodyPartGenerator } = {
+    /**
+     * RCL7 时的升级单位身体部件，由于是从 link 中取能量所以 CARRY 较少
+     */
+    upgrade7: () => calcBodyPart({ [WORK]: 30, [CARRY]: 5, [MOVE]: 15 }),
+    /**
+     * RCL8 时的升级单位身体部件，升级受限，所以 WORK 是 12 个
+     */
+    upgrade8: () => calcBodyPart({ [WORK]: 12, [CARRY]: 6, [MOVE]: 12 }),
+    /**
+     * 简单模式下的 harvester，没有 CARRY 部件
+     */
+    harvestSimple: createBodyGetter(getBodyConfig(
+        { [WORK]: 2,  [MOVE]: 1 },
+        { [WORK]: 4, [MOVE]: 2 },
+        { [WORK]: 6, [MOVE]: 3 },
+        { [WORK]: 8, [MOVE]: 4 },
+        { [WORK]: 10, [MOVE]: 5 },
+        { [WORK]: 12, [MOVE]: 6 },
+        { [WORK]: 12, [MOVE]: 6 },
+        { [WORK]: 12, [MOVE]: 6 }
+    ))
 }

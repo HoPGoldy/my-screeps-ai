@@ -3,8 +3,9 @@ import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
 import { setRoomStats } from 'modules/stateCollector'
 import { costCache } from 'modules/move'
-import { LEVEL_BUILD_RAMPART } from 'setting'
+import { HARVEST_MODE, LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { countEnergyChangeRatio } from 'modules/energyController'
+import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
 
 /**
  * Controller 拓展
@@ -21,9 +22,6 @@ export default class ControllerExtension extends StructureController {
 
         // 调整运营 creep 数量
         this.adjustCreep()
-
-        // 8 级并且快掉级了就孵化 upgrader
-        if (this.level === 8 && this.ticksToDowngrade <= 100000) this.room.releaseCreep('upgrader')
 
         // 检查外矿有没有被入侵的，有的话是不是可以重新发布 creep
         if (this.room.memory.remote) {
@@ -43,20 +41,30 @@ export default class ControllerExtension extends StructureController {
      * @param level 当前的等级
      */
     public onLevelChange(level: number): void {
-        // 刚占领，添加最基础的角色组
+        // 刚占领，添加工作单位
         if (level === 1) {
-            this.room.releaseCreep('harvester')
-            // 发布 build 建造 container
-            this.room.releaseCreep('builder', 4)
+            const existKeys = (this.room.memory.harvestKeys || '').split(',')
+            // 根据 source 的数量发布对应的采集任务，并把任务索引回存到 memory 以供后面修改
+            this.room.memory.harvestKeys = this.room.source.map((source, index) => {
+                return this.room.work.updateTask({
+                    key: Number(existKeys[index]),
+                    type: `harvest`,
+                    id: source.id,
+                    mode: HARVEST_MODE.START,
+                    // 这个很重要，一定要保证这个优先级是最高的
+                    priority: 10,
+                    need1: true
+                })
+            }).join(',')
+
+            this.room.releaseCreep('worker', 6)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
-            // 开始刷墙后就开始生刷墙工
-            this.room.releaseCreep('repairer', 2)
+            // 开始刷墙后就开始执行刷墙任务
+            this.room.work.updateTask({ type: 'repair' })
         }
-        // 8 级之后重新规划升级单位
         else if (level === 8) {
-            this.room.releaseCreep('upgrader')
-            this.room.releaseCreep('repairer')
+            this.decideUpgradeWhenRCL8()
         }
 
         // 规划布局
@@ -69,12 +77,38 @@ export default class ControllerExtension extends StructureController {
     private adjustCreep(): void {
         if (Game.time % 500) return
 
-        const { transporterNumber } = this.room.memory
+        const { transporterNumber, workerNumber } = this.room.memory
+        // 最低一个搬运工
         if (!transporterNumber || transporterNumber <= 0) this.room.memory.transporterNumber = 1
+        // 最低每个 source 一个工人
+        if (!workerNumber || workerNumber <= 0) this.room.memory.workerNumber = this.room.source.length
 
         // 根据物流模块返回的期望调整当前搬运工数量
         this.room.memory.transporterNumber += this.room.transport.getExpect()
         this.room.releaseCreep('manager', this.room.memory.transporterNumber)
+
+        // 根据工作模块返回的期望调整当前工人数量
+        this.room.memory.workerNumber += this.room.work.getExpect()
+        this.room.releaseCreep('worker', this.room.memory.workerNumber)
+    }
+
+    /**
+     * 房间升到 8 级后的升级计划
+     */
+    private decideUpgradeWhenRCL8(): void {
+        // 满足以下条件就暂停升级
+        if (
+            Game.cpu.bucket < 700 ||
+            !this.room.storage || this.room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
+        ) {
+            // 暂时停止升级计划
+            this.room.work.removeTask('upgrade')
+            addDelayTask('spawnUpgrader', { roomName: this.room.name }, 10000)
+        }
+        else {
+            // 限制只需要一个单位升级
+            this.room.work.updateTask({ type: 'upgrade', need1: true })
+        }
     }
 
     /**
@@ -115,7 +149,7 @@ export default class ControllerExtension extends StructureController {
         else delete this.room.memory.delayCSList
 
         if (needBuild && !creepApi.has(`${this.room.name} builder0`)) {
-            this.room.releaseCreep('builder')
+            this.room.work.updateTask({ type: 'build', priority: 9 })
             // 有新建筑发布，需要更新房间 cost 缓存
             delete costCache[this.room.name]
         }
@@ -166,3 +200,21 @@ export default class ControllerExtension extends StructureController {
         return bodyNum > MAX_CREEP_SIZE
     }
 }
+
+/**
+ * 注册升级工的延迟孵化任务
+ */
+addDelayCallback('spawnUpgrader', room => {
+    // 房间或终端没了就不在孵化
+    if (!room || !room.storage) return
+
+    // 满足以下条件时就延迟发布
+    if (
+        // cpu 不够
+        Game.cpu.bucket < 700 ||
+        // 能量不足
+        room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
+    ) return addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
+
+    room.work.updateTask({ type: 'upgrade', need1: true })
+})
