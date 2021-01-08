@@ -79,7 +79,7 @@ interface WorkTasks {
  */
 type WorkTaskData = WorkTasks[AllWorkTaskType][]
 
-interface RoomWorkType {
+interface InterfaceWorkTaskController extends InterfaceTaskController {
     /**
      * 填写一个新的房间物流任务
      */
@@ -121,7 +121,7 @@ type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
     creep: MyCreep<'worker'>,
     task: WorkTasks[T],
     taskKey: number,
-    workController: RoomWorkType
+    workController: InterfaceWorkTaskController
 ) => RoomTaskAction
 
 /**

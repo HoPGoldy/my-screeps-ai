@@ -33,3 +33,23 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // 统计全局资源使用
     stateScanner()
 })
+
+interface Class1 {
+    func(arg: number): string
+}
+
+class A implements Class1 {
+    func(arg: number) {
+        return arg.toString()
+    }
+}
+
+interface Class2 extends Class1 {
+    func2(arg: string): number
+}
+
+class B extends A implements Class2 {
+    func2(arg: string) {
+        return Number(arg)
+    }
+}

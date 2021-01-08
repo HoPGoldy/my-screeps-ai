@@ -1,5 +1,5 @@
 import { getRoomAvailableSource } from 'modules/energyController'
-import { fillSpawnStructure } from 'modules/roomTransportTask/actions'
+import { fillSpawnStructure } from 'modules/roomTask/roomTransportTask/actions'
 import { useCache } from 'utils'
 import { addSpawnMinerTask } from './delayTask'
 import { HARVEST_MODE } from 'setting'

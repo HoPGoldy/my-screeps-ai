@@ -90,12 +90,9 @@ interface TransportTasks {
  */
 type TransportData = TransportTasks[AllTransportTaskType][]
 
-interface RoomTransportType {
+interface InterfaceTransportTaskController extends InterfaceTaskController {
     /**
-     * 填写一个新的房间物流任务
-     * 
-     * @param task 要添加的物流任务
-     * @returns taskKey 该任务的唯一索引
+     * 填写新的房间物流任务
      */
     addTask(task: AllRoomTransportTask): number 
     /**
@@ -127,5 +124,5 @@ type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskT
     creep: MyCreep<'manager'>,
     task: TransportTasks[T],
     taskKey: number,
-    transportController: RoomTransportType
+    transportController: InterfaceTransportTaskController
 ) => RoomTaskAction
