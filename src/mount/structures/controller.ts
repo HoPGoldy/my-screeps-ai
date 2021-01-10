@@ -94,7 +94,7 @@ export default class ControllerExtension extends StructureController {
         }
         else {
             // 限制只需要一个单位升级
-            this.room.work.updateTask({ type: 'upgrade', need1: true })
+            this.room.work.updateTask({ type: 'upgrade', need: 1 })
         }
     }
 
@@ -203,5 +203,5 @@ addDelayCallback('spawnUpgrader', room => {
         room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
     ) return addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
 
-    room.work.updateTask({ type: 'upgrade', need1: true })
+    room.work.updateTask({ type: 'upgrade', need: 1 })
 })

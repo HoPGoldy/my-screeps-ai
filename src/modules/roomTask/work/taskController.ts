@@ -21,7 +21,7 @@ const WORK_PROPORTION_TO_EXPECT = [
     { rate: -100, expect: -2 }
 ]
 
-export default class RoomWork extends TaskController implements InterfaceWorkTaskController {
+export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWorkTask> implements InterfaceWorkTaskController {
     readonly SAVE_KEY: string = 'workTasks'
 
     /**
@@ -38,20 +38,11 @@ export default class RoomWork extends TaskController implements InterfaceWorkTas
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
     public getWork(creep: MyCreep<'worker'>): RoomTaskAction {
-        const task = this.getUnitTaskType<AllWorkTaskType>(creep)
+        const task = this.getUnitTaskType(creep)
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
         // 分配完后获取任务执行逻辑
-        return actionGenerator(creep, task, taskKey, this)
-    }
-
-    /**
-     * 是否存在某个任务
-     * 
-     * @returns 存在则返回该任务及其在 this.tasks 中的索引，不存在则返回 undefined
-     */
-    public hasTask(taskType: AllWorkTaskType): boolean {
-        return !!this.tasks.find(task => task.type === taskType)
+        return actionGenerator(creep, task, this)
     }
 
     /**
@@ -78,7 +69,7 @@ export default class RoomWork extends TaskController implements InterfaceWorkTas
             notFound = false
             taskKey = newTask.key || task.key
             // 状态变化就需要重新分派
-            if (task.priority !== newTask.priority || task.need1 !== newTask.need1) {
+            if (task.priority !== newTask.priority || task.need !== newTask.need) {
                 needRedispath = true
             }
 
@@ -90,48 +81,6 @@ export default class RoomWork extends TaskController implements InterfaceWorkTas
         else if (needRedispath) this.dispatchTask()
 
         return taskKey
-    }
-
-    /**
-     * 移除一个任务
-     * 
-     * @param taskKey 要移除的任务索引
-     */
-    public removeTask(taskIndex: number): OK | ERR_NOT_FOUND
-    public removeTask(taskIndex: AllWorkTaskType): OK | ERR_NOT_FOUND
-    public removeTask(taskIndex: number | AllWorkTaskType): OK | ERR_NOT_FOUND {
-        this.tasks = this.tasks.filter(task => {
-            if (typeof taskIndex === 'number') {
-                if (task.key !== taskIndex) return true
-            }
-            else {
-                if (task.type !== taskIndex) return true
-            }
-
-            // 给干完活的搬运工重新分配任务
-            const extraCreeps = task.executor.map(id => Game.getObjectById(id)).filter(Boolean)
-            this.giveJob(extraCreeps)
-            return false
-        })
-
-        this.saveTask()
-        return OK
-    }
-
-    /**
-     * 向指定任务安排指定工作单位
-     * 
-     * @param creep 要分配的 creep
-     * @param task 要分配到的任务
-     */
-    private setCreepTask(creep: Creep, task: AllRoomWorkTask): void {
-        if (!creep || !task) {
-            Game.rooms[this.roomName].log(`错误的工作分配 ${creep} > ${task}`, 'workTask', 'red')
-            return
-        }
-
-        task.executor.push(creep.id)
-        creep.memory.taskKey = task.key
     }
 
     /**
@@ -173,7 +122,7 @@ export default class RoomWork extends TaskController implements InterfaceWorkTas
                 mode: HARVEST_MODE.START,
                 // 这个很重要，一定要保证这个优先级是最高的
                 priority: 10,
-                need1: true
+                need: 1
             }
 
             // 找到附近的 link

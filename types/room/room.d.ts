@@ -287,12 +287,12 @@ interface Room {
     /**
      * 房间物流 api
      */
-    transport: RoomTransportType
+    transport: InterfaceTransportTaskController
 
     /**
      * 房间工作 api
      */
-    work: RoomWorkType
+    work: InterfaceWorkTaskController
 
     /**
      * 工厂 api

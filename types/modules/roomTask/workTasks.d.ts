@@ -120,7 +120,6 @@ interface InterfaceWorkTaskController extends InterfaceTaskController {
 type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
     creep: MyCreep<'worker'>,
     task: WorkTasks[T],
-    taskKey: number,
     workController: InterfaceWorkTaskController
 ) => RoomTaskAction
 

@@ -1,5 +1,5 @@
 import { getRoomAvailableSource } from 'modules/energyController'
-import { fillSpawnStructure } from 'modules/roomTask/roomTransportTask/actions'
+import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
 import { useCache } from 'utils'
 import { addSpawnMinerTask } from './delayTask'
 import { HARVEST_MODE } from 'setting'
@@ -107,7 +107,7 @@ export const transportActions: {
     /**
      * 元素采集任务
      */
-    mine: (creep, task, taskKey, workController) => ({
+    mine: (creep, task, workController) => ({
         source: () => {
             if (creep.store.getFreeCapacity() === 0) return true
 
@@ -116,7 +116,7 @@ export const transportActions: {
             // 找不到矿或者矿采集完了，添加延迟孵化并结束任务
             if (!mineral || mineral.mineralAmount <= 0) {
                 addSpawnMinerTask(mineral.room.name, mineral.ticksToRegeneration)
-                workController.removeTask(taskKey)
+                workController.removeTask(task.key)
             }
 
             const harvestResult = creep.harvest(mineral)
@@ -126,7 +126,7 @@ export const transportActions: {
             const target: StructureTerminal = Game.rooms[creep.memory.data.workRoom]?.terminal
             if (!target) {
                 creep.say('放哪？')
-                workController.removeTask(taskKey)
+                workController.removeTask(task.key)
                 return false
             }
     
@@ -139,7 +139,7 @@ export const transportActions: {
     /**
      * 升级任务
      */
-    upgrade: (creep) => ({
+    upgrade: creep => ({
         source: () => getEnergy(creep),
         target: () => creep.upgrade() === ERR_NOT_ENOUGH_RESOURCES
     }),
@@ -147,14 +147,14 @@ export const transportActions: {
     /**
      * 建造任务
      */
-    build: (creep, task, taskKey, workController) => ({
+    build: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
             // 有新墙就先刷新墙
             if (creep.memory.fillWallId) creep.steadyWall()
             // 没有就建其他工地，如果找不到工地了，就算任务完成
             else if (creep.buildStructure() === ERR_NOT_FOUND) {
-                workController.removeTask(taskKey)
+                workController.removeTask(task.key)
                 return true
             }
 
@@ -165,12 +165,12 @@ export const transportActions: {
     /**
      * 维修任务
      */
-    repair: (creep, task, taskKey, workController) => ({
+    repair: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
             const room = Game.rooms[creep.memory.data.workRoom]
             if (!room) {
-                workController.removeTask(taskKey)
+                workController.removeTask(task.key)
                 return true
             }
 
@@ -189,7 +189,7 @@ export const transportActions: {
 
             // 没有需要维修的建筑，任务完成
             if (!target) {
-                workController.removeTask(taskKey)
+                workController.removeTask(task.key)
                 delete creep.memory.repairStructureId
                 return true
             }

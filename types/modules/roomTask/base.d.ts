@@ -21,9 +21,9 @@ interface RoomTask<T extends string> {
      */
     require?: string
     /**
-     * 该任务强制只需要一个人去做
+     * 该任务需要多少人去做
      */
-    need?: boolean
+    need?: number
     /**
      * 正在处理该任务的特殊体型单位人数
      * 如果该任务指定了 need 字段的话，该字段也会存在
