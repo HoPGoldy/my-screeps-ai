@@ -32,7 +32,7 @@ addDelayCallback('spawnMiner', room => {
         room.terminal.store[room.mineral.mineralType] >= MINE_LIMIT
     ) return addSpawnMinerTask(room.name, 1000)
 
-    room.work.updateTask({ type: 'mine' })
+    room.work.updateTask({ type: 'mine', need: 1 })
 })
 
 /**

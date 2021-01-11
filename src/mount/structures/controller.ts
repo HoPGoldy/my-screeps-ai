@@ -136,7 +136,7 @@ export default class ControllerExtension extends StructureController {
         else delete this.room.memory.delayCSList
 
         if (needBuild && !creepApi.has(`${this.room.name} builder0`)) {
-            this.room.work.updateTask({ type: 'build', priority: 9 })
+            this.room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
             // 有新建筑发布，需要更新房间 cost 缓存
             delete costCache[this.room.name]
         }

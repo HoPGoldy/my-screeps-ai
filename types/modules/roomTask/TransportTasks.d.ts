@@ -90,7 +90,7 @@ interface TransportTasks {
  */
 type TransportData = TransportTasks[AllTransportTaskType][]
 
-interface InterfaceTransportTaskController extends InterfaceTaskController {
+interface InterfaceTransportTaskController extends InterfaceTaskController<AllTransportTaskType, AllRoomTransportTask> {
     /**
      * 填写新的房间物流任务
      */

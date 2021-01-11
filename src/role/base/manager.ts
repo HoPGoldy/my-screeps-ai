@@ -1,4 +1,4 @@
-import { bodyConfigs } from '../bodyConfigs'
+import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**
@@ -12,6 +12,12 @@ const TRANSFER_DEATH_LIMIT = 20
  * 任务处理逻辑定义在 transferTaskOperations 中
  */
 const manager: CreepConfig<'manager'> = {
+    // 如果还有要做的任务的话就继续孵化
+    isNeed: (room, preMemory) => !!preMemory.taskKey,
+    prepare: creep => {
+        creep.memory.bodyType = creep.memory.data.bodyType
+        return true
+    },
     source: creep => {
         const { sourceId, workRoom } = creep.memory.data
         if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) return deathPrepare(creep, sourceId)
@@ -22,7 +28,12 @@ const manager: CreepConfig<'manager'> = {
         const { workRoom } = creep.memory.data
         return Game.rooms[workRoom]?.transport.getWork(creep).target()
     },
-    bodys: createBodyGetter(bodyConfigs.manager)
+    bodys: (room, spawn, data) => {
+        // 指定了特殊身体部件的话就生成对应的
+        if (data.bodyType) return specialBodyConfig[data.bodyType](room, spawn)
+        // 否则就使用默认的身体部件
+        return createBodyGetter(bodyConfigs.manager)(room, spawn)
+    }
 }
 
 /**

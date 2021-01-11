@@ -39,48 +39,11 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      */
     public getWork(creep: MyCreep<'worker'>): RoomTaskAction {
         const task = this.getUnitTaskType(creep)
+        if (!task) return noTask(creep)
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
         // 分配完后获取任务执行逻辑
         return actionGenerator(creep, task, this)
-    }
-
-    /**
-     * 更新指定任务
-     * 如果任务包含 key 的话将使用 key 进行匹配
-     * 否则的话将更新 taskType 符合的任务（如果包含多个同类型的任务的话则都会更新）
-     * 
-     * @param newTask 要更新的任务
-     * @param addWhenNotFound 当没有匹配到任务时是否新建任务，默认为 true
-     * @returns 被更新任务的索引，如果新建了任务则返回新任务的索引，若更新了多个任务的话则返回最后一个任务的索引
-     */
-    public updateTask(newTask: AllRoomWorkTask, addWhenNotFound: boolean = true): number {
-        // 是否找到了要更新的任务
-        let notFound = true
-        // 是否需要重新分派任务
-        let needRedispath = false
-        // 要更新任务的索引
-        let taskKey = newTask.key
-
-        // 查找并更新任务
-        this.tasks = this.tasks.map(task => {
-            if (task.key !== newTask.key && task.type !== newTask.type) return task
-
-            notFound = false
-            taskKey = newTask.key || task.key
-            // 状态变化就需要重新分派
-            if (task.priority !== newTask.priority || task.need !== newTask.need) {
-                needRedispath = true
-            }
-
-            return Object.assign(task, newTask)
-        })
-
-        // 没找到就尝试更新、找到了就尝试重新分配
-        if (notFound && addWhenNotFound) taskKey = this.addTask(newTask)
-        else if (needRedispath) this.dispatchTask()
-
-        return taskKey
     }
 
     /**

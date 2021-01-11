@@ -79,7 +79,7 @@ interface WorkTasks {
  */
 type WorkTaskData = WorkTasks[AllWorkTaskType][]
 
-interface InterfaceWorkTaskController extends InterfaceTaskController {
+interface InterfaceWorkTaskController extends InterfaceTaskController<AllWorkTaskType, AllRoomWorkTask> {
     /**
      * 填写一个新的房间物流任务
      */
@@ -103,7 +103,7 @@ interface InterfaceWorkTaskController extends InterfaceTaskController {
     /**
      * 更新指定任务
      */
-    updateTask(newTask: AllRoomWorkTask, addWhenNotFound?: boolean): number
+    updateTask(newTask: AllRoomWorkTask, opt?: UpdateTaskOpt): number
     /**
      * 获取该房间的搬运工调整期望
      */

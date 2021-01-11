@@ -46,6 +46,7 @@ export default class RoomTransport extends TaskController<AllTransportTaskType, 
         this.totalLifeTime += 1
 
         const task = this.getUnitTaskType(creep)
+        if (!task) return noTask(creep)
         const actionGenerator: TransportActionGenerator = transportActions[task.type]
 
         // 分配完后获取任务执行逻辑

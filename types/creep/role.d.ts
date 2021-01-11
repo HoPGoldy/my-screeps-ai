@@ -138,21 +138,6 @@ interface CreepConfigMemory {
 interface EmptyData { }
 
 /**
- * 采集单位的 data
- * 执行从 sourceId 处采集东西，并转移至 targetId 处（不一定使用，每个角色都有自己固定的目标例如 storage 或者 terminal）
- */
-interface HarvesterData {
-    /**
-     * 要采集的 source id
-     */
-    sourceId: Id<Source>
-    /**
-     * 把采集到的资源存到哪里存在哪里
-     */
-    targetId?: Id<EnergySourceStructure>
-}
-
-/**
  * 矿工 data
  */
 interface MinerData {
@@ -171,9 +156,10 @@ interface MinerData {
  */
 interface WorkerData {
     /**
-     * 该工作单位的特殊身体部件
+     * 该工作单位的特殊身体部件，例如一个 20WORK 1CARRY 5MOVE 的黄球就是工作单位的一种特殊体型
+     * 该字段为空代表是标准的角色体型
      */
-    bodyType?: SepicalBodyType
+    bodyType: SepicalBodyType
     /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里
@@ -189,6 +175,10 @@ interface transporterData {
      * 要使用的资源存放建筑 id
      */
     sourceId?: Id<StructureWithStore>
+    /**
+     * 该工作单位的特殊身体部件，同 WorkData.bodyType
+     */
+    bodyType: SepicalBodyType
     /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里

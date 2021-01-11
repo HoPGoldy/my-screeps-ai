@@ -64,17 +64,31 @@ interface AddTaskOpt {
     /**
      * 发布任务后是否立刻重新调度
      */
-    dispath: boolean
+    dispath?: boolean
+}
+
+/**
+ * 更新任务时的配置项
+ */
+interface UpdateTaskOpt extends AddTaskOpt {
+    /**
+     * 如果未发现已存在的任务的话，将新建此任务
+     */
+    addWhenNotFound?: boolean
 }
 
 /**
  * 基础任务模块的接口规范
  */
-interface InterfaceTaskController {
-    addTask(task: RoomTask<string>, opt?: AddTaskOpt)
-    getTask(taskKey: number): RoomTask<string> | undefined
-    hasTask(taskIndex: number | string): boolean
-    removeTask(taskIndex: number | string): OK | ERR_NOT_FOUND
-    getUnitTaskType(creep: Creep): RoomTask<string>
+interface InterfaceTaskController<
+    TaskType extends string,
+    CostomTask extends RoomTask<TaskType>
+> {
+    addTask(task: CostomTask, opt?: AddTaskOpt)
+    updateTask(newTask: CostomTask, opt: UpdateTaskOpt): number
+    getTask(taskKey: number): CostomTask | undefined
+    hasTask(taskIndex: number | TaskType): boolean
+    removeTask(taskIndex: number | TaskType): OK | ERR_NOT_FOUND
+    getUnitTaskType(creep: Creep): CostomTask
     removeCreep(creepId): void
 }

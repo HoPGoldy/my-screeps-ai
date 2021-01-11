@@ -1,11 +1,14 @@
 /**
  * 任务模块核心实现
- * 接受的两个泛型含义为：TaskType：所有任务类型，CostomTask 所有任务
- * 
- * 模块实现了任务的添加、排序、删除，以及工作 creep 的分配
+ * 包括任务的添加、排序、删除，以及工作 creep 的分配
  */
 
-export default class TaskController<TaskType extends string, CostomTask extends RoomTask<TaskType>> implements InterfaceTaskController {
+export default class TaskController<
+    // 该任务模块包含的所有任务类型
+    TaskType extends string,
+    // 该任务模块包含的所有任务
+    CostomTask extends RoomTask<TaskType>
+> implements InterfaceTaskController<TaskType, CostomTask> {
     /**
      * 本任务对象所处的房间名
      */
@@ -42,7 +45,10 @@ export default class TaskController<TaskType extends string, CostomTask extends 
      * @param task 要发布的新任务
      * @param opt 配置项
      */
-    public addTask(task: CostomTask, opt: AddTaskOpt = { dispath: true }) {
+    public addTask(task: CostomTask, opt: AddTaskOpt = {}) {
+        const addOpt: UpdateTaskOpt = { dispath: false }
+        Object.assign(addOpt, opt)
+
         task.key = new Date().getTime() + (this.tasks.length * 0.1)
         // 发布任务的时候为了方便可以不填这些，这里给它补上
         if (!task.need) task.needUnit = 0
@@ -60,10 +66,55 @@ export default class TaskController<TaskType extends string, CostomTask extends 
 
         // 在目标索引位置插入新任务并重新分配任务
         this.tasks.splice(insertIndex, 0, task)
-        if (opt.dispath) this.dispatchTask()
+        if (addOpt.dispath) this.dispatchTask()
         this.saveTask()
 
         return task.key
+    }
+
+    /**
+     * 更新指定任务
+     * 如果任务包含 key 的话将使用 key 进行匹配
+     * 否则的话将更新 taskType 符合的任务（如果包含多个同类型的任务的话则都会更新）
+     * 
+     * @param newTask 要更新的任务
+     * @param addWhenNotFound 当没有匹配到任务时是否新建任务，默认为 true
+     * @returns 被更新任务的索引，如果新建了任务则返回新任务的索引，若更新了多个任务的话则返回最后一个任务的索引
+     */
+    public updateTask(newTask: CostomTask, opt: UpdateTaskOpt = {}): number {
+        const updateOpt: UpdateTaskOpt = { addWhenNotFound: true }
+        Object.assign(updateOpt, opt)
+
+        // 是否找到了要更新的任务
+        let notFound = true
+        // 是否需要重新分派任务
+        let needRedispath = false
+        // 要更新任务的索引
+        let taskKey = newTask.key
+
+        // 查找并更新任务
+        this.tasks = this.tasks.map(task => {
+            if (task.key !== newTask.key && task.type !== newTask.type) return task
+
+            notFound = false
+            taskKey = newTask.key || task.key
+            // 状态变化就需要重新分派
+            if (
+                task.priority !== newTask.priority ||
+                task.need !== newTask.need ||
+                task.require !== newTask.require
+            ) {
+                needRedispath = true
+            }
+
+            return Object.assign(task, newTask)
+        })
+
+        // 没找到就尝试更新、找到了就尝试重新分配
+        if (notFound && updateOpt.addWhenNotFound) taskKey = this.addTask(newTask, updateOpt)
+        else if (needRedispath) this.dispatchTask()
+
+        return taskKey
     }
 
     /**
@@ -162,10 +213,11 @@ export default class TaskController<TaskType extends string, CostomTask extends 
      * 调度 - 分配指定 creep
      * 请确保要分配的 creep 处于空闲状态（没有关联任务）
      * 
-     * @param creep 要分配任务的 creep 
+     * @param creep 要分配任务的 creep
      * @returns 该 creep 分配到的任务
      */
     protected dispatchCreep(creep: Creep): CostomTask {
+        delete creep.memory.taskKey
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
         // 此时 creep 将会无视人数限制，分配至体型符合的最高优先级任务
         let overflow = false
