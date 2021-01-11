@@ -14,9 +14,11 @@ const transportControllers: { [roomName: string]: RoomTransport } = {}
 
 /**
  * 向房间原型挂载物流对象
+ * 
+ * @param key 要挂载到 Room 的哪个键上
  */
-export default function () {
-    Object.defineProperty(Room.prototype, 'transport', {
+export default function (key: string = 'transport') {
+    Object.defineProperty(Room.prototype, key, {
         get() {
             if (!(this.name in transportControllers)) {
                 transportControllers[this.name] = new RoomTransport(this.name)

@@ -14,9 +14,11 @@ const workControllers: { [roomName: string]: RoomWork } = {}
 
 /**
  * 向房间原型挂载物流对象
+ * 
+ * @param key 要挂载到 Room 的哪个键上
  */
-export default function () {
-    Object.defineProperty(Room.prototype, 'work', {
+export default function (key: string = 'work') {
+    Object.defineProperty(Room.prototype, key, {
         get() {
             if (!(this.name in workControllers)) {
                 workControllers[this.name] = new RoomWork(this.name)

@@ -2,7 +2,6 @@ import planWall from './planWall'
 import planBase from './planBase'
 import planRoad from './planRoad'
 import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from 'setting'
-import { roleToRelease } from './planCreep'
 
 let planningCaches: StructurePlanningCache = {}
 
@@ -201,17 +200,4 @@ const mergeStructurePlan = function (origin: StructurePlanningResult, newData: R
     origin[level - 1][type] = [ ...targetStructurePos, ...newData ]
 
     return OK
-}
-
-
-/**
- * 在指定房间发布 creep
- * 本函数的发布会控制房间内的所有同种类 creep，所以对于某些角色来说调用一次本函数可能会新增或删除多个 creep
- * 
- * @param room 要发布 creep 的房间
- * @param role 要发布的角色名
- * @param number 要发布的数量，部分角色将无视该值
- */
-export const releaseCreep = function (room: Room, role: CreepRoleConstant, number: number = 1): OK | ERR_NOT_FOUND | ERR_NOT_ENOUGH_ENERGY {
-    return roleToRelease[role](room, number)
 }

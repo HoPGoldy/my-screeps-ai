@@ -58,7 +58,7 @@ export class LinkExtension extends StructureLink {
         this.room.memory.centerLinkId = this.id
 
         // 注册中央 link 的同时发布 processor
-        this.room.releaseCreep('processor')
+        this.room.release.processor()
 
         return `${this} 已注册为中央 link，发布 processor 并调整采集单位`
     }

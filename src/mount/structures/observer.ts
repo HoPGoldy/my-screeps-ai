@@ -1,5 +1,4 @@
 import { DEPOSIT_MAX_COOLDOWN, OBSERVER_POWERBANK_MAX, OBSERVER_DEPOSIT_MAX, observerInterval } from 'setting'
-import { creepApi } from 'modules/creepController'
 import { colorful, createRoomLink } from 'utils'
 import { createHelp } from 'modules/help'
 
@@ -91,22 +90,8 @@ export class ObserverExtension extends StructureObserver {
             this.room.memory.observer.pbList.push(targetFlagName)
             // 计算应该发布的采集小组数量，最高两组
             const groupNumber = target.pos.getFreeSpace().length > 1 ? 2 : 1
-            
             // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
-            for (let i = 0; i < groupNumber; i++) {
-                const attackerName = `${targetFlagName} attacker${i}`
-                const healerName = `${targetFlagName} healer${i}`
-
-                // 添加采集小组
-                creepApi.add(attackerName, 'pbAttacker', {
-                    sourceFlagName: targetFlagName,
-                    spawnRoom: this.room.name,
-                    healerCreepName: healerName
-                }, this.room.name)
-                creepApi.add(healerName, 'pbHealer', {
-                    creepName: `${targetFlagName} attacker${i}`
-                }, this.room.name)
-            }
+            this.room.release.pbHarvesteGroup(targetFlagName, groupNumber)
         }
         else if (target instanceof Deposit) {
             const targetFlagName = `deposit ${this.room.name} ${Game.time}`
@@ -114,12 +99,8 @@ export class ObserverExtension extends StructureObserver {
 
             // 更新数量
             this.room.memory.observer.depoList.push(targetFlagName)
-
             // 发布采集者，他会自行完成剩下的工作
-            creepApi.add(`${targetFlagName} worker`, 'depositHarvester', {
-                sourceFlagName: targetFlagName,
-                spawnRoom: this.room.name
-            }, this.room.name)
+            this.room.release.depositHarvester(targetFlagName)
         }
         else return ERR_INVALID_TARGET
 

@@ -112,7 +112,7 @@ const pbAttacker: CreepConfig<'pbAttacker'> = {
                 }
 
                 // 下面这个 1600 是 [ CARRY: 32, MOVE: 16 ] 的 pbCarrier 的最大运输量
-                spawnRoom.spawnPbCarrierGroup(sourceFlagName, Math.ceil(powerbank.power / 1600))
+                spawnRoom.release.pbCarrierGroup(sourceFlagName, Math.ceil(powerbank.power / 1600))
 
                 // 设置为新状态
                 targetFlag.memory.state = PB_HARVESTE_STATE.PREPARE
@@ -141,7 +141,7 @@ const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName
     /**
      * @danger 这里 Healer 的名称应该与发布时保持一致，但是这里并没有强相关，在 oberserver 发布角色组的代码里如果修改了 healer 的名称的话这里就会出问题
      */
-    spawnRoom.removePbHarvesteGroup(creep.name, healerName)
+    spawnRoom.release.removePbHarvesteGroup(creep.name, healerName)
 
     // 自杀并释放采集位置
     creep.suicide()

@@ -185,7 +185,7 @@ export default class TowerExtension extends StructureTower {
                     const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
                     // 提高刷墙任务优先级并孵化额外工作单位
                     this.room.work.updateTask({ type: 'fillWall', priority: 9 })
-                    this.room.releaseCreep('worker', newWorkerNumber)
+                    this.room.release.worker(newWorkerNumber)
                 }
             }
         }

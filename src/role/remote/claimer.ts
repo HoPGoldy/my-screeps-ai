@@ -53,7 +53,7 @@ const claimer: CreepConfig<'claimer'> = {
 
             // 占领成功，发布支援组
             const spawnRoom = Game.rooms[spawnRoomName]
-            if (spawnRoom) spawnRoom.addRemoteHelper(targetRoomName)
+            if (spawnRoom) spawnRoom.release.remoteHelper(targetRoomName)
 
             // 添加签名
             if (signText) creep.signController(controller, signText)

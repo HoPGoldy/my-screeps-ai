@@ -256,16 +256,6 @@ interface Room {
     hangPowerTask(): void
 
     /**
-     * creep 发布 api
-     */
-    releaseCreep(role: CreepRoleConstant, number?: number): ScreepsReturnCode
-    addRemoteCreepGroup(remoteRoomName: string)
-    addRemoteReserver(remoteRoomName): void
-    addRemoteHelper(remoteRoomName): void
-    removePbHarvesteGroup(attackerName: string, healerName: string): void
-    spawnPbCarrierGroup(flagName: string, number: number): void
-
-    /**
      * 孵化队列 api
      * 下述方法在 @see /src/mount.room.ts 中定义
      */
@@ -293,6 +283,11 @@ interface Room {
      * 房间工作 api
      */
     work: InterfaceWorkTaskController
+
+    /**
+     * creep 发布
+     */
+    release: InterfaceCreepRelease
 
     /**
      * 工厂 api

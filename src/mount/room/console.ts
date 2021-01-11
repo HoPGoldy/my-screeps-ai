@@ -719,7 +719,7 @@ export default class RoomConsole extends RoomExtension {
                             { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
                             { name: 'num', desc: '[可选] 要孵化的数量，1 - 10，默认为 1' }
                         ],
-                        functionName: 'spwanSoldier'
+                        functionName: 'release.soldier'
                     },
                     {
                         title: '孵化拆除单位',
@@ -729,7 +729,7 @@ export default class RoomConsole extends RoomExtension {
                             { name: 'num', desc: '[可选] 要孵化的数量，1 - 10，默认为 2' },
                             { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' },
                         ],
-                        functionName: 'spwanDismantler'
+                        functionName: 'release.dismantler'
                     },
                     {
                         title: '孵化进攻一体机',
@@ -739,7 +739,7 @@ export default class RoomConsole extends RoomExtension {
                             { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
                             { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' },
                         ],
-                        functionName: 'spawnRangedAttacker'
+                        functionName: 'release.rangedAttacker'
                     },
                     {
                         title: '孵化拆墙小组',
@@ -748,7 +748,7 @@ export default class RoomConsole extends RoomExtension {
                             { name: 'targetFlagName', desc: `[可选] 进攻旗帜名称，默认为 ${DEFAULT_FLAG_NAME.ATTACK}` },
                             { name: 'keepSpawn', desc: '[可选] 是否持续生成，置为 true 时可以执行 creepApi.remove("creepName") 来终止持续生成，默认为 false' }
                         ],
-                        functionName: 'spawnDismantleGroup'
+                        functionName: 'release.dismantleGroup'
                     },
                     {
                         title: '孵化掠夺者',
@@ -756,7 +756,7 @@ export default class RoomConsole extends RoomExtension {
                             { name: 'sourceFlagName', desc: `[可选] 要搜刮的建筑上插好的旗帜名，默认为 ${DEFAULT_FLAG_NAME.REIVER}` },
                             { name: 'targetStructureId', desc: `[可选] 要把资源存放到的建筑 id，默认为房间终端` }
                         ],
-                        functionName: 'spawnReiver'
+                        functionName: 'release.reiver'
                     }
                 ]
             }

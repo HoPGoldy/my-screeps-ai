@@ -559,7 +559,7 @@ export default class RoomExtension extends Room {
         // 添加对应的键值对
         this.memory.remote[remoteRoomName] = { targetId }
 
-        this.addRemoteCreepGroup(remoteRoomName)
+        this.release.remoteCreepGroup(remoteRoomName)
         return OK
     }
 
@@ -628,7 +628,7 @@ export default class RoomExtension extends Room {
 
         // 触发对应的 creep 发布规划
         this.work.planEnergyHarvestTask()
-        this.releaseCreep('manager', this.memory.sourceContainersIds.length * 3)
+        this.release.manager(this.memory.sourceContainersIds.length * 3)
         this.work.updateTask({ type: 'upgrade' })
 
         return OK

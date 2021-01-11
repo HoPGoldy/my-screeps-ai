@@ -29,7 +29,7 @@ export default class ControllerExtension extends StructureController {
                 // 如果发现入侵者已经老死了，就移除对应属性并重新发布外矿角色组
                 if (this.room.memory.remote[remoteRoomName].disableTill <= Game.time) {
                     delete this.room.memory.remote[remoteRoomName].disableTill
-                    this.room.addRemoteCreepGroup(remoteRoomName)
+                    this.room.release.remoteCreepGroup(remoteRoomName)
                 }
             }
         }
@@ -44,7 +44,7 @@ export default class ControllerExtension extends StructureController {
         // 刚占领，添加工作单位
         if (level === 1) {
             this.room.work.planEnergyHarvestTask()
-            this.room.releaseCreep('worker', 6)
+            this.room.release.worker(6)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
             // 开始刷墙后就开始执行刷墙任务
@@ -72,11 +72,11 @@ export default class ControllerExtension extends StructureController {
 
         // 根据物流模块返回的期望调整当前搬运工数量
         this.room.memory.transporterNumber += this.room.transport.getExpect()
-        this.room.releaseCreep('manager', this.room.memory.transporterNumber)
+        this.room.release.manager(this.room.memory.transporterNumber)
 
         // 根据工作模块返回的期望调整当前工人数量
         this.room.memory.workerNumber += this.room.work.getExpect()
-        this.room.releaseCreep('worker', this.room.memory.workerNumber)
+        this.room.release.worker(this.room.memory.workerNumber)
     }
 
     /**
