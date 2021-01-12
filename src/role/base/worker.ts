@@ -2,9 +2,9 @@ import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 
 /**
- * 房间物流运输者
- * 执行 ROOM_TRANSFER_TASK 中定义的任务
- * 任务处理逻辑定义在 transferTaskOperations 中
+ * 工人，运营单位
+ * 负责采集能量、升级、维修、建造等消耗能量的工作
+ * 任务处理逻辑定义在 modules/roomTask/work/actions 中
  */
 const worker: CreepConfig<'worker'> = {
     // 如果还有要做的任务的话就继续孵化

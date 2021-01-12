@@ -12,6 +12,7 @@ interface RoleDatas {
     /**
      * 房间运营
      */
+    harvester: HarvesterData
     worker: WorkerData
     manager: transporterData
     processor: ProcessorData
@@ -136,6 +137,25 @@ interface CreepConfigMemory {
  * 有些角色不需要 data
  */
 interface EmptyData { }
+
+/**
+ * 能量采集单位 data
+ */
+interface HarvesterData {
+    /**
+     * 要采集的 Source 索引
+     */
+    sourceId: Id<Source>
+    /**
+     * 该 creep 的工作房间
+     * 能量采集单位会先抵达该房间然后开始采集
+     */
+    harvestRoom: string
+    /**
+     * 能量要存储/应用到的房间
+     */
+    useRoom: string
+}
 
 /**
  * 矿工 data

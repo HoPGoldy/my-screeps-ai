@@ -7,9 +7,9 @@ import { createBodyGetter } from 'utils'
 const TRANSFER_DEATH_LIMIT = 20
 
 /**
- * 房间物流运输者
- * 执行 ROOM_TRANSFER_TASK 中定义的任务
- * 任务处理逻辑定义在 transferTaskOperations 中
+ * 搬运工，运营单位
+ * 负责填充 extension、spawn、tower、lab 等资源运输任务
+ * 任务处理逻辑定义在 modules/roomTask/transport/actions 中
  */
 const manager: CreepConfig<'manager'> = {
     // 如果还有要做的任务的话就继续孵化

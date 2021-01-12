@@ -3,7 +3,7 @@ import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
 import { setRoomStats } from 'modules/stateCollector'
 import { costCache } from 'modules/move'
-import { HARVEST_MODE, LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
+import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { countEnergyChangeRatio } from 'modules/energyController'
 import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
 

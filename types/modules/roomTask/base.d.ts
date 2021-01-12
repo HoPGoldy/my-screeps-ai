@@ -26,12 +26,12 @@ interface RoomTask<T extends string> {
     need?: number
     /**
      * 正在处理该任务的特殊体型单位人数
-     * 如果该任务指定了 need 字段的话，该字段也会存在
+     * 如果该任务指定了 require 字段的话，该字段也会存在
      */
-    needUnit?: number
+    requireUnit?: number
     /**
      * 正在处理该任务的单位人数
-     * 该值包含 needUnit
+     * 该值包含 requireUnit
      */
     unit?: number
 }

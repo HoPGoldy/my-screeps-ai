@@ -3,6 +3,8 @@
  * 包括任务的添加、排序、删除，以及工作 creep 的分配
  */
 
+import { log } from 'utils'
+
 export default class TaskController<
     // 该任务模块包含的所有任务类型
     TaskType extends string,
@@ -49,10 +51,7 @@ export default class TaskController<
         const addOpt: UpdateTaskOpt = { dispath: false }
         Object.assign(addOpt, opt)
 
-        task.key = new Date().getTime() + (this.tasks.length * 0.1)
-        // 发布任务的时候为了方便可以不填这些，这里给它补上
-        if (!task.need) task.needUnit = 0
-        task.unit = 0
+        task = this.refineNewTask(task)
 
         // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
         let insertIndex = this.tasks.length
@@ -70,6 +69,24 @@ export default class TaskController<
         this.saveTask()
 
         return task.key
+    }
+
+    /**
+     * 完善新任务
+     * 将其他模块输入的任务完善成保存需要的格式
+     * 
+     * @param task 输入的新任务
+     */
+    private refineNewTask(task: CostomTask): CostomTask {
+        // 设置新索引
+        task.key = new Date().getTime() + (this.tasks.length * 0.1)
+        task.unit = 0
+        // 是特殊任务的话就包含特殊任务处理者数量
+        if (!task.require) task.requireUnit = 0
+        // 没有指定 need 的话就默认一个人做
+        if (!task.need) task.need = 1
+
+        return task
     }
 
     /**
@@ -159,7 +176,7 @@ export default class TaskController<
         task.unit = (task.unit > 0) ? task.unit + 1 : 1
         // 如果是特殊任务的话就更新对应的字段
         if (task.require && unit.memory.bodyType === task.require) {
-            task.needUnit = (task.needUnit > 0) ? task.needUnit + 1 : 1
+            task.requireUnit = (task.requireUnit > 0) ? task.requireUnit + 1 : 1
         }
     }
 
@@ -171,13 +188,16 @@ export default class TaskController<
      * @param unit 要移除的 creep
      */
     protected removeTaskUnit(task: CostomTask, unit?: Creep): void {
-        if (unit.memory) delete unit.memory.taskKey
-        if (!task) return
+        if (unit) {
+            delete unit.memory.taskKey
+            delete this.creeps[unit.id]
+        }
 
+        if (!task) return
         task.unit = (task.unit <= 1) ? 0 : task.unit - 1
         // 如果是特殊任务的话就更新对应的字段
         if (task.require && unit.memory.bodyType === task.require) {
-            task.needUnit = (task.needUnit <= 1) ? 0 : task.needUnit - 1
+            task.requireUnit = (task.requireUnit <= 1) ? 0 : task.requireUnit - 1
         }
     }
 
@@ -231,17 +251,51 @@ export default class TaskController<
                 i = 0
             }
 
-            // 该任务的人数已经够了，下一个，如果数量溢出了则无视此限制
-            if (!overflow || checkTask.unit >= (checkTask.need || 1)) continue
-            // 该单位是特殊体型，选择对应的特殊任务
-            if (creep.memory.bodyType) {
-                if (!checkTask.require || checkTask.require !== creep.memory.bodyType) continue
+            const result = this.isCreepMatchTask(creep, checkTask, overflow)
+
+            // 匹配失败，下一个
+            if (result === TaskMatchResult.Failed) continue
+
+            // 挤掉了一个普通单位
+            // 例如这个特殊任务有普通工人在做，而自己是符合任务的特殊体型，那自己就会挤占他的工作机会
+            if (result === TaskMatchResult.NeedRmoveNormal) {
+                const creepId = Object.keys(this.creeps).find(id => this.creeps[id].doing === checkTask.key)
+                if (creepId) delete this.creeps[creepId]
+                else this.log(`工作挤占异常 [要加入任务的单位] ${creep} [要加入的任务] ${JSON.stringify(checkTask)}`, 'red', true)
             }
 
-            // 符合条件，分配到该任务
-            this.setTaskUnit(checkTask, creep)
-            return checkTask
+            // 匹配成功，把单位设置到该任务并结束分派
+            if (result === TaskMatchResult.Ok || result === TaskMatchResult.NeedRmoveNormal) {
+                this.setTaskUnit(checkTask, creep)
+                return checkTask
+            }
         }
+    }
+
+    /**
+     * 检查 creep 是否适合去做某个任务
+     * 
+     * @param creep 要匹配的单位
+     * @param task 要匹配的任务
+     * @param ignoreNeedLimit 是否无视任务的人数限制
+     */
+    private isCreepMatchTask(creep: Creep, task: CostomTask, ignoreNeedLimit: boolean): TaskMatchResult {
+        const { require, need, unit, requireUnit } = task
+        // 该单位是特殊体型，选择对应的特殊任务
+        if (creep.memory.bodyType) {
+            // 体型和任务不符，下一个
+            if (!require || require !== creep.memory.bodyType) return TaskMatchResult.Failed
+            // 数量过多，下一个
+            if (!ignoreNeedLimit || requireUnit >= need) return TaskMatchResult.Failed
+            // 特殊任务的工作单位里有普通单位，把普通单位挤掉
+            if (unit >= need && requireUnit < unit) {
+                return TaskMatchResult.NeedRmoveNormal
+            }
+        }
+        // 普通单位只检查人数是否足够（人数溢出后无视此限制）
+        else if (!ignoreNeedLimit || unit >= need) return TaskMatchResult.Failed
+
+        return TaskMatchResult.Ok
     }
 
     /**
@@ -337,4 +391,33 @@ export default class TaskController<
 
         this.removeTaskUnit(this.getTask(doing))
     }
+
+    /**
+     * 发送日志
+     * 
+     * @param content 日志内容
+     * @param color 日志前缀颜色
+     * @param notify 是否发送邮件
+     */
+    protected log(content: string, color: Colors = undefined, notify: boolean = false): void {
+        log(content, ['taskController'], color, notify)
+    }
+}
+
+/**
+ * creep 的任务匹配结果
+ */
+enum TaskMatchResult {
+    /**
+     * 匹配成功，可以执行该任务
+     */
+    Ok,
+    /**
+     * 匹配成功，但是需要从该任务移除一个普通单位
+     */
+    NeedRmoveNormal,
+    /**
+     * 匹配失败，不适合执行该任务
+     */
+    Failed
 }

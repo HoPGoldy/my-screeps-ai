@@ -1,4 +1,3 @@
-import { log } from 'utils'
 import { getRoomStats } from 'modules/stateCollector'
 import { noTask, transportActions } from './actions'
 import { HARVEST_MODE } from 'setting'
@@ -73,7 +72,7 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
     public planEnergyHarvestTask() {
         const room = Game.rooms[this.roomName]
         if (!room) {
-            log(`无法访问指定房间 ${this.roomName}，取消能量采集任务规划`, ['workerTask'], 'red')
+            this.log(`无法访问指定房间 ${this.roomName}，取消能量采集任务规划`, 'red')
             return undefined
         }
 
