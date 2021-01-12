@@ -39,7 +39,7 @@ interface CreepMemory {
     /**
      * 能量采集单位特有，当前的采集模式
      */
-    harvestMode: HarvestMode
+    harvestMode?: HarvestMode
     /**
      * 该 Creep 是否在进行工作（站着不动）
      */

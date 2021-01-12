@@ -169,7 +169,7 @@ export const specialBodyConfig: { [type in SepicalBodyType]: BodyPartGenerator }
      * 简单模式下的 harvester，没有 CARRY 部件
      */
     harvestSimple: createBodyGetter(getBodyConfig(
-        { [WORK]: 2,  [MOVE]: 1 },
+        { [WORK]: 2, [MOVE]: 1 },
         { [WORK]: 4, [MOVE]: 2 },
         { [WORK]: 6, [MOVE]: 3 },
         { [WORK]: 8, [MOVE]: 4 },

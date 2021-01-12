@@ -1,6 +1,7 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter, useCache } from 'utils'
 import { HARVEST_MODE } from 'setting'
+import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
 
 /**
  * 采集者
@@ -153,13 +154,12 @@ const actionStrategy: ActionStrategy = {
                 return target.hits >= target.hitsMax
             }
 
-            // 不存在 container，开始新建，首先尝试获取工地缓存，没有缓存就新建工地
-            let constructionSite: ConstructionSite
-            if (!creep.memory.constructionSiteId) creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
-            else constructionSite = Game.getObjectById(creep.memory.constructionSiteId)
+            // 不存在 container，开始新建，尝试获取工地缓存
+            const constructionSite = useCache<ConstructionSite>(() => {
+                creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
+                return creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER)
 
-            // 没找到工地缓存或者工地没了，重新搜索
-            if (!constructionSite) constructionSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER)
+            }, creep.memory, 'constructionSiteId')
 
             // 还没找到就说明有可能工地已经建好了，进行搜索
             if (!constructionSite) {
@@ -172,10 +172,9 @@ const actionStrategy: ActionStrategy = {
                 }
 
                 // 还没找到，等下个 tick 会重新新建工地
+                delete creep.memory.constructionSiteId
                 return false
             }
-            // 找到了就缓存 id
-            else creep.memory.constructionSiteId = constructionSite.id
 
             creep.build(constructionSite)
         },
@@ -192,18 +191,11 @@ const actionStrategy: ActionStrategy = {
         }
     },
 
+    /**
+     * 转移模式
+     * 采集能量 > 存放到指定建筑
+     */
     [HARVEST_MODE.TRANSPORT]: {
-        prepare: () => true,
-        source: (creep, source) => {
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(source)
-        },
-        target: (creep) => {
-            return true
-        }
-    },
-
-    [HARVEST_MODE.START]: {
         prepare: () => true,
         source: (creep, source) => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
@@ -232,7 +224,40 @@ const actionStrategy: ActionStrategy = {
             if (creep.ticksToLive < 2) return true
         },
         target: (creep) => {
-            return true
+            const target = Game.getObjectById(creep.memory.targetId as Id<StructureLink>) || creep.room.storage
+
+            // 目标没了，弱化为简单模式
+            if (!target) {
+                delete creep.memory.targetId
+                creep.memory.harvestMode = HARVEST_MODE.SIMPLE
+                return true
+            }
+
+            creep.transferTo(target, RESOURCE_ENERGY)
+        }
+    },
+
+    /**
+     * 启动模式的逻辑非常简单：采集能量，填充 spawn 跟 extension
+     * 到两级后就转变为 SIMPLE 模式开始维护 container
+     */
+    [HARVEST_MODE.START]: {
+        prepare: () => true,
+        source: (creep, source) => {
+            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
+            creep.getEngryFrom(source)
+
+            // 如果控制器升到 2 级了就切换为简单模式
+            if (creep.room.controller?.level > 1) creep.memory.harvestMode = HARVEST_MODE.SIMPLE
+        },
+        target: (creep) => {
+            const result = fillSpawnStructure(creep)
+
+            if (result === ERR_NOT_FOUND) {
+                creep.say('💤')
+                return true
+            }
+            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
         }
     }
 }

@@ -1,3 +1,4 @@
+import harvester from './base/harvester'
 import worker from './base/worker'
 import manager from './base/manager'
 import processor from './base/processor'
@@ -28,7 +29,7 @@ const creepWork: CreepWork = {
      * 房间运维角色组
      * 包括了维持房间正常运行所需的单位
      */
-    worker, manager, processor,
+    harvester, worker, manager, processor,
 
     /**
      * 外派角色组
