@@ -196,10 +196,6 @@ export default class CreepExtension extends Creep {
                     if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
                         this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
                     }
-                    // 如果修好的是 source container 的话，就执行注册
-                    else if (structure instanceof StructureContainer && this.room.source.find(s => structure.pos.isNearTo(s))) {
-                        this.room.registerContainer(structure)
-                    }
                 }
 
                 // 获取下个建筑目标

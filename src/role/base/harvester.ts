@@ -2,6 +2,7 @@ import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter, useCache } from 'utils'
 import { HARVEST_MODE } from 'setting'
 import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
+import { updateStructure } from 'modules/shortcut'
 
 /**
  * 采集者
@@ -35,34 +36,11 @@ const harvester: CreepConfig<'harvester'> = {
 }
 
 /**
- * 搜索指定 source 附近的可用 container
- * 
- * @param source 要搜索的 source
- */
-const findSourceContainer = function (source: Source): StructureContainer | undefined {
-    // 先尝试获取 container
-    const containers = source.pos.findInRange<StructureContainer>(FIND_STRUCTURES, 1, {
-        filter: s => s.structureType === STRUCTURE_CONTAINER
-    })
-
-    // 找到了就把 container 当做目标
-    if (containers.length > 0) {
-        return containers.find(container => {
-            const stoodCreeps = container.pos.lookFor(LOOK_CREEPS)
-            // 如果两个 source 离得比较近的话，harvesterA 可能会获取到 harvesterB 的 container，然后就一直往上撞，这里筛选一下
-            return !(stoodCreeps.length > 0 && stoodCreeps[0].memory && stoodCreeps[0].memory.role === 'harvester')
-        })
-    }
-
-    return undefined
-}
-
-/**
  * 搜索指定 source 附近的 container 工地
  * 
  * @param source 要搜索的 source
  */
-const findSourceContainerConstructionSite = function (source: Source): ConstructionSite<STRUCTURE_CONTAINER> {
+const findSourceContainerSite = function (source: Source): ConstructionSite<STRUCTURE_CONTAINER> {
     // 还没找到就找 container 的工地
     const constructionSite = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
         filter: s => s.structureType === STRUCTURE_CONTAINER
@@ -85,7 +63,7 @@ const setHarvestMode = function (creep: Creep, source: Source): HarvestMode {
         return
     }
 
-    const nearLink = source.room[STRUCTURE_LINK].find(link => source.pos.inRangeTo(link, 2))
+    const nearLink = source.getLink()
     if (nearLink) {
         creep.memory.harvestMode = HARVEST_MODE.TRANSPORT
         creep.memory.targetId = nearLink.id
@@ -112,11 +90,11 @@ const actionStrategy: ActionStrategy = {
         prepare(creep, source) {
             const target = useCache<StructureContainer | Source | ConstructionSite>(() => {
                 // 先尝试获取 container
-                const container = findSourceContainer(source)
+                const container = source.getContainer()
                 if (container) return container
     
                 // 再尝试找 container 的工地
-                const site = findSourceContainerConstructionSite(source)
+                const site = findSourceContainerSite(source)
                 if (site) return site
     
                 // 如果还是没找到的话就用 source 当作目标
@@ -158,16 +136,30 @@ const actionStrategy: ActionStrategy = {
             const constructionSite = useCache<ConstructionSite>(() => {
                 creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
                 return creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER)
-
             }, creep.memory, 'constructionSiteId')
 
             // 还没找到就说明有可能工地已经建好了，进行搜索
             if (!constructionSite) {
-                const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER)
+                const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
 
                 // 找到了造好的 container 了，添加进房间
                 if (container) {
-                    creep.room.registerContainer(container as StructureContainer)
+                    updateStructure(this.name, STRUCTURE_CONTAINER, container.id)
+                    source.setContainer(container)
+
+                    const { useRoom: useRoomName } = creep.memory.data
+                    const useRoom = Game.rooms[useRoomName]
+                    if (!useRoom) {
+                        creep.suicide()
+                        return true
+                    }
+
+                    /**
+                     * 更新家里的搬运工数量，几个 container 就发布其数量 * 3
+                     * @todo 这里没有考虑外矿的运输需求，等外矿模块完善后再修改
+                     */
+                    useRoom.release.manager(useRoom.source.map(source => source.getContainer()).filter(Boolean).length * 3)
+                    useRoom.work.updateTask({ type: 'upgrade' })
                     return true
                 }
 

@@ -8,16 +8,16 @@ import { createGetter } from "utils"
  * 
  * 所有可用的访问属性见上方 SINGLE_STRUCTURES 和 MULTIPLE_STRUCTURES
  */
-export default function () {
+const mountShortcut = function () {
     // 添加基础的快捷访问
     SINGLE_STRUCTURES.forEach(setShortcut(true))
     MULTIPLE_STRUCTURES.forEach(setShortcut(false))
 
     // 挂载特殊快捷方式
     createGetter(Room, 'centerLink', centerLinkGetter)
-    createGetter(Room, 'sourceContainers', sourceContainersGetter)
 }
 
+export default mountShortcut
 
 /**
  * 所有在房间中具有唯一性的建筑
@@ -195,39 +195,6 @@ const getStructureWithMemory = function <TargetStructure extends RoomObject>(roo
  */
 const centerLinkGetter = function(): StructureLink {
     return getStructureWithMemory<StructureLink>(this, '_centerLink', 'centerLinkId')
-}
-
-/**
- * source 旁的 container 访问器
- * 只会检查内存中是否存在对应 id，有的话就获取 container 实例，没有的话则不会主动搜索
- * 内存中的对应 id 由新建 container 的 harvester 角色上传
- */
-const sourceContainersGetter = function(): StructureContainer[] {
-    if (this._sourceContainers) return this._sourceContainers
-
-    // 内存中没有 id 就说明没有 container
-    if (!this.memory.sourceContainersIds) return []
-
-    const targets: StructureContainer[] = this.memory.sourceContainersIds
-        // 遍历 id，获取 container 实例
-        .map(containerId => {
-            const container = Game.getObjectById(containerId)
-            if (container) return container
-
-            return false
-        })
-        // 去除所有为 false 的结果
-        .filter(Boolean)
-
-    // 如果获取到的 container 数量和内存数量不一致的话说明有 container 失效了，更新内存
-    if (this.memory.sourceContainersIds.length < targets.length) {
-        if (this.memory.sourceContainersIds.length <= 0) delete this.memory.sourceContainersIds
-        else this.memory.sourceContainersIds = targets.map(target => target.id)
-    }
-
-    // 暂存对象并返回
-    this._sourceContainers = targets
-    return this._sourceContainers
 }
 
 

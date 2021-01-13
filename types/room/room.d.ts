@@ -94,10 +94,6 @@ interface RoomMemory {
      */
     terminalIndex: number
     /**
-     * source 旁的 container id
-     */
-    sourceContainersIds: Id<StructureContainer>[]
-    /**
      * 中央 link 的 id
      */
     centerLinkId?: Id<StructureLink>
@@ -170,6 +166,12 @@ interface RoomMemory {
      * 当前房间工作单位的数量
      */
     workerNumber?: number
+    source: {
+        [sourceId: string]: {
+            containerId?: Id<StructureContainer>
+            LinkId?: Id<StructureLink>
+        }
+    }
 }
 
 /**
@@ -239,7 +241,6 @@ interface Room {
     mineral?: Mineral
     source?: Source[]
     centerLink?: StructureLink
-    sourceContainers?: StructureContainer[]
 
     /**
      * pos 处理 api
@@ -327,7 +328,6 @@ interface Room {
     addRemote(remoteRoomName: string, targetId: string): OK | ERR_INVALID_TARGET | ERR_NOT_FOUND
     removeRemote(remoteRoomName: string, removeFlag?: boolean): OK | ERR_NOT_FOUND
     claimRoom(targetRoomName: string, signText?: string): OK
-    registerContainer(container: StructureContainer): OK
 }
 
 interface RoomPosition {

@@ -4,6 +4,7 @@ import mountRoom from './room'
 import mountRoomPostion from './roomPosition'
 import mountGlobal from './global'
 import mountStructure from './structures'
+import mountSource from './source'
 import { log } from 'utils'
 
 /**
@@ -22,6 +23,7 @@ export default function (): void {
     mountCreep()
     mountPowerCreep()
     mountStructure()
+    mountSource()
 
     workAfterMount()
 }

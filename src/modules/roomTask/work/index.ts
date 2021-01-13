@@ -5,6 +5,7 @@
  * 但是该模块不负责中央集群的物流任务
  */
 
+import { createGetter } from 'utils'
 import RoomWork from './taskController'
 
 /**
@@ -18,15 +19,10 @@ const workControllers: { [roomName: string]: RoomWork } = {}
  * @param key 要挂载到 Room 的哪个键上
  */
 export default function (key: string = 'work') {
-    Object.defineProperty(Room.prototype, key, {
-        get() {
-            if (!(this.name in workControllers)) {
-                workControllers[this.name] = new RoomWork(this.name)
-            }
-
-            return workControllers[this.name]
-        },
-        enumerable: false,
-        configurable: true
+    createGetter(Room, key, () => {
+        if (!(this.name in workControllers)) {
+            workControllers[this.name] = new RoomWork(this.name)
+        }
+        return workControllers[this.name]
     })
 }

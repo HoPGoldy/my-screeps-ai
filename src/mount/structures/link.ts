@@ -1,4 +1,5 @@
 import { createHelp } from 'modules/help'
+import source from 'mount/source'
 import { HARVEST_MODE } from 'setting'
 
 // Link 原型拓展
@@ -23,7 +24,7 @@ export class LinkExtension extends StructureLink {
     public onBuildComplete(): void {
         // 如果附近有 controller 就转换为 UpgradeLink
         if (this.room.controller.pos.inRangeTo(this, 2)) {
-            this.asSource()
+            this.asUpgrade()
             return
         }
 
@@ -35,7 +36,7 @@ export class LinkExtension extends StructureLink {
         }
 
         // 否则就默认转换为 SourceLink（因为有外矿 link，而这种 link 边上是没有 source 的）
-        this.asUpgrade()
+        this.asSource()
     }
 
     /**
@@ -43,6 +44,12 @@ export class LinkExtension extends StructureLink {
      */
     public asSource(): string {
         this.clearRegister()
+
+        // 找到身边第一个没有设置 link 的 source，并把自己绑定上去
+        const nearSource = this.pos.findInRange(FIND_SOURCES, 2, {
+            filter: source => !source.getLink()
+        })
+        if (nearSource[0]) nearSource[0].setLink(this)
 
         // 更新采集任务
         this.room.work.planEnergyHarvestTask()
