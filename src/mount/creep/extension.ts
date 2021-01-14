@@ -315,7 +315,7 @@ export default class CreepExtension extends Creep {
      * @param target 提供能量的结构
      * @returns 执行 harvest 或 withdraw 后的返回值
      */
-    public getEngryFrom(target: StructureWithStore | Source): ScreepsReturnCode {
+    public getEngryFrom(target: AllEnergySource): ScreepsReturnCode {
         let result: ScreepsReturnCode
         // 是建筑就用 withdraw
         if (target instanceof Structure) {
@@ -323,6 +323,7 @@ export default class CreepExtension extends Creep {
             if (target.store[RESOURCE_ENERGY] <= 0) return ERR_NOT_ENOUGH_ENERGY
             result = this.withdraw(target as Structure, RESOURCE_ENERGY)
         }
+        else if (target instanceof Resource) result = this.pickup(target as Resource)
         // 不是的话就用 harvest
         else result = this.harvest(target as Source)
 

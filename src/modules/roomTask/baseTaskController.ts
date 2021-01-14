@@ -355,7 +355,7 @@ export default class TaskController<
      * 
      * @param filter 筛选器，接受 creep 数据与 creep 本身，返回是否选择
      */
-    protected getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[] {
+    public getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[] {
         const units: Creep[] = []
 
         // 给干完活的单位重新分配任务

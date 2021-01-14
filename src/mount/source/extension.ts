@@ -3,8 +3,42 @@
  * 
  * 由于 source 经常和 container 以及 link 成对出现
  * 所以这里提供一个快捷方式方便将其对应的 container 或 link 绑定在一起，方便后续使用
+ * 除此之外还会绑定一个位置，用来标识房间开局时会把能量丢在哪里
  */
 export default class SourceExtension extends Source {
+    /**
+     * 设置能量丢弃位置
+     * 
+     * @param pos 能量会被丢弃到的位置上
+     */
+    public setDroppedPos(pos: RoomPosition): void {
+        this.keepKeyExist()
+        this.room.memory.source[this.id].dropped = `${pos.x},${pos.y}`
+    }
+
+    /**
+     * 获取该 source 丢弃位置及其上的能量
+     */
+    public getDroppedEnergy(): { pos?: RoomPosition, energy?: Resource<RESOURCE_ENERGY> } {
+        const { dropped } = this.room.memory.source?.[this.id]
+        if (!dropped) return {}
+        
+        // 获取能量丢弃位置
+        const [ x, y ] = dropped.split(',')
+        const droppedPos = new RoomPosition(Number(x), Number(y), this.room.name)
+        if (!droppedPos) {
+            delete this.room.memory.source[this.id].dropped
+            return {}
+        }
+        
+        // 获取该位置上的能量（LOOK_ENERGY 和 LOOK_RESOURCES 获取到的结果是一样的，这是个坑）
+        const energy = droppedPos.lookFor(LOOK_RESOURCES).find(res => {
+            return res.resourceType === RESOURCE_ENERGY
+        }) as Resource<RESOURCE_ENERGY>
+
+        return { pos: droppedPos, energy }
+    }
+
     /**
      * 绑定 container 到该 source
      */

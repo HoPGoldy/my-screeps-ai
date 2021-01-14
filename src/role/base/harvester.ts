@@ -234,7 +234,22 @@ const actionStrategy: ActionStrategy = {
      * 到两级后就转变为 SIMPLE 模式开始维护 container
      */
     [HARVEST_MODE.START]: {
-        prepare: () => true,
+        prepare: (creep, source) => {
+            const { pos: droppedPos } = source.getDroppedInfo()
+            const targetPos = droppedPos ? droppedPos : source.pos
+            const range = droppedPos ? 0 : 1
+
+            creep.goTo(targetPos, { range })
+
+            // 抵达位置了就准备完成
+            if (creep.pos.inRangeTo(source.pos, range)) {
+                // 启动模式下，走到之后就将其设置为能量丢弃点
+                source.setDroppedPos(creep.pos)
+                return true
+            }
+
+            return false
+        },
         source: (creep, source) => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
             creep.getEngryFrom(source)

@@ -91,4 +91,5 @@ interface InterfaceTaskController<
     removeTask(taskIndex: number | TaskType): OK | ERR_NOT_FOUND
     getUnitTaskType(creep: Creep): CostomTask
     removeCreep(creepId): void
+    getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[]
 }

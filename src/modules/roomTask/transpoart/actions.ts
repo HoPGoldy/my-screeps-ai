@@ -1,5 +1,6 @@
 import { getRoomAvailableSource } from 'modules/energyController'
 import { boostResourceReloadLimit } from 'setting'
+import { useCache } from 'utils'
 
 /**
  * 没有任务时的行为逻辑
@@ -501,7 +502,7 @@ export const transportActions: {
             transport.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] > 0) return true
             const { sourceId } = creep.memory.data
-            creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId) : creep.room.storage)
+            creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId as Id<EnergySourceStructure>) : creep.room.storage)
         },
         target: () => {
             transport.countWorkTime()
@@ -616,25 +617,24 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
 const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTransportTaskController): boolean {
     if (creep.store[RESOURCE_ENERGY] > 10) return true
 
-    // 从内存中找到缓存的能量来源
-    const { sourceId, workRoom } = creep.memory.data
-    let sourceStructure = Game.getObjectById(sourceId)
+    const { workRoom } = creep.memory.data
+    // 从工作房间查询并缓存能量来源
+    const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
+        return getRoomAvailableSource(Game.rooms[workRoom], { includeSource: false, ignoreLimit: true })
+    }, creep.memory, 'sourceId')
 
-    // 来源建筑不可用，更新来源
-    if (!sourceStructure || sourceStructure.store[RESOURCE_ENERGY] <= 0) {
-        sourceStructure = getRoomAvailableSource(Game.rooms[workRoom], { includeSource: false, ignoreLimit: true })
-
-        // 更新失败，现在房间里没有可用的能量源，挂机
-        if (!sourceStructure) {
-            creep.say('⛳')
-            return false
-        }
-
-        creep.memory.data.sourceId = sourceStructure.id
+    if (
+        !source ||
+        (source instanceof Structure && source.store[RESOURCE_ENERGY] <= 0) ||
+        (source instanceof Resource && source.amount <= 0)
+    ) {
+        creep.say('⛳')
+        delete creep.memory.sourceId
+        return false
     }
 
     // 获取能量
-    const result = creep.getEngryFrom(sourceStructure)
+    const result = creep.getEngryFrom(source)
     transport.countWorkTime()
     return result === OK
 }

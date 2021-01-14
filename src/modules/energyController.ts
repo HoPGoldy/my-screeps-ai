@@ -35,7 +35,7 @@ export const countEnergyChangeRatio = function (roomName: string): OK | ERR_NOT_
             // 计算 store 中的能量总数
             (pre, next) => (pre[RESOURCE_ENERGY] || 0) + (next[RESOURCE_ENERGY] || 0)
         )
-        
+
         // 计算能量获取速率，如果 energyGetRate 为 NaN 的话代表之前还未进行过统计，先设置为 0
         const energyGetRate = _.isNaN(oldStats.energyGetRate) ? 0
             : (totalEnergy - oldStats.totalEnergy) / (Game.time - oldStats.energyCalcTime)
@@ -76,7 +76,7 @@ interface GetAvailableSourceOpt<DefaultIncludeSource extends boolean = boolean> 
  * @returns 当前应该从哪里获取能量
  */
 function getAvailableSource(room: Room, opt?: GetAvailableSourceOpt<true>): AllEnergySource
-function getAvailableSource(room: Room, opt?: GetAvailableSourceOpt<false>): EnergySourceStructure
+function getAvailableSource(room: Room, opt?: GetAvailableSourceOpt<false>): EnergySourceStructure | Resource<RESOURCE_ENERGY>
 function getAvailableSource(room: Room, opt: GetAvailableSourceOpt = { includeSource: true, ignoreLimit: false }): AllEnergySource {
     // terminal 或 storage 里有能量就优先用
     if (room.terminal) {
@@ -96,13 +96,19 @@ function getAvailableSource(room: Room, opt: GetAvailableSourceOpt = { includeSo
         if (availableContainer.length > 0) return _.max(availableContainer, container => container.store[RESOURCE_ENERGY])
     }
 
-    // 没有就选边上有空位的 source
-    return opt.includeSource ? room.source.find(source => {
-        const freeCount = source.pos.getFreeSpace().length
-        const harvestCount = source.pos.findInRange(FIND_CREEPS, 1).length
+    // 看看 source 边上有没有能量
+    const maxDroppedEnergy = _.max(room.source.map(source => source.getDroppedInfo().energy), res => res.amount)
+    if (maxDroppedEnergy) return maxDroppedEnergy
 
-        return freeCount - harvestCount > 0
-    }) : undefined
+    // 没有就选边上有空位的 source
+    if (opt.includeSource) {
+        return room.source.find(source => {
+            const freeCount = source.pos.getFreeSpace().length
+            const harvestCount = source.pos.findInRange(FIND_CREEPS, 1).length
+    
+            return freeCount - harvestCount > 0
+        })
+    }
 }
 
 export const getRoomAvailableSource = getAvailableSource

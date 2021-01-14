@@ -1,5 +1,13 @@
 interface Source {
     /**
+     * 设置能量丢弃位置
+     */
+    setDroppedPos(pos: RoomPosition): void
+    /**
+     * 获取该 source 丢弃位置及其上的能量
+     */
+    getDroppedInfo(): { pos?: RoomPosition, energy?: Resource<RESOURCE_ENERGY> }
+    /**
      * 绑定 container 到该 source
      */
     setContainer(container: StructureContainer): void
