@@ -183,20 +183,14 @@ export default class CreepExtension extends Creep {
             target = Game.getObjectById(this.room.memory.constructionSiteId)
             // 如果缓存中的工地不存在则说明建筑完成
             if (!target) {
+                const [ x, y ] = this.room.memory.constructionSitePos
                 // 获取曾经工地的位置
-                const constructionSitePos = new RoomPosition(this.room.memory.constructionSitePos[0], this.room.memory.constructionSitePos[1], this.room.name)
+                const constructionSitePos = new RoomPosition(x, y, this.room.name)
                 // 检查上面是否有已经造好的同类型建筑
-                const structure = _.find(constructionSitePos.lookFor(LOOK_STRUCTURES), s => s.structureType === this.room.memory.constructionSiteType)
-                if (structure) {
-                    updateStructure(this.room.name, structure.structureType, structure.id)
-                    // 如果有的话就执行回调
-                    if (structure.onBuildComplete) structure.onBuildComplete()
-
-                    // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点（相关逻辑见 builder.target()）
-                    if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
-                        this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
-                    }
-                }
+                const structure = constructionSitePos.lookFor(LOOK_STRUCTURES).find(s => {
+                    return s.structureType === this.room.memory.constructionSiteType
+                })
+                if (structure) onBuildComplete(structure)
 
                 // 获取下个建筑目标
                 target = this._updateConstructionSite()   
@@ -533,5 +527,22 @@ export default class CreepExtension extends Creep {
             return null
         }
         else return flag
+    }
+}
+
+/**
+ * 当建筑建筑完成
+ * 
+ * @param structure 建造好的建筑
+ */
+const onBuildComplete = function (structure: Structure) {
+    updateStructure(structure.room.name, structure.structureType, structure.id)
+
+    // 如果有的话就执行回调
+    if (structure.onBuildComplete) structure.onBuildComplete()
+
+    // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点（相关逻辑见 builder.target()）
+    if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
+        this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
     }
 }

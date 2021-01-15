@@ -13,6 +13,7 @@ import { FactoryExtension, FactoryConsole } from './factory'
 import { TerminalExtension, TerminalConsole } from "./terminal"
 import LabExtension from "./lab"
 import StructuresExtension from './structure'
+import ContainerExtension from './container'
 
 // 拓展和原型的对应关系
 const assignMap = [
@@ -34,7 +35,8 @@ const assignMap = [
     [ StructurePowerSpawn, PowerSpawnExtension ],
     [ StructurePowerSpawn, PowerSpawnConsole ],
     [ StructureObserver, ObserverExtension ],
-    [ StructureObserver, ObserverConsole ]
+    [ StructureObserver, ObserverConsole ],
+    [ StructureContainer, ContainerExtension ]
 ]
 
 // 挂载拓展到建筑原型

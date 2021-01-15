@@ -1,8 +1,7 @@
 import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter, useCache } from 'utils'
+import { createBodyGetter } from 'utils'
 import { HARVEST_MODE } from 'setting'
 import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
-import { updateStructure } from 'modules/shortcut'
 
 /**
  * 采集者
@@ -23,32 +22,26 @@ const harvester: CreepConfig<'harvester'> = {
         // 执行各自的准备逻辑
         return actionStrategy[creep.memory.harvestMode].prepare(creep, source)
     },
-    source: creep => {
-        const { sourceId } = creep.memory.data
-        const source = Game.getObjectById(sourceId)
 
+    source: creep => {
+        const source = Game.getObjectById(creep.memory.data.sourceId)
         return actionStrategy[creep.memory.harvestMode].source(creep, source)
     },
+
     target: creep => {
         return actionStrategy[creep.memory.harvestMode].target(creep)
     },
-    bodys: createBodyGetter(bodyConfigs.harvester)
-}
 
-/**
- * 搜索指定 source 附近的 container 工地
- * 
- * @param source 要搜索的 source
- */
-const findSourceContainerSite = function (source: Source): ConstructionSite<STRUCTURE_CONTAINER> {
-    // 还没找到就找 container 的工地
-    const constructionSite = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 1, {
-        filter: s => s.structureType === STRUCTURE_CONTAINER
-    }) as ConstructionSite<STRUCTURE_CONTAINER>[]
+    bodys: (room, spawn, data) => {
+        const source = Game.getObjectById(data.sourceId)
 
-    if (constructionSite.length > 0) return constructionSite[0]
+        // 如果没视野或者边上没有 Link 的话，就用 harvester 标准的部件
+        const bodyConfig = !source || !source.getLink()
+            ? bodyConfigs.harvester
+            : bodyConfigs.worker
 
-    return undefined
+        return createBodyGetter(bodyConfig)(room, spawn)
+    }
 }
 
 /**
@@ -63,6 +56,7 @@ const setHarvestMode = function (creep: Creep, source: Source): HarvestMode {
         return
     }
 
+    // 有 link 就往里运
     const nearLink = source.getLink()
     if (nearLink) {
         creep.memory.harvestMode = HARVEST_MODE.TRANSPORT
@@ -70,7 +64,16 @@ const setHarvestMode = function (creep: Creep, source: Source): HarvestMode {
         return
     }
 
-    creep.memory.harvestMode = HARVEST_MODE.SIMPLE
+    // 有 container 就往上走
+    const nearContainer = source.getContainer()
+    if (nearContainer) {
+        creep.memory.harvestMode = HARVEST_MODE.SIMPLE
+        creep.memory.targetId = nearContainer.id
+        return
+    }
+
+    // 啥都没有就启动模式
+    creep.memory.harvestMode = HARVEST_MODE.START
 }
 
 type ActionStrategy = {
@@ -81,99 +84,102 @@ type ActionStrategy = {
     }
 }
 
+/**
+ * 采集单位不同模式下的行为
+ */
 const actionStrategy: ActionStrategy = {
     /**
-     * 简单模式下的工作逻辑
-     * 往 container 移动 > 维修 container > 无脑采集
+     * 启动模式
+     * 
+     * 当房间内没有搬运工时，采集能量，填充 spawn 跟 extension
+     * 当有搬运工时，无脑采集能量
+     */
+    [HARVEST_MODE.START]: {
+        prepare: (creep, source) => {
+            const { targetPos, range } = goToDropPos(creep, source)
+
+            // 没有抵达位置就准备未完成
+            if (!creep.pos.inRangeTo(targetPos, range)) return false
+
+            // 启动模式下，走到之后就将其设置为能量丢弃点
+            source.setDroppedPos(creep.pos)
+
+            // 把该位置存缓存到自己内存
+            const { roomName, x, y } = creep.pos
+            creep.memory.data.standPos = `${roomName},${x},${y}`
+
+            // 如果脚下没有 container 的话就放工地并发布建造任务
+            const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_CONTAINER)
+            if (posContinaer.length <= 0) {
+                creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
+
+                const useRoom = Game.rooms[creep.memory.data.useRoom]
+                if (!useRoom) return false
+                useRoom.work.addTask({ type: 'build', priority: 9 }, { dispath: true })
+            }
+
+            return true
+        },
+        source: (creep, source) => {
+            const useRoom = Game.rooms[creep.memory.data.useRoom]
+            if (!useRoom) return false
+
+            // 如果有搬运工了就无脑采集
+            if(
+                useRoom.transport.getUnit().length <= 0 &&
+                creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
+            ) return true
+
+            const result = creep.harvest(source)
+            if (result === ERR_NOT_IN_RANGE) goToDropPos(creep, source)
+        },
+        target: (creep) => {
+            const result = fillSpawnStructure(creep)
+
+            if (result === ERR_NOT_FOUND) {
+                creep.say('💤')
+                return true
+            }
+            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
+        }
+    },
+
+    /**
+     * 简单模式
+     * 
+     * 在 container 不存在时切换为启动模式
+     * 往 container 移动 > 检查 container 状态 > 无脑采集
      */
     [HARVEST_MODE.SIMPLE]: {
-        prepare(creep, source) {
-            const target = useCache<StructureContainer | Source | ConstructionSite>(() => {
-                // 先尝试获取 container
-                const container = source.getContainer()
-                if (container) return container
+        prepare: (creep, source) => {
+            const container = source.getContainer()
+            if (!container) {
+                creep.memory.harvestMode === HARVEST_MODE.START
+                return false
+            }
+
+            creep.goTo(container.pos)
     
-                // 再尝试找 container 的工地
-                const site = findSourceContainerSite(source)
-                if (site) return site
-    
-                // 如果还是没找到的话就用 source 当作目标
-                return source
-            }, creep.memory, 'targetId')
-    
-            // 设置移动范围并进行移动（source 走到附近、container 和工地就走到它上面）
-            const range = target instanceof Source ? 1 : 0
-            creep.goTo(target.pos, { range })
-    
-            // 抵达位置了就准备完成
-            if (creep.pos.inRangeTo(target.pos, range)) return true
+            // 没抵达位置了就还没准备完成
+            if (!creep.pos.inRangeTo(container, 0)) return false
+
+            // container 掉血了就发布维修任务
+            if (container.hits < container.hitsMax) {
+                const useRoom = Game.rooms[creep.memory.data.useRoom]
+                if (!useRoom) return false
+                useRoom.work.addTask({ type: 'repair', priority: 9 }, { dispath: true })
+            }
+
             return false
         },
         /**
-         * 因为 prepare 准备完之后会先执行 source 阶段，所以在这个阶段里对 container 进行维护
-         * 在这个阶段中，targetId 仅指 container
+         * 简单模式没有 source 阶段
          */
-        source(creep, source) {
-            creep.say('🚧')
-
-            // 没有能量就进行采集，因为是维护阶段，所以允许采集一下工作一下
-            if (creep.store[RESOURCE_ENERGY] <= 0) {
-                creep.getEngryFrom(source)
-                return false
-            }
-
-            // 获取 prepare 阶段中保存的 targetId
-            let target = Game.getObjectById(creep.memory.targetId as Id<StructureContainer | Source>)
-
-            // 存在 container，把血量修满
-            if (target && target instanceof StructureContainer) {
-                creep.repair(target)
-                // 血修满了就正式进入采集阶段
-                return target.hits >= target.hitsMax
-            }
-
-            // 不存在 container，开始新建，尝试获取工地缓存
-            const constructionSite = useCache<ConstructionSite>(() => {
-                creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
-                return creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).find(s => s.structureType === STRUCTURE_CONTAINER)
-            }, creep.memory, 'constructionSiteId')
-
-            // 还没找到就说明有可能工地已经建好了，进行搜索
-            if (!constructionSite) {
-                const container = creep.pos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_CONTAINER) as StructureContainer
-
-                // 找到了造好的 container 了，添加进房间
-                if (container) {
-                    updateStructure(this.name, STRUCTURE_CONTAINER, container.id)
-                    source.setContainer(container)
-
-                    const { useRoom: useRoomName } = creep.memory.data
-                    const useRoom = Game.rooms[useRoomName]
-                    if (!useRoom) {
-                        creep.suicide()
-                        return true
-                    }
-
-                    /**
-                     * 更新家里的搬运工数量，几个 container 就发布其数量 * 3
-                     * @todo 这里没有考虑外矿的运输需求，等外矿模块完善后再修改
-                     */
-                    useRoom.release.manager(useRoom.source.map(source => source.getContainer()).filter(Boolean).length * 3)
-                    useRoom.work.updateTask({ type: 'upgrade' })
-                    return true
-                }
-
-                // 还没找到，等下个 tick 会重新新建工地
-                delete creep.memory.constructionSiteId
-                return false
-            }
-
-            creep.build(constructionSite)
-        },
+        source: () => true,
         /**
          * 采集阶段会无脑采集，过量的能量会掉在 container 上然后被接住存起来
          */
-        target(creep) {
+        target: creep => {
             const { sourceId } = creep.memory.data
             creep.getEngryFrom(Game.getObjectById(sourceId))
 
@@ -185,6 +191,8 @@ const actionStrategy: ActionStrategy = {
 
     /**
      * 转移模式
+     * 
+     * 在 link 不存在时切换为启动模式
      * 采集能量 > 存放到指定建筑
      */
     [HARVEST_MODE.TRANSPORT]: {
@@ -218,55 +226,55 @@ const actionStrategy: ActionStrategy = {
         target: (creep) => {
             const target = Game.getObjectById(creep.memory.targetId as Id<StructureLink>) || creep.room.storage
 
-            // 目标没了，弱化为简单模式
+            // 目标没了，变更为启动模式
             if (!target) {
                 delete creep.memory.targetId
-                creep.memory.harvestMode = HARVEST_MODE.SIMPLE
+                creep.memory.harvestMode = HARVEST_MODE.START
                 return true
             }
 
             creep.transferTo(target, RESOURCE_ENERGY)
         }
-    },
-
-    /**
-     * 启动模式的逻辑非常简单：采集能量，填充 spawn 跟 extension
-     * 到两级后就转变为 SIMPLE 模式开始维护 container
-     */
-    [HARVEST_MODE.START]: {
-        prepare: (creep, source) => {
-            const { pos: droppedPos } = source.getDroppedInfo()
-            const targetPos = droppedPos ? droppedPos : source.pos
-            const range = droppedPos ? 0 : 1
-
-            creep.goTo(targetPos, { range })
-
-            // 抵达位置了就准备完成
-            if (creep.pos.inRangeTo(source.pos, range)) {
-                // 启动模式下，走到之后就将其设置为能量丢弃点
-                source.setDroppedPos(creep.pos)
-                return true
-            }
-
-            return false
-        },
-        source: (creep, source) => {
-            if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
-            creep.getEngryFrom(source)
-
-            // 如果控制器升到 2 级了就切换为简单模式
-            if (creep.room.controller?.level > 1) creep.memory.harvestMode = HARVEST_MODE.SIMPLE
-        },
-        target: (creep) => {
-            const result = fillSpawnStructure(creep)
-
-            if (result === ERR_NOT_FOUND) {
-                creep.say('💤')
-                return true
-            }
-            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
-        }
     }
+}
+
+/**
+ * 移动到 source 旁丢弃能量的位置
+ * @param creep 执行移动的单位
+ */
+const goToDropPos = function (creep: MyCreep<'harvester'>, source: Source): {
+    // 本次移动的返回值
+    result: ScreepsReturnCode
+    // 移动的目的地（之前没有丢弃位置的话目标就为 source，否则为对应的能量丢弃位置）
+    targetPos: RoomPosition
+    // 要移动到的范围
+    range: number
+} {
+    let targetPos: RoomPosition
+    let range = 0
+
+    // 尝试从缓存里读位置
+    const { standPos } = creep.memory.data
+    if (standPos) {
+        const [ roomName, x, y ] = creep.memory.data.standPos.split(',')
+        targetPos = new RoomPosition(Number(x), Number(y), roomName)
+    }
+    else {
+        const { pos: droppedPos } = source.getDroppedInfo()
+        // 之前就已经有点位了，自己保存一份
+        if (droppedPos) {
+            const { roomName, x, y } = droppedPos
+            creep.memory.data.standPos = `${roomName},${x},${y}`
+        }
+        // 没有点位的话就要移动到 source，调整移动范围
+        else range = 1
+
+        targetPos = droppedPos ? droppedPos : source.pos
+    }
+
+    // 执行移动
+    const result = creep.goTo(targetPos, { range })
+    return { result, targetPos, range }
 }
 
 export default harvester

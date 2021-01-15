@@ -1,5 +1,9 @@
 interface InterfaceCreepRelease {
     /**
+     * 发布采集单位
+     */
+    harvester(): OK | ERR_NOT_FOUND
+    /**
      * 发布工作单位
      */
     worker(number?: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND

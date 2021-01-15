@@ -41,6 +41,7 @@ export class LinkExtension extends StructureLink {
 
     /**
      * 注册为源 link
+     * 注册后对应 source 的采集单位不会立刻反应过来，要等到新的采集单位孵化后才会查找到 link
      */
     public asSource(): string {
         this.clearRegister()
@@ -50,9 +51,6 @@ export class LinkExtension extends StructureLink {
             filter: source => !source.getLink()
         })
         if (nearSource[0]) nearSource[0].setLink(this)
-
-        // 更新采集任务
-        this.room.work.planEnergyHarvestTask()
 
         return `${this} 已注册为源 link，已重定向对应 harvester 的存放目标`
     }

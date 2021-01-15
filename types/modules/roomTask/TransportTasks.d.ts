@@ -94,7 +94,7 @@ interface InterfaceTransportTaskController extends InterfaceTaskController<AllTr
     /**
      * 填写新的房间物流任务
      */
-    addTask(task: AllRoomTransportTask): number 
+    addTask(task: AllRoomTransportTask, opt?: AddTaskOpt): number 
     /**
      * 获取应该执行的任务
      */

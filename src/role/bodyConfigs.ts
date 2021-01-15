@@ -164,18 +164,5 @@ export const specialBodyConfig: { [type in SepicalBodyType]: BodyPartGenerator }
     /**
      * RCL8 时的升级单位身体部件，升级受限，所以 WORK 是 15 个
      */
-    upgrade8: () => calcBodyPart({ [WORK]: 15, [CARRY]: 6, [MOVE]: 12 }),
-    /**
-     * 简单模式下的 harvester，没有 CARRY 部件
-     */
-    harvestSimple: createBodyGetter(getBodyConfig(
-        { [WORK]: 2, [MOVE]: 1 },
-        { [WORK]: 4, [MOVE]: 2 },
-        { [WORK]: 6, [MOVE]: 3 },
-        { [WORK]: 8, [MOVE]: 4 },
-        { [WORK]: 10, [MOVE]: 5 },
-        { [WORK]: 12, [MOVE]: 6 },
-        { [WORK]: 12, [MOVE]: 6 },
-        { [WORK]: 12, [MOVE]: 6 }
-    ))
+    upgrade8: () => calcBodyPart({ [WORK]: 15, [CARRY]: 6, [MOVE]: 12 })
 }

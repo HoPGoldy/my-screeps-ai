@@ -14,6 +14,25 @@ class CreepRelease implements InterfaceCreepRelease {
     }
 
     /**
+     * 发布采集单位
+     * 固定一个 source 发布一个单位
+     */
+    public harvester(): OK | ERR_NOT_FOUND {
+        const room = Game.rooms[this.roomName]
+        if (!room) return ERR_NOT_FOUND
+
+        room.source.map((source, index) => {
+            creepApi.add(`${room.name} harvester${index}`, 'harvester', {
+                useRoom: room.name,
+                harvestRoom: room.name,
+                sourceId: source.id
+            }, room.name)
+        })
+
+        return OK
+    }
+
+    /**
      * 发布工作单位
      * 
      * @param number 要发布的数量

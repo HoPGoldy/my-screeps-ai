@@ -155,6 +155,11 @@ interface HarvesterData {
      * 能量要存储/应用到的房间
      */
     useRoom: string
+    /**
+     * 要站立到的采集能量的位置
+     * 在采集单位第一次到达 source 旁确定
+     */
+    standPos?: string
 }
 
 /**
@@ -359,3 +364,26 @@ type BodyAutoConfigConstant =
     'healer' |
     'dismantler' |
     'remoteHarvester'
+
+// 三种采集单位行为
+
+/**
+ * 采集行为：启动模式
+ * 会采集能量然后运送会 spawn 和 extension
+ */
+type HarvestModeStart = 1
+/**
+ * 采集行为：简单模式
+ * 会无脑采集能量，配合 container 使用
+ */
+type HarvestModeSimple = 2
+/**
+ * 采集行为：转移模式
+ * 会采集能量然后存放到指定建筑，配合 link 使用
+ */
+type HarvestModeTransport = 3
+
+/**
+ * 所有能量采集单位的行为模式
+ */
+type HarvestMode = HarvestModeStart | HarvestModeSimple | HarvestModeTransport

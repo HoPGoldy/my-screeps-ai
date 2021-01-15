@@ -43,12 +43,13 @@ export default class ControllerExtension extends StructureController {
     public onLevelChange(level: number): void {
         // 刚占领，添加工作单位
         if (level === 1) {
-            this.room.work.planEnergyHarvestTask()
-            this.room.release.worker(6)
+            this.room.release.harvester()
+            this.room.release.manager(2)
+            this.room.release.worker(4)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
             // 开始刷墙后就开始执行刷墙任务
-            this.room.work.updateTask({ type: 'repair' })
+            this.room.work.updateTask({ type: 'fillWall' })
         }
         else if (level === 8) {
             this.decideUpgradeWhenRCL8()

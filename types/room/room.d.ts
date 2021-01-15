@@ -62,7 +62,7 @@ interface RoomMemory {
     /**
      * 建筑工地的坐标，用于在建造完成后进行 lookFor 来确认其是否成功修建了建筑
      */
-    constructionSitePos: number[]
+    constructionSitePos: [ number, number ]
     /**
      * 工厂内存
      */
