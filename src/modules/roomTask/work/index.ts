@@ -19,7 +19,7 @@ const workControllers: { [roomName: string]: RoomWork } = {}
  * @param key 要挂载到 Room 的哪个键上
  */
 export default function (key: string = 'work') {
-    createGetter(Room, key, () => {
+    createGetter(Room, key, function () {
         if (!(this.name in workControllers)) {
             workControllers[this.name] = new RoomWork(this.name)
         }

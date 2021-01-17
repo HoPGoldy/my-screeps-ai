@@ -53,8 +53,9 @@ interface RoomTaskAction {
 interface TaskUnitInfo {
     /**
      * 该 creep 正在执行的工作
+     * 没有任务时为空
      */
-    doing: number
+    doing?: number
 }
 
 /**

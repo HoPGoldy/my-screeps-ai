@@ -97,7 +97,7 @@ function getAvailableSource(room: Room, opt: GetAvailableSourceOpt = { includeSo
     }
 
     // 看看 source 边上有没有能量
-    const maxDroppedEnergy = _.max(room.source.map(source => source.getDroppedInfo().energy), res => res.amount)
+    const maxDroppedEnergy = _.max(room.source.map(source => source.getDroppedInfo().energy), res => res ? res.amount : 0)
     if (maxDroppedEnergy) return maxDroppedEnergy
 
     // 没有就选边上有空位的 source

@@ -134,6 +134,11 @@ const actionStrategy: ActionStrategy = {
             if (result === ERR_NOT_IN_RANGE) goToDropPos(creep, source)
         },
         target: (creep) => {
+            const useRoom = Game.rooms[creep.memory.data.useRoom]
+            if (!useRoom) return false
+
+            // 如果有搬运工了就无脑采集
+            if(useRoom.transport.getUnit().length > 0) return true
             const result = fillSpawnStructure(creep)
 
             if (result === ERR_NOT_FOUND) {

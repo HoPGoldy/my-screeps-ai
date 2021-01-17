@@ -29,7 +29,7 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      * @param roomName 要管理任务的房间名
      */
     constructor(roomName: string) {
-        super(roomName)
+        super(roomName, 'workTasks')
     }
 
     /**

@@ -13,6 +13,8 @@
  * @param getNewStats 统计数据的获取回调，该方法提供房间现存的状态作为参数，且返回的值将被合并到房间的统计数据中
  */
 export const setRoomStats = function (roomName: string, getNewStats: (stats: RoomStats) => Partial<RoomStats>): void {
+    if (!Memory.stats) Memory.stats = { rooms: {} }
+
     if (!Memory.stats.rooms[roomName]) {
         Memory.stats.rooms[roomName] = {
             power: 0,

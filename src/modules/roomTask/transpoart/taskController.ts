@@ -25,8 +25,6 @@ const WORK_PROPORTION_TO_EXPECT = [
 const REGULATE_LIMIT = 500
 
 export default class RoomTransport extends TaskController<AllTransportTaskType, AllRoomTransportTask> implements InterfaceTransportTaskController {
-    readonly SAVE_KEY: string = 'transportTasks'
-
     /**
      * 本房间的搬运工总生命时长
      */
@@ -36,6 +34,15 @@ export default class RoomTransport extends TaskController<AllTransportTaskType, 
      * 本房间的搬运工总工作时长
      */
     totalWorkTime: number = 0
+
+    /**
+     * 构造- 管理指定房间的工作任务
+     * 
+     * @param roomName 要管理任务的房间名
+     */
+    constructor(roomName: string) {
+        super(roomName, 'transportTasks')
+    }
 
     /**
      * 获取应该执行的任务逻辑

@@ -19,7 +19,7 @@ const transportControllers: { [roomName: string]: RoomTransport } = {}
  * @param key 要挂载到 Room 的哪个键上
  */
 export default function (key: string = 'transport') {
-    createGetter(Room, key, () => {
+    createGetter(Room, key, function () {
         if (!(this.name in transportControllers)) {
             transportControllers[this.name] = new RoomTransport(this.name)
         }

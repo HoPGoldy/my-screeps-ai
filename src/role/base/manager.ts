@@ -12,8 +12,8 @@ const TRANSFER_DEATH_LIMIT = 20
  * 任务处理逻辑定义在 modules/roomTask/transport/actions 中
  */
 const manager: CreepConfig<'manager'> = {
-    // 如果还有要做的任务的话就继续孵化
-    isNeed: (room, preMemory) => !!preMemory.taskKey,
+    // 普通体型的话就一直孵化，特殊体型的话如果还有要做的任务就继续孵化
+    isNeed: (room, preMemory) => !preMemory.bodyType || !!preMemory.taskKey,
     prepare: creep => {
         creep.memory.bodyType = creep.memory.data.bodyType
         return true
@@ -54,6 +54,8 @@ const deathPrepare = function(creep: Creep, sourceId: Id<StructureWithStore>): f
             }
             // 否则就放到 storage 或者玩家指定的地方
             else target = sourceId ? Game.getObjectById(sourceId): creep.room.storage
+            // 刚开新房的时候可能会没有存放的目标
+            if (!target) return false
 
             // 转移资源
             creep.goTo(target.pos)

@@ -25,6 +25,10 @@ interface DelayTaskTypes {
      * 升级工延迟孵化任务
      */
     spawnUpgrader: DelayTaskData
+    /**
+     * 任务模块的全局重置后重规划任务
+     */
+    taskDispath: DelayTaskData
 }
 
 /**

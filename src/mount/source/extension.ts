@@ -19,8 +19,10 @@ export default class SourceExtension extends Source {
     /**
      * 获取该 source 丢弃位置及其上的能量
      */
-    public getDroppedEnergy(): { pos?: RoomPosition, energy?: Resource<RESOURCE_ENERGY> } {
-        const { dropped } = this.room.memory.source?.[this.id]
+    public getDroppedInfo(): { pos?: RoomPosition, energy?: Resource<RESOURCE_ENERGY> } {
+        this.keepKeyExist()
+
+        const { dropped } = this.room.memory.source[this.id]
         if (!dropped) return {}
         
         // 获取能量丢弃位置
@@ -52,7 +54,9 @@ export default class SourceExtension extends Source {
      * 注意，由于 container 没有视野，所以外矿 container 存在但房间没视野时可能也会返回 undefined
      */
     public getContainer(): StructureContainer | undefined {
-        const { containerId } = this.room.memory.source?.[this.id]
+        this.keepKeyExist()
+
+        const { containerId } = this.room.memory.source[this.id]
         if (!containerId) return undefined
         
         const container = Game.getObjectById(containerId)
@@ -76,7 +80,9 @@ export default class SourceExtension extends Source {
      * 获取该 source 上绑定的 link
      */
     public getLink(): StructureLink | undefined {
-        const { LinkId } = this.room.memory.source?.[this.id]
+        this.keepKeyExist()
+
+        const { LinkId } = this.room.memory.source[this.id]
         if (!LinkId) return undefined
 
         const link = Game.getObjectById(LinkId)

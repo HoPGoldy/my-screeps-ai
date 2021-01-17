@@ -19,7 +19,7 @@ export default class TaskController<
     /**
      * 该模块需要的数据将被保存到 room.memory 的哪个键下
      */
-    readonly SAVE_KEY: string = ''
+    protected readonly SAVE_KEY: string = ''
 
     /**
      * 该模块负责的任务
@@ -35,9 +35,11 @@ export default class TaskController<
      * 构造 - 管理指定房间的任务
      * 
      * @param roomName 要管理任务的房间名
+     * @param memoryKey 该任务模块保存到的 room 内存字段
      */
-    constructor(roomName: string) {
+    constructor(roomName: string, memoryKey: string) {
         this.roomName = roomName
+        this.SAVE_KEY = memoryKey
         this.initTask()
     }
 
@@ -149,7 +151,7 @@ export default class TaskController<
      * 从内存中重建物流任务队列
      */
     protected initTask() {
-        if (!Memory.rooms || Memory.rooms[this.roomName]) return
+        if (!Memory.rooms || !Memory.rooms[this.roomName]) return
         // 从内存中解析数据
         this.tasks = JSON.parse(Memory.rooms[this.roomName][this.SAVE_KEY] || '[]')
     }
@@ -159,7 +161,10 @@ export default class TaskController<
      */
     protected saveTask() {
         if (!Memory.rooms) Memory.rooms = {}
-        Memory.rooms[this.roomName][this.SAVE_KEY] = JSON.stringify(this.tasks)
+        Memory.rooms[this.roomName][this.SAVE_KEY] = JSON.stringify(this.tasks.map(task => {
+            // 注意，这里没有保存正在执行该任务的人数，因为这两个是有时效性的，后面读取的时候有可能这个数据已经过期了
+            return ({ ...task, unit: 0, requireUnit: 0 })
+        }))
     }
 
     /**
@@ -194,7 +199,7 @@ export default class TaskController<
         }
 
         if (!task) return
-        task.unit = (task.unit <= 1) ? 0 : task.unit - 1
+        task.unit = (task.unit < 1) ? 0 : task.unit - 1
         // 如果是特殊任务的话就更新对应的字段
         if (task.require && unit.memory.bodyType === task.require) {
             task.requireUnit = (task.requireUnit <= 1) ? 0 : task.requireUnit - 1
@@ -248,7 +253,9 @@ export default class TaskController<
             // 找到头了，任务都有人做（或者说没有自己适合做还缺人的任务），从头遍历一遍
             if (i >= this.tasks.length - 1 && !overflow) {
                 overflow = true
-                i = 0
+                // 这里设置成 -1 的原因是 for 循环的 ++ 在循环结束后执行
+                // 而这里的目的是重置循环，所以设置成 -1 后，循环结束时 ++，下个循环刚好从 0 开始
+                i = -1
             }
 
             const result = this.isCreepMatchTask(creep, checkTask, overflow)
@@ -342,11 +349,15 @@ export default class TaskController<
      * @param creep 要获取待执行任务的 creep
      */
     public getUnitTaskType(creep: Creep): CostomTask {
-        if (this.creeps[creep.id]) return this.getTask(this.creeps[creep.id].doing)
+        const doingTask = this.getTask(this.creeps[creep.id]?.doing)
 
-        // 还未分配过任务
-        const { key } = this.dispatchCreep(creep)
-        this.creeps[creep.id] = { doing: key }
+        // 还未分配过任务，或者任务已经完成了
+        if (!doingTask) {
+            const newTask = this.dispatchCreep(creep)
+            this.creeps[creep.id] = newTask ? { doing: newTask.key } : {}
+        }
+
+        return doingTask
     }
 
     /**
