@@ -164,18 +164,15 @@ const getEnergy = function (creep: MyCreep<'worker'>): boolean {
         return true
     }
 
-    // 获取有效的能量来源
-    let source: AllEnergySource
-    if (!creep.memory.sourceId) {
-        source = getRoomAvailableSource(creep.room)
-        if (!source) {
-            creep.say('没能量了，歇会')
-            return false
-        }
+    // 获取有效的能量来源并缓存能量来源
+    const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
+        return getRoomAvailableSource(creep.room, { includeSource: false, ignoreLimit: true })
+    }, creep.memory, 'sourceId')
 
-        creep.memory.sourceId = source.id
+    if (!source) {
+        creep.say('没能量了，歇会')
+        return false
     }
-    else source = Game.getObjectById(creep.memory.sourceId)
 
     const result = creep.getEngryFrom(source)
 
