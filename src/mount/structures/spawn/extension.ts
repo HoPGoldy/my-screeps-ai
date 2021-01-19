@@ -1,4 +1,4 @@
-import { ROOM_TRANSFER_TASK, creepDefaultMemory, importantRoles } from 'setting'
+import { creepDefaultMemory, importantRoles } from 'setting'
 import roles from 'role'
 
 /**

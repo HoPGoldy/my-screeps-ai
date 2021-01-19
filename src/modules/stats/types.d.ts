@@ -64,3 +64,10 @@ interface RoomStats {
      */
     energyGetRate: number
 }
+
+interface Memory {
+    /**
+     * 全局统计信息
+     */
+    stats: StatsMemory
+}

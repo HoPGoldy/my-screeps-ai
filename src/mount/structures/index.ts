@@ -1,17 +1,17 @@
 import { structureWithMemory } from "setting"
 import { assignPrototype } from "utils"
 import ControllerExtension from './controller'
-import SpawnExtension from './spawn'
+import SpawnExtension from './spawn/extension'
 import TowerExtension from './tower'
 import { LinkExtension, LinkConsole } from './link'
 import ExtractorExtension from './extractor'
 import { StorageExtension, StorageConsole } from './storage'
 import NukerExtension from './nuker'
 import { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
-import { ObserverExtension, ObserverConsole } from './observer'
+import { ObserverExtension, ObserverConsole } from './observer/extension'
 import { FactoryExtension, FactoryConsole } from './factory'
 import { TerminalExtension, TerminalConsole } from "./terminal"
-import LabExtension from "./lab"
+import LabExtension from "./lab/extension"
 import StructuresExtension from './structure'
 import ContainerExtension from './container'
 

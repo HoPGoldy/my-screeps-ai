@@ -1,3 +1,10 @@
+interface Memory {
+    /**
+     * 延迟任务存储
+     */
+    delayTasks: DelayTaskMemory[]
+}
+
 /**
  * 延迟任务的数据
  */

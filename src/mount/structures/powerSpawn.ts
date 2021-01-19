@@ -1,4 +1,4 @@
-import { powerSettings, ROOM_TRANSFER_TASK } from 'setting'
+import { powerSettings } from 'setting'
 import { colorful, createRoomLink } from 'utils'
 import { createHelp } from 'modules/help'
 

@@ -1,7 +1,7 @@
 import { creepApi } from 'modules/creepController'
 import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
-import { setRoomStats } from 'modules/stateCollector'
+import { setRoomStats } from 'modules/stats'
 import { costCache } from 'modules/move'
 import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { countEnergyChangeRatio } from 'modules/energyController'

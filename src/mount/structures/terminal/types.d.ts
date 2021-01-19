@@ -4,6 +4,10 @@ interface StructureTerminal {
     removeByType(type: ResourceConstant, mod: TerminalModes, channel: TerminalChannels): void
     remove(index: number): string
     show(): string
+    /**
+     * 在所有启用 powerspawn 的房间内平衡 power
+     */
+    balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND
 }
 
 /**

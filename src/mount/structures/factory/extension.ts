@@ -1,5 +1,5 @@
 import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit, commodityMax } from 'setting'
-import { setRoomStats } from 'modules/stateCollector'
+import { setRoomStats } from 'modules/stats'
 
 /**
  * Factory 原型拓展

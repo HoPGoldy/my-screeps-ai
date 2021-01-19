@@ -1,6 +1,6 @@
 import mountWork from './mount'
 import { doing, generatePixel } from './utils'
-import { stateScanner } from './modules/stateCollector'
+import { stateScanner } from './modules/stats'
 import creepNumberListener from './modules/creepController'
 import { execShard, saveShardData } from './modules/crossShard'
 import { ErrorMapper } from './modules/errorMapper'
@@ -33,23 +33,3 @@ export const loop = ErrorMapper.wrapLoop(() => {
     // 统计全局资源使用
     stateScanner()
 })
-
-interface Class1 {
-    func(arg: number): string
-}
-
-class A implements Class1 {
-    func(arg: number) {
-        return arg.toString()
-    }
-}
-
-interface Class2 extends Class1 {
-    func2(arg: string): number
-}
-
-class B extends A implements Class2 {
-    func2(arg: string) {
-        return Number(arg)
-    }
-}

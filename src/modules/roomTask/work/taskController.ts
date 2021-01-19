@@ -1,4 +1,4 @@
-import { getRoomStats } from 'modules/stateCollector'
+import { getRoomStats } from 'modules/stats'
 import { noTask, transportActions } from './actions'
 import { HARVEST_MODE } from 'setting'
 import TaskController from 'modules/roomTask/baseTaskController'

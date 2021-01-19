@@ -1,5 +1,4 @@
-import { ROOM_TRANSFER_TASK } from 'setting'
-import { setRoomStats } from 'modules/stateCollector'
+import { setRoomStats } from 'modules/stats'
 
 // nuker 拓展
 export default class NukerExtension extends StructureNuker {

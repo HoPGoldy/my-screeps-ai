@@ -229,27 +229,6 @@ export const powerSettings = {
 }
 
 /**
- * 此处定义了所有的房间物流任务类型
- * 每个房间物流的任务的 type 属性都必须是下列定义之一
- */
-export const ROOM_TRANSFER_TASK = {
-    // 基础运维
-    FILL_EXTENSION: 'fillExtension',
-    FILL_TOWER: 'fillTower',
-    // nuker 填充
-    FILL_NUKER: 'fillNuker',
-    // lab 物流
-    LAB_IN: 'labIn',
-    LAB_OUT: 'labOut',
-    LAB_GET_ENERGY: 'labGetEnergy',
-    FILL_POWERSPAWN: 'fillPowerSpawn',
-    // boost 物流
-    BOOST_GET_RESOURCE: 'boostGetResource',
-    BOOST_GET_ENERGY: 'boostGetEnergy',
-    BOOST_CLEAR: 'boostClear'
-}
-
-/**
  * 战争 boost 需要的所有强化材料，在启动战争状态后，manager 会依次将下列资源填充至 lab
  * 注意：在强化旗帜旁的 lab 数量需要超过下面的资源数量
  */

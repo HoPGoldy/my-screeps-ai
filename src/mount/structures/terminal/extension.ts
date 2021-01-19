@@ -1,5 +1,5 @@
 import { DEAL_RATIO, terminalModes, terminalChannels } from 'setting'
-import { setRoomStats } from 'modules/stateCollector'
+import { setRoomStats } from 'modules/stats'
 
 /**
  * 全局缓存的订单价格表

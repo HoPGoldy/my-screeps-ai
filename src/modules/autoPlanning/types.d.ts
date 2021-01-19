@@ -45,3 +45,14 @@ interface ConstructionPos<StructureType extends BuildableStructureConstant = Bui
      */
     type: StructureType
 }
+
+interface Memory {
+    /**
+     * 在模拟器中调试布局时才会使用到该字段，在正式服务器中不会用到该字段
+     */
+    layoutInfo?: BaseLayout
+    /**
+     * 用于标记布局获取到了那一等级
+     */
+    layoutLevel?: AvailableLevel
+}

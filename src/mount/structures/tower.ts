@@ -1,5 +1,5 @@
 import { creepApi } from "modules/creepController"
-import { repairSetting, ROOM_TRANSFER_TASK, TOWER_FILL_WALL_LEVEL } from "setting"
+import { repairSetting, TOWER_FILL_WALL_LEVEL } from "setting"
 import { whiteListFilter } from "utils"
 
 // Tower 原型拓展

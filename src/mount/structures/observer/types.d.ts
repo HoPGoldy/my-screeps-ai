@@ -21,7 +21,6 @@ interface ObserverMemory {
      */
     pause?: boolean
 }
-
 interface StructureObserver {
     updateFlagList(): OK | ERR_NOT_FOUND
 }
