@@ -1,7 +1,7 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 import { remoteHelperIsNeed } from './utils'
-import { getRoomAvailableSource } from 'modules/energyController'
+import { getRoomEnergyTarget } from 'modules/energyController'
 
 /**
  * 支援 - 采矿者
@@ -34,7 +34,7 @@ const remoteUpgrader: CreepConfig<'remoteUpgrader'> = {
         // 获取有效的能量来源
         let source: AllEnergySource
         if (!creep.memory.sourceId) {
-            source = getRoomAvailableSource(creep.room)
+            source = getRoomEnergyTarget(creep.room)
             if (!source) {
                 creep.say('没能量了，歇会')
                 return false

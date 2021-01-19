@@ -7,6 +7,18 @@
  */
 export default class SourceExtension extends Source {
     /**
+     * 该 source 是否可以采集
+     * 会检查自己还有没有能量，且周围有没有剩余开采位
+     */
+    public canUse(): boolean {
+        if (this.energy <= 0) return false
+
+        const freeCount = this.pos.getFreeSpace().length
+        const harvestCount = this.pos.findInRange(FIND_CREEPS, 1).length
+
+        return freeCount - harvestCount > 0
+    }
+    /**
      * 设置能量丢弃位置
      * 
      * @param pos 能量会被丢弃到的位置上

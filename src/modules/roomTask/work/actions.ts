@@ -1,4 +1,4 @@
-import { getRoomAvailableSource } from 'modules/energyController'
+import { getRoomEnergyTarget, findStrategy } from 'modules/energyController'
 import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
 import { useCache } from 'utils'
 import { addSpawnMinerTask } from './delayTask'
@@ -166,7 +166,8 @@ const getEnergy = function (creep: MyCreep<'worker'>): boolean {
 
     // 获取有效的能量来源并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
-        return getRoomAvailableSource(creep.room, { includeSource: false, ignoreLimit: true })
+        const { getMax, withLimit } = findStrategy
+        return getRoomEnergyTarget(creep.room, getMax, withLimit)
     }, creep.memory, 'sourceId')
 
     if (!source) {

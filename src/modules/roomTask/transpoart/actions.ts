@@ -1,4 +1,4 @@
-import { getRoomAvailableSource } from 'modules/energyController'
+import { getRoomEnergyTarget, findStrategy } from 'modules/energyController'
 import { boostResourceReloadLimit } from 'setting'
 import { useCache } from 'utils'
 
@@ -620,7 +620,8 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTrans
     const { workRoom } = creep.memory.data
     // 从工作房间查询并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
-        return getRoomAvailableSource(Game.rooms[workRoom], { includeSource: false, ignoreLimit: true })
+        const { getMax, withLimit } = findStrategy
+        return getRoomEnergyTarget(creep.room, getMax, withLimit)
     }, creep.memory, 'sourceId')
 
     if (
