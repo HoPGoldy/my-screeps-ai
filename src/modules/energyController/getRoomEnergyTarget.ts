@@ -29,14 +29,12 @@ export const getRoomEnergyTarget = function (room: Room, finder?: EnergyTargetFi
     if (!allEnergyTargets) {
         // 查找 storage、terminal 和 container
         const structureTargets = [ room.storage, room.terminal, ...room[STRUCTURE_CONTAINER] ]
-            .map(getLargeTarget)
-            .filter(Boolean)
+            .filter(structure => structure && structure.store[RESOURCE_ENERGY] > 0)
 
         // 查找 source 旁边地上扔的
         const droppedEnergyTargets = room.source
             .map(source => source.getDroppedInfo().energy)
             .filter(Boolean)
-            .map(res => ({ amount: res.amount, target: res, type: RESOURCE_ENERGY }))
 
         // 缓存在 room 实例上
         allEnergyTargets = [ ...structureTargets, ...droppedEnergyTargets ]
@@ -47,10 +45,5 @@ export const getRoomEnergyTarget = function (room: Room, finder?: EnergyTargetFi
     const FilteredTargets = filters.reduce((targets, filter) => filter(targets), allEnergyTargets)
     // 设置搜索方法并执行搜索
     const targetFinder: EnergyTargetFinder = finder || getMax
-    const finalTarget = targetFinder(FilteredTargets)
-
-    
-
-    // 没找到就返回未定义
-    return finalTarget ? finalTarget.target : undefined
+    return targetFinder(FilteredTargets)
 }
