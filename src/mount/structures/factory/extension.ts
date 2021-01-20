@@ -89,7 +89,7 @@ export default class FactoryExtension extends StructureFactory {
                 if ('level' in COMMODITIES[resType] && COMMODITIES[resType].level !== this.room.memory.factory.level) {
                     const requestAmount = subResAmount - this.room.terminal.store[resType]
                     // 请求其他房间共享
-                    this.room.shareRequest(resType as CommodityConstant, requestAmount)
+                    this.room.share.request(resType as CommodityConstant, requestAmount)
 
                     // 如果这时候只有这一个任务了，就进入待机状态
                     if (this.room.memory.factory.taskList.length <= 1) this.gotoBed(50, `等待共享 ${resType}*${requestAmount}`)
@@ -489,8 +489,8 @@ export default class FactoryExtension extends StructureFactory {
         depositTypes = depositTypes || []
         depositTypes.forEach(type => {
             factoryTopTargets[type][level].forEach(resType => {
-                if (action === 'register') this.room.shareAddSource(resType)
-                else this.room.shareRemoveSource(resType)
+                if (action === 'register') this.room.share.becomeSource(resType)
+                else this.room.share.leaveSource(resType)
             })
         })
     }

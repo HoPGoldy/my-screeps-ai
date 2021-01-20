@@ -30,13 +30,6 @@ interface Memory {
      */
     bypassRooms: string[]
     /**
-     * 资源来源表
-     * 资源类型为键，房间名列表为值
-     */
-    resourceSourceMap: {
-        [resourceType: string]: string[]
-    },
-    /**
      * 商品生产线配置
      * 键为工厂等级，值为被设置成对应等级的工厂所在房间名
      */

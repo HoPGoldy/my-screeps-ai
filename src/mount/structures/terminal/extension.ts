@@ -100,7 +100,7 @@ export default class TerminalExtension extends StructureTerminal {
         
         // 添加共享任务
         if (!targetRoomInfo || !targetRoomInfo.room) return ERR_NOT_FOUND
-        this.room.shareAdd(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
+        this.room.share.handle(targetRoomInfo.room, RESOURCE_POWER, SHARE_LIMIE)
 
         return OK
     }
@@ -272,8 +272,8 @@ export default class TerminalExtension extends StructureTerminal {
 
             // 进行共享
             case terminalChannels.share:
-                if (resource.mod === terminalModes.get) this.room.shareRequest(resource.type, resource.amount - resourceAmount)
-                else this.room.shareAddSource(resource.type)
+                if (resource.mod === terminalModes.get) this.room.share.request(resource.type, resource.amount - resourceAmount)
+                else this.room.share.becomeSource(resource.type)
 
                 return this.setNextIndex()
             break
@@ -283,7 +283,7 @@ export default class TerminalExtension extends StructureTerminal {
                 if (resource.mod === terminalModes.put) {
                     // 向自己房间添加一个指向目标房间的资源共享任务来进行支援
                     // 这里的容量直接 resourceAmount - resource.amount，因为 mod 为 put 时代码能走到这里证明现有的资源数量一定是大于阈值的，所以这个值一定为正数
-                    this.room.shareAdd(resource.supportRoomName, resource.type, resourceAmount - resource.amount)
+                    this.room.share.handle(resource.supportRoomName, resource.type, resourceAmount - resource.amount)
                 }
                 else this.log('支援渠道的资源监听任务，其物流方向必须为 put（提供）', 'yellow')
 

@@ -196,8 +196,6 @@ export default class RoomExtension extends Room {
         return this.name + ' 房间已移除'
     }
 
-    
-
     /**
      * 在本房间中查找可以放置基地的位置
      * 会将可选位置保存至房间内存
@@ -248,125 +246,6 @@ export default class RoomExtension extends Room {
         if (result === OK) return `自动规划完成`
         else if (result === ERR_NOT_OWNER) return `自动规划失败，房间没有控制权限`
         else return `未找到基地中心点位，请执行 Game.rooms.${this.name}.setcenter() 以启用自动规划`
-    }
-
-    /**
-     * 向其他房间请求资源共享
-     * 
-     * @param resourceType 请求的资源类型
-     * @param amount 请求的数量
-     */
-    public shareRequest(resourceType: ResourceConstant, amount: number): boolean {
-        const targetRoom = this.shareGetSource(resourceType, amount)
-        if (!targetRoom) return false
-
-        const addResult = targetRoom.shareAdd(this.name, resourceType, amount)
-        return addResult
-    }
-
-    /**
-     * 将本房间添加至资源来源表中
-     * 
-     * @param resourceType 添加到的资源类型
-     */
-    public shareAddSource(resourceType: ResourceConstant): boolean {
-        if (!(resourceType in Memory.resourceSourceMap)) Memory.resourceSourceMap[resourceType] = []
-
-        const alreadyRegister = Memory.resourceSourceMap[resourceType].find(name => name == this.name)
-        // 如果已经被添加过了就返回 false
-        if (alreadyRegister) return false
-
-        Memory.resourceSourceMap[resourceType].push(this.name)
-        return true
-    }
-
-    /**
-     * 从资源来源表中移除本房间房间
-     * 
-     * @param resourceType 从哪种资源类型中移除
-     */
-    public shareRemoveSource(resourceType: ResourceConstant): void {
-        // 没有该资源就直接停止
-        if (!(resourceType in Memory.resourceSourceMap)) return 
-
-        // 获取该房间在资源来源表中的索引
-        _.pull(Memory.resourceSourceMap[resourceType], this.name)
-        // 列表为空了就直接移除
-        if (Memory.resourceSourceMap[resourceType].length <= 0) delete Memory.resourceSourceMap[resourceType]
-    }
-
-    /**
-     * 向本房间添加资源共享任务
-     * 
-     * @param targetRoom 资源发送到的房间
-     * @param resourceType 共享资源类型
-     * @param amount 共享资源数量
-     * @returns 是否成功添加
-     */
-    public shareAdd(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean {
-        if (this.memory.shareTask || !this.terminal) return false
-
-        // 本房间内指定资源的存量
-        const terminalAmount = this.terminal.store[resourceType] || 0
-        const storageAmount = this.storage ? (this.storage.store[resourceType] || 0) : 0
-
-        // 终端能发送的最大数量（路费以最大发送量计算）
-        const freeSpace = this.terminal.store.getFreeCapacity() + terminalAmount - Game.market.calcTransactionCost(amount, this.name, targetRoom)
-        // 期望发送量、当前存量、能发送的最大数量中找最小的
-        const sendAmount = Math.min(amount, terminalAmount + storageAmount, freeSpace)
-
-        this.memory.shareTask = {
-            target: targetRoom,
-            resourceType,
-            amount: sendAmount
-        }
-        return true
-    }
-
-    /**
-     * 根据资源类型查找来源房间
-     * 
-     * @param resourceType 要查找的资源类型
-     * @param amount 请求的数量
-     * @returns 找到的目标房间，没找到返回 null
-     */
-    private shareGetSource(resourceType: ResourceConstant, amount: number): Room | null {
-        // 兜底
-        if (!Memory.resourceSourceMap) {
-            Memory.resourceSourceMap = {}
-            return null
-        }
-        const SourceRoomsName = Memory.resourceSourceMap[resourceType]
-        if (!SourceRoomsName) return null
-
-        // 寻找合适的房间
-        let targetRoom: Room = null
-        // 变量房间名数组，注意，这里会把所有无法访问的房间筛选出来
-        Memory.resourceSourceMap[resourceType] = SourceRoomsName.filter(roomName => {
-            const room = Game.rooms[roomName]
-
-            if (!room || !room.terminal) return false
-            // 该房间有任务或者就是自己，不能作为共享来源
-            if (room.memory.shareTask || room.name === this.name) return true
-
-            // 如果请求共享的是能量
-            if (resourceType === RESOURCE_ENERGY) {
-                if (!room.storage) return false
-                // 该房间 storage 中能量低于要求的话，就从资源提供列表中移除该房间
-                if (room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return false
-            }
-            else {
-                // 如果请求的资源已经没有的话就暂时跳过（因为无法确定之后是否永远无法提供该资源）
-                if ((room.terminal.store[resourceType] || 0) <= 0) return true
-            }
-
-            // 接受任务的房间就是你了！
-            targetRoom = room
-            return true
-        })
-
-        // 把上面筛选出来的空字符串元素去除
-        return targetRoom
     }
 
     /**

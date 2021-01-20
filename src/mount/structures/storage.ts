@@ -15,7 +15,7 @@ class StorageExtension extends StructureStorage {
 
         if (Game.time % 10000) return
         // 能量太多就提供资源共享
-        if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.shareAddSource(RESOURCE_ENERGY)
+        if (this.store[RESOURCE_ENERGY] >= ENERGY_SHARE_LIMIT) this.room.share.becomeSource(RESOURCE_ENERGY)
     }
 
     /**
