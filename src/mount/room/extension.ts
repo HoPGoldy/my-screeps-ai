@@ -28,23 +28,7 @@ export default class RoomExtension extends Room {
         log(content, prefixes, color, notify)
     }
 
-    /**
-     * 添加任务
-     * 
-     * @param task 要提交的任务
-     * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
-     * @returns 任务的排队位置, 0 是最前面，负数为添加失败，-1 为已有同种任务,-2 为目标建筑无法容纳任务数量
-     */
-    public addCenterTask(task: CenterTransferTask, priority: number = null): number {
-        if (this.hasCenterTask(task.submit)) return -1
-        // 由于这里的目标建筑限制型和非限制型存储都有，这里一律作为非限制性检查来减少代码量
-        if (this[task.target] && (this[task.target].store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) < task.amount) return -2
-
-        if (!priority) this.memory.centerTransferTasks.push(task)
-        else this.memory.centerTransferTasks.splice(priority, 0, task)
-
-        return this.memory.centerTransferTasks.length - 1
-    }
+    
 
     /**
      * 向房间中发布 power 请求任务
@@ -212,67 +196,7 @@ export default class RoomExtension extends Room {
         return this.name + ' 房间已移除'
     }
 
-    /**
-     * 每个建筑同时只能提交一个任务
-     * 
-     * @param submit 提交者的身份
-     * @returns 是否有该任务
-     */
-    public hasCenterTask(submit: CenterStructures | number): boolean {
-        if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
-        
-        const task = this.memory.centerTransferTasks.find(task => task.submit === submit)
-        return task ? true : false
-    }
-
-    /**
-     * 暂时挂起当前任务
-     * 会将任务放置在队列末尾
-     * 
-     * @returns 任务的排队位置, 0 是最前面
-     */
-    public hangCenterTask(): number {
-        const task = this.memory.centerTransferTasks.shift()
-        this.memory.centerTransferTasks.push(task)
-
-        return this.memory.centerTransferTasks.length - 1
-    }
-
-    /**
-     * 获取中央队列中第一个任务信息
-     * 
-     * @returns 有任务返回任务, 没有返回 null
-     */
-    public getCenterTask(): CenterTransferTask | null {
-        if (!this.memory.centerTransferTasks) this.memory.centerTransferTasks = []
-        
-        if (this.memory.centerTransferTasks.length <= 0) {
-            return null
-        }
-        else {
-            return this.memory.centerTransferTasks[0]
-        }
-    }
-
-    /**
-     * 处理任务
-     * 
-     * @param submitId 提交者的 id
-     * @param transferAmount 本次转移的数量
-     */
-    public handleCenterTask(transferAmount: number): void {
-        this.memory.centerTransferTasks[0].amount -= transferAmount
-        if (this.memory.centerTransferTasks[0].amount <= 0) {
-            this.deleteCurrentCenterTask()
-        }
-    }
-
-    /**
-     * 移除当前中央运输任务
-     */
-    public deleteCurrentCenterTask(): void {
-        this.memory.centerTransferTasks.shift()
-    }
+    
 
     /**
      * 在本房间中查找可以放置基地的位置

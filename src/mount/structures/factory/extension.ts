@@ -149,7 +149,7 @@ export default class FactoryExtension extends StructureFactory {
      * 获取资源
      */
     private getResource(): void {
-        if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
+        if (this.room.centerTransport.hasTask(STRUCTURE_FACTORY)) return 
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
@@ -178,7 +178,7 @@ export default class FactoryExtension extends StructureFactory {
                 }
 
                 // 发布中央物流任务
-                this.room.addCenterTask({
+                this.room.centerTransport.addTask({
                     submit: STRUCTURE_FACTORY,
                     target: STRUCTURE_FACTORY,
                     source,
@@ -252,7 +252,7 @@ export default class FactoryExtension extends StructureFactory {
      * 移出资源
      */
     private putResource(): void {
-        if (this.room.hasCenterTask(STRUCTURE_FACTORY)) return 
+        if (this.room.centerTransport.hasTask(STRUCTURE_FACTORY)) return 
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
@@ -268,7 +268,7 @@ export default class FactoryExtension extends StructureFactory {
 
             // 资源不足，发布任务
             const target = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
-            this.room.addCenterTask({
+            this.room.centerTransport.addTask({
                 submit: STRUCTURE_FACTORY,
                 target,
                 source: STRUCTURE_FACTORY,

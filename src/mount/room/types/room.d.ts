@@ -28,20 +28,6 @@ interface RoomMemory {
      */
     noLayout: boolean
     /**
-     * 中央集群的资源转移任务队列
-     */
-    centerTransferTasks: CenterTransferTask[]
-    /**
-     * 房间物流任务的备份数据
-     * 会在全局重置时通过该数据重建物流任务
-     */
-    transportTasks: string
-    /**
-     * 房间工作任务的备份数据
-     * 会在全局重置时通过该数据重建工作任务
-     */
-    workTasks: string
-    /**
      * 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
      * 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
      */
@@ -166,26 +152,6 @@ interface RoomMemory {
      * 当前房间工作单位的数量
      */
     workerNumber?: number
-    /**
-     * source 相关
-     */
-    source: {
-        [sourceId: string]: {
-            /**
-             * 能量丢弃到的位置
-             * x 在前，y 在后，形如 23,32
-             */
-            dropped?: string
-            /**
-             * 该 source 配套的 container id
-             */
-            containerId?: Id<StructureContainer>
-            /**
-             * 该 source 配套的 link id
-             */
-            LinkId?: Id<StructureLink>
-        }
-    }
 }
 
 /**
@@ -232,31 +198,6 @@ interface Room {
     _hasRunLab: boolean
 
     /**
-     * 建筑快捷访问
-     */
-    [STRUCTURE_FACTORY]?: StructureFactory
-    [STRUCTURE_POWER_SPAWN]?: StructurePowerSpawn
-    [STRUCTURE_NUKER]?: StructureNuker
-    [STRUCTURE_OBSERVER]?: StructureObserver
-    [STRUCTURE_EXTRACTOR]?: StructureExtractor
-
-    [STRUCTURE_SPAWN]?: StructureSpawn[]
-    [STRUCTURE_EXTENSION]?: StructureExtension[]
-    [STRUCTURE_ROAD]?: StructureRoad[]
-    [STRUCTURE_WALL]?: StructureWall[]
-    [STRUCTURE_RAMPART]?: StructureRampart[]
-    [STRUCTURE_KEEPER_LAIR]?: StructureKeeperLair[]
-    [STRUCTURE_PORTAL]?: StructurePortal[]
-    [STRUCTURE_LINK]?: StructureLink[]
-    [STRUCTURE_TOWER]?: StructureTower[]
-    [STRUCTURE_LAB]?: StructureLab[]
-    [STRUCTURE_CONTAINER]?: StructureContainer[]
-
-    mineral?: Mineral
-    source?: Source[]
-    centerLink?: StructureLink
-
-    /**
      * pos 处理 api
      */
     serializePos(pos: RoomPosition): string
@@ -278,38 +219,6 @@ interface Room {
     hasSpawnTask(taskName: string): boolean
     clearSpawnTask(): void
     hangSpawnTask(): void
-
-    /**
-     * 中央物流 api
-     */
-    addCenterTask(task: CenterTransferTask, priority?: number): number
-    hasCenterTask(submit: CenterStructures | number): boolean
-    hangCenterTask(): number
-    handleCenterTask(transferAmount: number): void
-    getCenterTask(): CenterTransferTask | null
-    deleteCurrentCenterTask(): void
-
-    /**
-     * 房间物流 api
-     */
-    transport: InterfaceTransportTaskController
-
-    /**
-     * 房间工作 api
-     */
-    work: InterfaceWorkTaskController
-
-    /**
-     * creep 发布
-     */
-    release: InterfaceCreepRelease
-
-    /**
-     * 工厂 api
-     */
-    setFactoryTarget(resourceType: ResourceConstant): string
-    getFactoryTarget(): ResourceConstant | null
-    clearFactoryTarget(): string
 
     /**
      * 资源共享 api

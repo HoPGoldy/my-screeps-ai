@@ -1,3 +1,18 @@
+interface Room {
+    /**
+     * 房间物流 api
+     */
+    transport: InterfaceTransportTaskController
+}
+
+interface RoomMemory {
+    /**
+     * 房间物流任务的备份数据
+     * 会在全局重置时通过该数据重建物流任务
+     */
+    transportTasks: string
+}
+
 /**
  * 所有的物流任务类型
  */

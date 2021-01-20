@@ -1,3 +1,18 @@
+interface Room {
+    /**
+     * 房间工作 api
+     */
+    work: InterfaceWorkTaskController
+}
+
+interface RoomMemory {
+    /**
+     * 房间工作任务的备份数据
+     * 会在全局重置时通过该数据重建工作任务
+     */
+    workTasks: string
+}
+
 /**
  * 所有的物流任务类型
  */

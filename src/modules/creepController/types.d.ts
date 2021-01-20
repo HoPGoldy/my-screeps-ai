@@ -1,3 +1,10 @@
+interface Room {
+    /**
+     * creep 发布
+     */
+    release: InterfaceCreepRelease
+}
+
 interface InterfaceCreepRelease {
     /**
      * 发布采集单位

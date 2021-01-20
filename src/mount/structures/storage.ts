@@ -32,7 +32,7 @@ class StorageExtension extends StructureStorage {
             this.store[RESOURCE_ENERGY] >= info.terminal.limit
         ) {
             // 发布到 terminal 的能量转移任务
-            this.room.addCenterTask({
+            this.room.centerTransport.addTask({
                 submit: STRUCTURE_FACTORY,
                 source: STRUCTURE_STORAGE,
                 target: STRUCTURE_TERMINAL,
