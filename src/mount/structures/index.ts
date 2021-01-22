@@ -1,6 +1,6 @@
 import { structureWithMemory } from "setting"
 import { assignPrototype } from "utils"
-import ControllerExtension from './controller'
+import ControllerExtension from './controller/extension'
 import SpawnExtension from './spawn/extension'
 import TowerExtension from './tower'
 import { LinkExtension, LinkConsole } from './link'

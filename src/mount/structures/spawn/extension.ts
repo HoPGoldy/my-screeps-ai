@@ -36,11 +36,17 @@ export default class SpawnExtension extends StructureSpawn {
         if (this.spawning || this.room.memory.spawnList.length == 0) return 
 
         const task = this.room.memory.spawnList[0]
+        this.room.visual.text(`当前孵化队列 ${this.room.memory.spawnList.join(' | ')}`, 1, 1, { align: 'left' })
+
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.mySpawnCreep(task)
+        this.room.visual.text(`孵化返回值 ${spawnResult}`, 1, 2, { align: 'left' })
 
         // 生成成功后移除任务
-        if (spawnResult === OK) this.room.memory.spawnList.shift()
+        if (spawnResult === OK) {
+            this.room.memory.spawnList.shift()
+            this.log(`执行成功，移除 ${task}`)
+        }
         // 能量不足就挂起任务，但是如果是重要角色的话就会卡住然后优先孵化
         else if (
             spawnResult === ERR_NOT_ENOUGH_ENERGY &&
@@ -75,9 +81,9 @@ export default class SpawnExtension extends StructureSpawn {
         const spawnResult: ScreepsReturnCode = this.spawnCreep(bodys, configName, {
             memory: creepMemory
         })
+        this.room.visual.text(`mySpawnCreep 返回值 ${spawnResult}`, 1, 5, { align: 'left' })
         // 检查是否生成成功
         if (spawnResult == OK) {
-            // this.log(`正在生成 ${configName} ...`)
             return OK
         }
         else if (spawnResult == ERR_NAME_EXISTS) {

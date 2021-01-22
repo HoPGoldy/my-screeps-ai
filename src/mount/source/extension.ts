@@ -70,7 +70,7 @@ export default class SourceExtension extends Source {
 
         const { containerId } = this.room.memory.source[this.id]
         if (!containerId) return undefined
-        
+
         const container = Game.getObjectById(containerId)
         if (!container) {
             delete this.room.memory.source[this.id].containerId

@@ -248,7 +248,7 @@ export default class PowerCreepExtension extends PowerCreep {
      */
 
     public goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode {
-        return Creep.prototype.goTo.call(this, target)
+        return Creep.prototype.goTo.call(this, target, moveOpt)
     }
 
     public setWayPoint(target: string[] | string): ScreepsReturnCode {

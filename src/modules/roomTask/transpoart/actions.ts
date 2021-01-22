@@ -41,7 +41,7 @@ export const transportActions: {
                         transport.removeTask(task.key)
                         transport.countWorkTime()
                     }
-                    else creep.say('🏓')
+                    else creep.say('😁搬完了')
                     return false
                 }
 
@@ -629,7 +629,7 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTrans
         (source instanceof Structure && source.store[RESOURCE_ENERGY] <= 0) ||
         (source instanceof Resource && source.amount <= 0)
     ) {
-        creep.say('⛳')
+        creep.say('😯没能量呀')
         delete creep.memory.sourceId
         return false
     }

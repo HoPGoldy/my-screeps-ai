@@ -1,30 +1,3 @@
-interface Room {
-    /**
-     * 建筑快捷访问
-     */
-    [STRUCTURE_FACTORY]?: StructureFactory
-    [STRUCTURE_POWER_SPAWN]?: StructurePowerSpawn
-    [STRUCTURE_NUKER]?: StructureNuker
-    [STRUCTURE_OBSERVER]?: StructureObserver
-    [STRUCTURE_EXTRACTOR]?: StructureExtractor
-
-    [STRUCTURE_SPAWN]?: StructureSpawn[]
-    [STRUCTURE_EXTENSION]?: StructureExtension[]
-    [STRUCTURE_ROAD]?: StructureRoad[]
-    [STRUCTURE_WALL]?: StructureWall[]
-    [STRUCTURE_RAMPART]?: StructureRampart[]
-    [STRUCTURE_KEEPER_LAIR]?: StructureKeeperLair[]
-    [STRUCTURE_PORTAL]?: StructurePortal[]
-    [STRUCTURE_LINK]?: StructureLink[]
-    [STRUCTURE_TOWER]?: StructureTower[]
-    [STRUCTURE_LAB]?: StructureLab[]
-    [STRUCTURE_CONTAINER]?: StructureContainer[]
-
-    mineral?: Mineral
-    source?: Source[]
-    centerLink?: StructureLink
-}
-
 interface Memory {
     /**
      * 延迟任务存储
@@ -63,6 +36,20 @@ interface DelayTaskTypes {
      * 任务模块的全局重置后重规划任务
      */
     taskDispath: DelayTaskData
+    /**
+     * 建筑任务发布
+     * 因为建筑必须在下个 tick 才能获取到其 id
+     */
+    addBuildTask: DelayTaskData & {
+        /**
+         * 该建筑工地应该位于的位置
+         */
+        pos: [ number, number, string ]
+        /**
+         * 该建筑的类型
+         */
+        type: BuildableStructureConstant
+    }
 }
 
 /**

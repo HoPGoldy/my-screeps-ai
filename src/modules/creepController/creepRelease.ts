@@ -22,6 +22,7 @@ class CreepRelease implements InterfaceCreepRelease {
         if (!room) return ERR_NOT_FOUND
 
         room.source.map((source, index) => {
+            console.log("给该 source 发布 harvester", source.id)
             creepApi.add(`${room.name} harvester${index}`, 'harvester', {
                 useRoom: room.name,
                 harvestRoom: room.name,

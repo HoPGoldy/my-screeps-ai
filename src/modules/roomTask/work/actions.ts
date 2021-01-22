@@ -75,9 +75,13 @@ export const transportActions: {
             // 有新墙就先刷新墙
             if (creep.memory.fillWallId) creep.steadyWall()
             // 没有就建其他工地，如果找不到工地了，就算任务完成
-            else if (creep.buildStructure() === ERR_NOT_FOUND) {
-                workController.removeTask(task.key)
-                return true
+            else {
+                // 优先建设任务中指定的工地
+                const taskTarget = Game.getObjectById(task.targetId)
+                if (creep.buildStructure(taskTarget) === ERR_NOT_FOUND) {
+                    workController.removeTask(task.key)
+                    return true
+                }
             }
 
             if (creep.store.getUsedCapacity() === 0) return true

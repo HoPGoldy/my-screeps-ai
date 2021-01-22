@@ -35,3 +35,10 @@ type StructureWithStore =
 interface ObjectWithId<T extends unknown = unknown> extends RoomObject {
     id: Id<T>
 }
+
+interface Memory {
+    /**
+     * 在 bot 第一次运行时会添加该 bot
+     */
+    botTag?: string
+}

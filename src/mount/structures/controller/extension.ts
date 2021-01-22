@@ -1,7 +1,7 @@
 import { creepApi } from 'modules/creepController'
 import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
-import { setRoomStats } from 'modules/stats'
+import { setRoomStats, getRoomStats } from 'modules/stats'
 import { costCache } from 'modules/move'
 import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { countEnergyChangeRatio } from 'modules/energyController'
@@ -12,6 +12,7 @@ import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
  */
 export default class ControllerExtension extends StructureController {
     public work(): void {
+        this.drawEnergyHarvestInfo()
         if (Game.time % 20) return
 
         // 如果等级发生变化了就运行 creep 规划
@@ -33,6 +34,15 @@ export default class ControllerExtension extends StructureController {
                 }
             }
         }
+    }
+
+    /**
+     * 临时 - 显示能量获取速率
+     */
+    private drawEnergyHarvestInfo() {
+        const { totalEnergy, energyGetRate } = getRoomStats(this.room.name)
+        const { x, y } = this.pos
+        this.room.visual.text(`可用能量 ${totalEnergy || 0} 获取速率 ${energyGetRate || 0}`, x + 1, y + 0.25, { align: 'left', opacity: 0.5 })
     }
 
     /**
@@ -72,12 +82,20 @@ export default class ControllerExtension extends StructureController {
         if (!workerNumber || workerNumber <= 0) this.room.memory.workerNumber = this.room.source.length
 
         // 根据物流模块返回的期望调整当前搬运工数量
-        this.room.memory.transporterNumber += this.room.transport.getExpect()
-        this.room.release.manager(this.room.memory.transporterNumber)
+        const transportExpect = this.room.transport.getExpect()
+        if (transportExpect !== 0) {
+            this.room.memory.transporterNumber += transportExpect
+            this.room.release.manager(this.room.memory.transporterNumber)
+            this.log(`调整物流单位数量 [修正] ${transportExpect} [期望] ${this.room.memory.transporterNumber}`)
+        }
 
         // 根据工作模块返回的期望调整当前工人数量
-        this.room.memory.workerNumber += this.room.work.getExpect()
-        this.room.release.worker(this.room.memory.workerNumber)
+        const workerExpect = this.room.work.getExpect()
+        if (workerExpect !== 0) {
+            this.room.memory.workerNumber += workerExpect
+            this.room.release.worker(this.room.memory.workerNumber)
+            this.log(`调整工作单位数量 [修正] ${workerExpect} [期望] ${this.room.memory.workerNumber}`)
+        }
     }
 
     /**
@@ -148,7 +166,7 @@ export default class ControllerExtension extends StructureController {
      * 
      * @returns 为 true 时说明自己等级发生了变化
      */
-    private stateScanner(): boolean {
+    public stateScanner(): boolean {
         let hasLevelChange = false
         setRoomStats(this.room.name, stats => {
             hasLevelChange = stats.controllerLevel !== this.level
@@ -161,7 +179,7 @@ export default class ControllerExtension extends StructureController {
         })
 
         // 统计本房间能量状态
-        countEnergyChangeRatio(this.room.name)
+        countEnergyChangeRatio(this.room)
 
         return hasLevelChange
     }

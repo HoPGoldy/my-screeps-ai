@@ -1,3 +1,30 @@
+interface Room {
+    /**
+     * 建筑快捷访问
+     */
+    [STRUCTURE_FACTORY]?: StructureFactory
+    [STRUCTURE_POWER_SPAWN]?: StructurePowerSpawn
+    [STRUCTURE_NUKER]?: StructureNuker
+    [STRUCTURE_OBSERVER]?: StructureObserver
+    [STRUCTURE_EXTRACTOR]?: StructureExtractor
+
+    [STRUCTURE_SPAWN]?: StructureSpawn[]
+    [STRUCTURE_EXTENSION]?: StructureExtension[]
+    [STRUCTURE_ROAD]?: StructureRoad[]
+    [STRUCTURE_WALL]?: StructureWall[]
+    [STRUCTURE_RAMPART]?: StructureRampart[]
+    [STRUCTURE_KEEPER_LAIR]?: StructureKeeperLair[]
+    [STRUCTURE_PORTAL]?: StructurePortal[]
+    [STRUCTURE_LINK]?: StructureLink[]
+    [STRUCTURE_TOWER]?: StructureTower[]
+    [STRUCTURE_LAB]?: StructureLab[]
+    [STRUCTURE_CONTAINER]?: StructureContainer[]
+
+    mineral?: Mineral
+    source?: Source[]
+    centerLink?: StructureLink
+}
+
 /**
  * 所有被添加到 Room 上的快捷访问键
  */

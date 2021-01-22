@@ -246,7 +246,6 @@ export default class TaskController<
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
         // 此时 creep 将会无视人数限制，分配至体型符合的最高优先级任务
         let overflow = false
-
         for (let i = 0; i < this.tasks.length; i++) {
             const checkTask = this.tasks[i]
 
@@ -300,7 +299,7 @@ export default class TaskController<
             }
         }
         // 普通单位只检查人数是否足够（人数溢出后无视此限制）
-        else if (!ignoreNeedLimit || unit >= need) return TaskMatchResult.Failed
+        else if (!ignoreNeedLimit && unit >= need) return TaskMatchResult.Failed
 
         return TaskMatchResult.Ok
     }

@@ -38,7 +38,9 @@ interface WorkTasks {
     /**
      * 建造任务
      */
-    build: RoomTask<'build'>
+    build: RoomTask<'build'> & {
+        targetId?: Id<ConstructionSite>
+    }
     /**
      * 维修任务
      */

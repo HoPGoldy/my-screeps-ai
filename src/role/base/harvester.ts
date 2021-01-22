@@ -2,6 +2,7 @@ import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 import { HARVEST_MODE } from 'setting'
 import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
+import { addBuildTask } from 'modules/roomTask/work/delayTask'
 
 /**
  * 采集者
@@ -112,10 +113,7 @@ const actionStrategy: ActionStrategy = {
             const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_CONTAINER)
             if (posContinaer.length <= 0) {
                 creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
-
-                const useRoom = Game.rooms[creep.memory.data.useRoom]
-                if (!useRoom) return false
-                useRoom.work.addTask({ type: 'build', priority: 9 }, { dispath: true })
+                addBuildTask(creep.pos, STRUCTURE_CONTAINER)
             }
 
             return true
@@ -163,8 +161,7 @@ const actionStrategy: ActionStrategy = {
                 return false
             }
 
-            creep.goTo(container.pos)
-    
+            creep.goTo(container.pos, { range: 0 })
             // 没抵达位置了就还没准备完成
             if (!creep.pos.inRangeTo(container, 0)) return false
 
@@ -175,7 +172,7 @@ const actionStrategy: ActionStrategy = {
                 useRoom.work.addTask({ type: 'repair', priority: 9 }, { dispath: true })
             }
 
-            return false
+            return true
         },
         /**
          * 简单模式没有 source 阶段

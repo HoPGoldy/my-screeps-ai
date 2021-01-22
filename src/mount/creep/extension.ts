@@ -174,10 +174,13 @@ export default class CreepExtension extends Creep {
 
     /**
      * 建设房间内存在的建筑工地
+     * 
+     * @param targetConstruction 要建造的目标工地，该参数无效的话将自行挑选工地
      */
-    public buildStructure(): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
+    public buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
         // 新建目标建筑工地
-        let target: ConstructionSite = undefined
+        let target = targetConstruction
+
         // 检查是否有缓存
         if (this.room.memory.constructionSiteId) {
             target = Game.getObjectById(this.room.memory.constructionSiteId)

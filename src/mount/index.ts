@@ -24,6 +24,9 @@ export default function (): void {
     mountPowerCreep()
     mountStructure()
     mountSource()
+    
+    // 检查是不是刚刚放下第一个 spawn
+    checkFirstRun()
 
     workAfterMount()
 }
@@ -48,4 +51,20 @@ function workAfterMount() {
         if (!pc.room) return
         pc.updatePowerToRoom()
     })
+}
+
+/**
+ * 如果是第一次运行的话就触发回调
+ */
+const checkFirstRun = function () {
+    if (Memory.botTag) return
+
+    const spawns = Object.values(Game.spawns)
+    if (spawns.length > 1) return
+
+    // 立刻规划
+    log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], 'green')
+    spawns[0].room.controller.onLevelChange(1)
+    // spawns[0].room.controller.stateScanner()
+    Memory.botTag = 'hopgoldy'
 }
