@@ -620,8 +620,8 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTrans
     const { workRoom } = creep.memory.data
     // 从工作房间查询并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
-        const { getClosestTo, withLimit } = findStrategy
-        return getRoomEnergyTarget(creep.room, getClosestTo(creep.pos), withLimit)
+        const { getClosestTo } = findStrategy
+        return getRoomEnergyTarget(creep.room, getClosestTo(creep.pos))
     }, creep.memory, 'sourceId')
 
     if (
