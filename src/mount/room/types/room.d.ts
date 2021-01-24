@@ -12,10 +12,6 @@ interface RoomMemory {
      */
     spawnList?: string[]
     /**
-     * 需要放置的工地（CS）队列
-     */
-    delayCSList: string[]
-    /**
      * 基地中心点坐标, [0] 为 x 坐标, [1] 为 y 坐标
      */
     center: [ number, number ]
@@ -41,14 +37,6 @@ interface RoomMemory {
      * 建筑工的当前工地目标，用于保证多个建筑工的工作统一以及建筑工死后不会寻找新的工地
      */
     constructionSiteId: Id<ConstructionSite>
-    /**
-     * 建筑工特有，当前正在修建的建筑类型，用于在修建完成后触发对应的事件
-     */
-    constructionSiteType?: StructureConstant
-    /**
-     * 建筑工地的坐标，用于在建造完成后进行 lookFor 来确认其是否成功修建了建筑
-     */
-    constructionSitePos: [ number, number ]
     /**
      * 工厂内存
      */

@@ -32,20 +32,6 @@ interface StructurePlanningCache {
  */
 type AvailableLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
-/**
- * 要建造工地的位置
- */
-interface ConstructionPos<StructureType extends BuildableStructureConstant = BuildableStructureConstant> {
-    /**
-     * 要建造到的位置
-     */
-    pos: RoomPosition,
-    /**
-     * 要建造的建筑类型
-     */
-    type: StructureType
-}
-
 interface Memory {
     /**
      * 在模拟器中调试布局时才会使用到该字段，在正式服务器中不会用到该字段

@@ -18,9 +18,6 @@ export default class ControllerExtension extends StructureController {
         // 如果等级发生变化了就运行 creep 规划
         if (this.stateScanner()) this.onLevelChange(this.level)
 
-        // 放置队列中的工地
-        this.checkConstructionSites()
-
         // 调整运营 creep 数量
         this.adjustCreep()
 
@@ -114,50 +111,6 @@ export default class ControllerExtension extends StructureController {
         else {
             // 限制只需要一个单位升级
             this.room.work.updateTask({ type: 'upgrade', need: 1 })
-        }
-    }
-
-    /**
-     * 检查房间中是否存在没有放置的工地
-     * 
-     * 如果有的话就尝试放置
-     */
-    public checkConstructionSites(): void {
-        // 检查等待放置的工地（CS）队列
-        const delayCSList = this.room.memory.delayCSList
-        if (!delayCSList) return
-
-        // 仍未完成放置的工地
-        const incompleteList: string[] = []
-
-        // 是否需要孵化建造者
-        let needBuild = false
-        // 遍历整个队列，依次进行处理
-        while (delayCSList.length > 0) {
-            const constructionSiteStr = delayCSList.shift()
-            const info = unstringifyBuildPos(constructionSiteStr, this.room.name)
-
-            const placeResult = info.pos.createConstructionSite(info.type)
-
-            if (placeResult === OK) needBuild = true
-            else if (placeResult === ERR_FULL) {
-                // 如果工地已经放满了，就不再检查了，直接把剩下的推入到未完成队列
-                incompleteList.push(constructionSiteStr, ...delayCSList)
-                break
-            }
-            else if (placeResult !== ERR_RCL_NOT_ENOUGH && placeResult !== ERR_INVALID_TARGET) {
-                this.log(`工地 ${info.type} 无法放置，位置 [${info.pos.x}, ${info.pos.y}]，createConstructionSite 结果 ${placeResult}`, 'yellow')
-            }
-        }
-
-        // 把未完成的任务放回去
-        if (incompleteList.length > 0) this.room.memory.delayCSList = incompleteList
-        else delete this.room.memory.delayCSList
-
-        if (needBuild && !creepApi.has(`${this.room.name} builder0`)) {
-            this.room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
-            // 有新建筑发布，需要更新房间 cost 缓存
-            delete costCache[this.room.name]
         }
     }
 

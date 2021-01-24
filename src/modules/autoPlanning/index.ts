@@ -2,6 +2,7 @@ import planWall from './planWall'
 import planBase from './planBase'
 import planRoad from './planRoad'
 import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from 'setting'
+import { addConstructionSite } from 'modules/constructionController'
 
 let planningCaches: StructurePlanningCache = {}
 
@@ -97,33 +98,13 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
                 )  structure.destroy()
             }
 
-            // 遍历该建筑下的所有预放置点位
-            currentLevelLayout[structureType].map((pos: RoomPosition) => {
-                if (!pos) return
-
-                const placeResult = pos.createConstructionSite(structureType)
-
-                // 存在需要建造的建筑
-                if (placeResult === OK) needBuild = true
-                // 如果工地放不了了就加入暂存队列
-                else if (placeResult === ERR_FULL) {
-                    delayQueue.push(stringifyBuildPos(pos, structureType))
-                }
-                // RCL 等级不足就不予建造
-                else if (placeResult !== ERR_RCL_NOT_ENOUGH && placeResult !== ERR_INVALID_TARGET) {
-                    room.log(`工地 ${structureType} 无法放置，位置 [${pos.x}, ${pos.y}]，createConstructionSite 结果 ${placeResult}`, '建筑规划', 'yellow')
-                }
-            })
+            // 遍历该建筑下的所有预放置点位，推送给建造管理模块
+            const sitePosList: ConstructionPos[] = currentLevelLayout[structureType].map(pos => ({ pos, type: structureType}))
+            addConstructionSite(sitePosList)
+            // 发布建造任务
+            room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
         })
     }
-
-    // 有需要建造的，发布建造任务
-    if (needBuild) {
-        room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
-    }
-
-    // 存档到房间
-    if (delayQueue.length > 0) room.memory.delayCSList = delayQueue
 
     return OK
 }

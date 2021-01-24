@@ -5,6 +5,7 @@ import creepNumberListener from './modules/creepController'
 import { execShard, saveShardData } from './modules/crossShard'
 import { ErrorMapper } from './modules/errorMapper'
 import { manageDelayTask } from 'modules/delayQueue'
+import { manageConstruction } from 'modules/constructionController'
 
 // 挂载拓展
 mountWork()
@@ -23,6 +24,9 @@ export const loop = ErrorMapper.wrapLoop(() => {
 
     // 处理延迟任务
     manageDelayTask()
+
+    // 处理待建造工地
+    manageConstruction()
 
     // 搓 pixel
     generatePixel()

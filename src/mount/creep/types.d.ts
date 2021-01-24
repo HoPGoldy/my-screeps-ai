@@ -69,7 +69,7 @@ interface CreepMemory {
      */
     fillStructureId?: Id<StructureWithStore>
     /**
-     * 建筑工特有，当前缓存的建筑工地（目前只有外矿采集者在用）
+     * 建筑工特有，当前缓存的建筑工地
      */
     constructionSiteId?: Id<ConstructionSite>
     /**

@@ -6,6 +6,7 @@ import mountGlobal from './global'
 import mountStructure from './structures'
 import mountSource from './source'
 import { log } from 'utils'
+import { initConstructionController } from 'modules/constructionController'
 
 /**
  * 挂载所有的属性和方法
@@ -51,6 +52,8 @@ function workAfterMount() {
         if (!pc.room) return
         pc.updatePowerToRoom()
     })
+
+    initConstructionController()
 }
 
 /**

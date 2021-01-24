@@ -2,6 +2,7 @@
  * 工作任务中相关的延迟任务
  */
 
+import { addConstructionSite } from 'modules/constructionController'
 import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
 import { MINE_LIMIT } from 'setting'
 
@@ -47,7 +48,7 @@ addDelayCallback('addBuildTask', (room, task) => {
 
     // 如果没有工地的话就创建并再次发布建造任务
     if (!expectedSite || !room) {
-        pos.createConstructionSite(task.type)
+        addConstructionSite([{ pos, type: STRUCTURE_CONTAINER }])
         addBuildTask(pos, task.type)
     }
 

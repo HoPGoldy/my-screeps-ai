@@ -3,6 +3,7 @@ import { createBodyGetter } from 'utils'
 import { HARVEST_MODE } from 'setting'
 import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
 import { addBuildTask } from 'modules/roomTask/work/delayTask'
+import { addConstructionSite } from 'modules/constructionController'
 
 /**
  * 采集者
@@ -112,7 +113,7 @@ const actionStrategy: ActionStrategy = {
             // 如果脚下没有 container 的话就放工地并发布建造任务
             const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_CONTAINER)
             if (posContinaer.length <= 0) {
-                creep.pos.createConstructionSite(STRUCTURE_CONTAINER)
+                addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
                 addBuildTask(creep.pos, STRUCTURE_CONTAINER)
             }
 
