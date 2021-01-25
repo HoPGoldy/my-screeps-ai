@@ -3,7 +3,7 @@ import roles from 'role'
 import { goTo, setWayPoint } from 'modules/move'
 import { getMemoryFromCrossShard } from 'modules/crossShard'
 import { useCache } from 'utils'
-import { checkSite, getNearSite } from 'modules/constructionController'
+import { buildCompleteSite, getNearSite } from 'modules/constructionController'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -180,23 +180,7 @@ export default class CreepExtension extends Creep {
      */
     public buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
         // 新建目标建筑工地
-        let target = targetConstruction
-
-        if (!target) {
-            // 缓存查找到的工地
-            target = useCache(() => {
-                if (this.room.memory.constructionSiteId) {
-                    const structure = checkSite(this.room.memory.constructionSiteId)
-
-                    // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点）
-                    if (structure.structureType === STRUCTURE_WALL || structure.structureType === STRUCTURE_RAMPART) {
-                        this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
-                    }
-                }
-
-                return getNearSite(this.pos)
-            }, this.room.memory, 'constructionSiteId')
-        }
+        const target = this.getBuildTarget(targetConstruction)
 
         if (!target) return ERR_NOT_FOUND
         // 上面发现有墙要刷了，这个 tick 就不再造建造了
@@ -212,6 +196,50 @@ export default class CreepExtension extends Creep {
         }
         else if (buildResult == ERR_NOT_IN_RANGE) this.goTo(target.pos)
         return buildResult
+    }
+
+    /**
+     * 建筑目标获取
+     * 优先级：指定的目标 > 自己保存的目标 > 房间内保存的目标
+     */
+    private getBuildTarget(target?: ConstructionSite): ConstructionSite | undefined {
+        // 指定了目标，直接用，并且把 id 备份一下
+        if (target) {
+            this.memory.constructionSiteId = target.id
+            return target
+        }
+        // 没有指定目标，或者指定的目标消失了，从本地内存查找
+        else {
+            const selfKeepTarget = Game.getObjectById(this.memory.constructionSiteId)
+            if (selfKeepTarget) return selfKeepTarget
+            // 本地内存里保存的 id 找不到工地了，检查下是不是造好了
+            else {
+                const structure = buildCompleteSite[this.memory.constructionSiteId]
+
+                // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点）
+                if (structure && (
+                    structure.structureType === STRUCTURE_WALL ||
+                    structure.structureType === STRUCTURE_RAMPART
+                )) {
+                    this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
+                }
+
+                delete this.memory.constructionSiteId
+            }
+        }
+
+        // 自己内存里没找到，去房间内存里查找，房间内存没有的话就搜索并缓存到房间
+        const roomKeepTarget = Game.getObjectById(this.room.memory.constructionSiteId)
+            || useCache(() => getNearSite(this.pos), this.room.memory, 'constructionSiteId')
+
+        // 找到了，保存到自己内存里
+        if (roomKeepTarget) {
+            this.memory.constructionSiteId = this.room.memory.constructionSiteId
+            return roomKeepTarget
+        }
+        else delete this.room.memory.constructionSiteId
+
+        return undefined
     }
 
     /**

@@ -27,10 +27,16 @@ const BUILD_PRIORITY = [ STRUCTURE_SPAWN, STRUCTURE_EXTENSION, STRUCTURE_TOWER ]
 let waitingConstruction: ConstructionPos[] = []
 
 /**
- * 正在建造的工地点位
- * 在建造单位建造完成后会在这个 map 进行查找，以确定是否建造完成
+ * 上个 tick 的 Game.constructionSites
+ * 用于和本 tick 进行比对，找到是否有工地建造完成
  */
-let buildingConstruction: { [posName: string]: ConstructionPos } = {}
+let lastGameConstruction: { [constructionSiteId: string]: ConstructionSite } = {}
+
+/**
+ * 建造完成的建筑，键为工地 id，值为对应建造完成的建筑
+ * 会存放在这里供其他模块搜索，全局重置时将被清空
+ */
+export const buildCompleteSite: { [constructionSiteId: string]: Structure } = {}
 
 /**
  * 保存待建造队列 
@@ -41,25 +47,11 @@ const saveWaiting = () => {
 }
 
 /**
- * 保存建造中队列
- */
-const saveBuilding = () => {
-    if (Object.keys(buildingConstruction).length <= 0) delete Memory[SAVE_KEY.BUILDING]
-    else Memory[SAVE_KEY.BUILDING] = JSON.stringify(buildingConstruction)
-}
-
-/**
- * 获取正在建造的工地点位的索引
- */
-const getBuildingKey = ({ pos, type }: ConstructionPos): string => `${pos.x} ${pos.x} ${pos.roomName} ${type}`
-
-/**
  * 初始化控制器
  * 在全局重置时调用
  */
 export const initConstructionController = function () {
     waitingConstruction = JSON.parse(Memory[SAVE_KEY.WAITING])
-    buildingConstruction = JSON.parse(Memory[SAVE_KEY.BUILDING])
 }
 
 /**
@@ -67,6 +59,14 @@ export const initConstructionController = function () {
  * 将放置挂起队列里的工地
  */
 export const manageConstruction = function () {
+    planSite()
+    handleCompleteSite()
+}
+
+/**
+ * 放置队列中的工地
+ */
+const planSite = function () {
     // 没有需要放置的、或者工地已经放满了，直接退出
     if (waitingConstruction.length <= 0) return
     const buildingSiteLength = Object.keys(Game.constructionSites).length
@@ -79,10 +79,8 @@ export const manageConstruction = function () {
         const { pos, type } = site
         const result = pos.createConstructionSite(type)
 
-        // 放置成功，加入建造中队列
-        if (result === OK) buildingConstruction[getBuildingKey(site)] = site
         // 放置失败，下次重试
-        else if (result !== ERR_FULL) {
+        if (result !== OK && result !== ERR_FULL) {
             log(`工地 ${type} 无法放置，位置 [${pos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], 'yellow')
             return true
         }
@@ -94,7 +92,39 @@ export const manageConstruction = function () {
     if (cantPlaceSites.length > 0) waitingConstruction.unshift(...cantPlaceSites)
 
     saveWaiting()
-    saveBuilding()
+}
+
+/**
+ * 找到建造完成的工地并触发对应的回调
+ */
+const handleCompleteSite = function () {
+    const lastSiteIds = Object.keys(lastGameConstruction)
+    const nowSiteIds = Object.keys(Game.constructionSites)
+    // 工地数量不一致了，说明有工地被踩掉或者造好了
+    if (lastSiteIds.length !== nowSiteIds.length) {
+        const disappearedSiteIds = lastSiteIds.filter(id => !(id in Game.constructionSites))
+
+        disappearedSiteIds.map(siteId => {
+            const lastSite = lastGameConstruction[siteId]
+            const structure = getSiteStructure(lastSite)
+
+            // 建造完成
+            if (structure) {
+                updateStructure(structure.room.name, structure.structureType, structure.id)
+                // 如果有的话就执行回调
+                if (structure.onBuildComplete) structure.onBuildComplete()
+                buildCompleteSite[siteId] = structure
+            }
+            // 建造失败，回存到等待队列
+            else {
+                waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
+                saveWaiting()
+            }
+        })
+    }
+
+    // 更新缓存
+    lastGameConstruction = Game.constructionSites
 }
 
 /**
@@ -125,47 +155,23 @@ export const getNearSite = function (pos: RoomPosition): ConstructionSite {
         const matchedSite = groupedSite[type]
         if (!matchedSite) continue
 
-        if (matchedSite.length === 1) return saveSiteId(matchedSite[0])
-        return saveSiteId(pos.findClosestByPath(matchedSite))
+        if (matchedSite.length === 1) return matchedSite[0]
+        return pos.findClosestByPath(matchedSite)
     }
 
     // 没有优先建造的工地，直接找最近的
-    return saveSiteId(pos.findClosestByPath(sites))
-}
-
-const saveSiteId = function (site: ConstructionSite) {
-    const { pos, structureType: type, id } = site
-    const constructionPos: ConstructionPos = { pos, type, id }
-    // 把 id 更新到队列中
-    buildingConstruction[getBuildingKey(constructionPos)] = constructionPos
-    saveBuilding()
-
-    return site
+    return pos.findClosestByPath(sites)
 }
 
 /**
  * 检查一个建筑工地是否建造完成
- * 如果建造完成的话，该方法会触发建筑的 onBuildComplete 回调
  * 
- * @param siteId 建筑工地的 id
+ * @param site 建筑工地
  * @returns 若建造完成则返回对应的建筑
  */
-export const checkSite = function <T extends BuildableStructureConstant>(siteId: Id<ConstructionSite<T>>): Structure {
-    const matchedSitePos = Object.values(buildingConstruction).find(({ id }) => id === siteId)
-
+export const getSiteStructure = function (site: ConstructionSite): Structure {
     // 检查上面是否有已经造好的同类型建筑
-    const structure = matchedSitePos.pos.lookFor(LOOK_STRUCTURES).find(({ structureType }) => {
-        return structureType === matchedSitePos.type
+    return site.pos.lookFor(LOOK_STRUCTURES).find(({ structureType }) => {
+        return structureType === site.structureType
     })
-    if (!structure) return undefined
-
-    // 建筑完成，移出队列并更新建筑快捷方式
-    delete buildingConstruction[getBuildingKey(matchedSitePos)]
-    saveBuilding()
-    updateStructure(structure.room.name, structure.structureType, structure.id)
-
-    // 如果有的话就执行回调
-    if (structure.onBuildComplete) structure.onBuildComplete()
-
-    return structure
 }
