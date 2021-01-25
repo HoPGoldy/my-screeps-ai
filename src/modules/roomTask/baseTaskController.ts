@@ -412,6 +412,14 @@ export default class TaskController<
     protected log(content: string, color: Colors = undefined, notify: boolean = false): void {
         log(content, ['taskController'], color, notify)
     }
+
+    /**
+     * 打印当前任务队列到控制台
+     */
+    public show(): string {
+        const logs = this.tasks.map(task => JSON.stringify(task))
+        return logs.join('\n')
+    }
 }
 
 /**

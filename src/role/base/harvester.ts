@@ -1,8 +1,6 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from 'utils'
 import { HARVEST_MODE } from 'setting'
-import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
-import { addBuildTask } from 'modules/roomTask/work/delayTask'
 import { addConstructionSite } from 'modules/constructionController'
 
 /**
@@ -110,11 +108,15 @@ const actionStrategy: ActionStrategy = {
             const { roomName, x, y } = creep.pos
             creep.memory.data.standPos = `${roomName},${x},${y}`
 
-            // 如果脚下没有 container 的话就放工地并发布建造任务
-            const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(s => s.structureType === STRUCTURE_CONTAINER)
-            if (posContinaer.length <= 0) {
+            // 如果脚下没有 container 及工地的话就放工地并发布建造任务
+            const getContainerFilter = s => s.structureType === STRUCTURE_CONTAINER
+            const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(getContainerFilter)
+            const posContinaerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(getContainerFilter)
+
+            if (posContinaer.length <= 0 && posContinaerSite.length <= 0) {
                 addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
-                addBuildTask(creep.pos, STRUCTURE_CONTAINER)
+                creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id })
+                creep.log(`发布 source ${source.id} 的 container 建造任务`, 'green')
             }
 
             return true
@@ -136,15 +138,22 @@ const actionStrategy: ActionStrategy = {
             const useRoom = Game.rooms[creep.memory.data.useRoom]
             if (!useRoom) return false
 
-            // 如果有搬运工了就无脑采集
-            if(useRoom.transport.getUnit().length > 0) return true
-            const result = fillSpawnStructure(creep)
+            // 有运输工了就回去挖能量
+            if (creep.store[RESOURCE_ENERGY] <= 0 || useRoom.transport.getUnit().length > 0) return true
 
-            if (result === ERR_NOT_FOUND) {
-                creep.say('💤')
-                return true
+            // 找到 spawn 然后把身上的能量全塞进去，不搜索 extension，因为启动时还没有 extension
+            // 就算是重建，只要保证 spawn 里有能量也能孵化搬运工了
+            const targetSpawn = useRoom[STRUCTURE_SPAWN].find(spawn => {
+                return spawn.store[RESOURCE_ENERGY] < SPAWN_ENERGY_CAPACITY
+            }) || useRoom[STRUCTURE_SPAWN][0]
+
+            if (!targetSpawn) {
+                creep.say('😨卧槽我家没了')
+                return false
             }
-            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
+
+            creep.goTo(targetSpawn.pos, { range: 1 })
+            creep.transferTo(targetSpawn, RESOURCE_ENERGY)
         }
     },
 

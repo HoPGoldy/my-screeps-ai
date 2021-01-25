@@ -51,7 +51,11 @@ const saveWaiting = () => {
  * 在全局重置时调用
  */
 export const initConstructionController = function () {
-    waitingConstruction = JSON.parse(Memory[SAVE_KEY.WAITING])
+    waitingConstruction = JSON.parse(Memory[SAVE_KEY.WAITING] || '[]').map(({ pos, type }) => {
+        // 这里把位置重建出来
+        const { x, y, roomName } = pos
+        return { pos: new RoomPosition(x, y, roomName), type }
+    })
 }
 
 /**
@@ -75,12 +79,16 @@ const planSite = function () {
     // 取出本 tick 的最大允许放置数量
     const preparePlaceSites = waitingConstruction.splice(0, MAX_CONSTRUCTION_SITES - buildingSiteLength)
     
-    const cantPlaceSites = preparePlaceSites.filter((site) => {
+    const cantPlaceSites = preparePlaceSites.filter(site => {
         const { pos, type } = site
         const result = pos.createConstructionSite(type)
 
+        if (result === ERR_INVALID_TARGET) {
+            // log(`工地 ${type} 重复放置，已放弃，位置 [${pos}]`, ['建造控制器'], 'yellow')
+            return false
+        }
         // 放置失败，下次重试
-        if (result !== OK && result !== ERR_FULL) {
+        else if (result !== OK && result !== ERR_FULL) {
             log(`工地 ${type} 无法放置，位置 [${pos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], 'yellow')
             return true
         }

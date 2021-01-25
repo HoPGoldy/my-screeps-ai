@@ -617,7 +617,6 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
 const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTransportTaskController): boolean {
     if (creep.store[RESOURCE_ENERGY] > 10) return true
 
-    const { workRoom } = creep.memory.data
     // 从工作房间查询并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
         const { getClosestTo } = findStrategy

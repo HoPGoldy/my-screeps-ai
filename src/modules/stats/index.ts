@@ -47,7 +47,7 @@ export const clearRoomStats = function (roomName: string): void {
  * @param roomName 要获取统计的房间名
  */
 export const getRoomStats = function (roomName: string): RoomStats {
-    return Memory.stats.rooms[roomName]
+    return Memory.stats.rooms[roomName] || {}
 }
 
 /**

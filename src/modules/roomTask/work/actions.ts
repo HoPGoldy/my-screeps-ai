@@ -67,11 +67,73 @@ export const transportActions: {
     }),
 
     /**
+     * 初始 container 建造任务
+     * 和下面建造任务最大的区别就是这个只会从对应 source 旁的能量获取任务
+     * 防止跑 sourceA 取能量造 sourceB 的 conatiner，这会导致浪费很多时间在路上
+     */
+    buildStartContainer: (creep, task, workController) => ({
+        source: () => {
+            if (creep.store[RESOURCE_ENERGY] >= 20) return true
+
+            const source = Game.getObjectById(task.sourceId)
+            if (!source) {
+                creep.log(`找不到 source，container 建造任务移除`, 'yellow')
+                workController.removeTask(task.key)
+                return false
+            }
+            // 建造初始 container 时一无所有，所以只会捡地上的能量来用
+            const droppedEnergy = source.getDroppedInfo().energy
+            if (!droppedEnergy || droppedEnergy.amount < 100) {
+                creep.say('等待能量回复')
+                // 等待时先移动到附近
+                creep.goTo(source.pos, { range: 3 })
+                return false
+            }
+
+            creep.goTo(droppedEnergy.pos, { range: 1 })
+            creep.pickup(droppedEnergy)
+            return true
+        },
+        target: () => {
+            if (creep.store[RESOURCE_ENERGY] === 0) return true
+
+            // 搜索 source 附近的 container 工地并缓存
+            const containerSite = useCache(() => {
+                const source = Game.getObjectById(task.sourceId)
+
+                if (!source) {
+                    creep.log(`找不到 source，container 建造任务移除`, 'yellow')
+                    workController.removeTask(task.key)
+                    return
+                }
+
+                // 这里找的范围只要在 creep 的建造范围之内就行
+                const containerSites = source.pos.findInRange(FIND_CONSTRUCTION_SITES, 2, {
+                    filter: site => site.structureType === STRUCTURE_CONTAINER
+                })
+
+                // 找不到了，说明任务完成
+                if (containerSites.length <= 0) {
+                    workController.removeTask(task.key)
+                    return
+                }
+
+                return containerSites[0]
+            }, creep.memory, 'constructionSiteId')
+
+            const result = creep.build(containerSite)
+            if (result === ERR_NOT_IN_RANGE) creep.goTo(containerSite.pos, { range: 3 })
+        }
+    }),
+
+    /**
      * 建造任务
      */
     build: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
+            if (creep.store[RESOURCE_ENERGY] === 0) return true
+
             // 有新墙就先刷新墙
             if (creep.memory.fillWallId) creep.steadyWall()
             // 没有就建其他工地，如果找不到工地了，就算任务完成
@@ -83,8 +145,6 @@ export const transportActions: {
                     return true
                 }
             }
-
-            if (creep.store.getUsedCapacity() === 0) return true
         }
     }),
 
@@ -94,6 +154,7 @@ export const transportActions: {
     repair: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
+            if (creep.store[RESOURCE_ENERGY] === 0) return true
             const room = Game.rooms[creep.memory.data.workRoom]
             if (!room) {
                 workController.removeTask(task.key)

@@ -68,6 +68,6 @@ const checkFirstRun = function () {
     // 立刻规划
     log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], 'green')
     spawns[0].room.controller.onLevelChange(1)
-    // spawns[0].room.controller.stateScanner()
+    spawns[0].room.controller.stateScanner()
     Memory.botTag = 'hopgoldy'
 }

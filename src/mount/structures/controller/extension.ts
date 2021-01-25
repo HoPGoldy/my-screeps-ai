@@ -1,8 +1,5 @@
-import { creepApi } from 'modules/creepController'
-import { unstringifyBuildPos } from 'modules/autoPlanning'
 import { whiteListFilter } from 'utils'
 import { setRoomStats, getRoomStats } from 'modules/stats'
-import { costCache } from 'modules/move'
 import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
 import { countEnergyChangeRatio } from 'modules/energyController'
 import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
@@ -51,8 +48,8 @@ export default class ControllerExtension extends StructureController {
         // 刚占领，添加工作单位
         if (level === 1) {
             this.room.release.harvester()
-            this.room.release.manager(2)
-            this.room.release.worker(4)
+            this.room.release.manager(1)
+            this.room.release.worker(2)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
             // 开始刷墙后就开始执行刷墙任务

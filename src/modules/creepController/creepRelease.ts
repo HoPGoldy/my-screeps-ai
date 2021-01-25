@@ -22,7 +22,6 @@ class CreepRelease implements InterfaceCreepRelease {
         if (!room) return ERR_NOT_FOUND
 
         room.source.map((source, index) => {
-            console.log("给该 source 发布 harvester", source.id)
             creepApi.add(`${room.name} harvester${index}`, 'harvester', {
                 useRoom: room.name,
                 harvestRoom: room.name,
@@ -40,6 +39,8 @@ class CreepRelease implements InterfaceCreepRelease {
      * @param bodyType 【可选】该工人的特殊体型，为空则为普通体型
      */
     public worker(number: number = 3, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND {
+        if (number <= 1) number = 1
+
         const room = Game.rooms[this.roomName]
         if (!room) return ERR_NOT_FOUND
 
@@ -65,6 +66,8 @@ class CreepRelease implements InterfaceCreepRelease {
      * @param bodyType 【可选】该搬运工的特殊体型，为空则为普通体型
      */
     public manager(number: number = 1, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND {
+        if (number <= 1) number = 1
+
         const room = Game.rooms[this.roomName]
         if (!room) return ERR_NOT_FOUND
 

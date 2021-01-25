@@ -42,6 +42,16 @@ interface WorkTasks {
         targetId?: Id<ConstructionSite>
     }
     /**
+     * 初始 source container 建造任务
+     */
+    buildStartContainer: RoomTask<'buildStartContainer'> & {
+        /**
+         * 修建哪个 source 的 container
+         * 会自己去找这个 source 周边的 container 工地去修
+         */
+        sourceId: Id<Source>
+    }
+    /**
      * 维修任务
      */
     repair: RoomTask<'repair'>
