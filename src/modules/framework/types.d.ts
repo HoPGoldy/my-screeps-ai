@@ -62,19 +62,19 @@ type CpuCostResult = {
     /**
      * 房间 onWork 的总消耗
      */
-    room: number
+    rooms: number
     /**
      * 建筑 onWork 的总消耗
      */
-    structure: number
+    structures: number
     /**
      * creep onWork 的总消耗
      */
-    creep: number
+    creeps: number
     /**
      * pc onWork 的总消耗
      */
-    powercreep: number
+    powercreeps: number
     /**
      * 全局重置回调的总消耗
      */
