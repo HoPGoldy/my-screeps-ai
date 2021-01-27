@@ -1,4 +1,4 @@
-import { baseLayout } from 'setting'
+import { baseLayout } from './constant'
 
 /**
  * 规划集中式布局的建筑摆放

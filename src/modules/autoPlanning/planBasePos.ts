@@ -1,3 +1,7 @@
+
+import { log } from 'utils'
+import { baseLayout, BASE_SIZE } from './constant'
+
 /**
  * 使用动态规划算法查找集中式基地布局的中心点
  */
@@ -21,7 +25,7 @@ const ROOM_MAX_SIZE = 50
  * @param baseSize 正方形基地的尺寸
  * @returns 所有满足条件的房间位置
  */
-export const findBaseCenterPos = function(roomName: string, baseSize: number = 11): RoomPosition[] {
+export const findBaseCenterPos = function(roomName: string, baseSize: number = BASE_SIZE): RoomPosition[] {
     const terrain = new Room.Terrain(roomName)
 
     let dp: DpNode[][] = Array(ROOM_MAX_SIZE).fill(undefined).map(_ => [])
@@ -139,4 +143,40 @@ export const setBaseCenter = function(room: Room, centerPos: RoomPosition): OK |
 
     room.memory.center = [ centerPos.x, centerPos.y ]
     return OK
+}
+
+/**
+ * 刚刚放下第一个 spawn 后自动设置基地中心
+ * 
+ * @param firstSpawn 第一个 spawn
+ */
+export const setBornCenter = function (firstSpawn: StructureSpawn) {
+    const [ offsetX, offsetY ] = baseLayout[0][STRUCTURE_SPAWN][0]
+
+    const { x, y, roomName } = firstSpawn.pos
+    try {
+        const centerPos = new RoomPosition(x - offsetX, y - offsetY, roomName)
+        const terrain = new Room.Terrain(roomName);
+
+        // 查找在基地布局之内是否有墙体
+        let hasWallInRange = false
+        for(let y = centerPos.y - 5; y < centerPos.y + 5; y++) {
+            for(let x = centerPos.x - 5; x < centerPos.x + 5; x++) {
+                if (terrain.get(x, y) !== TERRAIN_MASK_WALL) continue
+                hasWallInRange = true
+                break
+            }
+            if (hasWallInRange) break
+        }
+
+        // 设置中心点位，上面找到墙的话就给个提示
+        if (setBaseCenter(firstSpawn.room, centerPos) === OK) {
+            const warningTip = hasWallInRange ? `，但是以该目标为中心的 ${BASE_SIZE}*${BASE_SIZE} 区域内存在墙体，将导致有建筑无法建筑` : '';
+            log(`已将 ${centerPos} 设置为基地中心点${warningTip}`, ['自动规划'], hasWallInRange ? 'yellow' : 'green')
+        }
+        else log(`${centerPos} 无法设置为基地中心点，请手动设置`, ['自动规划'], 'yellow')
+    }
+    catch (e) {
+        log(`[${x - offsetX}, ${y - offsetY}, ${roomName}] 无法设置为基地中心点，请手动设置`, ['自动规划'], 'yellow')
+    }
 }

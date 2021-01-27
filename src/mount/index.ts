@@ -7,6 +7,7 @@ import mountStructure from './structures'
 import mountSource from './source'
 import { log } from 'utils'
 import { initConstructionController } from 'modules/constructionController'
+import { setBornCenter } from 'modules/autoPlanning/planBasePos'
 
 /**
  * 挂载所有的属性和方法
@@ -65,8 +66,9 @@ const checkFirstRun = function () {
     const spawns = Object.values(Game.spawns)
     if (spawns.length > 1) return
 
-    // 立刻规划
     log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], 'green')
+    // 设置中心点位并执行初始化配置
+    setBornCenter(spawns[0])
     spawns[0].room.controller.onLevelChange(1)
     spawns[0].room.controller.stateScanner()
     Memory.botTag = 'hopgoldy'
