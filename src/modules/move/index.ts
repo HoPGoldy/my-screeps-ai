@@ -74,13 +74,6 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
         // 如果和之前位置重复了就分析撞上了啥
         if (moveMemory.prePos && currentPos == moveMemory.prePos) {
             // creep.log('发现撞停!')
-
-            if (!moveMemory.lastMove) {
-                delete moveMemory.path
-                delete moveMemory.prePos
-                return ERR_INVALID_TARGET
-            }
-
             // 获取前方位置上的 creep（fontCreep）
             const fontPos = creep.pos.directionToPos(moveMemory.lastMove)
 
@@ -106,7 +99,7 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
 
             // 对穿失败说明撞墙上了或者前面的 creep 拒绝对穿，重新寻路
             if (crossResult === ERR_BUSY) {
-                moveMemory.path = findPath(creep, targetPos, { disableRouteCache: true })
+                moveMemory.path = findPath(creep, targetPos, { ...moveOpt, disableRouteCache: true })
                 delete moveMemory.prePos
             }
             else if (crossResult !== OK) {
@@ -390,7 +383,7 @@ const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, move
 
             // 尝试从缓存中读取，没有缓存就进行查找
             let costs = (roomName in costCache) ? costCache[roomName].clone() : undefined
-            if (true) {
+            if (!costs) {
                 costs = new PathFinder.CostMatrix
                 const terrain = new Room.Terrain(roomName)
 
