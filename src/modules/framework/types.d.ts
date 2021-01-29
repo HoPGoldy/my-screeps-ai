@@ -11,7 +11,7 @@ type AnyHashMap = { [key: string]: any }
 /**
  * 生命周期回调
  */
-type LifecycleCallback = () => any
+type AnyCallback = () => any
 
 /**
  * 自定义的 cpu 消耗处理回调
@@ -26,29 +26,35 @@ interface AppLifecycleCallbacks {
      * 玩家放下第一个 spawn 时触发
      * 整个应用只会执行一次
      */
-    born?: LifecycleCallback
+    born?: AnyCallback
     /**
      * 全局重置时触发
      * 全局重置发生在代码提交或运行了一段时间（随机时长）时
      * 该回调执行时原型拓展已经挂载完成
      */
-    reset?: LifecycleCallback
+    reset?: AnyCallback
     /**
      * 在每个 tick 开始时触发
      * 可以在此设置本 tick 需要的数据或者清空过期缓存
      */
-    tickStart?: LifecycleCallback
+    tickStart?: AnyCallback
     /**
      * 在每个 tick 完成了所有单位的 onWork 任务后触发
      * 可以在此执行自定义的模块
      */
-    afterWork?: LifecycleCallback
+    afterWork?: AnyCallback
     /**
      * 在所有 afterWork 回调执行完成后触发
      * 可以在此进行本 tick 的数据保存工作
      */
-    tickEnd?: LifecycleCallback
+    tickEnd?: AnyCallback
 }
+
+type CallbackStore = {
+    [lifecycleName in keyof AppLifecycleCallbacks]: AnyCallback[]
+}
+
+type Middleware = (next: () => any) => any
 
 /**
  * 本 tick 的 cpu 使用情况

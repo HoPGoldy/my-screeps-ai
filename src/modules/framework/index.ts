@@ -5,47 +5,35 @@ export default class App {
     readonly name: string = 'hopgoldyFramework'
 
     /**
-     * 所有生命周期回调
-     * 均支持设置多个，会按照设置的顺序依次执行
+     * 原始原型拓展
+     * 和下面回调一样，用于在中间件变更时重新包装 onWork
      */
-    private readonly born: LifecycleCallback[] = []
-    private readonly reset: LifecycleCallback[] = []
-    private readonly tickStart: LifecycleCallback[] = []
-    private readonly afterWork: LifecycleCallback[] = []
-    private readonly tickEnd: LifecycleCallback[] = []
+    private originMount: [ AnyClass, AnyClass ][]
 
-    private _cost: CostCallback = undefined
     /**
-     * 性能结果处理回调
+     * 原始回调
+     * 在中间件变更时会使用此处的回调重新包装出下面的 warpedCallback
      */
-    public set cost(callback: CostCallback) {
-        this._cost = callback
-        this.run = this.cpuCalcWarpper(this._doing)
-        this.doing = this.cpuCalcWarpper(this._doing)
-        this.execLifecycleCallback = this.cpuCalcWarpper(this._execLifecycleCallback)
+    private readonly originCallback: CallbackStore = {
+        born: [], reset: [], tickStart: [], afterWork: [], tickEnd: []
     }
 
     /**
-     * 默认的异常处理器
+     * 通过中间件包装过的回调
      */
-    private _errorWapper = (callback) => {
-        return () => {
-            try {
-                callback()
-            }
-            catch (e) {
-                console.log(e)
-            }
-        }
+    private readonly warpedCallback: CallbackStore = {
+        born: [], reset: [], tickStart: [], afterWork: [], tickEnd: []
     }
+
+    /**
+     * 自定义中间件，将会包裹到所有 callback 和拓展的 onWork 方法上
+     */
+    private middlewares: Middleware[] = []
 
     /**
      * 每个 tick 的 cpu 消耗都会被更新到这里
      */
-    private cpuCost: CpuCostResult = {
-        total: 0, rooms: 0, structures: 0, creeps: 0, powercreeps: 0,
-        reset: 0, tickStart: 0, afterWork: 0, tickEnd: 0
-    }
+    private cpuCost: number[] = []
 
     /**
      * 创建 Bot 实例
@@ -57,6 +45,88 @@ export default class App {
     }
 
     /**
+     * cpu 消耗处理函数，默认不启用
+     */
+    private _costHandler: CostCallback = undefined
+
+    /**
+     * 设置 cpu 消耗结果处理回调
+     * 会对内部方法添加性能检测
+     */
+    public set cost(callback: CostCallback) {
+        this._costHandler = callback
+        this.wrap()
+        this.run = () => {
+            const startCpu = Game.cpu.getUsed()
+
+            // 执行实际业务
+            this._run()
+
+            // 统计 cpu 并挂上标识
+
+            return this
+        }
+    }
+
+    /**
+     * 中间件 - 默认的异常捕获
+     */
+    private middlewareErrorCatch: Middleware = next => {
+        try {
+            next()
+        }
+        catch (e) {
+            console.log(e)
+        }
+    }
+
+    /**
+     * 中间件 - cpu 统计包
+     */
+    private middlewareCpuCalc: Middleware = next => {
+        next()
+        // 保存消耗
+        this.cpuCost.push(Game.cpu.getUsed())
+    }
+
+    /**
+     * 包装中间件
+     * 执行该方法将会更新中间件，
+     */
+    private wrap(): void {
+        const middlewares = [ ...this.middlewares ]
+        if (this.middlewareErrorCatch) middlewares.push(this.middlewareErrorCatch)
+        if (this.middlewareCpuCalc) middlewares.push(this.middlewareCpuCalc)
+
+        // 包装所有生命周期钩子
+        for (const callbackName in this.originCallback) {
+            this.warpedCallback[callbackName] = this.originCallback[callbackName].map((callback: AnyCallback) => {
+                return this.getWarped(callback, middlewares)
+            })
+        }
+
+        // 包装所有拓展的 onWork
+        for (const [ Target, Extension ] of this.originMount) {
+            if (!Extension.prototype.onWork) continue
+            Target.prototype.onWork = this.getWarped(Extension.prototype.onWork, middlewares, Target)
+        }
+    }
+
+    /**
+     * 给指定回调包装中间件
+     * 
+     * @param callback 最终要执行的回调
+     * @param middlewares 要添加的中间件，越靠前执行越早
+     * @param bindTarget 给最终回调绑定的对象
+     * @returns 包装后的回调方法
+     */
+    private getWarped(callback: AnyCallback, middlewares: Middleware[], bindTarget?: AnyClass): AnyCallback {
+        return middlewares.reduce<AnyCallback>((pre, current) => {
+            return () => current(pre.bind(bindTarget))
+        }, callback)
+    }
+
+    /**
      * 设置生命周期回调
      * 同一生命周期阶段可以设置多次，在执行时会按照设置的顺序依次执行
      * 
@@ -65,7 +135,7 @@ export default class App {
     public on(callbacks: AppLifecycleCallbacks): App {
         // 遍历所有回调并保存
         Object.keys(callbacks).map(callbackName => {
-            this[callbackName].push(this._errorWapper(callbacks[callbackName]))
+            this.originCallback[callbackName].push(callbacks[callbackName])
         })
         return this
     }
@@ -94,16 +164,13 @@ export default class App {
         this.execLifecycleCallback('tickStart')
 
         // 执行主要的 onwork 工作
-        this.doing('rooms')
-        this.doing('structures')
-        this.doing('creeps')
-        this.doing('powerCreeps')
+        this.doing(Game.rooms)
+        this.doing(Game.structures)
+        this.doing(Game.creeps)
+        this.doing(Game.powerCreeps)
 
         this.execLifecycleCallback('afterWork')
         this.execLifecycleCallback('tickEnd')
-
-        // 如果有的话执行 cpu 消耗处理回调
-        this._cost && this._cost(this.cpuCost)
 
         return this
     }
@@ -122,43 +189,24 @@ export default class App {
         global._mountComplete = true
     }
 
-    private execLifecycleCallback = this._execLifecycleCallback
-
     /**
      * 执行指定生命周期阶段回调
      * @param callbackName 要执行的生命周期回调名称
      */
-    private _execLifecycleCallback(callbackName: keyof AppLifecycleCallbacks) {
+    private execLifecycleCallback(callbackName: keyof AppLifecycleCallbacks) {
         // 遍历执行 work
         this[callbackName].map(callback => callback())
     }
 
-    private doing = this._doing
-
     /**
      * 执行 Hash Map 中子元素对象的 work 方法
      * 
-     * @param hashMapName 游戏对象的 hashMap。如 Game.creeps、Game.spawns 等
+     * @param hashMap 游戏对象的 hashMap。如 Game.creeps、Game.spawns 等
      * @param costSaveKey 该 hashMap 的 cpu 消耗保存到 this.cpuCost 哪个键下
      */
-    private _doing(hashMapName: 'rooms' | 'structures' | 'creeps' | 'powerCreeps'): void {
+    private doing(hashMap: AnyHashMap): void {
         // 遍历执行 work
-        const allItem = Object.values(Game[hashMapName])
+        const allItem = Object.values(hashMap)
         allItem.forEach(item => item.onWork && item.onWork())
-    }
-
-    /**
-     * cpu 统计包装器
-     * 当设置了 this.cost 后，主要的方法都将会使用该方法进行包装以进行 cpu 统计
-     */
-    private cpuCalcWarpper(callback: any): any {
-        return (name, ...args) => {
-            const baseCpu = Game.cpu.getUsed()
-            const result = callback.call(this, name, ...args)
-            // 保存消耗
-            const usedCpu = Game.cpu.getUsed() - baseCpu
-            if (name in this.cpuCost) this.cpuCost[name] = usedCpu
-            return result
-        }
     }
 }
