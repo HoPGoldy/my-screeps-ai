@@ -78,6 +78,7 @@ export const LAB_STATE = {
 /**
  * lab 集群的目标产物及其数量列表
  * 更新此表后所有工作中的 lab 集群都会自动合成新增的产物
+ * @warning 请保证该化合物的底物存在于 terminal 中
  */
 export const labTarget = [
     // 基础
@@ -106,6 +107,10 @@ export const labTarget = [
     { target: RESOURCE_GHODIUM_OXIDE, number: 300 }, 
     { target: RESOURCE_GHODIUM_ALKALIDE, number: 1000 }, 
     { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 4000 }, 
+    // XGH20 生产线，强化 controller 升级
+    { target: RESOURCE_GHODIUM_HYDRIDE, number: 1000 }, 
+    { target: RESOURCE_GHODIUM_ACID, number: 1000 }, 
+    { target: RESOURCE_CATALYZED_GHODIUM_ACID, number: 3000 }, 
 ]
 
 /**
