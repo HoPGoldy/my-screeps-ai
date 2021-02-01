@@ -1,13 +1,9 @@
-import { assignPrototype } from "utils"
-import CreepExtension from "./extension"
+export { default as CreepExtension } from "./extension"
 
 /**
  * 挂载 creep 拓展
  */
-export default () => {
-    standWrapper([ 'harvest', 'build', 'dismantle', 'repair', 'upgradeController' ])
-    assignPrototype(Creep, CreepExtension)
-}
+export default () => standWrapper([ 'harvest', 'build', 'dismantle', 'repair', 'upgradeController' ])
 
 /**
  * 给指定方法包装“站定”功能

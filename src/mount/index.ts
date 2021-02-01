@@ -1,37 +1,50 @@
-import mountCreep from './creep'
-import mountPowerCreep from './powerCreep'
-import mountRoom from './room'
-import mountRoomPostion from './roomPosition'
+import mountCreep, { CreepExtension } from './creep'
+import PowerCreepExtension from './powerCreep/extension'
+import mountRoom, { RoomExtension, RoomConsole} from './room'
+import RoomPostionExtension from './roomPosition/extension'
 import mountGlobal from './global'
-import mountStructure from './structures'
-import mountSource from './source'
+import {
+    ControllerExtension, StructuresExtension, SpawnExtension, TowerExtension, LinkExtension, LinkConsole, FactoryExtension,
+    FactoryConsole, TerminalExtension, TerminalConsole, ExtractorExtension, StorageExtension, StorageConsole, LabExtension,
+    NukerExtension, PowerSpawnExtension, PowerSpawnConsole, ObserverExtension, ObserverConsole, ContainerExtension
+} from './structures'
+import SourceExtension from './source/extension'
 import { log } from 'utils'
 import { initConstructionController } from 'modules/constructionController'
 import { setBornCenter } from 'modules/autoPlanning/planBasePos'
+import App from 'modules/framework'
 
 /**
- * 挂载所有的属性和方法
+ * 所有需要挂载的原型拓展
  */
-export default function (): void {
-    log('重新挂载拓展', ['global'], 'green')
-
-    // 存储的兜底工作
-    initStorage()
-
-    // 挂载全部拓展
-    mountGlobal()
-    mountRoom()
-    mountRoomPostion()
-    mountCreep()
-    mountPowerCreep()
-    mountStructure()
-    mountSource()
-    
-    // 检查是不是刚刚放下第一个 spawn
-    checkFirstRun()
-
-    workAfterMount()
-}
+const protoMountList: [ AnyClass, AnyClass ][] = [
+    [ Room, RoomExtension ],
+    [ Room, RoomConsole ],
+    [ RoomPosition, RoomPostionExtension ],
+    [ Source, SourceExtension ],
+    [ Creep, CreepExtension ],
+    [ PowerCreep, PowerCreepExtension ],
+    [ Structure, StructuresExtension ],
+    [ StructureController, ControllerExtension ],
+    [ StructureSpawn, SpawnExtension ],
+    [ StructureTower, TowerExtension ],
+    [ StructureLink, LinkExtension ],
+    [ StructureLink, LinkConsole ],
+    [ StructureFactory, FactoryExtension ],
+    [ StructureFactory, FactoryConsole ],
+    [ StructureTerminal, TerminalExtension ],
+    [ StructureTerminal, TerminalConsole ],
+    [ StructureExtractor, ExtractorExtension ],
+    [ StructureStorage, StorageExtension ],
+    [ StructureStorage, StorageConsole ],
+    [ StructureLab, LabExtension ],
+    [ StructureNuker, NukerExtension ],
+    [ StructurePowerSpawn, PowerSpawnExtension ],
+    [ StructurePowerSpawn, PowerSpawnConsole ],
+    [ StructureObserver, ObserverExtension ],
+    [ StructureObserver, ObserverConsole ],
+    [ StructureContainer, ContainerExtension ]
+]
 
 /**
  * 初始化存储
@@ -46,30 +59,50 @@ function initStorage() {
     if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
 }
 
-// 挂载完成后要执行的一些作业
-function workAfterMount() {
-    // 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
-    Object.values(Game.powerCreeps).forEach(pc => {
-        if (!pc.room) return
-        pc.updatePowerToRoom()
-    })
+const app = new App()
 
-    initConstructionController()
-}
+app.on({
+    born: () => {
+        const spawns = Object.values(Game.spawns)
+        if (spawns.length > 1) return
+    
+        log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], 'green')
+        // 设置中心点位并执行初始化配置
+        setBornCenter(spawns[0])
+        spawns[0].room.controller.onLevelChange(1)
+        spawns[0].room.controller.stateScanner()
+    },
 
-/**
- * 如果是第一次运行的话就触发回调
- */
-const checkFirstRun = function () {
-    if (Memory.botTag) return
+    reset: () => {
+        log('重新挂载拓展', ['global'], 'green')
 
-    const spawns = Object.values(Game.spawns)
-    if (spawns.length > 1) return
+        // 存储的兜底工作
+        initStorage()
 
-    log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], 'green')
-    // 设置中心点位并执行初始化配置
-    setBornCenter(spawns[0])
-    spawns[0].room.controller.onLevelChange(1)
-    spawns[0].room.controller.stateScanner()
-    Memory.botTag = 'hopgoldy'
-}
+        // 挂载全部拓展
+        mountGlobal()
+        mountRoom()
+        mountCreep()
+    }
+})
+
+app.on({
+    /**
+     * 挂载完成后要执行的一些作业
+     */
+    reset: () => {
+        // 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
+        Object.values(Game.powerCreeps).forEach(pc => {
+            if (!pc.room) return
+            pc.updatePowerToRoom()
+        })
+
+        initConstructionController()
+    }
+})
+
+// 挂载所有的原型拓展
+protoMountList.map(group => app.mount(...group))
+
+// 这里的 app 已经完成准备工作了
+export default app

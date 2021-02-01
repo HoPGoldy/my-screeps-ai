@@ -1,51 +1,18 @@
 import { structureWithMemory } from "setting"
-import { assignPrototype } from "utils"
-import ControllerExtension from './controller/extension'
-import SpawnExtension from './spawn/extension'
-import TowerExtension from './tower'
-import { LinkExtension, LinkConsole } from './link'
-import ExtractorExtension from './extractor'
-import { StorageExtension, StorageConsole } from './storage'
-import NukerExtension from './nuker'
-import { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
-import { ObserverExtension, ObserverConsole } from './observer/extension'
-import { FactoryExtension, FactoryConsole } from './factory'
-import { TerminalExtension, TerminalConsole } from "./terminal"
-import LabExtension from "./lab/extension"
-import StructuresExtension from './structure'
-import ContainerExtension from './container'
-
-// 拓展和原型的对应关系
-const assignMap = [
-    [ Structure, StructuresExtension ],
-    [ StructureController, ControllerExtension ],
-    [ StructureSpawn, SpawnExtension ],
-    [ StructureTower, TowerExtension ],
-    [ StructureLink, LinkExtension ],
-    [ StructureLink, LinkConsole ],
-    [ StructureFactory, FactoryExtension ],
-    [ StructureFactory, FactoryConsole ],
-    [ StructureTerminal, TerminalExtension ],
-    [ StructureTerminal, TerminalConsole ],
-    [ StructureExtractor, ExtractorExtension ],
-    [ StructureStorage, StorageExtension ],
-    [ StructureStorage, StorageConsole ],
-    [ StructureLab, LabExtension ],
-    [ StructureNuker, NukerExtension ],
-    [ StructurePowerSpawn, PowerSpawnExtension ],
-    [ StructurePowerSpawn, PowerSpawnConsole ],
-    [ StructureObserver, ObserverExtension ],
-    [ StructureObserver, ObserverConsole ],
-    [ StructureContainer, ContainerExtension ]
-]
-
-// 挂载拓展到建筑原型
-export default () => {
-    mountMemory()
-
-    // 挂载所有拓展
-    assignMap.forEach(protos => assignPrototype(protos[0], protos[1]))
-}
+export { default as ControllerExtension } from './controller/extension'
+export { default as SpawnExtension } from './spawn/extension'
+export { default as TowerExtension } from './tower'
+export { LinkExtension, LinkConsole } from './link'
+export { default as ExtractorExtension } from './extractor'
+export { StorageExtension, StorageConsole } from './storage'
+export { default as NukerExtension } from './nuker'
+export { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
+export { ObserverExtension, ObserverConsole } from './observer/extension'
+export { FactoryExtension, FactoryConsole } from './factory'
+export { TerminalExtension, TerminalConsole } from "./terminal"
+export { default as LabExtension } from "./lab/extension"
+export { default as StructuresExtension } from './structure'
+export { default as ContainerExtension } from './container'
 
 /**
  * 给指定建筑挂载内存【暂未使用】
