@@ -1,39 +1,63 @@
+/**
+ * 原型拓展上的入口方法名
+ */
+const MOUNT_ENTRY_FUNCTION = 'onWork'
+
+/**
+ * 默认的 bot 名称
+ */
+const DEFAULT_BOT_NAME = 'hopgoldyFramework'
+
 export default class App {
     /**
      * 该 bot 的名称，默认为创建时间
      */
-    readonly name: string = 'hopgoldyFramework'
+    readonly name: string = DEFAULT_BOT_NAME
 
     /**
      * 原始原型拓展
-     * 和下面回调一样，用于在中间件变更时重新包装 onWork
+     * 和下面回调一样，用于在中间件变更时重新包装拓展的入口方法
      */
-    private originMount: [ AnyClass, AnyClass ][]
+    private originMount: [ AnyClass, AnyClass ][] = []
 
     /**
      * 原始回调
      * 在中间件变更时会使用此处的回调重新包装出下面的 warpedCallback
      */
-    private readonly originCallback: CallbackStore = {
+    private readonly originCallback: CallbackStore<AnyCallback> = {
         born: [], reset: [], tickStart: [], afterWork: [], tickEnd: []
     }
 
     /**
      * 通过中间件包装过的回调
      */
-    private readonly warpedCallback: CallbackStore = {
+    private readonly warpedCallback: CallbackStore<WarpedCallback> = {
         born: [], reset: [], tickStart: [], afterWork: [], tickEnd: []
     }
 
     /**
-     * 自定义中间件，将会包裹到所有 callback 和拓展的 onWork 方法上
+     * 自定义中间件，将会包裹到所有 callback 和拓展的入口方法上
      */
-    private middlewares: Middleware[] = []
+    private _middlewares: Middleware[] = []
+
+    /**
+     * 当前应用的所有中间件
+     */
+    public get middlewares() {
+        const middlewares = [ ...this._middlewares ]
+        if (this.middlewareErrorCatch) middlewares.push(this.middlewareErrorCatch)
+        if (this._costHandle) middlewares.push(this.middlewareCpuCalc)
+        return middlewares
+    }
 
     /**
      * 每个 tick 的 cpu 消耗都会被更新到这里
+     * 只在设置了 cost 回调后使用
      */
-    private cpuCost: number[] = []
+    private cpuCost: CpuCostResult = {
+        total: 0, rooms: [], structures: [], creeps: [], powercreeps: [],
+        reset: [], tickStart: [], afterWork: [], tickEnd: []
+    }
 
     /**
      * 创建 Bot 实例
@@ -45,16 +69,17 @@ export default class App {
     }
 
     /**
-     * cpu 消耗处理函数，默认不启用
+     * 实际的 cpu 消耗处理函数
+     * 默认不启用
      */
-    private _costHandler: CostCallback = undefined
+    private _costHandle: CostCallback = undefined
 
     /**
      * 设置 cpu 消耗结果处理回调
      * 会对内部方法添加性能检测
      */
     public set cost(callback: CostCallback) {
-        this._costHandler = callback
+        this._costHandle = callback
         this.wrap()
         this.run = () => {
             const startCpu = Game.cpu.getUsed()
@@ -63,6 +88,7 @@ export default class App {
             this._run()
 
             // 统计 cpu 并挂上标识
+            // callback(startCpu)
 
             return this
         }
@@ -81,34 +107,46 @@ export default class App {
     }
 
     /**
-     * 中间件 - cpu 统计包
+     * 中间件 - cpu 统计
      */
     private middlewareCpuCalc: Middleware = next => {
+        const startCpu = Game.cpu.getUsed()
         next()
+        const useCpu = Game.cpu.getUsed() - startCpu
+
         // 保存消耗
-        this.cpuCost.push(Game.cpu.getUsed())
+        // this.cpuCost.push(Game.cpu.getUsed())
+    }
+
+    /**
+     * 添加新的中间件
+     * @param middleware 新的中间件
+     */
+    public use(middleware: Middleware): App {
+        this._middlewares.unshift(middleware)
+        this.wrap()
+        return this
     }
 
     /**
      * 包装中间件
-     * 执行该方法将会更新中间件，
+     * 执行该方法将会更新中间件
      */
     private wrap(): void {
-        const middlewares = [ ...this.middlewares ]
-        if (this.middlewareErrorCatch) middlewares.push(this.middlewareErrorCatch)
-        if (this.middlewareCpuCalc) middlewares.push(this.middlewareCpuCalc)
+        const middlewares = this.middlewares
 
         // 包装所有生命周期钩子
         for (const callbackName in this.originCallback) {
-            this.warpedCallback[callbackName] = this.originCallback[callbackName].map((callback: AnyCallback) => {
-                return this.getWarped(callback, middlewares)
-            })
+            this.warpedCallback[callbackName] = this.originCallback[callbackName].map(callbackData => ({
+                callback: this.getWarped(callbackData.callback, middlewares),
+                context: callbackData.context
+            }))
         }
 
-        // 包装所有拓展的 onWork
+        // 包装所有拓展的入口
         for (const [ Target, Extension ] of this.originMount) {
-            if (!Extension.prototype.onWork) continue
-            Target.prototype.onWork = this.getWarped(Extension.prototype.onWork, middlewares, Target)
+            if (!Extension.prototype[MOUNT_ENTRY_FUNCTION]) continue
+            Target.prototype[MOUNT_ENTRY_FUNCTION] = this.getWarped(Extension.prototype[MOUNT_ENTRY_FUNCTION], middlewares)
         }
     }
 
@@ -120,9 +158,9 @@ export default class App {
      * @param bindTarget 给最终回调绑定的对象
      * @returns 包装后的回调方法
      */
-    private getWarped(callback: AnyCallback, middlewares: Middleware[], bindTarget?: AnyClass): AnyCallback {
-        return middlewares.reduce<AnyCallback>((pre, current) => {
-            return () => current(pre.bind(bindTarget))
+    private getWarped(callback: AnyCallback, middlewares: Middleware[]): WarpedCallback {
+        return middlewares.reduce<WarpedCallback>((pre, current) => {
+            return function (context: CallbackContext) { return current.call(this, pre.bind(this), context) }
         }, callback)
     }
 
@@ -132,10 +170,19 @@ export default class App {
      * 
      * @param callbacks 要执行的生命周期回调
      */
-    public on(callbacks: AppLifecycleCallbacks): App {
+    public on(callbacks: OnArg): App {
         // 遍历所有回调并保存
-        Object.keys(callbacks).map(callbackName => {
-            this.originCallback[callbackName].push(callbacks[callbackName])
+        Object.keys(callbacks).map(type => {
+            // 创建上下文对象
+            const context: CallbackContext = {
+                name: callbacks.name || `${type}${this.originCallback[type].length}`,
+                lifecycleType: type as keyof AppLifecycleCallbacks
+            }
+            const warped = this.getWarped(callbacks[type], this.middlewares)
+
+            // 分别保存到原始回调存储和包装后存储
+            this.originCallback[type].push({ context, callback: callbacks[type] })
+            this.warpedCallback[type].push({ context, callback: warped })
         })
         return this
     }
@@ -147,9 +194,21 @@ export default class App {
      * @param extensionClass 包含拓展的类
      */
     public mount(targetClass: AnyClass, extensionClass: AnyClass): App {
+        // 保存原始拓展
+        this.originMount.push([ targetClass, extensionClass ])
+
+        // 进行挂载
         Object.getOwnPropertyNames(extensionClass.prototype).map(prop => {
             targetClass.prototype[prop] = extensionClass.prototype[prop]
         })
+
+        // 包装入口方法
+        if (extensionClass.prototype[MOUNT_ENTRY_FUNCTION]) {
+            targetClass.prototype[MOUNT_ENTRY_FUNCTION] = this.getWarped(
+                extensionClass.prototype[MOUNT_ENTRY_FUNCTION],
+                this.middlewares
+            )
+        }
         return this
     }
 
@@ -191,11 +250,13 @@ export default class App {
 
     /**
      * 执行指定生命周期阶段回调
-     * @param callbackName 要执行的生命周期回调名称
+     * @param type 要执行的生命周期回调名称
      */
-    private execLifecycleCallback(callbackName: keyof AppLifecycleCallbacks) {
+    private execLifecycleCallback(lifecycleType: keyof AppLifecycleCallbacks) {
         // 遍历执行 work
-        this[callbackName].map(callback => callback())
+        for (const { context, callback } of this.warpedCallback[lifecycleType]) {
+            callback(context)
+        }
     }
 
     /**
@@ -207,6 +268,6 @@ export default class App {
     private doing(hashMap: AnyHashMap): void {
         // 遍历执行 work
         const allItem = Object.values(hashMap)
-        allItem.forEach(item => item.onWork && item.onWork())
+        allItem.forEach(item => item[MOUNT_ENTRY_FUNCTION] && item[MOUNT_ENTRY_FUNCTION].call(item, { instance: item }))
     }
 }

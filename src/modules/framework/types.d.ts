@@ -18,6 +18,18 @@ type AnyCallback = () => any
  */
 type CostCallback = (costResult: CpuCostResult) => any
 
+type WarpedCallback = (context: CallbackContext) => any
+
+/**
+ * on 方法的入参
+ */
+type OnArg = {
+    /**
+     * 回调的名称
+     */
+    name?: string
+} & AppLifecycleCallbacks
+
 /**
  * 框架的生命周期回调
  */
@@ -26,35 +38,70 @@ interface AppLifecycleCallbacks {
      * 玩家放下第一个 spawn 时触发
      * 整个应用只会执行一次
      */
-    born?: AnyCallback
+    born?: WarpedCallback
     /**
      * 全局重置时触发
      * 全局重置发生在代码提交或运行了一段时间（随机时长）时
      * 该回调执行时原型拓展已经挂载完成
      */
-    reset?: AnyCallback
+    reset?: WarpedCallback
     /**
      * 在每个 tick 开始时触发
      * 可以在此设置本 tick 需要的数据或者清空过期缓存
      */
-    tickStart?: AnyCallback
+    tickStart?: WarpedCallback
     /**
      * 在每个 tick 完成了所有单位的 onWork 任务后触发
      * 可以在此执行自定义的模块
      */
-    afterWork?: AnyCallback
+    afterWork?: WarpedCallback
     /**
      * 在所有 afterWork 回调执行完成后触发
      * 可以在此进行本 tick 的数据保存工作
      */
-    tickEnd?: AnyCallback
+    tickEnd?: WarpedCallback
 }
 
-type CallbackStore = {
-    [lifecycleName in keyof AppLifecycleCallbacks]: AnyCallback[]
+/**
+ * 存放声明周期回调的场所
+ */
+type CallbackStore<T extends WarpedCallback | AnyCallback> = {
+    [lifecycleName in keyof AppLifecycleCallbacks]: {
+        /**
+         * 回调的名称
+         */
+        context: CallbackContext
+        /**
+         * 实际的回调
+         */
+        callback: T
+    }[]
 }
 
-type Middleware = (next: () => any) => any
+/**
+ * 中间件的上下文
+ */
+interface CallbackContext {
+    /**
+     * 在生命周期回调中 - 该回调的名称
+     * 若没有在 on 方法里传入，则将自行分配
+     */
+    name?: string
+    /**
+     * 在生命周期回调中 - 该回调的类型
+     */
+    lifecycleType?: keyof AppLifecycleCallbacks
+    /**
+     * 在游戏对象入口回调中 - 游戏对象实例
+     */
+    instance?: Room | Structure | Creep | PowerCreep
+}
+
+/**
+ * 中间件
+ * 调用 next 可以执行下一个中间件
+ */
+type Middleware = (next: () => any, context: CallbackContext) => any
 
 /**
  * 本 tick 的 cpu 使用情况
@@ -66,37 +113,66 @@ type CpuCostResult = {
      */
     total: number
     /**
-     * 房间 onWork 的总消耗
+     * 房间 onWork 的消耗
      */
-    rooms: number
+    rooms: GameObjectCpuCost<Room>[]
     /**
-     * 建筑 onWork 的总消耗
+     * 建筑 onWork 的消耗
      */
-    structures: number
+    structures: GameObjectCpuCost<Structure>[]
     /**
-     * creep onWork 的总消耗
+     * creep onWork 的消耗
      */
-    creeps: number
+    creeps: GameObjectCpuCost<Creep>[]
     /**
-     * pc onWork 的总消耗
+     * pc onWork 的消耗
      */
-    powercreeps: number
+    powercreeps: GameObjectCpuCost<PowerCreep>[]
     /**
-     * 全局重置回调的总消耗
+     * 全局重置回调的消耗
      */
-    reset: number
+    reset: LifecycleCpuCost[]
     /**
-     * tickStart 回调的总消耗
+     * tickStart 回调的消耗
      */
-    tickStart: number
+    tickStart: LifecycleCpuCost[]
     /**
-     * afterWork 回调的总消耗
+     * afterWork 回调的消耗
      */
-    afterWork: number
+    afterWork: LifecycleCpuCost[]
     /**
-     * tickEnd 回调的总消耗
+     * tickEnd 回调的消耗
      */
-    tickEnd: number
+    tickEnd: LifecycleCpuCost[]
+}
+
+/**
+ * 生命周期回调的 cpu 消耗
+ */
+interface LifecycleCpuCost {
+    /**
+     * 该回调的名称
+     * 在 on 方法中设置
+     */
+    name: string
+    /**
+     * 该回调的消耗
+     */
+    cost: number
+}
+
+/**
+ * 游戏对象的 cpu 消耗
+ */
+interface GameObjectCpuCost<T> {
+    /**
+     * 该消耗的使用对象，例如一个房间对象或者建筑对象
+     */
+    instance: T
+    /**
+     * 该对象的消耗
+     */
+    cost: number 
 }
 
 /**
