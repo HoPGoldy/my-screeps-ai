@@ -5,7 +5,7 @@ import { setRoomStats } from 'modules/stats'
  * Factory 原型拓展
  */
 export default class FactoryExtension extends StructureFactory {
-    public work(): void {
+    public onWork(): void {
         // 没有启用或者暂停了则跳过
         if (!this.room.memory.factory || this.room.memory.factory.pause) return
         // 检查工厂是否在休眠

@@ -7,7 +7,7 @@ export default class TowerExtension extends StructureTower {
     /**
      * 主要任务
      */
-    public work(): void {
+    public onWork(): void {
         // 根据当前状态执行对应的逻辑
         switch (this.room.memory.defenseMode) {
             case 'defense': // 普通防御模式

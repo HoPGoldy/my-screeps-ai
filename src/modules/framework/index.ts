@@ -51,7 +51,7 @@ export default class App {
             next()
         }
         catch (e) {
-            console.error(e)
+            console.log(`<span style="color:#ef9a9a">${e}</sapn>`)
             Game.notify(e)
         }
     }
@@ -151,7 +151,7 @@ export default class App {
         // 检查是否是第一次全局重置
         if (!Memory[this.name]) {
             this.execLifecycleCallback('born')
-            Memory[this.name] = '删除我将导致 bot 重新执行 born 阶段哦'
+            Memory[this.name] = true
         }
 
         this.execLifecycleCallback('reset')

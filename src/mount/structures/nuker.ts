@@ -2,7 +2,7 @@ import { setRoomStats } from 'modules/stats'
 
 // nuker 拓展
 export default class NukerExtension extends StructureNuker {
-    public work(): void {
+    public onWork(): void {
         this.stateScanner()
 
         if (Game.time % 30) return

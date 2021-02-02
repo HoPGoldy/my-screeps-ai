@@ -6,13 +6,13 @@ import { delayQueueAppPlugin } from 'modules/delayQueue'
 import { constructionAppPlugin } from 'modules/constructionController'
 import { mountList, extensionAppPlugin } from './mount'
 import App from 'modules/framework'
-import { ErrorMapper } from 'modules/errorMapper'
+import { errorMapper } from 'modules/errorMapper'
 
 // 挂载所有的原型拓展
 const app = new App({ mountList })
 
 // 使用 sourceMap 校正报错信息
-app.catcher = ErrorMapper.wrap
+app.catcher = errorMapper
 
 // 注册主拓展模块
 app.on(extensionAppPlugin)

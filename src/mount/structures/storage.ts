@@ -8,7 +8,7 @@ import { DEFAULT_ENERGY_KEEP_AMOUNT, DEFAULT_ENERGY_KEEP_LIMIT, ENERGY_SHARE_LIM
  * 就将自己注册到资源来源表中为其他房间提供能量
  */
 class StorageExtension extends StructureStorage {
-    public work(): void {
+    public onWork(): void {
         if (Game.time % 20) return
 
         this.energyKeeper()

@@ -8,7 +8,7 @@ import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
  * Controller 拓展
  */
 export default class ControllerExtension extends StructureController {
-    public work(): void {
+    public onWork(): void {
         this.drawEnergyHarvestInfo()
         if (Game.time % 20) return
 

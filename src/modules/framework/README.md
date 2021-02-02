@@ -32,23 +32,23 @@ app.on({
      * 玩家放下第一个 spawn 时触发
      * 整个应用只会执行一次
      */
-    born: () => console.log('欢迎来到 screeps!')
+    born: () => console.log('欢迎来到 screeps!'),
     /**
      * 全局重置时触发
      */
-    reset: () => console.log('全局重置了!')
+    reset: () => console.log('全局重置了!'),
     /**
      * 在每个 tick 开始时触发
      */
-    tickStart: () => console.log('tick 开始!')
+    tickStart: () => console.log('tick 开始!'),
     /**
      * 在每个 tick 完成了所有单位的 onWork 任务后触发
      */
-    afterWork: () => console.log('tick 进行中!')
+    afterWork: () => console.log('tick 进行中!'),
     /**
      * 在所有 afterWork 回调执行完成后触发
      */
-    tickEnd: () => console.log('tck 结束!')
+    tickEnd: () => console.log('tick 结束!')
 })
 ```
 
@@ -66,14 +66,14 @@ app.on({
 
 // 执行模块 A 的工作
 app.on({
-    tickStart: () => console.log('执行模块 A 工作'),
-    tickEnd: () => console.log('保存模块 A 工作')
+    tickStart: () => console.log('模块 A 工作'),
+    tickEnd: () => console.log('模块 A 保存')
 })
 
 // 执行模块 B 的工作
 app.on({
-    tickStart: () => console.log('执行模块 B 工作'),
-    tickEnd: () => console.log('保存模块 B 工作')
+    tickStart: () => console.log('模块 B 工作'),
+    tickEnd: () => console.log('模块 B 保存')
 })
 
 app.run()
@@ -171,7 +171,7 @@ class MyRoom {
 }
 
 // 挂载拓展
-app.mount(Creep, MyCreep)
+app.mount(Room, MyRoom)
 
 export const loop = () => app.run()
 ```
@@ -244,11 +244,11 @@ export const loop = () => app.run()
 
 然后你就可以在控制台看到：
 
-```bash
+```diff
 A 执行
-B 报错！！！
+- Error: B 报错！！！
 creepA 正常工作
-creepB 报错！！！
+- Error: creepB 报错！！！
 creepC 正常工作
 A 保存
 B 保存
@@ -267,7 +267,7 @@ catcher = next => {
         next()
     }
     catch (e) {
-        console.error(e)
+        console.log(`<span style="color:#ef9a9a">${e}</sapn>`)
         Game.notify(e)
     }
 }
@@ -292,7 +292,7 @@ app.catcher = next => {
 app.catcher = next => ErrorMapper.wrapLoop(next)()
 ```
 
-*实际上，由于 ErrorMapper 会返回一个新的函数来包裹对应的逻辑，在本框架里直接使用会导致出现一丢丢的性能损耗，如果你介意的话，可以按照 [这里](https://github.com/HoPGoldy/my-screeps-ai/blob/dev/src/modules/errorMapper.ts#L76) 的做法进行修改。*
+*实际上，由于 ErrorMapper 会返回一个新的函数来包裹对应的逻辑，在本框架里直接使用会导致出现一丢丢的性能损耗，如果你介意的话，可以按照 [这里](https://github.com/HoPGoldy/my-screeps-ai/blob/dev/src/modules/errorMapper.ts#L77) 的做法进行修改。*
 
 ## bot 名称
 

@@ -1,4 +1,4 @@
-import { ErrorMapper } from 'modules/errorMapper'
+import { errorMapper } from 'modules/errorMapper'
 
 /**
  * 延迟任务模块
@@ -115,7 +115,7 @@ export const manageDelayTask = function (): void {
  * @param param0 要执行的任务数据
  */
 const execDelayTask = function ({ name, data }: DelayTask) {
-    ErrorMapper.wrap(() => {
+    errorMapper(() => {
         if (!(name in taskCallbacks)) return
         // 这里不会判断房间是否存在，这个判断下放给回调逻辑
         taskCallbacks[name](Game.rooms[data.roomName], data)

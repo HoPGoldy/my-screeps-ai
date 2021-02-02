@@ -9,7 +9,7 @@ export default class SpawnExtension extends StructureSpawn {
      * spawn 主要工作
      * @todo 能量不足时挂起任务
      */
-    public work(): void {
+    public onWork(): void {
         if (this.spawning) {
             /**
              * 如果孵化已经开始了，就向物流队列推送任务

@@ -86,7 +86,7 @@ const planSite = function () {
             return false
         }
         // 放置失败，下次重试
-        else if (result !== OK && result !== ERR_FULL) {
+        else if (result !== OK && result !== ERR_FULL && result !== ERR_RCL_NOT_ENOUGH) {
             log(`工地 ${type} 无法放置，位置 [${pos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], 'yellow')
             return true
         }

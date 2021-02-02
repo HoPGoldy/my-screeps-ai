@@ -38,7 +38,7 @@ interface StructurePowerSpawn {
 }
 
 interface StructureLink {
-    work(): void
+    onWork(): void
     asCenter(): string
     asSource(): string
     asUpgrade(): string

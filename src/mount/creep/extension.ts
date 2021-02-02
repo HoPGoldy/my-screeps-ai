@@ -10,7 +10,7 @@ export default class CreepExtension extends Creep {
     /**
      * creep 主要工作
      */
-    public work(): void {
+    public onWork(): void {
         // 检查 creep 内存中的角色是否存在
         if (!(this.memory.role in roles)) {
             // 没有的话可能是放在跨 shard 暂存区了

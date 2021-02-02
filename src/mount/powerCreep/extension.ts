@@ -6,7 +6,7 @@ import { log } from 'utils'
  * 遍历自己的 powers，并执行相应任务
  */
 export default class PowerCreepExtension extends PowerCreep {
-    public work(): void {
+    public onWork(): void {
         if (!this.keepAlive()) return
 
         // 获取队列中的第一个任务并执行

@@ -7,7 +7,7 @@ import { createHelp } from 'modules/help'
  * 定期搜索给定列表中的房间并插旗
  */
 export class ObserverExtension extends StructureObserver {
-    public work(): void {
+    public onWork(): void {
         const memory = this.room.memory.observer
         // 没有初始化或者暂停了就不执行工作
         if (!memory) return

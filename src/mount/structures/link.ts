@@ -1,13 +1,11 @@
 import { createHelp } from 'modules/help'
-import source from 'mount/source'
-import { HARVEST_MODE } from 'setting'
 
 // Link 原型拓展
 export class LinkExtension extends StructureLink {
     /**
      * link 主要工作
      */
-    public work(): void {
+    public onWork(): void {
         // 冷却好了再执行
         if (this.cooldown != 0) return
 

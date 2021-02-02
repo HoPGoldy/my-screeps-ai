@@ -131,7 +131,7 @@ interface Creep {
      */
     log(content:string, color?: Colors, notify?: boolean): void
 
-    work(): void
+    onWork(): void
     checkEnemy(): boolean
     standBy(): void
     defense(): void
