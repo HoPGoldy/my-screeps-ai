@@ -78,3 +78,13 @@ export const stateScanner = function (): void {
     // 统计剩余钱数
     Memory.stats.credit = Game.market.credits
 }
+
+/**
+ * 生成 pixel 的框架插件
+ */
+export const stateScannerAppPlugin: AppLifecycleCallbacks = {
+    reset: () => {
+        if (!Memory.stats) Memory.stats = { rooms: {} }
+    },
+    tickEnd: stateScanner
+}

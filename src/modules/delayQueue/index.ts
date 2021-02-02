@@ -1,3 +1,5 @@
+import { ErrorMapper } from 'modules/errorMapper'
+
 /**
  * 延迟任务模块
  * 
@@ -9,14 +11,24 @@
  * - 通过 addDelayTask 发布任务并指定触发时间
  */
 
+ /**
+  * 延迟任务队列的数据保存在 Memory 下的哪个字段里
+  */
+const SAVE_KEY = 'delayTasks'
+
 /**
  * 所有的任务回调都会被存放到这里
  */
 const taskCallbacks: { [taskName in AllDelayTaskName]?: DelayTaskCallback<AllDelayTaskName> } = {}
 
 /**
+ * 所有的延迟任务存放处
+ * 其键为触发的 Game.time，值为在该 tick 要触发的任务列表
+ */
+let delayTasks: { [callTime: number]: DelayTask[] } = {}
+
+/**
  * 添加新的延迟任务
- * 
  * 当 Game.time 大于 callTime 时将触发通过 addDelayCallback 方法绑定的回调
  * 
  * @param name 要添加的任务名
@@ -28,7 +40,39 @@ export const addDelayTask = function <K extends AllDelayTaskName>(
     data: DelayTaskTypes[K],
     call: number
 ): void {
-    Memory.delayTasks.push({ call, data: serializeTask(name, data) })
+    // 不能添加过去的延迟任务
+    if (call < Game.time) return
+    // 当前 tick 的任务，直接触发
+    else if (call == Game.time) execDelayTask({ name, data })
+
+    // 保存到对应的队列里
+    if (delayTasks[call]) delayTasks[call].push({ name, data })
+    else delayTasks[call] = [{ name, data }]
+
+    Game._needSaveDelayQueueData = true
+}
+
+/**
+ * 从 Memory 中重建延迟任务
+ * 需要在全局重置时调用
+ */
+export const initDelayTasks = function () {
+    if (!Memory[SAVE_KEY]) return
+    delayTasks = JSON.parse(Memory[SAVE_KEY])
+}
+
+/**
+ * 把当前的延迟任务保存到 Memory 中
+ */
+export const saveDelayTasks = function () {
+    if (!Game._needSaveDelayQueueData) return
+
+    if (Object.keys(delayTasks).length <= 0) {
+        delete Memory[SAVE_KEY]
+        return
+    }
+    
+    Memory[SAVE_KEY] = JSON.stringify(delayTasks)
 }
 
 /**
@@ -54,45 +98,35 @@ export const addDelayCallback = function <K extends AllDelayTaskName>(
  * 必须在 loop 中调用该方法，不然无法正常触发回调
  */
 export const manageDelayTask = function (): void {
-    // 用 filter 更新所有还没有执行的任务
-    Memory.delayTasks = (Memory.delayTasks || []).filter(task => {
-        if (Game.time < task.call) return true
+    // 本 tick 没有延迟任务，跳过
+    if (!(Game.time in delayTasks)) return
 
-        // 解析任务，如果已经注册了回调的话就执行
-        const [ taskName, taskData ] = unserializeTask(task.data)
-        if (!(taskName in taskCallbacks)) return true
+    // 执行本 tick 的延迟任务
+    delayTasks[Game.time].map(execDelayTask)
 
+    // 本 tick 的延迟任务执行完成，移除存储
+    delete delayTasks[Game.time]
+    Game._needSaveDelayQueueData = true
+}
+
+/**
+ * 执行指定延迟任务
+ * 
+ * @param param0 要执行的任务数据
+ */
+const execDelayTask = function ({ name, data }: DelayTask) {
+    ErrorMapper.wrap(() => {
+        if (!(name in taskCallbacks)) return
         // 这里不会判断房间是否存在，这个判断下放给回调逻辑
-        taskCallbacks[taskName](Game.rooms[taskData.roomName], taskData)
-
-        // 执行完成，剔除任务
-        return false
+        taskCallbacks[name](Game.rooms[data.roomName], data)
     })
 }
 
 /**
- * 将任务压缩为字符串
- * 
- * 因为任务可能在很久之后才会被使用，并且只会使用一次
- * 所以在存储时会将其压缩成字符串以减少 Memory 解析成本
- * 
- * @param name 任务名
- * @param data 任务数据
+ * 延迟任务模块注册插件
  */
-const serializeTask = function <K extends AllDelayTaskName>(
-    name: K,
-    data: DelayTaskTypes[K]
-): string {
-    return `${name} ${JSON.stringify(data)}`
-}
-
-
-/**
- * 将压缩的字符串还原为任务名和任务数据
- * 
- * @param taskString 被 serializeTask 压缩的任务字符串
- */
-const unserializeTask = function (taskString: string): [ AllDelayTaskName, DelayTaskTypes[AllDelayTaskName] ] {
-    const [ name, ...tasks ] = taskString.split(' ')
-    return [ name as AllDelayTaskName, JSON.parse(tasks.join(' '))]
+export const delayQueueAppPlugin: AppLifecycleCallbacks = {
+    reset: initDelayTasks,
+    afterWork: manageDelayTask,
+    tickEnd: saveDelayTasks
 }

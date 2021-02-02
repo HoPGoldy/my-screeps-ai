@@ -2,7 +2,7 @@ interface Memory {
     /**
      * 延迟任务存储
      */
-    delayTasks: DelayTaskMemory[]
+    delayTasks: string
 }
 
 /**
@@ -65,13 +65,24 @@ type AllDelayTaskName = keyof DelayTaskTypes
  */
 type DelayTaskCallback<K extends AllDelayTaskName> = (room: Room | undefined, data: DelayTaskTypes[K]) => void
 
-interface DelayTaskMemory {
+/**
+ * 延迟任务数据
+ */
+interface DelayTask<T extends AllDelayTaskName = AllDelayTaskName> {
     /**
-     * 该任务被调用的 Game.time
+     * 该任务的名称
+     * 会根据这个名称触发对应的回调
      */
-    call: number
+    name: T
     /**
      * 被 JSON.stringify 压缩成字符串的任务数据，其值为任务名 + 空格 + 任务数据
      */
-    data: string
+    data: DelayTaskTypes[T]
+}
+
+interface Game {
+    /**
+     * 本 tick 是否需要保存延迟任务队列的数据
+     */
+    _needSaveDelayQueueData: true
 }

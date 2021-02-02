@@ -235,3 +235,11 @@ export const getMemoryFromCrossShard = function (creepName: string): MyCreepMemo
     if (!Memory.creeps) Memory.creeps = {}
     return Memory.creeps[creepName] = creepMemory
 }
+
+/**
+ * 跨 shard 模块注册插件
+ */
+export const crossShardAppPlugin: AppLifecycleCallbacks = {
+    tickStart: execShard,
+    tickEnd: saveShardData
+}

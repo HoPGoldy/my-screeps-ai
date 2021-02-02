@@ -1,7 +1,12 @@
-import { assignPrototype } from "utils"
-import PowerCreepExtension from "./extension"
+export { default as PowerCreepExtension } from './extension'
 
-// 挂载拓展到 PowerCreep 原型
-export default function () {
-    assignPrototype(PowerCreep, PowerCreepExtension)
+/**
+ * 把已经孵化的 pc 能力注册到其所在的房间上
+ * 方便房间内其他 RoomObject 查询并决定是否发布 power 任务
+ */
+export const mountPowerToRoom = function () {
+    Object.values(Game.powerCreeps).forEach(pc => {
+        if (!pc.room) return
+        pc.updatePowerToRoom()
+    })
 }

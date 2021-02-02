@@ -49,26 +49,6 @@ export function createBodyGetter(bodyConfig: BodyConfig): BodyPartGenerator {
 }
 
 /**
- * 执行 Hash Map 中子元素对象的 work 方法
- * 
- * @param hashMap 游戏对象的 hash map。如 Game.creeps、Game.spawns 等
- * @param showCpu [可选] 传入指定字符串来启动该 Map 的数量统计
- */
-export function doing(...hashMaps: object[]): void {
-    hashMaps.forEach((obj, index) => {
-        let startCost = Game.cpu.getUsed()
-
-        // 遍历执行 work
-        Object.values(obj).forEach(item => {
-            if (item.work) item.work()
-        })
-
-        // 如果有需求的话就显示 cpu 消耗
-        if (Memory.showCost) log(`消耗 ${Game.cpu.getUsed() - startCost}`, [ index.toString() ])
-    })
-}
-
-/**
  * 在绘制控制台信息时使用的颜色
  */
 const colors: { [name in Colors]: string } = {
@@ -172,6 +152,13 @@ export function whiteListFilter(creep) {
  */
 export function generatePixel(cpuLimit: number = 7000): void {
     if (Game.cpu.bucket >= cpuLimit && Game.cpu.generatePixel) Game.cpu.generatePixel()
+}
+
+/**
+ * 生成 pixel 的框架插件
+ */
+export const generatePixelAppPlugin: AppLifecycleCallbacks = {
+    tickEnd: generatePixel
 }
 
 /**
@@ -317,18 +304,6 @@ export const createElement = {
  */
 export const getName = {
     flagBaseCenter: (roomName: string): string => `${roomName} center`
-}
-
-/**
- * 把 obj2 的原型合并到 obj1 的原型上
- * 
- * @param obj1 要挂载到的对象
- * @param obj2 要进行挂载的对象
- */
-export const assignPrototype = function(obj1: AnyObject, obj2: AnyObject) {
-    Object.getOwnPropertyNames(obj2.prototype).forEach(key => {
-        obj1.prototype[key] = obj2.prototype[key]
-    })
 }
 
 /**

@@ -9,10 +9,7 @@ import { log } from 'utils'
 /**
  * 该模块的数据保存在 Memory 哪个字段上
  */
-const SAVE_KEY = {
-    WAITING: 'waitingConstruction',
-    BUILDING: 'buildingConstruction'
-}
+const SAVE_KEY = 'waitingConstruction'
 
 /**
  * 建造的优先级
@@ -41,9 +38,10 @@ export const buildCompleteSite: { [constructionSiteId: string]: Structure } = {}
 /**
  * 保存待建造队列 
  */
-const saveWaiting = () => {
-    if (waitingConstruction.length <= 0) delete Memory[SAVE_KEY.WAITING]
-    else Memory[SAVE_KEY.WAITING] = JSON.stringify(waitingConstruction)
+const saveWaiting = function () {
+    if (!Game._needSaveConstructionData) return
+    if (waitingConstruction.length <= 0) delete Memory[SAVE_KEY]
+    else Memory[SAVE_KEY] = JSON.stringify(waitingConstruction)
 }
 
 /**
@@ -51,7 +49,7 @@ const saveWaiting = () => {
  * 在全局重置时调用
  */
 export const initConstructionController = function () {
-    waitingConstruction = JSON.parse(Memory[SAVE_KEY.WAITING] || '[]').map(({ pos, type }) => {
+    waitingConstruction = JSON.parse(Memory[SAVE_KEY] || '[]').map(({ pos, type }) => {
         // 这里把位置重建出来
         const { x, y, roomName } = pos
         return { pos: new RoomPosition(x, y, roomName), type }
@@ -98,8 +96,7 @@ const planSite = function () {
 
     // 把放置失败的工地放到队首下次再次尝试放置
     if (cantPlaceSites.length > 0) waitingConstruction.unshift(...cantPlaceSites)
-
-    saveWaiting()
+    Game._needSaveConstructionData = true
 }
 
 /**
@@ -126,7 +123,7 @@ const handleCompleteSite = function () {
             // 建造失败，回存到等待队列
             else {
                 waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
-                saveWaiting()
+                Game._needSaveConstructionData = true
             }
         })
     }
@@ -140,7 +137,7 @@ const handleCompleteSite = function () {
  */
 export const addConstructionSite = function (sites: ConstructionPos[]) {
     waitingConstruction.push(...sites)
-    saveWaiting()
+    Game._needSaveConstructionData = true
 }
 
 /**
@@ -182,4 +179,13 @@ export const getSiteStructure = function (site: ConstructionSite): Structure {
     return site.pos.lookFor(LOOK_STRUCTURES).find(({ structureType }) => {
         return structureType === site.structureType
     })
+}
+
+/**
+ * 建造管理模块注册插件
+ */
+export const constructionAppPlugin: AppLifecycleCallbacks = {
+    reset: initConstructionController,
+    afterWork: manageConstruction,
+    tickEnd: saveWaiting
 }

@@ -1,5 +1,5 @@
 import mountCreep, { CreepExtension } from './creep'
-import PowerCreepExtension from './powerCreep/extension'
+import { PowerCreepExtension, mountPowerToRoom } from './powerCreep'
 import mountRoom, { RoomExtension, RoomConsole} from './room'
 import RoomPostionExtension from './roomPosition/extension'
 import mountGlobal from './global'
@@ -10,14 +10,12 @@ import {
 } from './structures'
 import SourceExtension from './source/extension'
 import { log } from 'utils'
-import { initConstructionController } from 'modules/constructionController'
 import { setBornCenter } from 'modules/autoPlanning/planBasePos'
-import App from 'modules/framework'
 
 /**
  * 所有需要挂载的原型拓展
  */
-const protoMountList: [ AnyClass, AnyClass ][] = [
+export const protoMountList: [ AnyClass, AnyClass ][] = [
     [ Room, RoomExtension ],
     [ Room, RoomConsole ],
     [ RoomPosition, RoomPostionExtension ],
@@ -53,15 +51,13 @@ function initStorage() {
     if (!Memory.rooms) Memory.rooms = {}
     else delete Memory.rooms.undefined
 
-    if (!Memory.stats) Memory.stats = { rooms: {} }
-    if (!Memory.delayTasks) Memory.delayTasks = []
-    if (!Memory.creepConfigs) Memory.creepConfigs = {}
     if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
 }
 
-const app = new App()
-
-app.on({
+/**
+ * 主要拓展注册插件
+ */
+export const extensionAppPlugin: AppLifecycleCallbacks = {
     born: () => {
         const spawns = Object.values(Game.spawns)
         if (spawns.length > 1) return
@@ -83,26 +79,8 @@ app.on({
         mountGlobal()
         mountRoom()
         mountCreep()
+
+        // 挂载 power 能力
+        mountPowerToRoom()
     }
-})
-
-app.on({
-    /**
-     * 挂载完成后要执行的一些作业
-     */
-    reset: () => {
-        // 把已经孵化的 pc 能力注册到其所在的房间上，方便房间内其他 RoomObject 查询并决定是否发布 power 任务
-        Object.values(Game.powerCreeps).forEach(pc => {
-            if (!pc.room) return
-            pc.updatePowerToRoom()
-        })
-
-        initConstructionController()
-    }
-})
-
-// 挂载所有的原型拓展
-protoMountList.map(group => app.mount(...group))
-
-// 这里的 app 已经完成准备工作了
-export default app
+}

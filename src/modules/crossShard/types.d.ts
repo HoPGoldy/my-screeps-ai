@@ -16,9 +16,6 @@ interface Memory {
     }
 }
 
-/**
- * Game 对象拓展
- */
 interface Game {
     /**
      * 本 tick 是否需要执行保存 InterShardMemory

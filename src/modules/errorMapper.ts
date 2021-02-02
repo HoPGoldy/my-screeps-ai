@@ -71,26 +71,24 @@ export class ErrorMapper {
      * 错误追踪包装器
      * 用于把报错信息通过 source-map 解析成源代码的错误位置
      * 
-     * @param loop 玩家代码主循环
+     * @param loop 玩家代码
      */
-    public static wrapLoop(loop: () => void): () => void {
-        return () => {
-            try {
-                // 执行玩家代码
-                loop()
+    public static wrap(next: () => any): void {
+        try {
+            // 执行玩家代码
+            next()
+        }
+        catch (e) {
+            if (e instanceof Error) {
+                // 渲染报错调用栈，沙盒模式用不了这个
+                const errorMessage = Game.rooms.sim ?
+                    `沙盒模式无法使用 source-map - 显示原始追踪栈<br>${_.escape(e.stack)}` :
+                    `${_.escape(this.sourceMappedStackTrace(e))}`
+                
+                console.log(colorful(errorMessage, 'red'))
             }
-            catch (e) {
-                if (e instanceof Error) {
-                    // 渲染报错调用栈，沙盒模式用不了这个
-                    const errorMessage = Game.rooms.sim ?
-                        `沙盒模式无法使用 source-map - 显示原始追踪栈<br>${_.escape(e.stack)}` :
-                        `${_.escape(this.sourceMappedStackTrace(e))}`
-                    
-                    console.log(colorful(errorMessage, 'red'))
-                }
-                // 处理不了，直接抛出
-                else throw e
-            }
+            // 处理不了，直接抛出
+            else throw e
         }
     }
 }
