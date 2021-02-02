@@ -75,3 +75,20 @@ declare module NodeJS {
         _mountComplete: true
     }
 }
+
+/**
+ * 创建实例时的入参
+ */
+interface CreateOptions {
+    /**
+     * bot 名称
+     * 没啥用，会保存在 Memory 中用于确定是否已经触发过 born 阶段
+     */
+    name?: string
+    /**
+     * 原型拓展列表
+     * 一个二维数组，包含所有想要进行拓展的原型，第二维的元组含义为：[ 目标类，拓展类 ]
+     * 会对每个元组执行 mount 方法
+     */
+    mountList?: [ AnyClass, AnyClass ][]
+}

@@ -1,6 +1,6 @@
 # 核心框架
 
-一个轻量级的 screeps 框架，包含生命周期回调、原型拓展、异常隔离功能。整个框架的核心 api 只有两个：`on` 和 `mount`。
+一个轻量级 screeps 框架，只有不到两百行代码。包含生命周期回调、原型拓展、异常隔离功能。整个框架的核心 api 只有两个：`on` 和 `mount`。
 
 ## 如何使用
 
@@ -89,12 +89,12 @@ app.run()
 保存模块 B 工作
 ```
 
-通过使用多个 `on` 对不同模块的逻辑进行分组，你可以提高模块的内聚性。
+通过使用多个 `on` 对不同模块的逻辑进行分组，你可以提高模块的内聚性。从而避免所有逻辑都平铺在 loop 里形成意大利面代码。你可以在 [这里](https://github.com/HoPGoldy/my-screeps-ai/blob/dev/src/main.ts#L18) 看到本框架在组织众多模块时的语义化表现。
 
 在注册回调后，你也可以通过 `close` 方法将回调移除，如下：
 
 ```js
-// on 方法将会返回该方法所注册回调的唯一索引
+// on 方法将会返回本组回调的唯一索引
 const moduleIndex = app.on({
     tickStart: () => console.log('模块执行'),
     tickEnd: () => console.log('模块保存')
@@ -104,7 +104,7 @@ const moduleIndex = app.on({
 app.close(moduleIndex)
 ```
 
-### 热插拔
+## 热插拔
 
 框架并没有限制必须在 `run` 方法执行前注册完所有的回调，你可以在任意位置注册/取消回调，例如可以通过如下方法完成一个显示 cpu 消耗的简单功能：
 
@@ -130,11 +130,11 @@ Object.defineProperty(global, 'cost', {
 
 ## 功能2：原型拓展
 
-框架支持通过 `mount` 方法将你自定义的对象属性挂载到游戏对象上，如下：
+框架支持通过 `mount` 方法（*这是框架第二个核心 api*）将你自定义的对象属性挂载到游戏对象上，如下：
 
 ```js
-// 创建一个新的拓展
-// 注意后面的 extends Creep 是不必要的，这里只是为了提供更好的类型补全，不写也可以正常使用
+// 创建一个新的 creep 拓展
+// 注意下面的 extends Creep 是不必要的，这里只是为了提供更好的类型补全，不写也可以正常使用
 class MyCreep extends Creep {
     get word() { return 'hello world!' }
 
@@ -150,7 +150,7 @@ app.mount(Creep, MyCreep)
 然后在控制台执行：
 
 ```bash
-# 先保证你有至少一个 creep 还活着
+# 先要有还活着的 creep
 < Object.values(Game.creeps)[0].sayHi()
 # 你会看到你的 creep 高呼着自己的名字向世界问好
 > creepA hello world!
@@ -185,11 +185,28 @@ sim 报道!
 ...
 ```
 
-当框架发现一个游戏对象上包含入口方法时，将会每个 tick 的 `tickStart` 阶段执行完成后调用它。我们约定，**扩展上的 `onWork` 方法为该游戏对象的入口方法**。框架会执行 `Game.rooms`、`Game.structures`、`Game.creeps` 和 `Game.powerCreeps` 上的入口方法。如果对应的原型上没有定义 `onWork` 方法的话，框架将会直接跳过。
+当框架发现一个游戏对象上包含入口方法时，将会在每个 tick 的 `tickStart` 阶段执行完成后调用它。我们约定，**`onWork` 方法即为该游戏对象的入口方法**。框架会自动执行 `Game.rooms`、`Game.structures`、`Game.creeps` 和 `Game.powerCreeps` 上的入口方法。如果对应的原型上没有定义 `onWork` 方法的话，框架将会直接跳过。
 
 顺带一提，还记得在刚才“生命周期回调”小节里提到的 `afterWork` 钩子么，它将会在所有的 onWork 方法执行后触发。
 
-# 功能3：异常隔离
+## 在实例化时挂载拓展
+
+由于大多数情况下，每次全局重置都只会挂载一次原型拓展，所以框架允许在实例化时通过传入数组的形式来直接进行挂载，如下：
+
+```js
+// 要挂载的拓展数组，其元素为一个元组，格式为 [ 目标类，拓展类 ]
+const mountList = [
+    [ Room, RoomExtension ],
+    [ Creep, CreepExtension ],
+    // ...
+]
+
+// 直接挂载所有的原型拓展
+// 等同于对数组里每个挂载对都执行了一次 mount 方法
+const app = new App({ mountList })
+```
+
+## 功能3：异常隔离
 
 框架会自动把你代码抛出的错误限制在其能控制的最小范围内，从而避免一个错误就导致整个应用崩溃，例如：
 
@@ -211,8 +228,8 @@ app.on({
 class MyCreep extends Creep {
     onWork() {
         // 名为 errorCreep 的 creep 会一直报错
-        if (this.name === 'errorCreep') {
-            throw new Error('creep 报错！！！')
+        if (this.name === 'creepB') {
+            throw new Error(`${this.name} 报错！！！`)
         }
         // 其他的 creep 的逻辑
         else console.log(this.name, '正常工作')
@@ -231,15 +248,15 @@ export const loop = () => app.run()
 A 执行
 B 报错！！！
 creepA 正常工作
-creepB 正常工作
-creep 报错！！！
+creepB 报错！！！
+creepC 正常工作
 A 保存
 B 保存
 ```
 
 可以看到，代码执行抛出的异常被限制在其所在的方法中，完全不会影响到其他模块或者单位的正常执行。
 
-### 自定义异常捕获
+## 自定义异常捕获
 
 默认的异常捕获如下：
 
@@ -256,7 +273,7 @@ catcher = next => {
 }
 ```
 
-你也可以通过如下方式使用自定义的异常捕获，**注意！其中的 next 方法必须执行！** 不然会导致框架无法正常使用：
+你可以通过设置 `catcher` 属性的方式使用自定义的异常捕获，如下。**注意！其中的 next 方法必须执行！** 不然会导致框架无法正常使用：
 
 ```js
 app.catcher = next => {
@@ -275,14 +292,14 @@ app.catcher = next => {
 app.catcher = next => ErrorMapper.wrapLoop(next)()
 ```
 
-*实际上，由于 ErrorMapper 会返回一个新的函数来包裹对应的逻辑，在本框架里直接使用会导致出现一丢丢的性能损耗*
+*实际上，由于 ErrorMapper 会返回一个新的函数来包裹对应的逻辑，在本框架里直接使用会导致出现一丢丢的性能损耗，如果你介意的话，可以按照 [这里](https://github.com/HoPGoldy/my-screeps-ai/blob/dev/src/modules/errorMapper.ts#L76) 的做法进行修改。*
 
 ## bot 名称
 
 你可以在 new App 时给其分配一个名字，然后通过其 name 属性访问：
 
 ```js
-const app = new App('大刺蛇 yyds')
+const app = new App({ name: '大刺蛇 yyds' })
 console.log(app.name)
 // > 大刺蛇 yyds
 ```

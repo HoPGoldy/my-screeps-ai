@@ -4,13 +4,15 @@ import { creepNumberControlAppPlugin } from './modules/creepController'
 import { crossShardAppPlugin } from './modules/crossShard'
 import { delayQueueAppPlugin } from 'modules/delayQueue'
 import { constructionAppPlugin } from 'modules/constructionController'
-import { protoMountList, extensionAppPlugin } from './mount'
+import { mountList, extensionAppPlugin } from './mount'
 import App from 'modules/framework'
-
-const app = new App()
+import { ErrorMapper } from 'modules/errorMapper'
 
 // 挂载所有的原型拓展
-protoMountList.map(group => app.mount(...group))
+const app = new App({ mountList })
+
+// 使用 sourceMap 校正报错信息
+app.catcher = ErrorMapper.wrap
 
 // 注册主拓展模块
 app.on(extensionAppPlugin)

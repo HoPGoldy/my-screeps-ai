@@ -70,6 +70,7 @@ export class ErrorMapper {
     /**
      * 错误追踪包装器
      * 用于把报错信息通过 source-map 解析成源代码的错误位置
+     * 和原本 wrapLoop 的区别是，wrapLoop 会返回一个新函数，而这个会直接执行
      * 
      * @param loop 玩家代码
      */

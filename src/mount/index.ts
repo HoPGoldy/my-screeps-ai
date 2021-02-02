@@ -15,7 +15,7 @@ import { setBornCenter } from 'modules/autoPlanning/planBasePos'
 /**
  * 所有需要挂载的原型拓展
  */
-export const protoMountList: [ AnyClass, AnyClass ][] = [
+export const mountList: [ AnyClass, AnyClass ][] = [
     [ Room, RoomExtension ],
     [ Room, RoomConsole ],
     [ RoomPosition, RoomPostionExtension ],

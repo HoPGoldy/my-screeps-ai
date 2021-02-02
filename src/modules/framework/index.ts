@@ -4,9 +4,15 @@
 const MOUNT_ENTRY_FUNCTION = 'onWork'
 
 /**
+ * bot 名称的后缀，会加到指定的名称后
+ * 防止不小心覆盖 Memory 的关键字段
+ */
+const BOT_NAME_SUFFIX = 'Framework'
+
+/**
  * 默认的 bot 名称
  */
-const DEFAULT_BOT_NAME = 'hopgoldyFramework'
+const DEFAULT_BOT_NAME = `hopgoldy${BOT_NAME_SUFFIX}`
 
 export default class App {
     /**
@@ -30,10 +36,11 @@ export default class App {
     /**
      * 创建 Bot 实例
      * 
-     * @param name 该 bot 的名称，可以通过 this.name 访问
+     * @param opt 配置项，包含 bot 的名字和要挂载的原型列表
      */
-    constructor(name?: string) {
-        if (name) this.name = name
+    constructor({ name, mountList }: CreateOptions = {}) {
+        if (name) this.name = name + BOT_NAME_SUFFIX
+        if (mountList) mountList.map(group => this.mount(...group))
     }
 
     /**
