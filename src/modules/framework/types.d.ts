@@ -18,8 +18,8 @@ type AnyCallback = () => any
  */
 interface AppLifecycleCallbacks {
     /**
-     * 玩家放下第一个 spawn 时触发
-     * 整个应用只会执行一次
+     * 玩家放下第一个 spawn 时触发，整个应用只会执行一次
+     * 会在所有 reset 回调完成后执行（防止出现有依赖还没准备好的问题出现）
      */
     born?: AnyCallback
     /**

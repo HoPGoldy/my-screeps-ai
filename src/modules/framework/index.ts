@@ -148,14 +148,14 @@ export default class App {
      * 当全局重置时触发
      */
     private onGlobalReset() {
+        this.execLifecycleCallback('reset')
+        global._mountComplete = true
+
         // 检查是否是第一次全局重置
         if (!Memory[this.name]) {
             this.execLifecycleCallback('born')
             Memory[this.name] = true
         }
-
-        this.execLifecycleCallback('reset')
-        global._mountComplete = true
     }
 
     /**

@@ -29,8 +29,8 @@ export const loop = () => app.run()
 ```js
 app.on({
     /**
-     * 玩家放下第一个 spawn 时触发
-     * 整个应用只会执行一次
+     * 玩家放下第一个 spawn 时触发，整个应用只会执行一次
+     * 会在所有 reset 回调完成后执行（防止出现有依赖还没准备好的问题出现）
      */
     born: () => console.log('欢迎来到 screeps!'),
     /**
@@ -227,7 +227,7 @@ app.on({
 
 class MyCreep extends Creep {
     onWork() {
-        // 名为 errorCreep 的 creep 会一直报错
+        // 名为 creepB 的 creep 会一直报错
         if (this.name === 'creepB') {
             throw new Error(`${this.name} 报错！！！`)
         }
