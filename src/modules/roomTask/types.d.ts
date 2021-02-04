@@ -93,4 +93,5 @@ interface InterfaceTaskController<
     getUnitTaskType(creep: Creep): CostomTask
     removeCreep(creepId): void
     getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[]
+    draw(startX: number, startY: number): void
 }

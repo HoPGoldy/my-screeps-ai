@@ -615,6 +615,7 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  * @returns 身上是否已经有足够的能量了
  */
 const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTransportTaskController): boolean {
+    transport.countWorkTime()
     if (creep.store[RESOURCE_ENERGY] > 10) return true
 
     // 从工作房间查询并缓存能量来源
@@ -635,7 +636,6 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTrans
 
     // 获取能量
     const result = creep.getEngryFrom(source)
-    transport.countWorkTime()
     return result === OK
 }
 

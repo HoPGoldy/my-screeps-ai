@@ -420,6 +420,20 @@ export default class TaskController<
         const logs = this.tasks.map(task => JSON.stringify(task))
         return logs.join('\n')
     }
+
+    /**
+     * 将队列信息绘制到房间上
+     * @param startX 绘制窗口左上角 X 坐标
+     * @param startY 绘制窗口左上角 Y 坐标
+     */
+    public draw(startX: number, startY: number): void {
+        const logs = [ `已注册单位 ${Object.keys(this.creeps).map((id: Id<Creep>) => Game.getObjectById(id).name).join(', ')}` ]
+        logs.push(...this.tasks.map(task => `[类型] ${task.type} [索引] ${task.key} [需求数量] ${task.need} [执行数量] ${task.unit} [优先级] ${task.priority}`))
+
+        const room = Game.rooms[this.roomName]
+        const style: TextStyle = { align: 'left' }
+        logs.map((log, index) => room.visual.text(log, startX, startY + index, style))
+    }
 }
 
 /**

@@ -34,6 +34,7 @@ class CreepRelease implements InterfaceCreepRelease {
 
     /**
      * 变更基地运维单位数量
+     * 包含数量保护，保证无论怎么减少都有一定的单位执行任务
      * 
      * @param type 要更新的单位类别，工人 / 搬运工
      * @param adjust 要增减的数量，为负代表减少
@@ -43,36 +44,37 @@ class CreepRelease implements InterfaceCreepRelease {
         const room = Game.rooms[this.roomName]
         if (!room) return ERR_NOT_FOUND
 
-        // 获取当前对应角色的单位数量
-        let unitNumber = 0
-        if (type === 'worker') {
-            // 最少每个 source 一个工人
-            unitNumber = updateBaseUnitNumber(room.memory, 'workerNumber', adjust, room.source.length)
-        }
-        else if (type === 'manager') {
-            // 最少一个搬运工
-            unitNumber = updateBaseUnitNumber(room.memory, 'transporterNumber', adjust, 1)
-        }
-        else {
-            log(`未知的角色类型 ${type}`, [ 'creepRelease' ], 'red')
-            return ERR_INVALID_TARGET
-        }
+        // 单位对应在房间内存中保存的键
+        const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
+        // 单位对应存在的最少数量
+        const min = type === 'worker' ? room.source.length : 1
 
-        if (adjust >= 0) {
+        const oldNumber = room.memory[memoryKey] || 0
+        // 计算真实的调整量，保证最少有 min 人
+        let realAdjust = 0
+        // 调整完了人数还够，直接用
+        if (oldNumber + adjust > min) realAdjust = adjust
+        // 调整值导致人数不够了，根据最小值调整
+        else realAdjust = oldNumber > min ? oldNumber - min : min - oldNumber
+
+        if (realAdjust >= 0) {
             // 添加新的单位
-            for (let i = 0; i < adjust; i++) {
+            for (let i = oldNumber; i < adjust; i++) {
                 if (creepApi.has(`${room.name} ${type}${i}`)) continue
                 creepApi.add(`${room.name} ${type}${i}`, type, { workRoom: room.name, bodyType }, room.name)
             }
         }
         else {
             // 从末尾开始减少单位
-            for (let i = unitNumber - 1; i >= 0; i--) {
+            for (let i = oldNumber - 1; i >= 0; i--) {
                 creepApi.remove(`${room.name} ${type}${i}`)
             }
         }
 
-        log(`调整 ${type} 单位数量 [修正] ${adjust} [修正后数量] ${unitNumber}`)
+        // 更新数量到内存
+        room.memory[memoryKey] = oldNumber + realAdjust
+
+        log(`调整 ${type} 单位数量 [修正] ${adjust} [修正后数量] ${room.memory[memoryKey]}`)
         return OK
     }
 
@@ -380,25 +382,4 @@ export default function (key: string = 'release') {
         enumerable: false,
         configurable: true
     })
-}
-
-/**
- * 更新基地运营单位数量
- * 会把新值保存到对应的房间内存上并返回
- * 
- * @param memory 对应保存的房间内存
- * @param key 数据保存在房间内存的哪个键上
- * @param adjust 调整值，增加或减少多少
- * @param min 最小值，如果要更新的值小于这个值的话会被丢弃
- * @returns 更新后的新值
- */
-const updateBaseUnitNumber = function (memory: RoomMemory, key: 'workerNumber' | 'transporterNumber', adjust: number, min: number): number {
-    const oldNumber = memory[key]
-
-    // 数量不足了就设置为最小值
-    if (oldNumber == undefined || oldNumber + adjust <= 0) memory[key] = min
-    // 数量足够就调整
-    else memory[key] += adjust
-
-    return memory[key]
 }

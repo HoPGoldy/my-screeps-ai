@@ -9,6 +9,10 @@ import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
  */
 export default class ControllerExtension extends StructureController {
     public onWork(): void {
+        // 解除这两行的注释以显示队列信息
+        this.room.work.draw(1, 3)
+        this.room.transport.draw(1, 13)
+
         this.drawEnergyHarvestInfo()
         if (Game.time % 20) return
 

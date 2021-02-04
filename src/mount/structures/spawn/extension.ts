@@ -40,12 +40,11 @@ export default class SpawnExtension extends StructureSpawn {
 
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.mySpawnCreep(task)
-        this.room.visual.text(`孵化返回值 ${spawnResult}`, 1, 2, { align: 'left' })
 
         // 生成成功后移除任务
         if (spawnResult === OK) {
             this.room.memory.spawnList.shift()
-            this.log(`执行成功，移除 ${task}`)
+            // this.log(`执行成功，移除 ${task}`)
         }
         // 能量不足就挂起任务，但是如果是重要角色的话就会卡住然后优先孵化
         else if (
