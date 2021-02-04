@@ -33,56 +33,46 @@ class CreepRelease implements InterfaceCreepRelease {
     }
 
     /**
-     * 发布工作单位
+     * 变更基地运维单位数量
      * 
-     * @param number 要发布的数量
-     * @param bodyType 【可选】该工人的特殊体型，为空则为普通体型
+     * @param type 要更新的单位类别，工人 / 搬运工
+     * @param adjust 要增减的数量，为负代表减少
+     * @param bodyType 在新增时要设置的特殊体型，减少数量时无效
      */
-    public worker(number: number = 3, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND {
-        if (number <= 1) number = 1
-
+    public changeBaseUnit(type: 'worker' | 'manager', adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
         const room = Game.rooms[this.roomName]
         if (!room) return ERR_NOT_FOUND
 
-        for (let i = 0; i < number; i++) {
-            if (creepApi.has(`${room.name} worker${i}`)) continue
-            creepApi.add(`${room.name} worker${i}`, 'worker', { workRoom: room.name, bodyType }, room.name)
+        // 获取当前对应角色的单位数量
+        let unitNumber = 0
+        if (type === 'worker') {
+            // 最少每个 source 一个工人
+            unitNumber = updateBaseUnitNumber(room.memory, 'workerNumber', adjust, room.source.length)
+        }
+        else if (type === 'manager') {
+            // 最少一个搬运工
+            unitNumber = updateBaseUnitNumber(room.memory, 'transporterNumber', adjust, 1)
+        }
+        else {
+            log(`未知的角色类型 ${type}`, [ 'creepRelease' ], 'red')
+            return ERR_INVALID_TARGET
         }
 
-        let extraIndex = number
-        // 移除多余的搬运工
-        while (creepApi.has(`${room.name} worker${extraIndex}`)) {
-            creepApi.remove(`${room.name} worker${extraIndex}`)
-            extraIndex += 1
+        if (adjust >= 0) {
+            // 添加新的单位
+            for (let i = 0; i < adjust; i++) {
+                if (creepApi.has(`${room.name} ${type}${i}`)) continue
+                creepApi.add(`${room.name} ${type}${i}`, type, { workRoom: room.name, bodyType }, room.name)
+            }
+        }
+        else {
+            // 从末尾开始减少单位
+            for (let i = unitNumber - 1; i >= 0; i--) {
+                creepApi.remove(`${room.name} ${type}${i}`)
+            }
         }
 
-        return OK
-    }
-
-    /**
-     * 发布搬运工
-     * 
-     * @param number 要发布的数量
-     * @param bodyType 【可选】该搬运工的特殊体型，为空则为普通体型
-     */
-    public manager(number: number = 1, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND {
-        if (number <= 1) number = 1
-
-        const room = Game.rooms[this.roomName]
-        if (!room) return ERR_NOT_FOUND
-
-        for (let i = 0; i < number; i++) {
-            if (creepApi.has(`${room.name} manager${i}`)) continue
-            creepApi.add(`${room.name} manager${i}`, 'manager', { workRoom: room.name, bodyType }, room.name)
-        }
-
-        let extraIndex = number
-        // 移除多余的搬运工
-        while (creepApi.has(`${room.name} manager${extraIndex}`)) {
-            creepApi.remove(`${room.name} manager${extraIndex}`)
-            extraIndex += 1
-        }
-
+        log(`调整 ${type} 单位数量 [修正] ${adjust} [修正后数量] ${unitNumber}`)
         return OK
     }
 
@@ -390,4 +380,25 @@ export default function (key: string = 'release') {
         enumerable: false,
         configurable: true
     })
+}
+
+/**
+ * 更新基地运营单位数量
+ * 会把新值保存到对应的房间内存上并返回
+ * 
+ * @param memory 对应保存的房间内存
+ * @param key 数据保存在房间内存的哪个键上
+ * @param adjust 调整值，增加或减少多少
+ * @param min 最小值，如果要更新的值小于这个值的话会被丢弃
+ * @returns 更新后的新值
+ */
+const updateBaseUnitNumber = function (memory: RoomMemory, key: 'workerNumber' | 'transporterNumber', adjust: number, min: number): number {
+    const oldNumber = memory[key]
+
+    // 数量不足了就设置为最小值
+    if (oldNumber == undefined || oldNumber + adjust <= 0) memory[key] = min
+    // 数量足够就调整
+    else memory[key] += adjust
+
+    return memory[key]
 }

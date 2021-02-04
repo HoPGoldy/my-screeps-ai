@@ -48,8 +48,8 @@ export default class ControllerExtension extends StructureController {
         // 刚占领，添加工作单位
         if (level === 1) {
             this.room.release.harvester()
-            this.room.release.manager(1)
-            this.room.release.worker(2)
+            this.room.release.changeBaseUnit('manager', 1)
+            this.room.release.changeBaseUnit('worker', 2)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
             // 开始刷墙后就开始执行刷墙任务
@@ -69,27 +69,8 @@ export default class ControllerExtension extends StructureController {
     private adjustCreep(): void {
         if (Game.time % 500) return
 
-        const { transporterNumber, workerNumber } = this.room.memory
-        // 最低一个搬运工
-        if (!transporterNumber || transporterNumber <= 0) this.room.memory.transporterNumber = 1
-        // 最低每个 source 一个工人
-        if (!workerNumber || workerNumber <= 0) this.room.memory.workerNumber = this.room.source.length
-
-        // 根据物流模块返回的期望调整当前搬运工数量
-        const transportExpect = this.room.transport.getExpect()
-        if (transportExpect !== 0) {
-            this.room.memory.transporterNumber += transportExpect
-            this.room.release.manager(this.room.memory.transporterNumber)
-            this.log(`调整物流单位数量 [修正] ${transportExpect} [期望] ${this.room.memory.transporterNumber}`)
-        }
-
-        // 根据工作模块返回的期望调整当前工人数量
-        const workerExpect = this.room.work.getExpect()
-        if (workerExpect !== 0) {
-            this.room.memory.workerNumber += workerExpect
-            this.room.release.worker(this.room.memory.workerNumber)
-            this.log(`调整工作单位数量 [修正] ${workerExpect} [期望] ${this.room.memory.workerNumber}`)
-        }
+        this.room.release.changeBaseUnit('manager', this.room.transport.getExpect())
+        this.room.release.changeBaseUnit('worker', this.room.work.getExpect())
     }
 
     /**

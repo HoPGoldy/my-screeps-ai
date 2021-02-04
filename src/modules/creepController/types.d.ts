@@ -11,13 +11,10 @@ interface InterfaceCreepRelease {
      */
     harvester(): OK | ERR_NOT_FOUND
     /**
-     * 发布工作单位
+     * 变更运营单位数量
+     * 工作单位 / 搬运单位
      */
-    worker(number?: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND
-    /**
-     * 发布搬运工
-     */
-    manager(number?: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND
+    changeBaseUnit(type: 'worker' | 'manager', adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET
     /**
      * 发布中央运输单位
      */
