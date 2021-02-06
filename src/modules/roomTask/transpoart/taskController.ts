@@ -41,7 +41,7 @@ export default class RoomTransport extends TaskController<AllTransportTaskType, 
      * @param roomName 要管理任务的房间名
      */
     constructor(roomName: string) {
-        super(roomName, 'transportTasks')
+        super(roomName, 'transport')
     }
 
     /**
@@ -52,7 +52,7 @@ export default class RoomTransport extends TaskController<AllTransportTaskType, 
     public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
         this.totalLifeTime += 1
 
-        const task = this.getUnitTaskType(creep)
+        const task = this.getUnitTask(creep)
         if (!task) return noTask(creep)
         const actionGenerator: TransportActionGenerator = transportActions[task.type]
 

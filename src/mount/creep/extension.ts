@@ -316,7 +316,7 @@ export default class CreepExtension extends Creep {
         // 不是的话就用 harvest
         else result = this.harvest(target as Source)
 
-        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 1 })
+        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 1, checkTarget: true })
 
         return result
     }

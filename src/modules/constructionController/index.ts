@@ -103,33 +103,39 @@ const planSite = function () {
  * 找到建造完成的工地并触发对应的回调
  */
 const handleCompleteSite = function () {
-    const lastSiteIds = Object.keys(lastGameConstruction)
-    const nowSiteIds = Object.keys(Game.constructionSites)
-    // 工地数量不一致了，说明有工地被踩掉或者造好了
-    if (lastSiteIds.length !== nowSiteIds.length) {
-        const disappearedSiteIds = lastSiteIds.filter(id => !(id in Game.constructionSites))
+    try {
+        const lastSiteIds = Object.keys(lastGameConstruction)
+        const nowSiteIds = Object.keys(Game.constructionSites)
+        // 工地数量不一致了，说明有工地被踩掉或者造好了
+        if (lastSiteIds.length !== nowSiteIds.length) {
+            const disappearedSiteIds = lastSiteIds.filter(id => !(id in Game.constructionSites))
 
-        disappearedSiteIds.map(siteId => {
-            const lastSite = lastGameConstruction[siteId]
-            const structure = getSiteStructure(lastSite)
+            disappearedSiteIds.map(siteId => {
+                const lastSite = lastGameConstruction[siteId]
+                const structure = getSiteStructure(lastSite)
 
-            // 建造完成
-            if (structure) {
-                updateStructure(structure.room.name, structure.structureType, structure.id)
-                // 如果有的话就执行回调
-                if (structure.onBuildComplete) structure.onBuildComplete()
-                buildCompleteSite[siteId] = structure
-            }
-            // 建造失败，回存到等待队列
-            else {
-                waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
-                Game._needSaveConstructionData = true
-            }
-        })
+                // 建造完成
+                if (structure) {
+                    updateStructure(structure.room.name, structure.structureType, structure.id)
+                    // 如果有的话就执行回调
+                    if (structure.onBuildComplete) structure.onBuildComplete()
+                    buildCompleteSite[siteId] = structure
+                }
+                // 建造失败，回存到等待队列
+                else {
+                    waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
+                    Game._needSaveConstructionData = true
+                }
+            })
+        }
     }
-
-    // 更新缓存
-    lastGameConstruction = Game.constructionSites
+    catch (e) {
+        throw e
+    }
+    finally {
+        // 更新缓存
+        lastGameConstruction = Game.constructionSites
+    }
 }
 
 /**

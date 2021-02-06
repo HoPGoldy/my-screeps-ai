@@ -17,9 +17,14 @@ export default class TaskController<
     readonly roomName: string
 
     /**
-     * 该模块需要的数据将被保存到 room.memory 的哪个键下
+     * 该模块的任务数据将被保存到 room.memory 的哪个键下
      */
-    protected readonly SAVE_KEY: string = ''
+    protected readonly TASK_SAVE_KEY: string = ''
+
+    /**
+     * 该模块的执行单位数据将被保存到 room.memory 的哪个键下
+     */
+    protected readonly CREEP_SAVE_KEY: string = ''
 
     /**
      * 该模块负责的任务
@@ -39,8 +44,9 @@ export default class TaskController<
      */
     constructor(roomName: string, memoryKey: string) {
         this.roomName = roomName
-        this.SAVE_KEY = memoryKey
-        this.initTask()
+        this.TASK_SAVE_KEY = `${memoryKey}Tasks`
+        this.CREEP_SAVE_KEY = `${memoryKey}Creeps`
+        this.init()
     }
 
     /**
@@ -68,7 +74,7 @@ export default class TaskController<
         // 在目标索引位置插入新任务并重新分配任务
         this.tasks.splice(insertIndex, 0, task)
         if (addOpt.dispath) this.dispatchTask()
-        this.saveTask()
+        this.save()
 
         return task.key
     }
@@ -150,21 +156,29 @@ export default class TaskController<
     /**
      * 从内存中重建物流任务队列
      */
-    protected initTask() {
-        if (!Memory.rooms || !Memory.rooms[this.roomName]) return
+    protected init() {
+        const roomMemory = Memory.rooms?.[this.roomName]
+        if (!roomMemory) return
         // 从内存中解析数据
-        this.tasks = JSON.parse(Memory.rooms[this.roomName][this.SAVE_KEY] || '[]')
+        this.tasks = JSON.parse(roomMemory[this.TASK_SAVE_KEY] || '[]')
+        this.creeps = JSON.parse(roomMemory[this.CREEP_SAVE_KEY] || '{}')
     }
 
     /**
      * 将本房间物流任务都保存至内存
      */
-    protected saveTask() {
+    protected save() {
         if (!Memory.rooms) Memory.rooms = {}
-        Memory.rooms[this.roomName][this.SAVE_KEY] = JSON.stringify(this.tasks.map(task => {
+        const roomMemory = Memory.rooms[this.roomName]
+
+        if (this.tasks.length <= 0) delete roomMemory[this.TASK_SAVE_KEY]
+        else roomMemory[this.TASK_SAVE_KEY] = JSON.stringify(this.tasks.map(task => {
             // 注意，这里没有保存正在执行该任务的人数，因为这两个是有时效性的，后面读取的时候有可能这个数据已经过期了
             return ({ ...task, unit: 0, requireUnit: 0 })
         }))
+
+        if (Object.keys(this.creeps).length <= 0) delete roomMemory[this.CREEP_SAVE_KEY]
+        else roomMemory[this.CREEP_SAVE_KEY] = JSON.stringify(this.creeps)
     }
 
     /**
@@ -176,9 +190,11 @@ export default class TaskController<
      */
     protected setTaskUnit(task: CostomTask, unit: Creep): void {
         if (!task || !unit) return
-        unit.memory.taskKey = task.key
 
         task.unit = (task.unit > 0) ? task.unit + 1 : 1
+        if (!this.creeps[unit.id]) this.creeps[unit.id] = {}
+        this.creeps[unit.id].doing = task.key
+
         // 如果是特殊任务的话就更新对应的字段
         if (task.require && unit.memory.bodyType === task.require) {
             task.requireUnit = (task.requireUnit > 0) ? task.requireUnit + 1 : 1
@@ -193,10 +209,7 @@ export default class TaskController<
      * @param unit 要移除的 creep
      */
     protected removeTaskUnit(task: CostomTask, unit?: Creep): void {
-        if (unit) {
-            delete unit.memory.taskKey
-            delete this.creeps[unit.id]
-        }
+        if (unit) delete this.creeps[unit.id]
 
         if (!task) return
         task.unit = (task.unit < 1) ? 0 : task.unit - 1
@@ -242,25 +255,15 @@ export default class TaskController<
      * @returns 该 creep 分配到的任务
      */
     protected dispatchCreep(creep: Creep): CostomTask {
-        delete creep.memory.taskKey
+        delete this.creeps[creep.id]
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
         // 此时 creep 将会无视人数限制，分配至体型符合的最高优先级任务
         let overflow = false
         for (let i = 0; i < this.tasks.length; i++) {
             const checkTask = this.tasks[i]
-
-            // 找到头了，任务都有人做（或者说没有自己适合做还缺人的任务），从头遍历一遍
-            if (i >= this.tasks.length - 1 && !overflow) {
-                overflow = true
-                // 这里设置成 -1 的原因是 for 循环的 ++ 在循环结束后执行
-                // 而这里的目的是重置循环，所以设置成 -1 后，循环结束时 ++，下个循环刚好从 0 开始
-                i = -1
-            }
+            // creep.log(`正在检查新任务 ${i} ${JSON.stringify(checkTask)}`)
 
             const result = this.isCreepMatchTask(creep, checkTask, overflow)
-
-            // 匹配失败，下一个
-            if (result === TaskMatchResult.Failed) continue
 
             // 挤掉了一个普通单位
             // 例如这个特殊任务有普通工人在做，而自己是符合任务的特殊体型，那自己就会挤占他的工作机会
@@ -273,7 +276,17 @@ export default class TaskController<
             // 匹配成功，把单位设置到该任务并结束分派
             if (result === TaskMatchResult.Ok || result === TaskMatchResult.NeedRmoveNormal) {
                 this.setTaskUnit(checkTask, creep)
+                // creep.log(`领取任务 ${i} ${JSON.stringify(checkTask)}`)
                 return checkTask
+            }
+
+            // 找到头了，任务都有人做（或者说没有自己适合做还缺人的任务），从头遍历一遍
+            if (i >= this.tasks.length - 1 && !overflow) {
+                overflow = true
+                // creep.log("任务溢出！")
+                // 这里设置成 -1 的原因是 for 循环的 ++ 在循环结束后执行
+                // 而这里的目的是重置循环，所以设置成 -1 后，循环结束时 ++，下个循环刚好从 0 开始
+                i = -1
             }
         }
     }
@@ -339,7 +352,7 @@ export default class TaskController<
         this.getUnit(({ doing }) => removeTaskKeys.includes(doing))
             .map(creep => this.dispatchCreep(creep))
 
-        this.saveTask()
+        this.save()
         return OK
     }
 
@@ -347,7 +360,7 @@ export default class TaskController<
      * 获取单位的待执行任务
      * @param creep 要获取待执行任务的 creep
      */
-    public getUnitTaskType(creep: Creep): CostomTask {
+    public getUnitTask(creep: Creep): CostomTask {
         const doingTask = this.getTask(this.creeps[creep.id]?.doing)
 
         // 还未分配过任务，或者任务已经完成了
@@ -370,7 +383,6 @@ export default class TaskController<
 
         // 给干完活的单位重新分配任务
         for (const creepId in this.creeps) {
-            const { doing } = this.creeps[creepId]
             const creep = Game.getObjectById(creepId as Id<Creep>)
 
             // 人没了，直接移除
@@ -427,11 +439,11 @@ export default class TaskController<
      * @param startY 绘制窗口左上角 Y 坐标
      */
     public draw(startX: number, startY: number): void {
-        const logs = [ `已注册单位 ${Object.keys(this.creeps).map((id: Id<Creep>) => Game.getObjectById(id).name).join(', ')}` ]
+        const logs = [ `已注册单位 ${Object.keys(this.creeps).map((id: Id<Creep>) => Game.getObjectById(id)?.name).join(', ')}` ]
         logs.push(...this.tasks.map(task => `[类型] ${task.type} [索引] ${task.key} [需求数量] ${task.need} [执行数量] ${task.unit} [优先级] ${task.priority}`))
 
         const room = Game.rooms[this.roomName]
-        const style: TextStyle = { align: 'left' }
+        const style: TextStyle = { align: 'left', opacity: 0.5 }
         logs.map((log, index) => room.visual.text(log, startX, startY + index, style))
     }
 }

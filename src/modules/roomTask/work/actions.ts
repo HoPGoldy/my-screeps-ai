@@ -1,8 +1,6 @@
 import { getRoomEnergyTarget, findStrategy } from 'modules/energyController'
-import { fillSpawnStructure } from 'modules/roomTask/transpoart/actions'
 import { useCache } from 'utils'
 import { addSpawnMinerTask } from './delayTask'
-import { HARVEST_MODE } from 'setting'
 
 /**
  * @warning 在任务完成时要及时清除该任务在 creep 内存中留下的缓存
@@ -112,6 +110,8 @@ export const transportActions: {
                     filter: site => site.structureType === STRUCTURE_CONTAINER
                 })
 
+                creep.log(`选择工地 ${task.sourceId} > ${containerSites}`)
+
                 // 找不到了，说明任务完成
                 if (containerSites.length <= 0) {
                     workController.removeTask(task.key)
@@ -119,7 +119,7 @@ export const transportActions: {
                 }
 
                 return containerSites[0]
-            }, creep.memory, 'constructionSiteId')
+            }, task, 'containerId')
 
             const result = creep.build(containerSite)
             if (result === ERR_NOT_IN_RANGE) creep.goTo(containerSite.pos, { range: 3 })
@@ -181,9 +181,13 @@ export const transportActions: {
                 return true
             }
 
+            // 修满了就换建筑
+            if (target.hits >= target.hitsMax) delete creep.memory.repairStructureId
+
             const result = creep.repair(target)
 
             if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 2 })
+            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
             else if (result !== OK) {
                 creep.say(`给我修傻了${result}`)
                 creep.log(`维修任务异常，repair 返回值: ${result}`)

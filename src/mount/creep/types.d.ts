@@ -110,10 +110,6 @@ interface CreepMemory {
      *  rangeSoldier 特有，是否启用 massAttack
      */
     massMode?: boolean
-    /**
-     * 运营单位特有，当前正在执行的物流 / 工作任务索引
-     */
-    taskKey?: number
 }
 
 /**

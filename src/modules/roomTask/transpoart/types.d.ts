@@ -11,6 +11,10 @@ interface RoomMemory {
      * 会在全局重置时通过该数据重建物流任务
      */
     transportTasks: string
+    /**
+     * 正在执行房间物流任务的 creep 的数据
+     */
+    transportCreeps: string
 }
 
 /**

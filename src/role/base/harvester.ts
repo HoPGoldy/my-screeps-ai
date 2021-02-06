@@ -179,7 +179,7 @@ const actionStrategy: ActionStrategy = {
             if (container.hits < container.hitsMax) {
                 const useRoom = Game.rooms[creep.memory.data.useRoom]
                 if (!useRoom) return false
-                useRoom.work.addTask({ type: 'repair', priority: 9 }, { dispath: true })
+                useRoom.work.updateTask({ type: 'repair', priority: 9 }, { dispath: true })
             }
 
             return true

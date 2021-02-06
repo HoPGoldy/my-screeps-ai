@@ -357,7 +357,7 @@ export const useCache = function <T extends ObjectWithId>(initValue: () => T, ca
 
         return target
     }
-    
+
     // 还没有缓存或者缓存失效了，重新获取并缓存
     target = initValue()
     if (target) cachePlace[cacheKey] = target.id

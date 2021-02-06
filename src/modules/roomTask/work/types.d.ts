@@ -11,6 +11,10 @@ interface RoomMemory {
      * 会在全局重置时通过该数据重建工作任务
      */
     workTasks: string
+    /**
+     * 正在执行工作任务的 creep 的数据
+     */
+    workCreeps: string
 }
 
 /**
@@ -50,6 +54,10 @@ interface WorkTasks {
          * 会自己去找这个 source 周边的 container 工地去修
          */
         sourceId: Id<Source>
+        /**
+         * 要修建的 container，执行任务时由 creep 自己储存
+         */
+        containerId?: Id<StructureContainer>
     }
     /**
      * 维修任务

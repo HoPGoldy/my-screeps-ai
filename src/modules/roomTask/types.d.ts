@@ -90,7 +90,7 @@ interface InterfaceTaskController<
     getTask(taskKey: number): CostomTask | undefined
     hasTask(taskIndex: number | TaskType): boolean
     removeTask(taskIndex: number | TaskType): OK | ERR_NOT_FOUND
-    getUnitTaskType(creep: Creep): CostomTask
+    getUnitTask(creep: Creep): CostomTask
     removeCreep(creepId): void
     getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[]
     draw(startX: number, startY: number): void

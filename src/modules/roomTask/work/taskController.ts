@@ -21,15 +21,13 @@ const WORK_PROPORTION_TO_EXPECT = [
 ]
 
 export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWorkTask> implements InterfaceWorkTaskController {
-    readonly SAVE_KEY: string = 'workTasks'
-
     /**
      * 构造- 管理指定房间的工作任务
      * 
      * @param roomName 要管理任务的房间名
      */
     constructor(roomName: string) {
-        super(roomName, 'workTasks')
+        super(roomName, 'work')
     }
 
     /**
@@ -37,10 +35,12 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
     public getWork(creep: MyCreep<'worker'>): RoomTaskAction {
-        const task = this.getUnitTaskType(creep)
+        const task = this.getUnitTask(creep)
         if (!task) return noTask(creep)
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
+        const { x, y } = creep.pos
+        creep.room.visual.text(task.type, x, y, { opacity: 0.4 })
         // 分配完后获取任务执行逻辑
         return actionGenerator(creep, task, this)
     }
