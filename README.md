@@ -55,6 +55,15 @@ npm run local
 npm run build
 ```
 
+执行单元测试
+
+```bash
+# 仅执行测试
+npm run test
+# 执行测试并生成覆盖率报告（coverage/index.html）
+npm run cover
+```
+
 ## 设计
 
 访问 [/doc](https://github.com/HoPGoldy/my-screeps-ai/tree/master/doc) 来查看设计细节。

@@ -10,3 +10,6 @@ dist/
 
 src/config.ts
 src/config.creep.ts
+
+.nyc_output
+coverage

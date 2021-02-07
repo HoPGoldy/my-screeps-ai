@@ -7,7 +7,8 @@
     "start": "rollup -cw --environment DEST:main",
     "local": "rollup -cw --environment DEST:local",
     "build": "rollup -cw",
-    "test-unit": "cross-env TS_NODE_PROJECT='test/tsconfig.test.json' mocha -r ts-node/register -r tsconfig-paths/register src/**/**.test.ts"
+    "test": "cross-env TS_NODE_PROJECT='test/tsconfig.test.json' mocha -r ts-node/register -r tsconfig-paths/register src/**/**.test.ts",
+    "cover": "nyc --reporter=html npm run test"
   },
   "repository": {
     "type": "git",
@@ -34,6 +35,7 @@
     "chai": "^4.3.0",
     "cross-env": "^7.0.3",
     "mocha": "^8.2.1",
+    "nyc": "^15.1.0",
     "rollup": "^2.22.1",
     "rollup-plugin-clear": "^2.0.7",
     "rollup-plugin-copy": "^3.3.0",

@@ -58,4 +58,37 @@ describe('delayQueue 测试', function () {
         expect(callbackArgs[0]).to.be.equal(undefined)
         expect(callbackArgs[1]).to.be.deep.equal(mockData)
     })
+
+    it('可以保存任务到 Memory', function () {
+        const { saveDelayTasks, addDelayTask } = DelayQueue()
+
+        // 添加任务并保存
+        addDelayTask('spawnMiner', mockData, 1)
+        saveDelayTasks()
+
+        expect(Memory).to.include.keys('delayTasks')
+        expect(Memory.delayTasks).to.be.equal(JSON.stringify({ 1: [mockTask] }))
+    })
+
+    it('任务可以延迟触发', function () {
+        const { manageDelayTask, addDelayCallback, addDelayTask } = DelayQueue()
+        const mockCallback = spy()
+
+        // 添加不在本 tick 的任务并加载回调
+        addDelayTask('spawnMiner', mockData, 2)
+        addDelayCallback('spawnMiner', mockCallback)
+
+        // 执行模块
+        Game.time = 1
+        manageDelayTask()
+        expect(mockCallback.callCount).to.be.equal(0)
+
+        Game.time = 2
+        manageDelayTask()
+        expect(mockCallback.callCount).to.be.equal(1)
+
+        Game.time = 3
+        manageDelayTask()
+        expect(mockCallback.callCount).to.be.equal(1)
+    })
 })
