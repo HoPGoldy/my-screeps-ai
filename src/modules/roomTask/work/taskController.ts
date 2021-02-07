@@ -1,7 +1,6 @@
-import { getRoomStats } from 'modules/stats'
+import { getRoomStats } from '@/modules/stats'
 import { noTask, transportActions } from './actions'
-import { HARVEST_MODE } from 'setting'
-import TaskController from 'modules/roomTask/baseTaskController'
+import TaskController from '../baseTaskController'
 
 /**
  * 能量获取速率到调整期望的 map

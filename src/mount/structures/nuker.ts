@@ -1,4 +1,4 @@
-import { setRoomStats } from 'modules/stats'
+import { setRoomStats } from '@/modules/stats'
 
 // nuker 拓展
 export default class NukerExtension extends StructureNuker {

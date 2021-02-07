@@ -1,4 +1,4 @@
-import { structureWithMemory } from "setting"
+import { structureWithMemory } from '@/setting'
 export { default as ControllerExtension } from './controller/extension'
 export { default as SpawnExtension } from './spawn/extension'
 export { default as TowerExtension } from './tower'

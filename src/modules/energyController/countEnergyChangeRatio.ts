@@ -1,4 +1,4 @@
-import { setRoomStats } from 'modules/stats'
+import { setRoomStats } from '@/modules/stats'
 
 /**
  * 统计指定房间的能量状态（包括可用能量总量、能量获取速率

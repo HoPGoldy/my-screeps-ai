@@ -33,10 +33,6 @@ interface DelayTaskTypes {
      */
     spawnUpgrader: DelayTaskData
     /**
-     * 任务模块的全局重置后重规划任务
-     */
-    taskDispath: DelayTaskData
-    /**
      * 建筑任务发布
      * 因为建筑必须在下个 tick 才能获取到其 id
      */
@@ -84,5 +80,5 @@ interface Game {
     /**
      * 本 tick 是否需要保存延迟任务队列的数据
      */
-    _needSaveDelayQueueData: true
+    _needSaveDelayQueueData?: true
 }

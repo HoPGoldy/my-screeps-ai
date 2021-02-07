@@ -1,5 +1,5 @@
-import { DEFAULT_FLAG_NAME } from 'setting'
-import { log } from 'utils'
+import { DEFAULT_FLAG_NAME } from '@/setting'
+import { log } from '@/utils'
 import creepApi from './creepApi'
 
 /**

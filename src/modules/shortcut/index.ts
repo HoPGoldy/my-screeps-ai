@@ -1,4 +1,4 @@
-import { createGetter } from "utils"
+import { createGetter } from '@/utils'
 
 /**
  * 挂载房间快捷访问

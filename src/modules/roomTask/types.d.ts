@@ -85,6 +85,8 @@ interface InterfaceTaskController<
     TaskType extends string,
     CostomTask extends RoomTask<TaskType>
 > {
+    readonly tasks: CostomTask[]
+    readonly creeps: { [creepId: string]: TaskUnitInfo }
     addTask(task: CostomTask, opt?: AddTaskOpt)
     updateTask(newTask: CostomTask, opt: UpdateTaskOpt): number
     getTask(taskKey: number): CostomTask | undefined

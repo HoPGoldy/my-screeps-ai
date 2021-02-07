@@ -1,5 +1,5 @@
 import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from 'utils'
+import { createBodyGetter } from '@/utils'
 
 /**
  * 掠夺者

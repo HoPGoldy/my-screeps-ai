@@ -1,4 +1,4 @@
-import { calcBodyPart } from 'utils'
+import { calcBodyPart } from '@/utils'
 import { boostPrepare } from './configPart'
 
 /**

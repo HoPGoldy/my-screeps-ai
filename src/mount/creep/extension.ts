@@ -1,9 +1,9 @@
-import { repairSetting, minWallHits } from 'setting'
-import roles from 'role'
-import { goTo, setWayPoint } from 'modules/move'
-import { getMemoryFromCrossShard } from 'modules/crossShard'
-import { useCache } from 'utils'
-import { buildCompleteSite, getNearSite } from 'modules/constructionController'
+import { repairSetting, minWallHits } from '@/setting'
+import roles from '@/role'
+import { goTo, setWayPoint } from '@/modules/move'
+import { getMemoryFromCrossShard } from '@/modules/crossShard'
+import { useCache } from '@/utils'
+import { buildCompleteSite, getNearSite } from '@/modules/constructionController'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {

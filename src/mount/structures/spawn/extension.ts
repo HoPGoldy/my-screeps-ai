@@ -1,5 +1,5 @@
-import { creepDefaultMemory, importantRoles } from 'setting'
-import roles from 'role'
+import { creepDefaultMemory, importantRoles } from '@/setting'
+import roles from '@/role'
 
 /**
  * Spawn 原型拓展

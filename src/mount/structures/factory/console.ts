@@ -1,6 +1,6 @@
 import FactoryExtension from './extension'
-import { colorful } from 'utils'
-import { createHelp } from 'modules/help'
+import { colorful } from '@/utils'
+import { createHelp } from '@/modules/help'
 
 /**
  * Factory 上的用户控制接口

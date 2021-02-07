@@ -3,17 +3,21 @@
         "target": "es2017",
         "moduleResolution": "Node", 
         "outDir": "dist/",
-        "baseUrl": "src/",
+        "baseUrl": "./",
         "sourceMap": true,
         "removeComments": true,
-        "allowSyntheticDefaultImports": true
+        "allowSyntheticDefaultImports": true,
+        "paths": {
+            "@/*": ["./src/*"],
+            "@mock/*": ["./test/mock/*"]
+        }
     },
+    "exclude": [
+        "node_modules"
+    ],
     "include": [
         "src/**/*.ts",
         "types/**/*.d.ts",
         "screeps.d.ts"
-    ],
-    "exclude": [
-        "node_modules"
     ]
 }

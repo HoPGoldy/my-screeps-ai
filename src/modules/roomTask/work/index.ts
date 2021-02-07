@@ -5,7 +5,7 @@
  * 但是该模块不负责中央集群的物流任务
  */
 
-import { createGetter } from 'utils'
+import { createGetter } from '@/utils'
 import RoomWork from './taskController'
 
 /**

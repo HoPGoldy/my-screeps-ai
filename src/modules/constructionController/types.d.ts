@@ -20,5 +20,5 @@ interface Game {
     /**
      * 本 tick 是否需要保存建造管理模块的数据
      */
-    _needSaveConstructionData: boolean
+    _needSaveConstructionData?: boolean
 }

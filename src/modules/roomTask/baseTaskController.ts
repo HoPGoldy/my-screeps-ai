@@ -3,7 +3,7 @@
  * 包括任务的添加、排序、删除，以及工作 creep 的分配
  */
 
-import { log } from 'utils'
+import { log } from '@/utils'
 
 export default class TaskController<
     // 该任务模块包含的所有任务类型
@@ -29,12 +29,12 @@ export default class TaskController<
     /**
      * 该模块负责的任务
      */
-    tasks: CostomTask[] = []
+    public tasks: CostomTask[] = []
 
     /**
      * 当前正在执行任务的 creep
      */
-    creeps: { [creepId: string]: TaskUnitInfo } = {}
+    public creeps: { [creepId: string]: TaskUnitInfo } = {}
 
     /**
      * 构造 - 管理指定房间的任务
@@ -194,6 +194,7 @@ export default class TaskController<
         task.unit = (task.unit > 0) ? task.unit + 1 : 1
         if (!this.creeps[unit.id]) this.creeps[unit.id] = {}
         this.creeps[unit.id].doing = task.key
+        unit.memory.taskKey = task.key
 
         // 如果是特殊任务的话就更新对应的字段
         if (task.require && unit.memory.bodyType === task.require) {
@@ -209,7 +210,10 @@ export default class TaskController<
      * @param unit 要移除的 creep
      */
     protected removeTaskUnit(task: CostomTask, unit?: Creep): void {
-        if (unit) delete this.creeps[unit.id]
+        if (unit) {
+            delete this.creeps[unit.id]
+            delete unit.memory.taskKey
+        }
 
         if (!task) return
         task.unit = (task.unit < 1) ? 0 : task.unit - 1
@@ -256,6 +260,8 @@ export default class TaskController<
      */
     protected dispatchCreep(creep: Creep): CostomTask {
         delete this.creeps[creep.id]
+        delete creep.memory.taskKey
+
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
         // 此时 creep 将会无视人数限制，分配至体型符合的最高优先级任务
         let overflow = false

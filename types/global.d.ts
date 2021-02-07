@@ -1,6 +1,8 @@
 declare module NodeJS {
     interface Global {
         InterShardMemory: InterShardMemory
+        Game: Game
+        Memory: Memory
     }
 }
 

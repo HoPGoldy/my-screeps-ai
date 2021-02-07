@@ -1,4 +1,4 @@
-import { getName } from 'utils'
+import { getName } from '@/utils'
 
 /**
  * 新房占领单位

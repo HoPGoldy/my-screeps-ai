@@ -1,7 +1,7 @@
 import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from 'utils'
-import { HARVEST_MODE } from 'setting'
-import { addConstructionSite } from 'modules/constructionController'
+import { createBodyGetter } from '@/utils'
+import { HARVEST_MODE } from '@/setting'
+import { addConstructionSite } from '@/modules/constructionController'
 
 /**
  * 采集者

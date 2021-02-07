@@ -1,5 +1,5 @@
 
-import { log } from 'utils'
+import { log } from '@/utils'
 import { baseLayout, BASE_SIZE } from './constant'
 
 /**

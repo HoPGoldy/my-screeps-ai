@@ -1,6 +1,6 @@
-import { powerSettings } from 'setting'
-import { colorful, createRoomLink } from 'utils'
-import { createHelp } from 'modules/help'
+import { powerSettings } from '@/setting'
+import { colorful, createRoomLink } from '@/utils'
+import { createHelp } from '@/modules/help'
 
 /**
  * PowerSpawn 拓展

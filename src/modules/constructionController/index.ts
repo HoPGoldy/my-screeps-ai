@@ -3,8 +3,8 @@
  * 提供了工地自动排队（超出上限的工地暂时挂起），确认建筑是否建造完成，获取最近待建造工地、工地优先级的功能
  */
 
-import { updateStructure } from 'modules/shortcut'
-import { log } from 'utils'
+import { updateStructure } from '@/modules/shortcut'
+import { log } from '@/utils'
 
 /**
  * 该模块的数据保存在 Memory 哪个字段上

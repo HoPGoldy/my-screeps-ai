@@ -1,6 +1,6 @@
-import { getOppositeDirection } from 'utils'
+import { getOppositeDirection } from '@/utils'
 import crossRules from './crossRules'
-import { addCrossShardRequest } from 'modules/crossShard'
+import { addCrossShardRequest } from '@/modules/crossShard'
 
 /**
  * 房间移动成本缓存

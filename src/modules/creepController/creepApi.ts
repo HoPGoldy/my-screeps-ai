@@ -1,5 +1,5 @@
-import roles from 'role'
-import { colorful } from 'utils'
+import roles from '@/role'
+import { colorful } from '@/utils'
 
 /**
  * creep 发布 api

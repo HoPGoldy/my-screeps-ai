@@ -1,4 +1,4 @@
-import { calcBodyPart } from 'utils'
+import { calcBodyPart } from '@/utils'
 import { battleBase, boostPrepare } from './configPart'
 
 /**

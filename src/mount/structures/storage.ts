@@ -1,5 +1,5 @@
-import { createHelp } from 'modules/help'
-import { DEFAULT_ENERGY_KEEP_AMOUNT, DEFAULT_ENERGY_KEEP_LIMIT, ENERGY_SHARE_LIMIT } from 'setting'
+import { createHelp } from '@/modules/help'
+import { DEFAULT_ENERGY_KEEP_AMOUNT, DEFAULT_ENERGY_KEEP_LIMIT, ENERGY_SHARE_LIMIT } from '@/setting'
 
 /**
  * Storage 拓展

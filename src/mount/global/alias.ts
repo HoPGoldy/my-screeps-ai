@@ -1,7 +1,7 @@
-import { colorful, clearFlag, createRoomLink, createConst, createLink } from 'utils'
-import { factoryTopTargets } from 'setting'
-import { createHelp } from 'modules/help'
-import { routeCache } from 'modules/move'
+import { colorful, clearFlag, createRoomLink, createConst, createLink } from '@/utils'
+import { factoryTopTargets } from '@/setting'
+import { createHelp } from '@/modules/help'
+import { routeCache } from '@/modules/move'
 
 /**
  * 全局拓展的别名

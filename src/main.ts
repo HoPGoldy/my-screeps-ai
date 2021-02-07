@@ -2,11 +2,11 @@ import { generatePixelAppPlugin } from './utils'
 import { stateScannerAppPlugin } from './modules/stats'
 import { creepNumberControlAppPlugin } from './modules/creepController'
 import { crossShardAppPlugin } from './modules/crossShard'
-import { delayQueueAppPlugin } from 'modules/delayQueue'
-import { constructionAppPlugin } from 'modules/constructionController'
+import { delayQueueAppPlugin } from '@/modules/delayQueue'
+import { constructionAppPlugin } from '@/modules/constructionController'
 import { mountList, extensionAppPlugin } from './mount'
-import App from 'modules/framework'
-import { errorMapper } from 'modules/errorMapper'
+import App from '@/modules/framework'
+import { errorMapper } from '@/modules/errorMapper'
 
 // 挂载所有的原型拓展
 const app = new App({ mountList })

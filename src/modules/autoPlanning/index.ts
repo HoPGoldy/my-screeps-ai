@@ -1,8 +1,8 @@
 import planWall from './planWall'
 import planBase from './planBase'
 import planRoad from './planRoad'
-import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from 'setting'
-import { addConstructionSite } from 'modules/constructionController'
+import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from '@/setting'
+import { addConstructionSite } from '@/modules/constructionController'
 
 let planningCaches: StructurePlanningCache = {}
 

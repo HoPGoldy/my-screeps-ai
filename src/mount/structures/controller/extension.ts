@@ -1,8 +1,8 @@
-import { whiteListFilter } from 'utils'
-import { setRoomStats, getRoomStats } from 'modules/stats'
-import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from 'setting'
-import { countEnergyChangeRatio } from 'modules/energyController'
-import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
+import { whiteListFilter } from '@/utils'
+import { setRoomStats, getRoomStats } from '@/modules/stats'
+import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
+import { countEnergyChangeRatio } from '@/modules/energyController'
+import { delayQueue } from '@/modules/delayQueue'
 
 /**
  * Controller 拓展
@@ -88,7 +88,7 @@ export default class ControllerExtension extends StructureController {
         ) {
             // 暂时停止升级计划
             this.room.work.removeTask('upgrade')
-            addDelayTask('spawnUpgrader', { roomName: this.room.name }, 10000)
+            delayQueue.addDelayTask('spawnUpgrader', { roomName: this.room.name }, 10000)
         }
         else {
             // 限制只需要一个单位升级
@@ -145,7 +145,7 @@ export default class ControllerExtension extends StructureController {
 /**
  * 注册升级工的延迟孵化任务
  */
-addDelayCallback('spawnUpgrader', room => {
+delayQueue.addDelayCallback('spawnUpgrader', room => {
     // 房间或终端没了就不在孵化
     if (!room || !room.storage) return
 
@@ -155,7 +155,7 @@ addDelayCallback('spawnUpgrader', room => {
         Game.cpu.bucket < 700 ||
         // 能量不足
         room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
-    ) return addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
+    ) return delayQueue.addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
 
     room.work.updateTask({ type: 'upgrade', need: 1 })
 })

@@ -1,7 +1,7 @@
 import TerminalExtension from "./extension"
-import { colorful } from 'utils'
-import { terminalModes, terminalChannels } from "setting"
-import { createHelp } from 'modules/help'
+import { colorful } from '@/utils'
+import { terminalModes, terminalChannels } from "@/setting"
+import { createHelp } from '@/modules/help'
 
 /**
  * Terminal 上的用户控制接口

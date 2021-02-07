@@ -1,5 +1,5 @@
 import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
-import { createBodyGetter } from 'utils'
+import { createBodyGetter } from '@/utils'
 
 /**
  * manager 触发后事处理的最小生命

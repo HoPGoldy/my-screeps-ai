@@ -4,7 +4,7 @@
  * 该模块处理房间里中央集群的物流任务，包括 factory、terminal、storage、center link 之间的资源流转
  */
 
-import { createGetter } from 'utils'
+import { createGetter } from '@/utils'
 import RoomCenterTaskController from './taskController'
 
 /**

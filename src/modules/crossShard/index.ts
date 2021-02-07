@@ -4,8 +4,8 @@
  * @see 跨shard设计案.md
  */
 
-import { ALL_SHARD_NAME } from 'setting'
-import { log } from 'utils'
+import { ALL_SHARD_NAME } from '@/setting'
+import { log } from '@/utils'
 import requestHandleStrategies from './handleStrategies'
 
 // 其他 shard 的数据

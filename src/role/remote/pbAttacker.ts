@@ -1,5 +1,5 @@
-import { PB_HARVESTE_STATE } from 'setting'
-import { calcBodyPart } from 'utils'
+import { PB_HARVESTE_STATE } from '@/setting'
+import { calcBodyPart } from '@/utils'
 
 /**
  * PowerBank 攻击单位

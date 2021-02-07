@@ -20,7 +20,7 @@ interface Game {
     /**
      * 本 tick 是否需要执行保存 InterShardMemory
      */
-    _needSaveInterShardData: boolean
+    _needSaveInterShardData?: boolean
 }
 
 /**

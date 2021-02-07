@@ -5,11 +5,11 @@
  * 这些方法主要是用于和其他模块代码进行交互
  */
 
-import { creepApi } from 'modules/creepController'
-import { BOOST_RESOURCE, ENERGY_SHARE_LIMIT } from 'setting'
-import { setBaseCenter, confirmBasePos, findBaseCenterPos } from 'modules/autoPlanning/planBasePos'
-import { manageStructure } from 'modules/autoPlanning'
-import { createRoomLink, log } from 'utils'
+import { creepApi } from '@/modules/creepController'
+import { BOOST_RESOURCE } from '@/setting'
+import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modules/autoPlanning/planBasePos'
+import { manageStructure } from '@/modules/autoPlanning'
+import { createRoomLink, log } from '@/utils'
 
 export default class RoomExtension extends Room {
     /**

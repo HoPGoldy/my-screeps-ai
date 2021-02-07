@@ -1,6 +1,6 @@
-import { DEPOSIT_MAX_COOLDOWN } from 'setting'
+import { DEPOSIT_MAX_COOLDOWN } from '@/setting'
 import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from 'utils'
+import { createBodyGetter } from '@/utils'
 
 /**
  * deposit 采集者

@@ -1,6 +1,6 @@
-import { getRoomEnergyTarget, findStrategy } from 'modules/energyController'
-import { boostResourceReloadLimit } from 'setting'
-import { useCache } from 'utils'
+import { getRoomEnergyTarget, findStrategy } from '@/modules/energyController'
+import { boostResourceReloadLimit } from '@/setting'
+import { useCache } from '@/utils'
 
 /**
  * 没有任务时的行为逻辑

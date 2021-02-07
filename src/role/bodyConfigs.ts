@@ -2,7 +2,7 @@
  * 包含可复用的 creep 角色身体配置项
  */
 
-import { calcBodyPart, createBodyGetter } from 'utils'
+import { calcBodyPart, createBodyGetter } from '@/utils'
 
 /**
  * 快速生成 creep 身体部件配置项

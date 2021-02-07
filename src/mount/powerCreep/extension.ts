@@ -1,5 +1,5 @@
-import { maxOps } from 'setting'
-import { log } from 'utils'
+import { maxOps } from '@/setting'
+import { log } from '@/utils'
 
 /**
  * PowerCreep 原型拓展

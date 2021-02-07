@@ -1,5 +1,5 @@
 import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
-import { createBodyGetter } from 'utils'
+import { createBodyGetter } from '@/utils'
 
 /**
  * 工人，运营单位

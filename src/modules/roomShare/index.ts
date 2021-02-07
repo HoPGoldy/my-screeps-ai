@@ -3,7 +3,7 @@
  * @see doc/资源共享协议设计案.md
  */
 
-import { createGetter } from 'utils'
+import { createGetter } from '@/utils'
 import RoomShareController from './controller'
 
 /**

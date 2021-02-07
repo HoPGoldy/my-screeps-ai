@@ -1,4 +1,4 @@
-import { ENERGY_SHARE_LIMIT } from 'setting'
+import { ENERGY_SHARE_LIMIT } from '@/setting'
 
 /**
  * 该模块的数据保存在房间的哪个键上

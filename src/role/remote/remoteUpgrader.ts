@@ -1,7 +1,7 @@
 import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from 'utils'
+import { createBodyGetter } from '@/utils'
 import { remoteHelperIsNeed } from './utils'
-import { getRoomEnergyTarget } from 'modules/energyController'
+import { getRoomEnergyTarget } from '@/modules/energyController'
 
 /**
  * 支援 - 采矿者

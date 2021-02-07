@@ -2,14 +2,14 @@
  * 工作任务中相关的延迟任务
  */
 
-import { addConstructionSite } from 'modules/constructionController'
-import { addDelayCallback, addDelayTask } from 'modules/delayQueue'
-import { MINE_LIMIT } from 'setting'
+import { addConstructionSite } from '@/modules/constructionController'
+import { delayQueue } from '@/modules/delayQueue'
+import { MINE_LIMIT } from '@/setting'
 
 /**
  * 注册刷墙工的延迟孵化任务
  */
-addDelayCallback('spawnFiller', room => {
+delayQueue.addDelayCallback('spawnFiller', room => {
     if (!room) return
 
     // cpu 还是不够的话就延迟发布
@@ -21,7 +21,7 @@ addDelayCallback('spawnFiller', room => {
 /**
  * 注册 miner 的延迟孵化任务
  */
-addDelayCallback('spawnMiner', room => {
+delayQueue.addDelayCallback('spawnMiner', room => {
     // 房间或终端没了就不在孵化
     if (!room || !room.terminal) return
 
@@ -39,7 +39,7 @@ addDelayCallback('spawnMiner', room => {
 /**
  * 注册建筑任务发布
  */
-addDelayCallback('addBuildTask', (room, task) => {
+delayQueue.addDelayCallback('addBuildTask', (room, task) => {
     const [ x, y, roomName ] = task.pos
     const pos = new RoomPosition(x, y, roomName)
     if (!pos) return
@@ -62,7 +62,7 @@ addDelayCallback('addBuildTask', (room, task) => {
  * @param roomName 添加到的房间名
  */
 export const addSpawnRepairerTask = function (roomName: string) {
-    addDelayTask('spawnFiller', { roomName }, Game.time + 5000)
+    delayQueue.addDelayTask('spawnFiller', { roomName }, Game.time + 5000)
 }
 
 /**
@@ -71,7 +71,7 @@ export const addSpawnRepairerTask = function (roomName: string) {
  * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
  */
 export const addSpawnMinerTask = function (roomName: string, delayTime: number) {
-    addDelayTask('spawnMiner', { roomName }, delayTime + 1)
+    delayQueue.addDelayTask('spawnMiner', { roomName }, delayTime + 1)
 }
 
 /**
@@ -85,7 +85,7 @@ export const addSpawnMinerTask = function (roomName: string, delayTime: number) 
  */
 export const addBuildTask = function (pos: RoomPosition, type: BuildableStructureConstant, handleRoomName?: string) {
     const { x, y, roomName } = pos
-    addDelayTask('addBuildTask', {
+    delayQueue.addDelayTask('addBuildTask', {
         roomName: handleRoomName ? handleRoomName : roomName,
         pos: [ x, y, roomName ],
         type

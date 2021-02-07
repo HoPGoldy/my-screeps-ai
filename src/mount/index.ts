@@ -9,8 +9,8 @@ import {
     NukerExtension, PowerSpawnExtension, PowerSpawnConsole, ObserverExtension, ObserverConsole, ContainerExtension
 } from './structures'
 import SourceExtension from './source/extension'
-import { log } from 'utils'
-import { setBornCenter } from 'modules/autoPlanning/planBasePos'
+import { log } from '@/utils'
+import { setBornCenter } from '@/modules/autoPlanning/planBasePos'
 
 /**
  * 所有需要挂载的原型拓展

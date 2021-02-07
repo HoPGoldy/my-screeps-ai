@@ -5,7 +5,7 @@
  * 更多细节 @see creep控制协议设计案.md
  */
 
-import { addCrossShardRequest } from 'modules/crossShard'
+import { addCrossShardRequest } from '@/modules/crossShard'
 import { handleNotExistCreep } from './creepHandle'
 export { default as creepApi }  from './creepApi'
 
