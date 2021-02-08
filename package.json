@@ -7,7 +7,7 @@
     "start": "rollup -cw --environment DEST:main",
     "local": "rollup -cw --environment DEST:local",
     "build": "rollup -cw",
-    "test": "cross-env TS_NODE_PROJECT='test/tsconfig.test.json' mocha -r ts-node/register -r tsconfig-paths/register src/**/**.test.ts",
+    "test": "cross-env TS_NODE_PROJECT='test/tsconfig.test.json' mocha src/**/**.test.ts",
     "cover": "nyc --reporter=html npm run test"
   },
   "repository": {
@@ -17,6 +17,13 @@
   "keywords": [
     "screeps"
   ],
+  "mocha": {
+    "require": [
+      "ts-node/register",
+      "tsconfig-paths/register"
+    ],
+    "ui": "bdd"
+  },
   "author": "hopgoldy",
   "license": "ISC",
   "bugs": {

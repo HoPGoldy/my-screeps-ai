@@ -218,7 +218,7 @@ export default class TaskController<
         if (!task) return
         task.unit = (task.unit < 1) ? 0 : task.unit - 1
         // 如果是特殊任务的话就更新对应的字段
-        if (task.require && unit.memory.bodyType === task.require) {
+        if (task.require && unit?.memory?.bodyType === task.require) {
             task.requireUnit = (task.requireUnit <= 1) ? 0 : task.requireUnit - 1
         }
     }
@@ -275,8 +275,7 @@ export default class TaskController<
             // 例如这个特殊任务有普通工人在做，而自己是符合任务的特殊体型，那自己就会挤占他的工作机会
             if (result === TaskMatchResult.NeedRmoveNormal) {
                 const creepId = Object.keys(this.creeps).find(id => this.creeps[id].doing === checkTask.key)
-                if (creepId) delete this.creeps[creepId]
-                else this.log(`工作挤占异常 [要加入任务的单位] ${creep} [要加入的任务] ${JSON.stringify(checkTask)}`, 'red', true)
+                this.removeTaskUnit(checkTask, Game.getObjectById(creepId as Id<Creep>))
             }
 
             // 匹配成功，把单位设置到该任务并结束分派
@@ -311,9 +310,9 @@ export default class TaskController<
             // 体型和任务不符，下一个
             if (!require || require !== creep.memory.bodyType) return TaskMatchResult.Failed
             // 数量过多，下一个
-            if (!ignoreNeedLimit || requireUnit >= need) return TaskMatchResult.Failed
+            if (!ignoreNeedLimit && (requireUnit || 0) >= need) return TaskMatchResult.Failed
             // 特殊任务的工作单位里有普通单位，把普通单位挤掉
-            if (unit >= need && requireUnit < unit) {
+            if (unit >= need && (requireUnit || 0) < unit) {
                 return TaskMatchResult.NeedRmoveNormal
             }
         }
@@ -367,12 +366,12 @@ export default class TaskController<
      * @param creep 要获取待执行任务的 creep
      */
     public getUnitTask(creep: Creep): CostomTask {
-        const doingTask = this.getTask(this.creeps[creep.id]?.doing)
+        let doingTask = this.getTask(this.creeps[creep.id]?.doing)
 
         // 还未分配过任务，或者任务已经完成了
         if (!doingTask) {
-            const newTask = this.dispatchCreep(creep)
-            this.creeps[creep.id] = newTask ? { doing: newTask.key } : {}
+            doingTask = this.dispatchCreep(creep)
+            this.creeps[creep.id] = doingTask ? { doing: doingTask.key } : {}
         }
 
         return doingTask

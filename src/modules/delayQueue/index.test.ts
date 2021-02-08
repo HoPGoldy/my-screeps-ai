@@ -2,9 +2,9 @@ import 'mocha'
 import { DelayQueue } from './index'
 import { expect } from 'chai'
 import { spy } from 'sinon'
-import { refreshGlobalMock, RoomMock } from '@mock/index'
+import { refreshGlobalMock, getMockRoom } from '@mock/index'
 
-describe('delayQueue 测试', function () {
+describe('延迟任务队列测试', function () {
     beforeEach(refreshGlobalMock)
 
     // 一个新增矿工的延迟任务
@@ -20,7 +20,7 @@ describe('delayQueue 测试', function () {
 
         // 把数据装进Memory，并添加对应的 room
         Memory.delayTasks = JSON.stringify({ 1: [mockTask] })
-        Game.rooms['W1N1'] = new RoomMock('W1N1') as Room
+        Game.rooms['W1N1'] = getMockRoom({ name: 'W1N1' })
         Game.time = 1
 
         // 初始化模块并加载回调
@@ -35,9 +35,9 @@ describe('delayQueue 测试', function () {
         
         // 回调传入的参数应该是对应的 room 和 data
         const callbackArgs = mockCallback.getCall(0).args
-        expect(callbackArgs[0]).to.be.an.instanceOf(RoomMock)
+        expect(callbackArgs[0]).to.be.exist
         expect(callbackArgs[1]).to.be.deep.equal(mockData)
-    })
+     })
 
     it('可以添加新任务', function () {
         const { manageDelayTask, addDelayCallback, addDelayTask } = DelayQueue()

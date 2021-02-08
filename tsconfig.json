@@ -18,6 +18,7 @@
     "include": [
         "src/**/*.ts",
         "types/**/*.d.ts",
-        "screeps.d.ts"
+        "screeps.d.ts",
+        "test/**/*.ts"
     ]
 }

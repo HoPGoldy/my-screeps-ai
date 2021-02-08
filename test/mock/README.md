@@ -6,5 +6,6 @@
 
 ## 相关
 
+- [chai 官方文档](https://www.chaijs.com/api/bdd/)
 - [sinon 官方文档](https://sinonjs.org/releases/v9.2.4/)
 - [阮一峰 - Mocha 教程](http://www.ruanyifeng.com/blog/2015/12/a-mocha-tutorial-of-examples.html)
