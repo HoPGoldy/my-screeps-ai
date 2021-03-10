@@ -59,7 +59,7 @@ class CreepRelease implements InterfaceCreepRelease {
 
         if (realAdjust >= 0) {
             // 添加新的单位
-            for (let i = oldNumber; i < adjust; i++) {
+            for (let i = oldNumber; i < oldNumber + realAdjust; i++) {
                 if (creepApi.has(`${room.name} ${type}${i}`)) continue
                 creepApi.add(`${room.name} ${type}${i}`, type, { workRoom: room.name, bodyType }, room.name)
             }

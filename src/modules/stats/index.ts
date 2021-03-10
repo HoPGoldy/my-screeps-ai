@@ -80,11 +80,9 @@ export const stateScanner = function (): void {
 }
 
 /**
- * 生成 pixel 的框架插件
+ * 生成状态统计模块的框架插件
  */
 export const stateScannerAppPlugin: AppLifecycleCallbacks = {
-    reset: () => {
-        if (!Memory.stats) Memory.stats = { rooms: {} }
-    },
+    reset: initGlobalStats,
     tickEnd: stateScanner
 }

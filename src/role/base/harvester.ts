@@ -49,7 +49,7 @@ const harvester: CreepConfig<'harvester'> = {
  * 
  * @param room 要获取工作状态的房间
  */
-const setHarvestMode = function (creep: Creep, source: Source): HarvestMode {
+const setHarvestMode = function (creep: Creep, source: Source): void {
     // 外矿就采集了运到家
     if (!source.room.controller || source.room.controller.level <= 0) {
         creep.memory.harvestMode = HARVEST_MODE.START
@@ -167,7 +167,7 @@ const actionStrategy: ActionStrategy = {
         prepare: (creep, source) => {
             const container = source.getContainer()
             if (!container) {
-                creep.memory.harvestMode === HARVEST_MODE.START
+                creep.memory.harvestMode = HARVEST_MODE.START
                 return false
             }
 
@@ -246,6 +246,7 @@ const actionStrategy: ActionStrategy = {
             }
 
             creep.transferTo(target, RESOURCE_ENERGY)
+            return true
         }
     }
 }

@@ -18,6 +18,6 @@ export default class ContainerExtension extends StructureContainer {
          * @todo 这里没有考虑外矿的运输需求，等外矿模块完善后再修改
          */
         this.room.release.changeBaseUnit('worker', 3)
-        this.room.work.updateTask({ type: 'upgrade' })
+        this.room.work.updateTask({ type: 'upgrade', priority: 5 })
     }
 }
