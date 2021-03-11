@@ -1,12 +1,7 @@
-import 'mocha'
 import { DelayQueue } from './index'
-import { expect } from 'chai'
-import { spy } from 'sinon'
-import { refreshGlobalMock, getMockRoom } from '@mock/index'
+import { getMockRoom } from '@test/mock'
 
-describe('延迟任务队列测试', function () {
-    beforeEach(refreshGlobalMock)
-
+describe('延迟任务队列测试', () => {
     // 一个新增矿工的延迟任务
     const mockData: DelayTaskData = { roomName: 'W1N1' }
     const mockTask: DelayTask<'spawnMiner'> = {
@@ -14,9 +9,9 @@ describe('延迟任务队列测试', function () {
         data: mockData
     }
 
-    it('可以从 Memory 中初始化任务', function () {
+    it('可以从 Memory 中初始化任务', () => {
         const { initDelayTasks, manageDelayTask, addDelayCallback } = DelayQueue()
-        const mockCallback = spy()
+        const mockCallback = jest.fn()
 
         // 把数据装进Memory，并添加对应的 room
         Memory.delayTasks = JSON.stringify({ 1: [mockTask] })
@@ -31,17 +26,17 @@ describe('延迟任务队列测试', function () {
         manageDelayTask()
 
         // 注册的回调应该被调用一次
-        expect(mockCallback.callCount).to.be.equal(1)
+        expect(mockCallback).toBeCalled()
         
         // 回调传入的参数应该是对应的 room 和 data
-        const callbackArgs = mockCallback.getCall(0).args
-        expect(callbackArgs[0]).to.be.exist
-        expect(callbackArgs[1]).to.be.deep.equal(mockData)
+        const callbackArgs = mockCallback.mock.calls[0]
+        expect(callbackArgs[0]).not.toBeUndefined()
+        expect(callbackArgs[1]).toEqual(mockData)
      })
 
-    it('可以添加新任务', function () {
+    it('可以添加新任务', () => {
         const { manageDelayTask, addDelayCallback, addDelayTask } = DelayQueue()
-        const mockCallback = spy()
+        const mockCallback = jest.fn()
 
         // 添加任务并加载回调
         addDelayTask('spawnMiner', mockData, 1)
@@ -51,28 +46,28 @@ describe('延迟任务队列测试', function () {
         manageDelayTask()
 
         // 注册的回调应该被调用一次
-        expect(mockCallback.callCount).to.be.equal(1)
+        expect(mockCallback).toBeCalled()
 
         // 回调传入的参数应该是 undefined（因为 Game.rooms 里没有对应的房间）和 data
-        const callbackArgs = mockCallback.getCall(0).args
-        expect(callbackArgs[0]).to.be.equal(undefined)
-        expect(callbackArgs[1]).to.be.deep.equal(mockData)
+        const callbackArgs = mockCallback.mock.calls[0]
+        expect(callbackArgs[0]).toBeUndefined()
+        expect(callbackArgs[1]).toEqual(mockData)
     })
 
-    it('可以保存任务到 Memory', function () {
+    it('可以保存任务到 Memory', () => {
         const { saveDelayTasks, addDelayTask } = DelayQueue()
 
         // 添加任务并保存
         addDelayTask('spawnMiner', mockData, 1)
         saveDelayTasks()
 
-        expect(Memory).to.include.keys('delayTasks')
-        expect(Memory.delayTasks).to.be.equal(JSON.stringify({ 1: [mockTask] }))
+        expect(Memory).toHaveProperty('delayTasks')
+        expect(Memory.delayTasks).toEqual(JSON.stringify({ 1: [mockTask] }))
     })
 
-    it('任务可以延迟触发', function () {
+    it('任务可以延迟触发', () => {
         const { manageDelayTask, addDelayCallback, addDelayTask } = DelayQueue()
-        const mockCallback = spy()
+        const mockCallback = jest.fn()
 
         // 添加不在本 tick 的任务并加载回调
         addDelayTask('spawnMiner', mockData, 2)
@@ -81,14 +76,14 @@ describe('延迟任务队列测试', function () {
         // 执行模块
         Game.time = 1
         manageDelayTask()
-        expect(mockCallback.callCount).to.be.equal(0)
+        expect(mockCallback).not.toBeCalled()
 
         Game.time = 2
         manageDelayTask()
-        expect(mockCallback.callCount).to.be.equal(1)
+        expect(mockCallback).toBeCalled()
 
         Game.time = 3
         manageDelayTask()
-        expect(mockCallback.callCount).to.be.equal(1)
+        expect(mockCallback).toBeCalled()
     })
 })

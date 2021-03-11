@@ -13,3 +13,5 @@ src/config.creep.ts
 
 .nyc_output
 coverage
+
+server

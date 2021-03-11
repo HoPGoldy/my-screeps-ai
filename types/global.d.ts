@@ -3,6 +3,7 @@ declare module NodeJS {
         InterShardMemory: InterShardMemory
         Game: Game
         Memory: Memory
+        _: _.LoDashStatic
     }
 }
 

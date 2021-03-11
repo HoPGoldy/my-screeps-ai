@@ -9,7 +9,7 @@
         "allowSyntheticDefaultImports": true,
         "paths": {
             "@/*": ["./src/*"],
-            "@mock/*": ["./test/mock/*"]
+            "@test/*": ["./test/*"]
         }
     },
     "exclude": [
