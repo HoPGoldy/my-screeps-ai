@@ -10,7 +10,7 @@ const SAVE_KEY = 'shareTask'
  */
 const RESOURCE_SOURCE_SAVE_KEY = 'resourceSourceMap'
 
-export default class RoomShareController implements InterfaceShareController {
+export default class RoomShareController {
     readonly roomName: string
 
     constructor(roomName: string) {
