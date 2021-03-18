@@ -19,7 +19,16 @@ const WORK_PROPORTION_TO_EXPECT = [
     { rate: -100, expect: -2 }
 ]
 
-export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWorkTask> implements InterfaceWorkTaskController {
+/**
+ * 工作任务逻辑的生成函数
+ */
+export type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
+    creep: MyCreep<'worker'>,
+    task: WorkTasks[T],
+    workController: RoomWork
+) => RoomTaskAction
+
+export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWorkTask> {
     /**
      * 构造- 管理指定房间的工作任务
      * 

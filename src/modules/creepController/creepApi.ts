@@ -35,7 +35,7 @@ export default {
         const room = Game.rooms[spawnRoom]
         if (!room) return ERR_NOT_OWNER
         // 推送孵化任务
-        room.addSpawnTask(creepName)
+        room.spawner.addTask(creepName)
         return OK
     },
 

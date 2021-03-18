@@ -38,5 +38,5 @@ export const handleNotExistCreep = function (creepName: string, creepMemory: MyC
     }
 
     // 加入生成，加入成功的话删除过期内存
-    if (spawnRoom.addSpawnTask(creepName) != ERR_NAME_EXISTS) delete Memory.creeps[creepName]
+    if (spawnRoom.spawner.addTask(creepName) != ERR_NAME_EXISTS) delete Memory.creeps[creepName]
 }

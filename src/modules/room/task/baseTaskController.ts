@@ -10,7 +10,7 @@ export default class TaskController<
     TaskType extends string,
     // 该任务模块包含的所有任务
     CostomTask extends RoomTask<TaskType>
-> implements InterfaceTaskController<TaskType, CostomTask> {
+> {
     /**
      * 本任务对象所处的房间名
      */

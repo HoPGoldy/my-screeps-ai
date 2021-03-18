@@ -1,19 +1,26 @@
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
 
-import mountShortcut from '@/modules/shortcut'
-import mountTransport from '@/modules/roomTask/transpoart'
-import mountWork from '@/modules/roomTask/work'
-import mountCenterTransport from '@/modules/roomTask/center'
-import mountCreepRelease from '@/modules/creepController/creepRelease'
-
 import { createGetter } from '@/utils'
+import mountShortcut from '@/modules/room/shortcut'
 import RoomShareController from '@/modules/room/share'
+import { RoomCenterTaskController, RoomTransportTaskController, RoomWorkTaskController } from '@/modules/room/task'
+import RoomCreepReleaseController from '@/modules/creepController/creepRelease'
+import RoomSpawnController from '@/modules/room/spawn'
 
+/**
+ * 房间插件
+ * 实例化时必须接受当前房间名
+ */
 type AnyRoomPlugin = { new (name: string): any }
 
+/**
+ * 插件存储
+ */
 interface PluginStorage {
+    /** 插件的类别 */
     [pluginName: string]: {
+        /** 插件管理的房间名 */
         [roomName: string]: AnyRoomPlugin
     }
 }
@@ -22,9 +29,17 @@ interface PluginStorage {
  * 依次挂载所有的 Room 拓展
  */
 export default () => {
+    // 挂载快捷方式
+    mountShortcut()
+
     // 等待安装的房间插件列表
     const plugins: [ string, AnyRoomPlugin ][] = [
-        [ 'share', RoomShareController ]
+        [ 'share', RoomShareController ],
+        [ 'centerTransport', RoomCenterTaskController ],
+        [ 'transport', RoomTransportTaskController ],
+        [ 'work', RoomWorkTaskController ],
+        [ 'release', RoomCreepReleaseController ],
+        [ 'spawn', RoomSpawnController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -44,20 +59,33 @@ export default () => {
             return pluginStorage[pluginName][this.name]
         })
     })
-    // 挂载快捷方式
-    mountShortcut()
-
-    // 挂载 creep 发布
-    mountCreepRelease()
-
-    // 挂载三个任务队列
-    mountCenterTransport()
-    mountTransport()
-    mountWork()
 }
 
 declare global {
     interface Room {
+        /**
+         * 资源共享模块
+         */
         share: RoomShareController
+        /**
+         * 工作任务模块
+         */
+        work: RoomWorkTaskController 
+        /**
+         * 物流任务模块
+         */
+        transport: RoomTransportTaskController
+        /**
+         * 中央物流任务模块
+         */
+        centerTransport: RoomCenterTaskController
+        /**
+         * creep 发布模块
+         */
+        release: RoomCreepReleaseController
+        /**
+         * 孵化控制模块
+         */
+        spawner: RoomSpawnController
     }
 }

@@ -1,17 +1,8 @@
-const SAVE_KEY = 'centerTasks'
+import RoomAccessor from "../../RoomAccessor"
 
-export default class RoomCenterTaskController implements InterfaceCenterTaskController {
-    readonly roomName: string
-
+export default class RoomCenterTaskController extends RoomAccessor<CenterTransportTask[]> {
     constructor(roomName: string) {
-        this.roomName = roomName
-    }
-
-    public get tasks(): CenterTransportTask[] {
-        if (!Memory.rooms) Memory.rooms = {}
-        if (!Memory.rooms[this.roomName][SAVE_KEY]) Memory.rooms[this.roomName][SAVE_KEY] = []
-        
-        return Memory.rooms[this.roomName][SAVE_KEY]
+        super('centerTask', roomName, 'centerTasks', [])
     }
 
     /**
@@ -26,10 +17,17 @@ export default class RoomCenterTaskController implements InterfaceCenterTaskCont
         // 由于这里的目标建筑限制型和非限制型存储都有，这里一律作为非限制性检查来减少代码量
         if (this[task.target] && (this[task.target].store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) < task.amount) return -2
 
-        if (!priority) this.tasks.push(task)
-        else this.tasks.splice(priority, 0, task)
+        if (!priority) this.memory.push(task)
+        else this.memory.splice(priority, 0, task)
 
-        return this.tasks.length - 1
+        return this.memory.length - 1
+    }
+
+    /**
+     * 获取该模块的任务列表
+     */
+    public get tasks(): CenterTransportTask[] {
+        return this.memory
     }
 
     /**
@@ -39,7 +37,7 @@ export default class RoomCenterTaskController implements InterfaceCenterTaskCont
      * @returns 是否有该任务
      */
     public hasTask(submit: CenterStructures | number): boolean {
-        const task = this.tasks.find(task => task.submit === submit)
+        const task = this.memory.find(task => task.submit === submit)
         return task ? true : false
     }
 
@@ -50,8 +48,10 @@ export default class RoomCenterTaskController implements InterfaceCenterTaskCont
      * @returns 任务的排队位置, 0 是最前面
      */
     public hangTask(): number {
-        this.tasks.push(this.tasks.shift())
-        return this.tasks.length - 1
+        this.memory.push(this.memory.shift())
+        this.saveMemory()
+        
+        return this.memory.length - 1
     }
 
     /**
@@ -60,7 +60,7 @@ export default class RoomCenterTaskController implements InterfaceCenterTaskCont
      * @returns 有任务返回任务, 没有返回 null
      */
     public getTask(): CenterTransportTask | undefined {
-        return this.tasks[0]
+        return this.memory[0]
     }
 
     /**
@@ -70,16 +70,18 @@ export default class RoomCenterTaskController implements InterfaceCenterTaskCont
      * @param transferAmount 本次转移的数量
      */
     public handleTask(transferAmount: number): void {
-        this.tasks[0].amount -= transferAmount
-        if (this.tasks[0].amount <= 0) {
+        this.memory[0].amount -= transferAmount
+        if (this.memory[0].amount <= 0) {
             this.deleteCurrentTask()
         }
+        else this.saveMemory()
     }
 
     /**
      * 移除当前中央运输任务
      */
     public deleteCurrentTask(): void {
-        this.tasks.shift()
+        this.memory.shift()
+        this.saveMemory()
     }
 }

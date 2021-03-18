@@ -9,5 +9,6 @@ if (process.env.NODE_ENV === 'mockup') {
 }
 // 默认为执行单元测试
 else {
+    refreshGlobalMock()
     beforeEach(refreshGlobalMock)
 }

@@ -6,7 +6,7 @@ import creepApi from './creepApi'
  * 基于 creepApi 的封装
  * 可以注入到 Room 原型中，提供快速发布对应 creep（单个或多个）的功能
  */
-class CreepRelease implements InterfaceCreepRelease {
+export default class RoomCreepRelease {
     readonly roomName: string = ''
 
     constructor(roomName: string) {
@@ -358,28 +358,4 @@ class CreepRelease implements InterfaceCreepRelease {
 
         return `[${room.name}] 掠夺者 ${reiverName} 已发布, 目标旗帜名称 ${sourceFlagName || DEFAULT_FLAG_NAME.REIVER}, 将搬运至 ${targetStructureId ? targetStructureId : room.name + ' Terminal'}`
     }
-}
-
-/**
- * 所有的房间物流对象都被存放到这里
- */
-const releaseControllers: { [roomName: string]: CreepRelease } = {}
-
-/**
- * 向房间原型挂载物流对象
- * 
- * @param key 要挂载到 Room 的哪个键上
- */
-export default function (key: string = 'release') {
-    Object.defineProperty(Room.prototype, key, {
-        get() {
-            if (!(this.name in releaseControllers)) {
-                releaseControllers[this.name] = new CreepRelease(this.name)
-            }
-
-            return releaseControllers[this.name]
-        },
-        enumerable: false,
-        configurable: true
-    })
 }

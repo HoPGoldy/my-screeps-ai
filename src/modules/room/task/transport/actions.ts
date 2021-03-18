@@ -1,6 +1,7 @@
 import { getRoomEnergyTarget, findStrategy } from '@/modules/energyController'
 import { boostResourceReloadLimit } from '@/setting'
 import { useCache } from '@/utils'
+import RoomTransport, { TransportActionGenerator } from './taskController'
 
 /**
  * 没有任务时的行为逻辑
@@ -614,7 +615,7 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  * @param creep 要获取能量的 creep
  * @returns 身上是否已经有足够的能量了
  */
-const getEnergy = function (creep: MyCreep<'manager'>, transport: InterfaceTransportTaskController): boolean {
+const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransport): boolean {
     transport.countWorkTime()
     if (creep.store[RESOURCE_ENERGY] > 10) return true
 

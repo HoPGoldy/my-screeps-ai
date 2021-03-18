@@ -17,6 +17,15 @@ const WORK_PROPORTION_TO_EXPECT = [
 ]
 
 /**
+ * 物流搬运任务逻辑的生成函数
+ */
+export type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskType> = (
+   creep: MyCreep<'manager'>,
+   task: TransportTasks[T],
+   transportController: RoomTransport
+) => RoomTaskAction
+
+/**
  * 期望调整的统计下限
  * 因为搬运工调整期望值来源于 totalLifeTime 和 totalWorkTime 的统计数据
  * 当这两个值还太小时会造成期望不够准确
@@ -24,7 +33,7 @@ const WORK_PROPORTION_TO_EXPECT = [
  */
 const REGULATE_LIMIT = 500
 
-export default class RoomTransport extends TaskController<AllTransportTaskType, AllRoomTransportTask> implements InterfaceTransportTaskController {
+export default class RoomTransport extends TaskController<AllTransportTaskType, AllRoomTransportTask> {
     /**
      * 本房间的搬运工总生命时长
      */

@@ -1,4 +1,5 @@
 import { getMockRoom } from './Room'
+import { getMock } from './utils'
 
 // 伪造 creep 的默认值
 class CreepMock {
@@ -22,6 +23,4 @@ class CreepMock {
  * 伪造一个 creep
  * @param props 该 creep 的属性
  */
-export const getMockCreep = (props: Partial<Creep> = {}): Creep => {
-    return Object.assign(new CreepMock() as Creep, props)
-}
+export const getMockCreep = getMock<Creep>(CreepMock)

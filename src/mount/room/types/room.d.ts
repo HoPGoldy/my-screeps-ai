@@ -8,10 +8,6 @@ interface RoomMemory {
      */
     removeTime?: number
     /**
-     * 该房间的生产队列，元素为 creepConfig 的键名
-     */
-    spawnList?: string[]
-    /**
      * 基地中心点坐标, [0] 为 x 坐标, [1] 为 y 坐标
      */
     center: [ number, number ]
@@ -194,15 +190,6 @@ interface Room {
     deleteCurrentPowerTask(): void
     getPowerTask(): PowerConstant | undefined
     hangPowerTask(): void
-
-    /**
-     * 孵化队列 api
-     * 下述方法在 @see /src/mount.room.ts 中定义
-     */
-    addSpawnTask(taskName: string): number | ERR_NAME_EXISTS
-    hasSpawnTask(taskName: string): boolean
-    clearSpawnTask(): void
-    hangSpawnTask(): void
 
     /**
      * 资源共享 api

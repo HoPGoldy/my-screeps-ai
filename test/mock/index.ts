@@ -1,6 +1,8 @@
 export { getMockRoom } from './Room'
 export { getMockCreep } from './Creep'
 export { getMockGame } from './Game'
+export { getMockVisual } from './RoomVisual'
+export { getMockSpawn } from './structures/Spawn'
 export { getMockMemory } from './Memory'
 export * from './utils'
 

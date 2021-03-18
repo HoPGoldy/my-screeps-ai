@@ -1,10 +1,3 @@
-interface Room {
-    /**
-     * 房间物流 api
-     */
-    transport: InterfaceTransportTaskController
-}
-
 interface RoomMemory {
     /**
      * 房间物流任务的备份数据
@@ -108,39 +101,3 @@ interface TransportTasks {
  * 从内存 transport 字段解析出来的存储格式
  */
 type TransportData = TransportTasks[AllTransportTaskType][]
-
-interface InterfaceTransportTaskController extends InterfaceTaskController<AllTransportTaskType, AllRoomTransportTask> {
-    /**
-     * 填写新的房间物流任务
-     */
-    addTask(task: AllRoomTransportTask, opt?: AddTaskOpt): number 
-    /**
-     * 获取应该执行的任务
-     */
-    getWork(creep: Creep): RoomTaskAction
-    /**
-     * 是否存在某个任务
-     */
-    hasTask(taskType: AllTransportTaskType)
-    /**
-     * 移除一个任务
-     */
-    removeTask(taskKey: number | AllTransportTaskType): OK | ERR_NOT_FOUND
-    /**
-     * 获取该房间的搬运工调整期望
-     */
-    getExpect(): number
-    /**
-     * 搬运工工作时长 + 1
-     */
-    countWorkTime(): void
-}
-
-/**
- * 物流搬运任务逻辑的生成函数
- */
-type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskType> = (
-    creep: MyCreep<'manager'>,
-    task: TransportTasks[T],
-    transportController: InterfaceTransportTaskController
-) => RoomTaskAction

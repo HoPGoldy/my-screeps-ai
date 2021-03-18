@@ -1,10 +1,3 @@
-interface Room {
-    /**
-     * 房间工作 api
-     */
-    work: InterfaceWorkTaskController
-}
-
 interface RoomMemory {
     /**
      * 房间工作任务的备份数据
@@ -73,46 +66,6 @@ interface WorkTasks {
  * 从内存 workList 字段解析出来的存储格式
  */
 type WorkTaskData = WorkTasks[AllWorkTaskType][]
-
-interface InterfaceWorkTaskController extends InterfaceTaskController<AllWorkTaskType, AllRoomWorkTask> {
-    /**
-     * 填写一个新的房间物流任务
-     */
-    addTask(task: AllRoomWorkTask, opt?: AddTaskOpt): void
-    /**
-     * 根据 taskKey 获取指定任务
-     */
-    getTask(taskKey: number): AllRoomWorkTask | undefined
-    /**
-     * 获取应该执行的任务
-     */
-    getWork(creep: Creep): RoomTaskAction
-    /**
-     * 是否存在某个任务
-     */
-    hasTask(taskType: AllWorkTaskType)
-    /**
-     * 移除一个任务
-     */
-    removeTask(taskIndex: number | AllWorkTaskType): OK | ERR_NOT_FOUND
-    /**
-     * 更新指定任务
-     */
-    updateTask(newTask: AllRoomWorkTask, opt?: UpdateTaskOpt): number
-    /**
-     * 获取该房间的搬运工调整期望
-     */
-    getExpect(): number
-}
-
-/**
- * 工作任务逻辑的生成函数
- */
-type WorkActionGenerator<T extends AllWorkTaskType = AllWorkTaskType> = (
-    creep: MyCreep<'worker'>,
-    task: WorkTasks[T],
-    workController: InterfaceWorkTaskController
-) => RoomTaskAction
 
 /**
  * 特殊身体类型

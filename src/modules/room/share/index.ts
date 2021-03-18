@@ -1,38 +1,22 @@
 import { ENERGY_SHARE_LIMIT } from '@/setting'
-
-/**
- * 该模块的数据保存在房间的哪个键上
- */
-const SAVE_KEY = 'shareTask'
+import RoomAccessor from '../RoomAccessor'
+import { RoomShareTask, ResourceSourceMap } from './types'
 
 /**
  * 全局的资源来源表存放在 Memory 的哪个键上
  */
 const RESOURCE_SOURCE_SAVE_KEY = 'resourceSourceMap'
 
-export default class RoomShareController {
-    readonly roomName: string
-
+export default class RoomShareController extends RoomAccessor<RoomShareTask> {
     constructor(roomName: string) {
-        this.roomName = roomName
+        super('roomShare', roomName, 'shareTask', undefined)
     }
 
     /**
      * 允许外部模块获取当前的共享任务
      */
     public get task(): RoomShareTask {
-        return Memory.rooms?.[this.roomName]?.[SAVE_KEY]
-    }
-
-    /**
-     * 设置新的共享任务
-     * 将覆盖之前的任务
-     * 
-     * @param newTask 新共享任务
-     */
-    private setTask(newTask: RoomShareTask): void {
-        if (!Memory.rooms) Memory.rooms = {}
-        Memory.rooms[this.roomName][SAVE_KEY] = newTask
+        return this.memory
     }
 
     /**
@@ -115,11 +99,12 @@ export default class RoomShareController {
         // 期望发送量、当前存量、能发送的最大数量中找最小的
         const sendAmount = Math.min(amount, terminalAmount + storageAmount, freeSpace)
 
-        this.setTask({
+        this.memory = {
             target: targetRoom,
             resourceType,
             amount: sendAmount
-        })
+        }
+
         return true
     }
 

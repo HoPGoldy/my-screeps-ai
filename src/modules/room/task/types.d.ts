@@ -77,23 +77,3 @@ interface UpdateTaskOpt extends AddTaskOpt {
      */
     addWhenNotFound?: boolean
 }
-
-/**
- * 基础任务模块的接口规范
- */
-interface InterfaceTaskController<
-    TaskType extends string,
-    CostomTask extends RoomTask<TaskType>
-> {
-    readonly tasks: CostomTask[]
-    readonly creeps: { [creepId: string]: TaskUnitInfo }
-    addTask(task: CostomTask, opt?: AddTaskOpt)
-    updateTask(newTask: CostomTask, opt: UpdateTaskOpt): number
-    getTask(taskKey: number): CostomTask | undefined
-    hasTask(taskIndex: number | TaskType): boolean
-    removeTask(taskIndex: number | TaskType): OK | ERR_NOT_FOUND
-    getUnitTask(creep: Creep): CostomTask
-    removeCreep(creepId): void
-    getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[]
-    draw(startX: number, startY: number): void
-}

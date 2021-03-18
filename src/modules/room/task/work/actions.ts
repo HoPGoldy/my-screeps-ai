@@ -1,6 +1,7 @@
 import { getRoomEnergyTarget, findStrategy } from '@/modules/energyController'
 import { useCache } from '@/utils'
 import { addSpawnMinerTask } from './delayTask'
+import { WorkActionGenerator } from './taskController'
 
 /**
  * @warning 在任务完成时要及时清除该任务在 creep 内存中留下的缓存

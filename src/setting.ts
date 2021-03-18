@@ -3,13 +3,6 @@
  * 本文件存放了项目中的内置常量，一般情况下不需要进行修改。
  */
 
-// creep 的默认内存
-export const creepDefaultMemory: CreepMemory = {
-    role: 'worker', 
-    ready: false, 
-    working: false
-}
-
 // 房间建筑维修需要的设置
 export const repairSetting = {
     // 在 tower 的能量高于该值时才会刷墙
@@ -450,9 +443,6 @@ export const FILLER_WITH_CONTAINER_RANGE = [
     { range: 25, num: 2 },
     { range: 0, num: 1 }
 ]
-
-// 用于维持房间能量正常运转的重要角色
-export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'manager', 'processor' ]
 
 /**
  * 所有的 shard 名称，用于跨 shard 通讯，
