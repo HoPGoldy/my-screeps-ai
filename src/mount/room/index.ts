@@ -2,11 +2,15 @@ export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
 
 import { createGetter } from '@/utils'
-import mountShortcut from '@/modules/room/shortcut'
-import RoomShareController from '@/modules/room/share'
-import { RoomCenterTaskController, RoomTransportTaskController, RoomWorkTaskController } from '@/modules/room/task'
+import {
+    mountShortcut,
+    RoomShareController,
+    RoomCenterTaskController,
+    RoomTransportTaskController,
+    RoomWorkTaskController,
+    RoomSpawnController
+} from '@/modules/room'
 import RoomCreepReleaseController from '@/modules/creepController/creepRelease'
-import RoomSpawnController from '@/modules/room/spawn'
 
 /**
  * 房间插件

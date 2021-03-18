@@ -6,14 +6,10 @@
  */
 
 import { addCrossShardRequest } from '@/modules/crossShard'
-import { handleNotExistCreep } from './creepHandle'
 export { default as creepApi }  from './creepApi'
-
-/**
- * 上个 tick 的 Game.creeps
- * 用于和本 tick 进行比对，初步确定是否有 creep 死亡
- */
-let lastGameCreepNumber: number = 0
+import { log } from '@/utils'
+import roles from '@/role'
+import creepApi from './creepApi'
 
 /**
  * creep 的数量控制器
@@ -22,12 +18,8 @@ let lastGameCreepNumber: number = 0
  * @param intrval 搜索间隔
  */
 export default function creepNumberListener(): void {
-    const nowGameCreepNumber = Object.keys(Game.creeps).length
     // 本 tick creep 数量没变，不用执行检查
-    if (nowGameCreepNumber === lastGameCreepNumber) {
-        lastGameCreepNumber = nowGameCreepNumber
-        return
-    }
+    if (Object.keys(Memory.creeps).length === Object.keys(Game.creeps).length) return
 
     // 遍历所有 creep 内存，检查其是否存在
     for (const name in Memory.creeps) {
@@ -57,9 +49,45 @@ export default function creepNumberListener(): void {
         // 如果 creep 凉在了本 shard
         else handleNotExistCreep(name, creepMemory)
     }
+}
 
-    // 保存本 tick creep，供下个 tick 检查
-    lastGameCreepNumber = nowGameCreepNumber
+/**
+ * 处理去世的 creep
+ * 会检查其是否需要再次孵化
+ * 
+ * @param creepName creep 名字
+ * @param creepMemory creep 死时的内存
+ */
+const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMemory) {
+    const creepConfig = Memory.creepConfigs[creepName]
+    // 获取配置项
+    if (!creepConfig) {
+        log(`死亡 ${creepName} 未找到对应 creepConfig, 已删除`, [ 'creepController' ])
+        delete Memory.creeps[creepName]
+        return
+    }
+
+    // 检查指定的 room 中有没有它的生成任务
+    const spawnRoom = Game.rooms[creepConfig.spawnRoom]
+    if (!spawnRoom) {
+        log(`死亡 ${creepName} 未找到 ${creepConfig.spawnRoom}, 已删除`, [ 'creepController' ])
+        delete Memory.creeps[creepName]
+        return
+    }
+
+    const creepWork: CreepConfig<CreepRoleConstant> = roles[creepConfig.role]
+
+    // 通过 isNeed 阶段判断该 creep 是否要继续孵化
+    // 没有提供 isNeed 阶段的话则默认需要重新孵化
+    if (creepWork.isNeed && !creepWork.isNeed(spawnRoom, creepMemory)) {
+        // creep 不需要了，遗弃该 creep
+        creepApi.remove(creepName)
+        delete Memory.creeps[creepName]
+        return
+    }
+
+    // 加入生成，加入成功的话删除过期内存
+    if (spawnRoom.spawner.addTask(creepName) != ERR_NAME_EXISTS) delete Memory.creeps[creepName]
 }
 
 /**

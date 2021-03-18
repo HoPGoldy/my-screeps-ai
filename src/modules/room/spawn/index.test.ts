@@ -1,7 +1,7 @@
 import { getMockRoom, getMockSpawn } from '@test/mock'
 import { getMockSpawning } from '@test/mock/structures/Spawning'
 import { RoomTransportTaskController } from '../task'
-import { creepDefaultMemory } from './constant'
+import { creepDefaultMemory, importantRoles } from './constant'
 import RoomSpawnController from './index'
 
 jest.mock('@/role', () => {
@@ -9,7 +9,13 @@ jest.mock('@/role', () => {
         default: {
             harvester: {
                 bodys: () => [ WORK, CARRY, MOVE ]
-            }
+            },
+            signer: {
+                bodys: () => [ WORK, CARRY, MOVE ]
+            },
+            reiver: {
+                bodys: () => [ WORK, CARRY, MOVE ]
+            },
         }
     }
 })
@@ -27,6 +33,7 @@ it('可以正常增减任务', () => {
     // 任务正常被移除
     expect(room.memory).not.toHaveProperty('spawnList')
 
+    controller.addTask('creepA')
     const result = controller.addTask('creepA')
     // 重名的任务不会被添加
     expect(result).toEqual(ERR_NAME_EXISTS)
@@ -79,13 +86,14 @@ it('spawnCreep 测试', () => {
     expect(spawnCreep).toBeCalledWith([ WORK, CARRY, MOVE ], 'creepA', { memory: creepMemory })
 })
 
-it('spawn 后应正确添加能量填充任务', () => {
-    const addTransportTask = jest.fn()
+it('孵化后应正确添加能量填充任务', () => {
+    const updateTransportTask = jest.fn()
 
     const room = getMockRoom({
         name: 'W1N1',
         // mock 一个物流模块
-        transport: { addTask: addTransportTask } as unknown as RoomTransportTaskController
+        transport: { updateTask: updateTransportTask } as unknown as RoomTransportTaskController,
+        addPowerTask: jest.fn()
     })
     Game.rooms.W1N1 = room
     // 创建一个刚开始孵化的 spawn
@@ -95,4 +103,63 @@ it('spawn 后应正确添加能量填充任务', () => {
 
     const controller = new RoomSpawnController('W1N1')
     controller.runSpawn(spawn)
+    // 发现开始孵化，应该发布 ext 填充任务
+    expect(updateTransportTask.mock.calls[0][0]).toHaveProperty('type', 'fillExtension')
+
+    // 下个 tick
+    spawn.spawning = getMockSpawning({ needTime: 10, remainingTime: 8 })
+    // 每次孵化期间只会发布一次填充任务
+    expect(updateTransportTask).toHaveBeenCalledTimes(1)
+})
+
+it('能量不足时会挂起非重要孵化任务', () => {
+    const room = getMockRoom({ name: 'W1N1' })
+    Game.rooms.W1N1 = room
+
+    const spawnCreep = jest.fn().mockReturnValue(ERR_NOT_ENOUGH_ENERGY)
+    const spawn = getMockSpawn({ spawnCreep })
+
+    const controller = new RoomSpawnController('W1N1')
+    controller.addTask('creepA')
+    controller.runSpawn(spawn)
+
+    // creepConfigs 中没有 creepA，不会调用孵化
+    expect(spawnCreep).not.toBeCalled()
+    // 没有这个配置项，所以任务会被移除
+    expect(room.memory).not.toHaveProperty('spawnList')
+
+    Memory.creepConfigs = {
+        'creepA': { role: 'harvester', data: {}, spawnRoom: 'W1N1' },
+        'creepB': { role: 'signer', data: {}, spawnRoom: 'W1N1' },
+        'creepC': { role: 'reiver', data: {}, spawnRoom: 'W1N1' },
+    }
+    // 添加两个普通孵化任务和一个重要孵化任务
+    controller.addTask('creepB')
+    controller.addTask('creepC')
+    controller.addTask('creepA')
+
+    controller.runSpawn(spawn)
+    // 由于返回能量不足，所以 creepB 被挂起
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepC')
+
+    controller.runSpawn(spawn)
+    // 由于返回能量不足，所以 creepC 被挂起
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepA')
+
+    controller.runSpawn(spawn)
+    // 但是由于 creepA 是重要角色，所以它不会被挂起
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepA')
+
+    controller.runSpawn(spawn)
+    // 再执行一次也一样
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepA')
+
+    spawnCreep.mockReturnValueOnce(OK)
+    controller.runSpawn(spawn)
+    // 返回 OK，creepA 应该被正确移除（孵化了）
+    expect(JSON.parse(room.memory.spawnList)).toEqual(['creepB', 'creepC'])
+
+    controller.runSpawn(spawn)
+    // 再次能量不足，creepB 被挂起到末尾
+    expect(JSON.parse(room.memory.spawnList)).toEqual(['creepC', 'creepB'])
 })

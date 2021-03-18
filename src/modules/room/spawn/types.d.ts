@@ -5,7 +5,7 @@ interface RoomMemory {
     /**
      * 该房间的生产队列，元素为 creepConfig 的键名
      */
-    spawnList: string[]
+    spawnList: string
 }
 
 /**

@@ -1,5 +1,3 @@
-import { handleNotExistCreep } from '@/modules/creepController/creepHandle'
-
 /**
  * 其他 shard 发来的请求的处理策略
  * 
@@ -21,9 +19,11 @@ const requestHandleStrategies: CrossShardRequestStrategies = {
     /**
      *  其他 shard 发来了 creep 的重新孵化任务
      */
-    sendRespawn: data => {
+    sendRespawn: ({ name, memory }) => {
         // console.log('Respawn >', JSON.stringify(data))
-        handleNotExistCreep(data.name, data.memory)
+        // 把要孵化的 creep 内存塞回 Memory.creeps
+        // 然后就会被 creep 数量控制模块识别到并走正常的重生流程
+        Memory.creeps[name] = memory
         return OK
     }
 }
