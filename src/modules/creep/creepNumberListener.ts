@@ -1,15 +1,6 @@
-/**
- * creep 控制模块
- * 
- * 负责 creep 的新增、删除及修改，creep 死后也会由该模块负责回收或再孵化
- * 更多细节 @see creep控制协议设计案.md
- */
-
 import { addCrossShardRequest } from '@/modules/crossShard'
-export { default as creepApi }  from './creepApi'
 import { log } from '@/utils'
 import roles from '@/role'
-import creepApi from './creepApi'
 
 /**
  * creep 的数量控制器
@@ -17,7 +8,7 @@ import creepApi from './creepApi'
  * 
  * @param intrval 搜索间隔
  */
-export default function creepNumberListener(): void {
+export const creepNumberListener = function (): void {
     // 本 tick creep 数量没变，不用执行检查
     if (Object.keys(Memory.creeps).length === Object.keys(Game.creeps).length) return
 
@@ -59,43 +50,35 @@ export default function creepNumberListener(): void {
  * @param creepMemory creep 死时的内存
  */
 const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMemory) {
-    const creepConfig = Memory.creepConfigs[creepName]
-    // 获取配置项
-    if (!creepConfig) {
-        log(`死亡 ${creepName} 未找到对应 creepConfig, 已删除`, [ 'creepController' ])
+    const { spawnRoom: spawnRoomName, data, role } = creepMemory
+
+    // 禁止孵化的 creep 直接移除
+    if (creepMemory.cantRespawn) {
+        log(`死亡 ${creepName} 被禁止孵化, 已删除`, [ 'creepController' ])
         delete Memory.creeps[creepName]
         return
     }
 
     // 检查指定的 room 中有没有它的生成任务
-    const spawnRoom = Game.rooms[creepConfig.spawnRoom]
+    const spawnRoom = Game.rooms[spawnRoomName]
     if (!spawnRoom) {
-        log(`死亡 ${creepName} 未找到 ${creepConfig.spawnRoom}, 已删除`, [ 'creepController' ])
+        log(`死亡 ${creepName} 未找到 ${spawnRoomName}, 已删除`, [ 'creepController' ])
         delete Memory.creeps[creepName]
         return
     }
 
-    const creepWork: CreepConfig<CreepRoleConstant> = roles[creepConfig.role]
+    const creepWork: CreepConfig<CreepRoleConstant> = roles[role]
 
     // 通过 isNeed 阶段判断该 creep 是否要继续孵化
     // 没有提供 isNeed 阶段的话则默认需要重新孵化
     if (creepWork.isNeed && !creepWork.isNeed(spawnRoom, creepMemory)) {
-        // creep 不需要了，遗弃该 creep
-        creepApi.remove(creepName)
         delete Memory.creeps[creepName]
         return
     }
 
     // 加入生成，加入成功的话删除过期内存
-    if (spawnRoom.spawner.addTask(creepName) != ERR_NAME_EXISTS) delete Memory.creeps[creepName]
-}
+    const result = spawnRoom.spawner.addTask({ name: creepName, role, data })
 
-/**
- * creep 数量控制模块注册插件
- */
-export const creepNumberControlAppPlugin: AppLifecycleCallbacks = {
-    reset: () => {
-        if (!Memory.creepConfigs) Memory.creepConfigs = {}
-    },
-    tickStart: creepNumberListener,
+    if (result != ERR_NAME_EXISTS) log(`死亡 ${creepName} 孵化任务已存在`, [ 'creepController' ])
+    delete Memory.creeps[creepName]
 }

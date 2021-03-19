@@ -10,7 +10,6 @@ import {
     RoomWorkTaskController,
     RoomSpawnController
 } from '@/modules/room'
-import RoomCreepReleaseController from '@/modules/creepController/creepRelease'
 
 /**
  * 房间插件
@@ -42,7 +41,6 @@ export default () => {
         [ 'centerTransport', RoomCenterTaskController ],
         [ 'transport', RoomTransportTaskController ],
         [ 'work', RoomWorkTaskController ],
-        [ 'release', RoomCreepReleaseController ],
         [ 'spawn', RoomSpawnController ]
     ]
 
@@ -83,10 +81,6 @@ declare global {
          * 中央物流任务模块
          */
         centerTransport: RoomCenterTaskController
-        /**
-         * creep 发布模块
-         */
-        release: RoomCreepReleaseController
         /**
          * 孵化控制模块
          */

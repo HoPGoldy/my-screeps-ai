@@ -6,7 +6,6 @@ import { boostPrepare } from './configPart'
  * 7 级以上可用, 25HEAL 25MOVE
  * 详情见 role.doctor
  * 
- * @param spawnRoom 出生房间名称
  * @param creepsName 要治疗的 creep 名称
  */
 const boostDoctor: CreepConfig<'boostDoctor'> = {

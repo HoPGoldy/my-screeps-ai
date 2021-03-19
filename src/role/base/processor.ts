@@ -5,7 +5,6 @@ import { createBodyGetter } from '@/utils'
  * 中心搬运者
  * 从房间的中央任务队列 Room.memory.centerTransferTasks 中取出任务并执行
  * 
- * @param spawnRoom 出生房间名称
  * @param x 要移动到的 x 坐标
  * @param y 要移动到的 y 坐标
  * @param centerLinkId 中央 link 的 id

@@ -6,7 +6,6 @@ import { battleBase, boostPrepare } from './configPart'
  * 本角色仅能在 RCL >= 7 时生成
  * 扛塔数量为 0 时依旧会携带 3 个强化 HEAL (144/T 的回复)，但是不会有 TOUGH
  * 
- * @param spawnRoom 出生房间名称
  * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能力越强，默认为 6 (0~6)
  * @param flagName 要攻击的旗帜名称
  */

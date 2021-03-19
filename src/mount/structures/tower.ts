@@ -1,4 +1,4 @@
-import { creepApi } from '@/modules/creepController'
+import { GetName } from '@/modules/room/spawn/nameGetter'
 import { repairSetting, TOWER_FILL_WALL_LEVEL } from '@/setting'
 import { whiteListFilter } from '@/utils'
 
@@ -69,6 +69,12 @@ export default class TowerExtension extends StructureTower {
         if (this.room.controller.checkEnemyThreat()) {
             // 启动主动防御模式
             this.room.memory.defenseMode = 'active'
+
+            // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
+            const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
+            // 提高刷墙任务优先级并孵化额外工作单位
+            this.room.work.updateTask({ type: 'fillWall', priority: 9 })
+            this.room.spawner.release.changeBaseUnit('worker', newWorkerNumber)
             // this.log('已启动主动防御')
         }
 
@@ -80,7 +86,7 @@ export default class TowerExtension extends StructureTower {
      * 主动防御模式 tower 工作
      */
     private activeWork(): void {
-        const defenderName = `${this.room.name} defender`
+        const defenderName = GetName.defender(this.room.name)
         const defender = Game.creeps[defenderName]
 
         if (defender && !defender.spawning) {
@@ -136,8 +142,12 @@ export default class TowerExtension extends StructureTower {
         // 已经有主动防御任务了
         if (this.room.memory.boost.type === 'DEFENSE') {
             // 强化准备完成，发布防御单位
-            if (this.room.memory.boost.state === 'waitBoost' && !creepApi.has(defenderName)) {
-                const result = creepApi.add(defenderName, 'defender', {}, this.room.name)
+            if (this.room.memory.boost.state === 'waitBoost' && !(defenderName in Game.creeps)) {
+                const result = this.room.spawner.addTask({
+                    name: defenderName,
+                    role: 'defender',
+                    data: {}
+                })
                 this.log(`已发布主动防御单位，返回值：${result}`, 'green')
             }
         }
@@ -176,16 +186,6 @@ export default class TowerExtension extends StructureTower {
                 if (target instanceof StructureRampart || target instanceof StructureWall) {
                     // 设为焦点墙体
                     this.room._importantWall = target
-                    
-                    const repairCreepName = `${this.room.name} repair`
-                    if (creepApi.has(`${repairCreepName} 1`)) break
-
-                    this.log(`墙体被攻击!孵化维修单位`, 'yellow')
-                    // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
-                    const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
-                    // 提高刷墙任务优先级并孵化额外工作单位
-                    this.room.work.updateTask({ type: 'fillWall', priority: 9 })
-                    this.room.release.changeBaseUnit('worker', newWorkerNumber)
                 }
             }
         }

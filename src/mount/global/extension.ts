@@ -1,7 +1,7 @@
 import { findBaseCenterPos } from '@/modules/autoPlanning/planBasePos'
 import { baseLayout } from '@/modules/autoPlanning/constant'
 import { createHelp } from '@/modules/help'
-import { creepApi } from '@/modules/creepController'
+import { showCreep, removeCreep, hasCreep } from '@/modules/creep'
 
 // 全局拓展对象
 export default {
@@ -346,6 +346,10 @@ export default {
         }
     },
 
-    // 将 creepApi 挂载到全局方便手动发布或取消 creep
-    creepApi
+    // 将 creepApi 挂载到全局方便手动操作
+    creep: {
+        show: showCreep,
+        remove: removeCreep,
+        has: hasCreep
+    }
 }

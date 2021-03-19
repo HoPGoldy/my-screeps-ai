@@ -28,7 +28,7 @@ export default class ControllerExtension extends StructureController {
                 // 如果发现入侵者已经老死了，就移除对应属性并重新发布外矿角色组
                 if (this.room.memory.remote[remoteRoomName].disableTill <= Game.time) {
                     delete this.room.memory.remote[remoteRoomName].disableTill
-                    this.room.release.remoteCreepGroup(remoteRoomName)
+                    this.room.spawner.release.remoteCreepGroup(remoteRoomName)
                 }
             }
         }
@@ -51,9 +51,9 @@ export default class ControllerExtension extends StructureController {
     public onLevelChange(level: number): void {
         // 刚占领，添加工作单位
         if (level === 1) {
-            this.room.release.harvester()
-            this.room.release.changeBaseUnit('manager', 1)
-            this.room.release.changeBaseUnit('worker', 2)
+            this.room.spawner.release.harvester()
+            this.room.spawner.release.changeBaseUnit('manager', 1)
+            this.room.spawner.release.changeBaseUnit('worker', 2)
         }
         else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
             // 开始刷墙后就开始执行刷墙任务
@@ -73,8 +73,8 @@ export default class ControllerExtension extends StructureController {
     private adjustCreep(): void {
         if (Game.time % 500) return
 
-        this.room.release.changeBaseUnit('manager', this.room.transport.getExpect())
-        this.room.release.changeBaseUnit('worker', this.room.work.getExpect())
+        this.room.spawner.release.changeBaseUnit('manager', this.room.transport.getExpect())
+        this.room.spawner.release.changeBaseUnit('worker', this.room.work.getExpect())
     }
 
     /**

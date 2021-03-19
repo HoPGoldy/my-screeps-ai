@@ -6,7 +6,6 @@ import { calcBodyPart } from '@/utils'
  * 搬运 PowerBank Ruin 中的 power, 请在 8 级时生成
  * @see doc "../doc/PB 采集小组设计案"
  * 
- * @param spawnRoom 出生房间名称
  * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
  */
 const pbCarrier: CreepConfig<'pbCarrier'> = {
@@ -59,7 +58,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
         }
     },
     target: creep => {
-        const { spawnRoom: spawnRoomName, sourceFlagName } = creep.memory.data
+        const { spawnRoom: spawnRoomName, data: { sourceFlagName } } = creep.memory
 
         // 获取资源运输目标房间并兜底
         const room = Game.rooms[spawnRoomName]

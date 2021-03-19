@@ -66,7 +66,7 @@ export default class RoomAccessor<MemoryType> {
     /**
      * 模块所在房间
      */
-    protected get room(): Room {
+    public get room(): Room {
         if (!Game.rooms[this.roomName]) {
             log(`无法访问房间实例，模块已停止运行`, [this.moduleName], 'red', true)
             throw new Error(`${this.roomName} ${this.moduleName} 房间实例不存在`)

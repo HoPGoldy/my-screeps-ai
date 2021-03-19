@@ -60,7 +60,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
     },
     // 向旗帜出发
     source: creep => {
-        const { sourceFlagName, spawnRoom } = creep.memory.data
+        const { spawnRoom, data: { sourceFlagName } } = creep.memory
         if (creep.store.getFreeCapacity(RESOURCE_ENERGY) <= 0) return true
 
         const sourceFlag = Game.flags[sourceFlagName]
@@ -88,7 +88,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
         if (harvestResult === OK) {
             // 如果发现 source 上限掉回 1500 了，就发布 reserver
             if (source.energyCapacity === SOURCE_ENERGY_NEUTRAL_CAPACITY) {
-                Game.rooms[spawnRoom].release.remoteReserver(creep.room.name)
+                Game.rooms[spawnRoom].spawner.release.remoteReserver(creep.room.name)
             }
         }
         // 一旦被 core 占领就不再生成

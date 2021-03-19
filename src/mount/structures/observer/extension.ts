@@ -91,7 +91,7 @@ export class ObserverExtension extends StructureObserver {
             // 计算应该发布的采集小组数量，最高两组
             const groupNumber = target.pos.getFreeSpace().length > 1 ? 2 : 1
             // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
-            this.room.release.pbHarvesteGroup(targetFlagName, groupNumber)
+            this.room.spawner.release.pbHarvesteGroup(targetFlagName, groupNumber)
         }
         else if (target instanceof Deposit) {
             const targetFlagName = `deposit ${this.room.name} ${Game.time}`
@@ -100,7 +100,7 @@ export class ObserverExtension extends StructureObserver {
             // 更新数量
             this.room.memory.observer.depoList.push(targetFlagName)
             // 发布采集者，他会自行完成剩下的工作
-            this.room.release.depositHarvester(targetFlagName)
+            this.room.spawner.release.depositHarvester(targetFlagName)
         }
         else return ERR_INVALID_TARGET
 

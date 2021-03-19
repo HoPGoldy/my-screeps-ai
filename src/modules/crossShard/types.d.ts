@@ -6,9 +6,9 @@ type ShardName = 'shard0' | 'shard1' | 'shard2' | 'shard3'
 interface Memory {
     /**
      * 从其他 shard 跳跃过来的 creep 内存会被存放在这里
-     * 等 creep 抵达后在由其亲自放在 creepConfigs 里
+     * 等 creep 抵达后在由其亲自放在 Memory.creeps 里
      * 
-     * 不能直接放在 creepConfigs
+     * 不能直接放在 Memory.creeps
      * 因为有可能出现内存到了但是 creep 还没到的情况，这时候 creepController 就会以为这个 creep 死掉了从而直接把内存回收掉
      */
     crossShardCreeps: {

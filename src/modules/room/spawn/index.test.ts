@@ -1,8 +1,8 @@
 import { getMockRoom, getMockSpawn } from '@test/mock'
 import { getMockSpawning } from '@test/mock/structures/Spawning'
-import { RoomTransportTaskController } from '../task'
-import { creepDefaultMemory, importantRoles } from './constant'
-import RoomSpawnController from './index'
+import RoomTransportTaskController from '../task/transport/taskController'
+import { creepDefaultMemory } from './constant'
+import RoomSpawnController, { SpawnTask } from './index'
 
 jest.mock('@/role', () => {
     return {
@@ -20,24 +20,43 @@ jest.mock('@/role', () => {
     }
 })
 
+jest.mock('./creepRelease', () => ({
+    default: class RoomCreepRelease {
+        constructor() {}
+    }
+}))
+
+/**
+ * 伪造一个孵化任务
+ */
+const getSpawnTask = (
+    name: string = 'creepA',
+    role: string = 'harvester',
+    data: AnyObject = { flag: 'mock' }
+): SpawnTask => ({
+    name, data, role: role as CreepRoleConstant
+})
+
 it('可以正常增减任务', () => {
     const room = getMockRoom({ name: 'W1N1' })
     Game.rooms.W1N1 = room
     const controller = new RoomSpawnController('W1N1')
 
-    controller.addTask('creepA')
+    const spawnTaskA = getSpawnTask()
+
+    controller.addTask(spawnTaskA)
     // 在内存中可以读到保存的任务
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify(['creepA']))
+    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskA]))
 
     controller.removeCurrentTask()
     // 任务正常被移除
     expect(room.memory).not.toHaveProperty('spawnList')
 
-    controller.addTask('creepA')
-    const result = controller.addTask('creepA')
+    controller.addTask(spawnTaskA)
+    const result = controller.addTask(spawnTaskA)
     // 重名的任务不会被添加
     expect(result).toEqual(ERR_NAME_EXISTS)
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify(['creepA']))
+    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskA]))
 })
 
 it('可以挂起任务', () => {
@@ -45,42 +64,39 @@ it('可以挂起任务', () => {
     Game.rooms.W1N1 = room
     const controller = new RoomSpawnController('W1N1')
 
-    controller.addTask('creepA')
-    controller.addTask('creepB')
+    const spawnTaskA = getSpawnTask()
+    const spawnTaskB = getSpawnTask('creepB')
+
+    controller.addTask(spawnTaskA)
+    controller.addTask(spawnTaskB)
     // 在内存中可以读到保存的任务
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify(['creepA', 'creepB']))
+    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskA, spawnTaskB]))
 
     controller.hangTask()
     // 任务被挂起到末尾
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify(['creepB', 'creepA']))
+    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskB, spawnTaskA]))
 })
 
 it('spawnCreep 测试', () => {
     const room = getMockRoom({ name: 'W1N1' })
     Game.rooms.W1N1 = room
 
-    const spawnCreep = jest.fn()
+    const spawnTaskA = getSpawnTask()
+
+    const spawnCreep = jest.fn().mockReturnValue(OK)
     const spawn = getMockSpawn({ spawnCreep })
 
     const controller = new RoomSpawnController('W1N1')
-    controller.addTask('creepA')
+    controller.addTask(spawnTaskA)
     controller.runSpawn(spawn)
 
-    // creepConfigs 中没有 creepA，不会调用孵化
-    expect(spawnCreep).not.toBeCalled()
-    // 没有这个配置项，所以任务会被移除
-    expect(room.memory).not.toHaveProperty('spawnList')
-
-    Memory.creepConfigs = { 'creepA': { role: 'harvester', data: { flag: 'mock' }, spawnRoom: 'W1N1' } }
-    controller.addTask('creepA')
-    controller.runSpawn(spawn)
-
-    // 现在将会正常访问 spawn.spawnCreep 进行孵化
+    // 讲会正常访问 spawn.spawnCreep 进行孵化
     expect(spawnCreep).toBeCalled()
+    const { role, data } = spawnTaskA
     const creepMemory = {
         ...creepDefaultMemory,
-        role: 'harvester',
-        data: { flag: 'mock' }
+        spawnRoom: 'W1N1',
+        role, data
     }
     // creep 的身体部件、名称及内存中的角色和数据都应正确设置
     expect(spawnCreep).toBeCalledWith([ WORK, CARRY, MOVE ], 'creepA', { memory: creepMemory })
@@ -116,50 +132,41 @@ it('能量不足时会挂起非重要孵化任务', () => {
     const room = getMockRoom({ name: 'W1N1' })
     Game.rooms.W1N1 = room
 
+    const spawnTaskA = getSpawnTask()
+    const spawnTaskB = getSpawnTask('creepB', 'signer')
+    const spawnTaskC = getSpawnTask('creepC', 'reiver')
+
     const spawnCreep = jest.fn().mockReturnValue(ERR_NOT_ENOUGH_ENERGY)
     const spawn = getMockSpawn({ spawnCreep })
 
     const controller = new RoomSpawnController('W1N1')
-    controller.addTask('creepA')
-    controller.runSpawn(spawn)
-
-    // creepConfigs 中没有 creepA，不会调用孵化
-    expect(spawnCreep).not.toBeCalled()
-    // 没有这个配置项，所以任务会被移除
-    expect(room.memory).not.toHaveProperty('spawnList')
-
-    Memory.creepConfigs = {
-        'creepA': { role: 'harvester', data: {}, spawnRoom: 'W1N1' },
-        'creepB': { role: 'signer', data: {}, spawnRoom: 'W1N1' },
-        'creepC': { role: 'reiver', data: {}, spawnRoom: 'W1N1' },
-    }
     // 添加两个普通孵化任务和一个重要孵化任务
-    controller.addTask('creepB')
-    controller.addTask('creepC')
-    controller.addTask('creepA')
+    controller.addTask(spawnTaskB)
+    controller.addTask(spawnTaskC)
+    controller.addTask(spawnTaskA)
 
     controller.runSpawn(spawn)
     // 由于返回能量不足，所以 creepB 被挂起
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepC')
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskC)
 
     controller.runSpawn(spawn)
     // 由于返回能量不足，所以 creepC 被挂起
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepA')
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskA)
 
     controller.runSpawn(spawn)
     // 但是由于 creepA 是重要角色，所以它不会被挂起
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepA')
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskA)
 
     controller.runSpawn(spawn)
     // 再执行一次也一样
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual('creepA')
+    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskA)
 
     spawnCreep.mockReturnValueOnce(OK)
     controller.runSpawn(spawn)
     // 返回 OK，creepA 应该被正确移除（孵化了）
-    expect(JSON.parse(room.memory.spawnList)).toEqual(['creepB', 'creepC'])
+    expect(JSON.parse(room.memory.spawnList)).toEqual([spawnTaskB, spawnTaskC])
 
     controller.runSpawn(spawn)
     // 再次能量不足，creepB 被挂起到末尾
-    expect(JSON.parse(room.memory.spawnList)).toEqual(['creepC', 'creepB'])
+    expect(JSON.parse(room.memory.spawnList)).toEqual([spawnTaskC, spawnTaskB])
 })

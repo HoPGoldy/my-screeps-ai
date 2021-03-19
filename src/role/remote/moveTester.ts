@@ -5,7 +5,6 @@
  * 添加：creepApi.add('happyCreep0', 'moveTester', { sourceFlagName: 'p' }, 'W49S9')
  * 删除：creepApi.remove('happyCreep0')
  * 
- * @param spawnRoom 出生房间名称
  * @param flagName 目标旗帜名称
  */
 const moveTester: CreepConfig<'moveTester'> = {

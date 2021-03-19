@@ -116,24 +116,6 @@ interface MyCreepMemory<Role extends CreepRoleConstant = CreepRoleConstant> exte
 }
 
 /**
- * Creep 配置项在内存中的存储
- */
-interface CreepConfigMemory {
-    /**
-     * creep 的角色名
-     */
-    role: CreepRoleConstant
-    /**
-     * creep 的具体配置项，每个角色的配置都不相同
-     */
-    data: CreepData
-    /**
-     * 执行 creep 孵化的房间名
-     */
-    spawnRoom: string
-}
-
-/**
  * 有些角色不需要 data
  */
 interface EmptyData { }
@@ -258,10 +240,6 @@ interface RemoteDeclarerData {
      */
     targetRoomName: string
     /**
-     * 自己出生的房间，claim 需要这个字段来向老家发布支援 creep
-     */
-    spawnRoom?: string
-    /**
      * 给控制器的签名
      */
     signText?: string
@@ -280,10 +258,6 @@ interface RemoteHarvesterData {
      * 资源要存放到哪个建筑里，外矿采集者必须指定该参数
      */
     targetId?: Id<StructureWithStore>
-    /**
-     * 出生房名称，资源会被运输到该房间中
-     */
-    spawnRoom?: string
 }
 
 interface pbAttackerData {
@@ -295,10 +269,6 @@ interface pbAttackerData {
      * 资源要存放到哪个建筑里，外矿采集者必须指定该参数
      */
     healerCreepName: string
-    /**
-     * 出生房名称，资源会被运输到该房间中
-     */
-    spawnRoom: string
 }
 
 /**

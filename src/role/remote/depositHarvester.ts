@@ -7,7 +7,6 @@ import { createBodyGetter } from '@/utils'
  * 从指定矿中挖 deposit > 将挖出来的资源转移到建筑中
  * 
  * @property {} sourceFlagName 旗帜名，要插在 deposit 上
- * @property {} spawnRoom 出生房间名
  */
 const depositHarvester: CreepConfig<'depositHarvester'> = {
     isNeed: (room, preMemory) => {
@@ -81,7 +80,7 @@ const depositHarvester: CreepConfig<'depositHarvester'> = {
         else creep.say(`采集 ${harvestResult}`)
     },
     target: creep => {
-        const { spawnRoom, sourceFlagName } = creep.memory.data
+        const { spawnRoom, data: { sourceFlagName } } = creep.memory
 
         const room = Game.rooms[spawnRoom]
         if (!room || !room.terminal) {

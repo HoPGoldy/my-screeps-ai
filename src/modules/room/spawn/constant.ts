@@ -3,7 +3,8 @@ export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'manager', 'pr
 
 // creep 的默认内存
 export const creepDefaultMemory: CreepMemory = {
-    role: 'worker', 
-    ready: false, 
-    working: false
+    role: 'worker',
+    ready: false,
+    working: false,
+    spawnRoom: 'W1N1'
 }

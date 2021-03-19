@@ -1,31 +1,56 @@
 import { creepDefaultMemory, importantRoles } from './constant'
 import RoomAccessor from '../RoomAccessor'
 import roles from '@/role'
+import RoomCreepRelease from './creepRelease'
+
+/**
+ * 孵化任务
+ */
+export interface SpawnTask<Role extends CreepRoleConstant = CreepRoleConstant> {
+    /**
+     * 要孵化的 creep 名称
+     */
+    name: string
+    /**
+     * 该 Creep 的角色
+     */
+    role: Role
+    /**
+     * 该 creep 所需的 data
+     */
+    data: RoleDatas[Role],
+}
 
 /**
  * 房间孵化管理模块
  * 提供了一套 api 用于管理孵化任务
  */
-export default class RoomSpawnController extends RoomAccessor<string[]> {
+export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
+    /**
+     * creep 发布接口
+     */
+    release: RoomCreepRelease
+
     /**
      * 实例化房间孵化管理
      * @param roomName 要管理的房间名
      */
     constructor(roomName: string) {
         super('roomSpawn', roomName, 'spawnList', [])
+        this.release = new RoomCreepRelease(this)
     }
 
     /**
      * 向生产队列里推送一个生产任务
      * 
-     * @param creepName 要孵化的 creep 名称，必须位于 creepConfigs 中
+     * @param task 新的孵化任务
      * @returns 当前任务在队列中的排名
      */
-    public addTask(creepName: string): number | ERR_NAME_EXISTS {
+    public addTask(task: SpawnTask): number | ERR_NAME_EXISTS {
         // 先检查下任务是不是已经在队列里了
-        if (!this.hasTask(creepName)) {
+        if (!this.hasTask(task.name)) {
             // 任务加入队列
-            this.memory.push(creepName)
+            this.memory.push(task)
             this.saveMemory()
 
             return this.memory.length - 1
@@ -41,7 +66,7 @@ export default class RoomSpawnController extends RoomAccessor<string[]> {
      * @returns 有则返回 true
      */
     public hasTask(creepName: string): boolean {
-        return this.memory.includes(creepName)
+        return !!this.memory.find(({ name }) => name === creepName)
     }
 
     /**
@@ -82,7 +107,7 @@ export default class RoomSpawnController extends RoomAccessor<string[]> {
              */
             if (spawn.spawning.needTime - spawn.spawning.remainingTime == 1) {
                 this.room.transport.updateTask({ type: 'fillExtension', priority: 10 })
-    
+
                 if (
                     // 非战争状态下直接发布 power 填 extension 任务
                     !this.room.memory.war ||
@@ -110,44 +135,37 @@ export default class RoomSpawnController extends RoomAccessor<string[]> {
         // 能量不足就挂起任务，但是如果是重要角色的话就会卡住然后优先孵化
         else if (
             spawnResult === ERR_NOT_ENOUGH_ENERGY &&
-            !importantRoles.includes(Memory.creepConfigs[task].role)
+            !importantRoles.includes(task.role)
         ) this.hangTask()
     }
 
     /**
      * 从 spawn 生产 creep
      * 
-     * @param configName 对应的配置名称
+     * @param spawn 要执行孵化的 spawn
+     * @param task 要孵化的任务
      * @returns Spawn.spawnCreep 的返回值
      */
-    private spawnCreep(spawn: StructureSpawn, configName: string): MySpawnReturnCode {
-        // 如果配置列表中已经找不到该 creep 的配置了 则直接移除该生成任务
-        const creepConfig = Memory.creepConfigs?.[configName]
-        if (!creepConfig) return OK
-
-        // 找不到他的工作逻辑的话也直接移除任务
-        const creepWork: CreepConfig<CreepRoleConstant> = roles[creepConfig.role]
+    private spawnCreep(spawn: StructureSpawn, { name, role, data }: SpawnTask): MySpawnReturnCode {
+        // 找不到他的工作逻辑的话直接移除任务
+        const creepWork: CreepConfig<CreepRoleConstant> = roles[role]
         if (!creepWork) return OK
 
         // 设置 creep 内存
-        let creepMemory: CreepMemory = _.cloneDeep(creepDefaultMemory)
-        creepMemory.role = creepConfig.role
-        creepMemory.data = creepConfig.data
+        let memory: CreepMemory = { ...creepDefaultMemory, spawnRoom: this.room.name, role, data }
 
         // 获取身体部件
-        const bodys = creepWork.bodys(this.room, spawn, creepConfig.data)
+        const bodys = creepWork.bodys(this.room, spawn, data)
         if (bodys.length <= 0) return ERR_NOT_ENOUGH_ENERGY
 
-        const spawnResult: ScreepsReturnCode = spawn.spawnCreep(bodys, configName, {
-            memory: creepMemory
-        })
+        const spawnResult: ScreepsReturnCode = spawn.spawnCreep(bodys, name, { memory })
         this.room.visual.text(`mySpawnCreep 返回值 ${spawnResult}`, 1, 5, { align: 'left' })
         // 检查是否生成成功
         if (spawnResult == OK) {
             return OK
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
-            this.log(`${configName} 已经存在 ${creepConfig.spawnRoom} 将不再生成`)
+            this.log(`${name} 已经存在 ${this.roomName} 将不再生成`)
             // 这里返回 ok，然后让外层方法移除对应的孵化任务
             return OK
         }

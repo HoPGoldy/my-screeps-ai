@@ -5,11 +5,12 @@
  * 这些方法主要是用于和其他模块代码进行交互
  */
 
-import { creepApi } from '@/modules/creepController'
 import { BOOST_RESOURCE } from '@/setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modules/autoPlanning/planBasePos'
 import { manageStructure } from '@/modules/autoPlanning'
 import { createRoomLink, log } from '@/utils'
+import { GetName } from '@/modules/room/spawn/nameGetter'
+import { removeCreep } from '@/modules/creep'
 
 export default class RoomExtension extends Room {
     /**
@@ -128,17 +129,8 @@ export default class RoomExtension extends Room {
             s.destroy()
         })
 
-        // 移除 creep config
-        creepApi.batchRemove(this.name)
-
         // 移除 creep
-        for (const name in Game.creeps) {
-            const creep = Game.creeps[name]
-            if (creep.name.includes(this.name)) {
-                creep.suicide()
-                delete creep.memory
-            }
-        }
+        removeCreep(this.name, { batch: true, immediate: true })
 
         // 移除内存
         delete this.memory
@@ -315,7 +307,7 @@ export default class RoomExtension extends Room {
         // 添加对应的键值对
         this.memory.remote[remoteRoomName] = { targetId }
 
-        this.release.remoteCreepGroup(remoteRoomName)
+        this.spawner.release.remoteCreepGroup(remoteRoomName)
         return OK
     }
 
@@ -339,11 +331,11 @@ export default class RoomExtension extends Room {
             if (!(flagName in Game.flags)) return
 
             if (removeFlag) Game.flags[flagName].remove()
-            creepApi.remove(`${remoteRoomName} remoteHarvester${index}`)
+            removeCreep(GetName.remoteHarvester(remoteRoomName, index))
         })
 
         // 移除预定者
-        creepApi.remove(`${remoteRoomName} reserver`)
+        removeCreep(GetName.reserver(remoteRoomName))
 
         return OK
     }
@@ -356,11 +348,11 @@ export default class RoomExtension extends Room {
      * @param signText 新房间的签名
      */
     public claimRoom(targetRoomName: string, signText: string = ''): OK {
-        creepApi.add(`${targetRoomName} Claimer`, 'claimer', {
-            targetRoomName,
-            spawnRoom: this.name,
-            signText
-        }, this.name)
+        this.spawner.addTask({
+            name: GetName.claimer(targetRoomName),
+            role: 'claimer',
+            data: { targetRoomName, signText }
+        })
 
         return OK
     }

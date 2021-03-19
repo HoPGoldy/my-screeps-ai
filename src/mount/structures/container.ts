@@ -17,7 +17,7 @@ export default class ContainerExtension extends StructureContainer {
          * 更新家里的搬运工数量，几个 container 就发布其数量 * 3
          * @todo 这里没有考虑外矿的运输需求，等外矿模块完善后再修改
          */
-        this.room.release.changeBaseUnit('worker', 3)
+        this.room.spawner.release.changeBaseUnit('worker', 3)
         this.room.work.updateTask({ type: 'upgrade', priority: 5 })
     }
 }

@@ -1,16 +1,18 @@
+import { removeCreep } from '@/modules/creep'
 import { DEFAULT_FLAG_NAME } from '@/setting'
 import { log } from '@/utils'
-import creepApi from './creepApi'
+import RoomSpawnController from './index'
+import { GetName } from './nameGetter'
 
 /**
- * 基于 creepApi 的封装
- * 可以注入到 Room 原型中，提供快速发布对应 creep（单个或多个）的功能
+ * creep 发布工具
+ * 基于 RoomSpawnController 的封装
  */
 export default class RoomCreepRelease {
-    readonly roomName: string = ''
+    readonly spawner: RoomSpawnController
 
-    constructor(roomName: string) {
-        this.roomName = roomName
+    constructor(spawner: RoomSpawnController) {
+        this.spawner = spawner
     }
 
     /**
@@ -18,15 +20,18 @@ export default class RoomCreepRelease {
      * 固定一个 source 发布一个单位
      */
     public harvester(): OK | ERR_NOT_FOUND {
-        const room = Game.rooms[this.roomName]
-        if (!room) return ERR_NOT_FOUND
+        const { name: roomName, source } = this.spawner.room
 
-        room.source.map((source, index) => {
-            creepApi.add(`${room.name} harvester${index}`, 'harvester', {
-                useRoom: room.name,
-                harvestRoom: room.name,
-                sourceId: source.id
-            }, room.name)
+        source.map((source, index) => {
+            this.spawner.addTask({
+                name: GetName.harvester(roomName, index),
+                role: 'harvester',
+                data: {
+                    useRoom: roomName,
+                    harvestRoom: roomName,
+                    sourceId: source.id
+                }
+            })
         })
 
         return OK
@@ -41,8 +46,7 @@ export default class RoomCreepRelease {
      * @param bodyType 在新增时要设置的特殊体型，减少数量时无效
      */
     public changeBaseUnit(type: 'worker' | 'manager', adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
-        const room = Game.rooms[this.roomName]
-        if (!room) return ERR_NOT_FOUND
+        const { room } = this.spawner
 
         // 单位对应在房间内存中保存的键
         const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
@@ -60,14 +64,19 @@ export default class RoomCreepRelease {
         if (realAdjust >= 0) {
             // 添加新的单位
             for (let i = oldNumber; i < oldNumber + realAdjust; i++) {
-                if (creepApi.has(`${room.name} ${type}${i}`)) continue
-                creepApi.add(`${room.name} ${type}${i}`, type, { workRoom: room.name, bodyType }, room.name)
+                const creepName = GetName[type](room.name, i)
+                if (creepName in Game.creeps) continue
+                this.spawner.addTask({
+                    name: creepName,
+                    role: type,
+                    data: { workRoom: room.name, bodyType }
+                })
             }
         }
         else {
             // 从末尾开始减少单位
             for (let i = oldNumber - 1; i >= 0; i--) {
-                creepApi.remove(`${room.name} ${type}${i}`)
+                removeCreep(GetName[type](room.name, i))
             }
         }
 
@@ -80,14 +89,17 @@ export default class RoomCreepRelease {
 
     /**
      * 发布中央运输单位
-     * @param room 要发布角色的房间（memory 需要包含 center 字段）
      */
     public processor(): OK | ERR_NOT_FOUND {
-        const room = Game.rooms[this.roomName]
-        if (!room || !room.memory.center) return ERR_NOT_FOUND
+        const { room } = this.spawner
+        if (!room.memory.center) return ERR_NOT_FOUND
 
         const [ x, y ] = room.memory.center 
-        creepApi.add(`${room.name} processor`, 'processor', { x, y }, room.name)
+        this.spawner.addTask({
+            name: GetName.processor(room.name),
+            role: 'processor',
+            data: { x, y }
+        })
 
         return OK
     }
@@ -97,38 +109,41 @@ export default class RoomCreepRelease {
      * 
      * @param remoteRoomName 要发布 creep 的外矿房间
      */
-    public remoteCreepGroup(remoteRoomName: string): OK | ERR_NOT_FOUND {
-        const room = Game.rooms[this.roomName]
-        if (!room) return ERR_NOT_FOUND
-
+    public remoteCreepGroup(remoteRoomName: string): OK {
+        const { room } = this.spawner
         const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
 
         // 添加对应数量的外矿采集者
         sourceFlagsName.forEach((flagName, index) => {
             if (!(flagName in Game.flags)) return
 
-            creepApi.add(`${remoteRoomName} remoteHarvester${index}`, 'remoteHarvester', {
-                sourceFlagName: flagName,
-                spawnRoom: room.name,
-                targetId: room.memory.remote[remoteRoomName].targetId
-            }, room.name)
+            this.spawner.addTask({
+                name: GetName.remoteHarvester(remoteRoomName, index),
+                role: 'remoteHarvester',
+                data: {
+                    sourceFlagName: flagName,
+                    targetId: room.memory.remote[remoteRoomName].targetId
+                }
+            })
         })
 
         this.remoteReserver(remoteRoomName)
+
+        return OK
     }
 
     /**
      * 发布房间预定者
      * 
-     * @param remoteRoomName 要预定的外矿房间名
+     * @param targetRoomName 要预定的外矿房间名
      * @param single 为 false 时将允许为一个房间发布多个预定者，为 true 时可以执行自动发布
      */
-    public remoteReserver(remoteRoomName: string, single: boolean = true): void {
-        // 添加外矿预定者
-        const reserverName = `${remoteRoomName} reserver${single ? '' : Game.time}`
-        if (!creepApi.has(reserverName)) creepApi.add(reserverName, 'reserver', {
-            targetRoomName: remoteRoomName
-        }, this.roomName)
+    public remoteReserver(targetRoomName: string): void {
+        this.spawner.addTask({
+            name: GetName.reserver(targetRoomName),
+            role: 'reserver',
+            data: { targetRoomName }
+        })
     }
 
     /**
@@ -138,18 +153,25 @@ export default class RoomCreepRelease {
      * @param targetRoomName 要签名到的房间名（默认为本房间）
      */
     public sign(content: string, targetRoomName: string = undefined): string {
-        const creepName = `${this.roomName} signer`
+        const { room } = this.spawner
+        const creepName = GetName.signer(room.name)
         const creep = Game.creeps[creepName]
+
         // 如果有显存的签名单位就直接签名
         if (creep) {
             (creep.memory.data as RemoteDeclarerData).signText = content
             return `已将 ${creepName} 的签名内容修改为：${content}`
         }
+
         // 否则就发布一个
-        creepApi.add(creepName, 'signer', {
-            targetRoomName: targetRoomName || this.roomName,
-            signText: content
-        }, this.roomName)
+        this.spawner.addTask({
+            name: creepName,
+            role: 'signer',
+            data: {
+                targetRoomName: targetRoomName || room.name,
+                signText: content
+            }
+        })
 
         return `已发布 ${creepName}, 签名内容为：${content}`
     }
@@ -161,39 +183,47 @@ export default class RoomCreepRelease {
      */
     public remoteHelper(remoteRoomName: string): void {
         const room = Game.rooms[remoteRoomName]
-
         if (!room) {
-            log(`目标房间没有视野，无法发布支援单位`, [ this.roomName, 'CreepRelease' ], 'yellow')
+            log(`目标房间没有视野，无法发布支援单位`, [ this.spawner.room.name, 'CreepRelease' ], 'yellow')
             return
         }
 
         // 发布 upgrader 和 builder
-        creepApi.add(`${remoteRoomName} RemoteUpgrader`, 'remoteUpgrader', {
-            targetRoomName: remoteRoomName,
-            sourceId: room.source[0].id
-        }, this.roomName)
-        creepApi.add(`${remoteRoomName} RemoteBuilder`, 'remoteBuilder', {
-            targetRoomName: remoteRoomName,
-            sourceId: room.source.length >= 2 ? room.source[1].id : room.source[0].id
-        }, this.roomName)
+        this.spawner.addTask({
+            name: GetName.remoteUpgrader(remoteRoomName),
+            role: 'remoteUpgrader',
+            data: {
+                targetRoomName: remoteRoomName,
+                sourceId: room.source[0].id
+            }
+        })
+        this.spawner.addTask({
+            name: GetName.remoteBuilder(remoteRoomName),
+            role: 'remoteBuilder',
+            data: {
+                targetRoomName: remoteRoomName,
+                sourceId: room.source.length >= 2 ? room.source[1].id : room.source[0].id
+            }
+        })
     }
 
     /**
      * 发布 pbCarrier 小组
      * 由 pbAttacker 调用
      * 
-     * @param flagName powerBank 上的旗帜名
+     * @param sourceFlagName powerBank 上的旗帜名
      * @param number 孵化几个 carrier
      */
-    public pbCarrierGroup(flagName: string, number: number): void {
+    public pbCarrierGroup(sourceFlagName: string, number: number): void {
         // 如果已经有人发布过了就不再费事了
-        if (creepApi.has(`${flagName} carrier0`)) return
-        
+        if (GetName.pbCarrier(sourceFlagName, 0) in Game.creeps) return
+
         for (let i = 0; i < number; i++) {
-            creepApi.add(`${flagName} carrier${i}`, 'pbCarrier', {
-                sourceFlagName: flagName,
-                spawnRoom: this.roomName
-            }, this.roomName)
+            this.spawner.addTask({
+                name: GetName.pbCarrier(sourceFlagName, i),
+                role: 'pbCarrier',
+                data: { sourceFlagName }
+            })
         }
     }
 
@@ -206,18 +236,25 @@ export default class RoomCreepRelease {
     public pbHarvesteGroup(targetFlagName: string, groupNumber: number = 2): void {
         // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
         for (let i = 0; i < groupNumber; i++) {
-            const attackerName = `${targetFlagName} attacker${i}`
-            const healerName = `${targetFlagName} healer${i}`
+            const attackerName = GetName.pbAttacker(targetFlagName, i)
+            const healerName = GetName.pbHealer(targetFlagName, i)
 
             // 添加采集小组
-            creepApi.add(attackerName, 'pbAttacker', {
-                sourceFlagName: targetFlagName,
-                spawnRoom: this.roomName,
-                healerCreepName: healerName
-            }, this.roomName)
-            creepApi.add(healerName, 'pbHealer', {
-                creepName: `${targetFlagName} attacker${i}`
-            }, this.roomName)
+            this.spawner.addTask({
+                name: attackerName,
+                role: 'pbAttacker',
+                data: {
+                    sourceFlagName: targetFlagName,
+                    healerCreepName: healerName
+                }
+            })
+            this.spawner.addTask({
+                name: healerName,
+                role: 'pbHealer',
+                data: {
+                    creepName: attackerName
+                }
+            })
         }
     }
 
@@ -228,23 +265,14 @@ export default class RoomCreepRelease {
      */
     public depositHarvester(targetFlagName: string): void {
         // 发布采集者，他会自行完成剩下的工作
-        creepApi.add(`${targetFlagName} worker`, 'depositHarvester', {
-            sourceFlagName: targetFlagName,
-            spawnRoom: this.roomName
-        }, this.roomName)
-    }
-
-    
-
-    /**
-     * 移除 pb 采集小组配置项
-     * 
-     * @param attackerName 攻击单位名称
-     * @param healerName 治疗单位名称
-     */
-    public removePbHarvesteGroup(attackerName: string, healerName: string): void {
-        creepApi.remove(attackerName)
-        creepApi.remove(healerName)
+        this.spawner.addTask({
+            name: GetName.depositHarvester(targetFlagName),
+            role: 'depositHarvester',
+            data: {
+                sourceFlagName: targetFlagName,
+                spawnRoom: this.spawner.room.name
+            }
+        })
     }
 
     /**
@@ -255,18 +283,22 @@ export default class RoomCreepRelease {
      * @param keepSpawn 是否持续生成
      */
     public rangedAttacker(bearTowerNum: 0 | 1 | 3 | 5 | 2 | 4 | 6 = 6, targetFlagName: string = DEFAULT_FLAG_NAME.ATTACK, keepSpawn: boolean = false): string {
-        const room = Game.rooms[this.roomName]
-        if (!room) return `错误，无法访问的房间 ${this.roomName}`
+        const { room } = this.spawner
 
         if (!room.memory.boost) return `发布失败，未启动 Boost 进程，执行 ${room.name}.war() 来启动战争状态`
         if (room.memory.boost.state !== 'waitBoost') return `无法发布，Boost 材料未准备就绪`
 
-        const creepName = `${room.name} apocalypse ${Game.time}`
-        creepApi.add(creepName, 'apocalypse', {
-            targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
-            bearTowerNum,
-            keepSpawn
-        }, room.name)
+        const creepName = GetName.apocalypse(room.name)
+
+        this.spawner.addTask({
+            name: creepName,
+            role: 'apocalypse',
+            data: {
+                targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
+                bearTowerNum,
+                keepSpawn
+            }
+        })
 
         return `已发布进攻一体机 [${creepName}] [扛塔等级] ${bearTowerNum} [进攻旗帜名称] ${targetFlagName} ${keepSpawn ? '' : '不'}持续生成，GoodLuck Commander`
     }
@@ -278,23 +310,31 @@ export default class RoomCreepRelease {
      * @param keepSpawn 是否持续生成
      */
     public dismantleGroup(targetFlagName: string = '', keepSpawn: boolean = false): string {
-        const room = Game.rooms[this.roomName]
-        if (!room) return `错误，无法访问的房间 ${this.roomName}`
+        const { room } = this.spawner
 
         if (!room.memory.boost) return `发布失败，未启动 Boost 进程，执行 ${room.name}.war() 来启动战争状态`
         if (room.memory.boost.state !== 'waitBoost') return `无法发布，Boost 材料未准备就绪`
 
-        const dismantlerName = `${room.name} dismantler ${Game.time}`
-        const healerName = `${room.name} doctor ${Game.time}`
-        creepApi.add(dismantlerName, 'boostDismantler', {
-            targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
-            healerName,
-            keepSpawn
-        }, room.name)
-        creepApi.add(healerName, 'boostDoctor', {
-            creepName: dismantlerName,
-            keepSpawn
-        }, room.name)
+        const dismantlerName = GetName.boostDismantler(room.name)
+        const healerName = GetName.boostDoctor(room.name)
+
+        this.spawner.addTask({
+            name: dismantlerName,
+            role: 'boostDismantler',
+            data: {
+                targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
+                healerName,
+                keepSpawn
+            }
+        })
+        this.spawner.addTask({
+            name: healerName,
+            role: 'boostDoctor',
+            data: {
+                creepName: dismantlerName,
+                keepSpawn
+            }
+        })
 
         return `已发布拆墙小组，正在孵化，GoodLuck Commander`
     }
@@ -309,10 +349,14 @@ export default class RoomCreepRelease {
         if (num <=0 || num > 10) num = 1
 
         for (let i = 0; i < num; i++) {
-            creepApi.add(`${this.roomName} soldier ${Game.time}-${i}`, 'soldier', {
-                targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
-                keepSpawn: false
-            }, this.roomName)
+            this.spawner.addTask({
+                name: GetName.soldier(this.spawner.room.name, i),
+                role: 'soldier',
+                data: {
+                    targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
+                    keepSpawn: false
+                }
+            })
         }
 
         return `已发布 soldier*${num}，正在孵化`
@@ -330,10 +374,14 @@ export default class RoomCreepRelease {
         if (num <=0 || num > 10) num = 1
 
         for (let i = 0; i < num; i++) {
-            creepApi.add(`${this.roomName} dismantler ${Game.time}-${i}`, 'dismantler', {
-                targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
-                keepSpawn
-            }, this.roomName)
+            this.spawner.addTask({
+                name: GetName.dismantler(this.spawner.room.name, i),
+                role: 'dismantler',
+                data: {
+                    targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
+                    keepSpawn
+                }
+            })
         }
 
         return `已发布 dismantler*${num}，正在孵化`
@@ -346,15 +394,19 @@ export default class RoomCreepRelease {
      * @param targetStructureId 要把资源存放到的建筑 id
      */
     public reiver(sourceFlagName: string = '', targetStructureId: Id<StructureWithStore> = undefined): string {
-        const room = Game.rooms[this.roomName]
-        if (!room) return `错误，无法访问的房间 ${this.roomName}`
-
+        const { room } = this.spawner
         if (!targetStructureId && !room.terminal) return `[${room.name}] 发布失败，请填写要存放到的建筑 id`
-        const reiverName = `${room.name} reiver ${Game.time}`
-        creepApi.add(reiverName, 'reiver', {
-            flagName: sourceFlagName || DEFAULT_FLAG_NAME.REIVER,
-            targetId: targetStructureId || room.terminal.id
-        }, room.name)
+
+        const reiverName = GetName.reiver(room.name)
+
+        this.spawner.addTask({
+            name: reiverName,
+            role: 'reiver',
+            data: {
+                flagName: sourceFlagName || DEFAULT_FLAG_NAME.REIVER,
+                targetId: targetStructureId || room.terminal.id
+            }
+        })
 
         return `[${room.name}] 掠夺者 ${reiverName} 已发布, 目标旗帜名称 ${sourceFlagName || DEFAULT_FLAG_NAME.REIVER}, 将搬运至 ${targetStructureId ? targetStructureId : room.name + ' Terminal'}`
     }

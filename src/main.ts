@@ -1,6 +1,6 @@
 import { generatePixelAppPlugin } from './utils'
 import { stateScannerAppPlugin } from './modules/stats'
-import { creepNumberControlAppPlugin } from './modules/creepController'
+import { creepNumberControlAppPlugin } from './modules/creep'
 import { crossShardAppPlugin } from './modules/crossShard'
 import { delayQueueAppPlugin } from '@/modules/delayQueue'
 import { constructionAppPlugin } from '@/modules/constructionController'
