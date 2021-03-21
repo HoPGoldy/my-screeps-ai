@@ -41,7 +41,7 @@ export default () => {
         [ 'centerTransport', RoomCenterTaskController ],
         [ 'transport', RoomTransportTaskController ],
         [ 'work', RoomWorkTaskController ],
-        [ 'spawn', RoomSpawnController ]
+        [ 'spawner', RoomSpawnController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里

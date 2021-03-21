@@ -1,6 +1,7 @@
 import { getRoomStats } from '@/modules/stats'
 import { noTask, transportActions } from './actions'
 import TaskController from '../baseTaskController'
+import { countEnergyChangeRatio } from '@/modules/energyController'
 
 /**
  * 能量获取速率到调整期望的 map
@@ -59,6 +60,9 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      * 返回 0 代表不需要调整工作单位数量
      */
     public getExpect(): number {
+        // 先更新房间能量使用情况，然后根据情况调整期望
+        countEnergyChangeRatio(Game.rooms[this.roomName])
+
         const stats = getRoomStats(this.roomName)
         // 没有统计或者能量获取速率为零，不调整搬运工数量
         if (!stats || !stats.energyGetRate) return 0

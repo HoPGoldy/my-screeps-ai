@@ -122,8 +122,6 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         if (spawn.spawning || this.memory.length == 0) return 
 
         const task = this.memory[0]
-        this.room.visual.text(`当前孵化队列 ${this.memory.join(' | ')}`, 1, 1, { align: 'left' })
-
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.spawnCreep(spawn, task)
 
@@ -159,7 +157,6 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         if (bodys.length <= 0) return ERR_NOT_ENOUGH_ENERGY
 
         const spawnResult: ScreepsReturnCode = spawn.spawnCreep(bodys, name, { memory })
-        this.room.visual.text(`mySpawnCreep 返回值 ${spawnResult}`, 1, 5, { align: 'left' })
         // 检查是否生成成功
         if (spawnResult == OK) {
             return OK

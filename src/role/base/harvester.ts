@@ -116,7 +116,7 @@ const actionStrategy: ActionStrategy = {
             if (posContinaer.length <= 0 && posContinaerSite.length <= 0) {
                 addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
                 creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id })
-                creep.log(`发布 source ${source.id} 的 container 建造任务`, 'green')
+                // creep.log(`发布 source ${source.id} 的 container 建造任务`, 'green')
             }
 
             return true
@@ -179,7 +179,8 @@ const actionStrategy: ActionStrategy = {
             if (container.hits < container.hitsMax) {
                 const useRoom = Game.rooms[creep.memory.data.useRoom]
                 if (!useRoom) return false
-                useRoom.work.updateTask({ type: 'repair', priority: 9 }, { dispath: true })
+                // 修个小 container，派一个人来修就可以了，所以不用指定高优先级
+                useRoom.work.updateTask({ type: 'repair' }, { dispath: true })
             }
 
             return true

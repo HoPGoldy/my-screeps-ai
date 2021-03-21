@@ -3,6 +3,7 @@ import planBase from './planBase'
 import planRoad from './planRoad'
 import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from '@/setting'
 import { addConstructionSite } from '@/modules/constructionController'
+import { addBuildTask } from '../room/task/work/delayTask'
 
 let planningCaches: StructurePlanningCache = {}
 
@@ -102,6 +103,8 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
             const sitePosList: ConstructionPos[] = currentLevelLayout[structureType].map(pos => ({ pos, type: structureType}))
             addConstructionSite(sitePosList)
             // 发布建造任务
+            addBuildTask(room.name)
+            
             room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
         })
     }

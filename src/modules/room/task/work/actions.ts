@@ -111,8 +111,6 @@ export const transportActions: {
                     filter: site => site.structureType === STRUCTURE_CONTAINER
                 })
 
-                creep.log(`选择工地 ${task.sourceId} > ${containerSites}`)
-
                 // 找不到了，说明任务完成
                 if (containerSites.length <= 0) {
                     workController.removeTask(task.key)
@@ -199,7 +197,7 @@ export const transportActions: {
     /**
      * 刷墙任务
      */
-    fillWall: creep => ({
+    fillWall: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
             let importantWall = creep.room._importantWall
@@ -213,7 +211,10 @@ export const transportActions: {
                 if (actionResult == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
             }
             // 否则就按原计划维修
-            else creep.fillDefenseStructure()
+            else {
+                const filling = creep.fillDefenseStructure()
+                if (!filling) workController.removeTask(task.key)
+            }
 
             if (creep.store.getUsedCapacity() === 0) return true
         }

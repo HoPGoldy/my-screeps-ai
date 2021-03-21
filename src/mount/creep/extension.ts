@@ -208,7 +208,7 @@ export default class CreepExtension extends Creep {
             this.memory.constructionSiteId = target.id
             return target
         }
-        // 没有指定目标，或者指定的目标消失了，从本地内存查找
+        // 没有指定目标，或者指定的目标消失了，从自己内存里找
         else {
             const selfKeepTarget = Game.getObjectById(this.memory.constructionSiteId)
             if (selfKeepTarget) return selfKeepTarget
@@ -228,18 +228,20 @@ export default class CreepExtension extends Creep {
             }
         }
 
-        // 自己内存里没找到，去房间内存里查找，房间内存没有的话就搜索并缓存到房间
+        // 自己内存里没找到，去房间内存里查之前缓存的
         const roomKeepTarget = Game.getObjectById(this.room.memory.constructionSiteId)
-            || useCache(() => getNearSite(this.pos), this.room.memory, 'constructionSiteId')
-
         // 找到了，保存到自己内存里
         if (roomKeepTarget) {
             this.memory.constructionSiteId = this.room.memory.constructionSiteId
             return roomKeepTarget
         }
-        else delete this.room.memory.constructionSiteId
+        
+        // 房间内存也没有缓存，重新搜索并缓存到房间
+        delete this.room.memory.constructionSiteId
+        const newTarget = useCache(() => getNearSite(this.pos), this.room.memory, 'constructionSiteId')
 
-        return undefined
+        // 再没有就真没有了
+        return newTarget
     }
 
     /**
@@ -262,6 +264,7 @@ export default class CreepExtension extends Creep {
     /**
      * 填充防御性建筑
      * 包括 wall 和 rempart
+     * @returns 当没有墙需要刷时返回 false，否则返回 true
      */
     public fillDefenseStructure(): boolean {
         const focusWall = this.room.memory.focusWall
@@ -289,7 +292,8 @@ export default class CreepExtension extends Creep {
         // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
         if (!targetWall) {
             delete this.room.memory.focusWall
-            return false
+            // 这个时候返回 true，因为还不确定是否所有的墙都刷好了
+            return true
         }
 
         // 填充墙壁

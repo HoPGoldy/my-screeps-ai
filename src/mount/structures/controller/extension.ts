@@ -113,9 +113,6 @@ export default class ControllerExtension extends StructureController {
             }
         })
 
-        // 统计本房间能量状态
-        countEnergyChangeRatio(this.room)
-
         return hasLevelChange
     }
 

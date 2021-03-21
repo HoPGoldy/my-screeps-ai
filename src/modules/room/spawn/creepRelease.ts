@@ -74,9 +74,11 @@ export default class RoomCreepRelease {
             }
         }
         else {
-            // 从末尾开始减少单位
-            for (let i = oldNumber - 1; i >= 0; i--) {
+            // 从末尾开始减少单位，减少个数为实际调整值
+            for (let i = oldNumber - 1; i >= oldNumber - 1 + realAdjust; i--) {
                 removeCreep(GetName[type](room.name, i))
+                console.log('调整数量', realAdjust, "移除单位", GetName[type](room.name, i))
+
             }
         }
 

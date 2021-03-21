@@ -10,7 +10,7 @@ import roles from '@/role'
  */
 export const creepNumberListener = function (): void {
     // 本 tick creep 数量没变，不用执行检查
-    if (Object.keys(Memory.creeps).length === Object.keys(Game.creeps).length) return
+    if (Object.keys(Memory.creeps || {}).length === Object.keys(Game.creeps).length) return
 
     // 遍历所有 creep 内存，检查其是否存在
     for (const name in Memory.creeps) {
@@ -50,10 +50,10 @@ export const creepNumberListener = function (): void {
  * @param creepMemory creep 死时的内存
  */
 const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMemory) {
-    const { spawnRoom: spawnRoomName, data, role } = creepMemory
+    const { spawnRoom: spawnRoomName, data, role, cantRespawn } = creepMemory
 
     // 禁止孵化的 creep 直接移除
-    if (creepMemory.cantRespawn) {
+    if (cantRespawn) {
         log(`死亡 ${creepName} 被禁止孵化, 已删除`, [ 'creepController' ])
         delete Memory.creeps[creepName]
         return
@@ -79,6 +79,6 @@ const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMem
     // 加入生成，加入成功的话删除过期内存
     const result = spawnRoom.spawner.addTask({ name: creepName, role, data })
 
-    if (result != ERR_NAME_EXISTS) log(`死亡 ${creepName} 孵化任务已存在`, [ 'creepController' ])
+    if (result === ERR_NAME_EXISTS) log(`死亡 ${creepName} 孵化任务已存在`, [ 'creepController' ])
     delete Memory.creeps[creepName]
 }

@@ -33,19 +33,10 @@ interface DelayTaskTypes {
      */
     spawnUpgrader: DelayTaskData
     /**
-     * 建筑任务发布
-     * 因为建筑必须在下个 tick 才能获取到其 id
+     * 建造任务发布
+     * 因为工地必须在下个 tick 才能获取到
      */
-    addBuildTask: DelayTaskData & {
-        /**
-         * 该建筑工地应该位于的位置
-         */
-        pos: [ number, number, string ]
-        /**
-         * 该建筑的类型
-         */
-        type: BuildableStructureConstant
-    }
+    addBuildTask: DelayTaskData
 }
 
 /**
