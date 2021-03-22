@@ -13,7 +13,7 @@ else if (!(config = require("./.secret.json")[process.env.DEST])) {
 }
 
 // 根据指定的配置决定是上传还是复制到文件夹
-const pluginDeploy = config && config.copyPath ?
+const deployPlugin = config && config.copyPath ?
     // 复制到指定路径
     copy({
         targets: [
@@ -51,6 +51,6 @@ export default {
         // 编译 ts
         typescript({ tsconfig: "./tsconfig.json" }),
         // 执行上传或者复制
-        pluginDeploy
+        deployPlugin
     ]
 };

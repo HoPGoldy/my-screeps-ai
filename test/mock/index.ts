@@ -8,7 +8,6 @@ export * from './utils'
 
 import { getMockGame } from './Game'
 import { getMockMemory } from './Memory'
-import constants from './constant'
 import * as _ from 'lodash'
 
 /**
@@ -19,5 +18,5 @@ export const refreshGlobalMock = function () {
     global.Game = getMockGame()
     global.Memory = getMockMemory()
     global._ = _
-    Object.assign(global, constants)
+    Object.assign(global, require("@screeps/common/lib/constants"))
 }

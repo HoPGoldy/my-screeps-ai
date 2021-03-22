@@ -28,6 +28,7 @@
   "devDependencies": {
     "@rollup/plugin-commonjs": "^14.0.0",
     "@rollup/plugin-node-resolve": "^8.4.0",
+    "@screeps/common": "^2.15.3",
     "@types/chai": "^4.2.14",
     "@types/jest": "^26.0.20",
     "@types/lodash": "^3.10.1",
