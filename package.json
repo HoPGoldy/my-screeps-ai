@@ -8,8 +8,8 @@
     "local": "rollup -cw --environment DEST:local",
     "build": "rollup -c",
     "test-unit": "jest src/",
-    "test-behavior": "cross-env NODE_ENV=mockup jest test/behavior/",
-    "test-integration": "npm run build && cross-env NODE_ENV=mockup jest test/integration/",
+    "test-behavior": "cross-env NODE_ENV=mockup jest --runInBand test/behavior/",
+    "test-integration": "npm run build && cross-env NODE_ENV=mockup jest --runInBand test/integration/",
     "test-cover": "jest --coverage src/"
   },
   "repository": {
