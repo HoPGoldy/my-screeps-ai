@@ -20,9 +20,9 @@ export default class RoomCreepRelease {
      * 固定一个 source 发布一个单位
      */
     public harvester(): OK | ERR_NOT_FOUND {
-        const { name: roomName, source } = this.spawner.room
+        const { name: roomName, source } = this.spawner.room;
 
-        source.map((source, index) => {
+        (source || []).map((source, index) => {
             this.spawner.addTask({
                 name: GetName.harvester(roomName, index),
                 role: 'harvester',
@@ -47,11 +47,10 @@ export default class RoomCreepRelease {
      */
     public changeBaseUnit(type: 'worker' | 'manager', adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
         const { room } = this.spawner
-
         // 单位对应在房间内存中保存的键
         const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
-        // 单位对应存在的最少数量
-        const min = type === 'worker' ? room.source.length : 1
+        // 工人和搬运工最少都应该保留一个单位
+        const min = 1
 
         const oldNumber = room.memory[memoryKey] || 0
         // 计算真实的调整量，保证最少有 min 人
@@ -59,7 +58,7 @@ export default class RoomCreepRelease {
         // 调整完了人数还够，直接用
         if (oldNumber + adjust > min) realAdjust = adjust
         // 调整值导致人数不够了，根据最小值调整
-        else realAdjust = oldNumber > min ? oldNumber - min : min - oldNumber
+        else realAdjust = oldNumber > min ? min - oldNumber : oldNumber - min
 
         if (realAdjust >= 0) {
             // 添加新的单位
@@ -75,10 +74,8 @@ export default class RoomCreepRelease {
         }
         else {
             // 从末尾开始减少单位，减少个数为实际调整值
-            for (let i = oldNumber - 1; i >= oldNumber - 1 + realAdjust; i--) {
+            for (let i = oldNumber - 1; i >= oldNumber + realAdjust; i--) {
                 removeCreep(GetName[type](room.name, i))
-                console.log('调整数量', realAdjust, "移除单位", GetName[type](room.name, i))
-
             }
         }
 
