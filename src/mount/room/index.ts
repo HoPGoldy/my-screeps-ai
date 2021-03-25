@@ -8,7 +8,8 @@ import {
     RoomCenterTaskController,
     RoomTransportTaskController,
     RoomWorkTaskController,
-    RoomSpawnController
+    RoomSpawnController,
+    RoomPowerController
 } from '@/modules/room'
 
 /**
@@ -41,7 +42,8 @@ export default () => {
         [ 'centerTransport', RoomCenterTaskController ],
         [ 'transport', RoomTransportTaskController ],
         [ 'work', RoomWorkTaskController ],
-        [ 'spawner', RoomSpawnController ]
+        [ 'spawner', RoomSpawnController ],
+        [ 'power', RoomPowerController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -85,5 +87,9 @@ declare global {
          * 孵化控制模块
          */
         spawner: RoomSpawnController
+        /**
+         * power 管理模块
+         */
+        power: RoomPowerController
     }
 }

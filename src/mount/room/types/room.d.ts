@@ -20,16 +20,6 @@ interface RoomMemory {
      */
     noLayout: boolean
     /**
-     * 由驻守在房间中的 pc 发布，包含了 pc 拥有对应的能力
-     * 形如: "1 3 13 14"，数字即为对应的 PWR_* 常量
-     */
-    powers?: string
-    /**
-     * power 任务请求队列
-     * 由建筑物发布，powerCreep 查找任务时会优先读取该队列
-     */
-    powerTasks: PowerConstant[]
-    /**
      * 建筑工的当前工地目标，用于保证多个建筑工的工作统一以及建筑工死后不会寻找新的工地
      */
     constructionSiteId: Id<ConstructionSite>
@@ -182,14 +172,6 @@ interface Room {
      */
     serializePos(pos: RoomPosition): string
     unserializePos(posStr: string): RoomPosition | undefined
-
-    /**
-     * power 任务 api
-     */
-    addPowerTask(task: PowerConstant, priority?: number): OK | ERR_NAME_EXISTS | ERR_INVALID_TARGET
-    deleteCurrentPowerTask(): void
-    getPowerTask(): PowerConstant | undefined
-    hangPowerTask(): void
 
     /**
      * 资源共享 api

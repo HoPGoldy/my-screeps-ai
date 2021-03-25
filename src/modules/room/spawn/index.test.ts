@@ -109,7 +109,7 @@ it('孵化后应正确添加能量填充任务', () => {
         name: 'W1N1',
         // mock 一个物流模块
         transport: { updateTask: updateTransportTask } as unknown as RoomTransportTaskController,
-        addPowerTask: jest.fn()
+        power: { addTask: jest.fn() } as any
     })
     Game.rooms.W1N1 = room
     // 创建一个刚开始孵化的 spawn

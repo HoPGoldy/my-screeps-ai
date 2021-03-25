@@ -30,65 +30,6 @@ export default class RoomExtension extends Room {
     }
 
     /**
-     * 向房间中发布 power 请求任务
-     * 该方法已集成了 isPowerEnabled 判定，调用该方法之前无需额外添加房间是否启用 power 的逻辑
-     * 
-     * @param task 要添加的 power 任务
-     * @param priority 任务优先级位置，默认追加到队列末尾。例：该值为 0 时将无视队列长度直接将任务插入到第一个位置
-     * @returns OK 添加成功
-     * @returns ERR_NAME_EXISTS 已经有同名任务存在了
-     * @returns ERR_INVALID_TARGET 房间控制器未启用 power
-     */
-    public addPowerTask(task: PowerConstant, priority: number = null): OK | ERR_NAME_EXISTS | ERR_INVALID_TARGET {
-        // 初始化时添加房间初始化任务（编号 -1）
-        if (!this.memory.powerTasks) this.memory.powerTasks = [ -1 as PowerConstant ]
-        if (!this.controller.isPowerEnabled) return ERR_INVALID_TARGET
-
-        // 有相同的就拒绝添加
-        if (this.hasPowerTask(task)) return ERR_NAME_EXISTS
-
-        // 发布任务到队列
-        if (!priority) this.memory.powerTasks.push(task)
-        // 追加到队列指定位置
-        else this.memory.powerTasks.splice(priority, 0, task)
-        
-        return OK
-    }
-
-    /**
-     * 检查是否已经存在指定任务
-     * 
-     * @param task 要检查的 power 任务
-     */
-    private hasPowerTask(task: PowerConstant): boolean {
-        return this.memory.powerTasks.find(power => power === task) ? true : false
-    }
-
-    /**
-     * 获取当前的 power 任务
-     */
-    public getPowerTask(): PowerConstant | undefined {
-        if (!this.memory.powerTasks || this.memory.powerTasks.length <= 0) return undefined
-        else return this.memory.powerTasks[0]
-    }
-
-    /**
-     * 挂起当前任务
-     * 将会把最前面的 power 任务移动到队列末尾
-     */
-    public hangPowerTask(): void {
-        const task = this.memory.powerTasks.shift()
-        this.memory.powerTasks.push(task)
-    }
-
-    /**
-     * 移除第一个 power 任务
-     */
-    public deleteCurrentPowerTask(): void {
-        this.memory.powerTasks.shift()
-    }
-
-    /**
      * 将指定位置序列化为字符串
      * 形如: 12/32/E1N2
      * 
@@ -110,8 +51,6 @@ export default class RoomExtension extends Room {
 
         return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
     }
-
-    
 
     /**
      * 危险操作：执行本 api 将会直接将本房间彻底移除

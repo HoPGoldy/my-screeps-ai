@@ -330,7 +330,7 @@ export default class FactoryExtension extends StructureFactory {
      * 请求 power factory
      */
     private requirePower(): void {
-        if (this.room.controller.isPowerEnabled) this.room.addPowerTask(PWR_OPERATE_FACTORY)
+        if (this.room.controller.isPowerEnabled) this.room.power.addTask(PWR_OPERATE_FACTORY)
         else this.log(`请求 ${this.room.memory.factory.level} 级 PWR_OPERATE_FACTORY, 但房间并未激活 power`, 'yellow')
     }
 
