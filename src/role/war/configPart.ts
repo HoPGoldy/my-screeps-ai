@@ -60,7 +60,7 @@ export const battleBase = <Role extends 'soldier' | 'dismantler' | 'boostDismant
         }
 
         // 远程移动
-        creep.goTo(targetFlag.pos, { checkTarget: true })
+        creep.goTo(targetFlag.pos)
         creep.say('🛴', true)
 
         // 保证自己血量健康（兼容没有 HEAL 的 creep）

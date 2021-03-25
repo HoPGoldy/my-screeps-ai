@@ -19,7 +19,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
             return false
         }
 
-        creep.goTo(targetFlag.pos)
+        creep.goTo(targetFlag.pos, { checkTarget: false })
 
         return creep.pos.inRangeTo(targetFlag.pos, 3)
     },
@@ -32,7 +32,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
         // 没到搬运的时候就先待命
         if (targetFlag.memory.state !== PB_HARVESTE_STATE.TRANSFER) return false
         // 到行动阶段了就过去
-        creep.goTo(targetFlag.pos)
+        creep.goTo(targetFlag.pos, { checkTarget: false })
 
         // 到房间里再进行下一步操作
         if (creep.room.name !== targetFlag.pos.roomName) return false

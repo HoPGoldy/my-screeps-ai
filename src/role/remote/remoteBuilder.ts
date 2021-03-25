@@ -19,7 +19,7 @@ const remoteBuilder: CreepConfig<'remoteBuilder'> = {
         const { targetRoomName } = creep.memory.data
         // 只要进入房间则准备结束
         if (creep.room.name !== targetRoomName) {
-            creep.goTo(new RoomPosition(25, 25, targetRoomName))
+            creep.goTo(new RoomPosition(25, 25, targetRoomName), { checkTarget: false })
             return false
         }
         else {

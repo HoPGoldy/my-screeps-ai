@@ -11,10 +11,10 @@ const signer: CreepConfig<'signer'> = {
         const { targetRoomName, signText } = creep.memory.data
         if (creep.room.name === targetRoomName) {
             if (creep.signController(creep.room.controller, signText) === ERR_NOT_IN_RANGE) {
-                creep.goTo(creep.room.controller.pos)
+                creep.goTo(creep.room.controller.pos, { checkTarget: false })
             }
         }
-        else creep.goTo(new RoomPosition(25, 25, targetRoomName))
+        else creep.goTo(new RoomPosition(25, 25, targetRoomName), { checkTarget: false })
 
         return false
     },

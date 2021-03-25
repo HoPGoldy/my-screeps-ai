@@ -5,34 +5,34 @@ interface MoveOpt {
     /**
      * 重用距离，等同于 moveTo 的 reusePath
      */
-    reusePath?: number,
+    reusePath?: number
     /**
      * 要移动到目标位置的距离
      */
-    range?: number,
+    range?: number
     /**
      * 是否禁用对穿（为 true 则会躲避 creep，默认为 false）
      */
-    disableCross?: boolean,
+    disableCross?: boolean
     /**
      * 移动目标所在的 shard（不填则默认为本 shard）
      */
-    shard?: ShardName,
+    shard?: ShardName
     /**
      * 路径点
      * 传入形如 [ '12 21 E1N1', '12 21 E2N2' ] 的路径点数组
      * 或是任意路径旗帜名前缀
      */
-    wayPoint?: string[] | string,
+    wayPoint?: string[] | string
     /**
      * 最大的搜索成本
      */
-    maxOps?: number,
+    maxOps?: number
     /**
      * 是否检查目标发生了变化，为 true 的话会每 tick 检查目标位置是否变化
-     * 一旦变化则会立刻重新规划
+     * 一旦变化则会立刻重新查找移动路线，默认为 true
      */
-    checkTarget?: boolean
+     checkTarget?: boolean
     /**
      * 是否禁用路径缓存
      * 当 creep 因为对方拒绝对穿而重新寻路时，就需要开启该选项

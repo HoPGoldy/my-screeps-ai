@@ -109,10 +109,7 @@ export default class CreepExtension extends Creep {
             return
         }
         // 如果没到 就向旗帜移动
-        if (!this.pos.isEqualTo(standByFlag.pos)) this.goTo(standByFlag.pos, {
-            checkTarget: true,
-            range: 0
-        })
+        if (!this.pos.isEqualTo(standByFlag.pos)) this.goTo(standByFlag.pos, { range: 0 })
         else this.memory.isStanBy = true
     }
 
@@ -320,7 +317,7 @@ export default class CreepExtension extends Creep {
         // 不是的话就用 harvest
         else result = this.harvest(target as Source)
 
-        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 1, checkTarget: true })
+        if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 1 })
 
         return result
     }
@@ -351,9 +348,7 @@ export default class CreepExtension extends Creep {
 
         // 如果 creep 不在房间里 则一直向旗帜移动
         if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
-            this.goTo(attackFlag.pos, {
-                checkTarget: true
-            })
+            this.goTo(attackFlag.pos)
             return true
         }
         
@@ -434,9 +429,7 @@ export default class CreepExtension extends Creep {
         // 如果 creep 不在房间里 则一直向旗帜移动
         if (!attackFlag.room || (attackFlag.room && this.room.name !== attackFlag.room.name)) {
             // 如果 healer 存在则只会在 healer 相邻且可以移动时才进行移动
-            if (!healer || (healer && this.canMoveWith(healer))) this.goTo(attackFlag.pos, {
-                checkTarget: true
-            })
+            if (!healer || (healer && this.canMoveWith(healer))) this.goTo(attackFlag.pos)
             return true
         }
 

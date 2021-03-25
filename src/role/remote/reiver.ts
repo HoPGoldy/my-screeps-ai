@@ -56,7 +56,7 @@ const reiver: CreepConfig<'reiver'> = {
         }
 
         // 移动并统计移动时长
-        creep.goTo(flag.pos)
+        creep.goTo(flag.pos, { checkTarget: false })
         flag.memory.travelTime = flag.memory.travelTime === undefined ? 0 : flag.memory.travelTime + 1
         return false
     },
@@ -92,7 +92,7 @@ const reiver: CreepConfig<'reiver'> = {
                     if (withdrawResult === ERR_FULL) return true
                     // 还没到就继续走
                     else if (withdrawResult === ERR_NOT_IN_RANGE) {
-                        creep.goTo(targetStructure.pos)
+                        creep.goTo(targetStructure.pos, { checkTarget: false })
                     }
                     
                     // 等到下个 tick 重新遍历来继续搬
@@ -106,7 +106,7 @@ const reiver: CreepConfig<'reiver'> = {
             return true
         }
         // 没有到指定房间就移动
-        else creep.goTo(flag.pos)
+        else creep.goTo(flag.pos, { checkTarget: false })
         return false
     },
     target: creep => {
@@ -141,7 +141,7 @@ const reiver: CreepConfig<'reiver'> = {
                 return false
             }
         }
-        else creep.goTo(targetStructure.pos)
+        else creep.goTo(targetStructure.pos, { checkTarget: false })
     },
     bodys: createBodyGetter(bodyConfigs.manager)
 }

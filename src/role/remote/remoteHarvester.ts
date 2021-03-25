@@ -37,7 +37,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
             }
 
             // 旗帜所在房间没视野, 就进行移动
-            if (!sourceFlag.room) creep.goTo(sourceFlag.pos)
+            if (!sourceFlag.room) creep.goTo(sourceFlag.pos, { checkTarget: false })
             else {
                 // 缓存外矿房间名
                 sourceFlag.memory.roomName = sourceFlag.room.name
@@ -121,7 +121,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
         }
         // 这里只要有异常就直接向外矿移动, 因为外矿有可能没视野, 下同
         else {
-            creep.goTo(sourceFlag.pos)
+            creep.goTo(sourceFlag.pos, { checkTarget: false })
         }
     },
     target: creep => {

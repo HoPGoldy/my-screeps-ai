@@ -45,7 +45,7 @@ const depositHarvester: CreepConfig<'depositHarvester'> = {
             // 旅途时间还没有计算完成
             else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime ++ // 增量
 
-            creep.goTo(targetFlag.pos, { range: 1 })
+            creep.goTo(targetFlag.pos, { range: 1, checkTarget: false })
 
             return false
         }

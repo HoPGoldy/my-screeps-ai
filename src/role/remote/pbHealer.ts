@@ -19,7 +19,7 @@ const pbHealer: CreepConfig<'pbHealer'> = {
 
         // 移动到身边了就治疗
         if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
-        else creep.goTo(targetCreep.pos)
+        else creep.goTo(targetCreep.pos, { range: 1, checkTarget: false })
     },
     bodys: () => calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
 }

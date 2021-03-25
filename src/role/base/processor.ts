@@ -16,7 +16,7 @@ const processor: CreepConfig<'processor'> = {
 
         if (creep.pos.isEqualTo(x, y)) return true
         else {
-            creep.goTo(new RoomPosition(x, y, creep.room.name), { range: 0 })
+            creep.goTo(new RoomPosition(x, y, creep.room.name), { range: 0, checkTarget: false })
             return false
         }
     },

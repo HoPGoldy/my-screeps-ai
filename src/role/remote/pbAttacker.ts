@@ -22,7 +22,7 @@ const pbAttacker: CreepConfig<'pbAttacker'> = {
         }
 
         // 朝目标移动
-        creep.goTo(targetFlag.pos, { range: 1 })
+        creep.goTo(targetFlag.pos, { range: 1, checkTarget: false })
 
         let findPowerbank = true
         // 进入房间后搜索 pb 并缓存

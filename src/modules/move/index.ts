@@ -48,7 +48,10 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
  * @param target 要移动到的目标位置
  * @param moveOpt 移动参数
  */
-export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt = {}): ScreepsReturnCode {
+export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt): ScreepsReturnCode {
+    // 默认会检查目标变更
+    const options = _.defaults<MoveOpt>({ checkTarget: true }, moveOpt)
+
     if (!creep.memory._go) creep.memory._go = {}
     const moveMemory = creep.memory._go
     // 如果没有指定目标的话则默认为路径模式
@@ -58,7 +61,7 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
     const currentPos = `${creep.pos.x}/${creep.pos.y}`
 
     // 确认目标有没有变化, 变化了则重新规划路线
-    if (moveOpt.checkTarget) {
+    if (options.checkTarget) {
         const targetPosTag = creep.room.serializePos(target)
 
         if (targetPosTag !== moveMemory.targetPos) {
@@ -95,11 +98,11 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
                 return ERR_INVALID_TARGET
             }
             // 尝试对穿，如果自己禁用了对穿的话则直接重新寻路
-            const crossResult = moveOpt.disableCross ? ERR_BUSY : mutualCross(creep, moveMemory.lastMove, fontCreep)
+            const crossResult = options.disableCross ? ERR_BUSY : mutualCross(creep, moveMemory.lastMove, fontCreep)
 
             // 对穿失败说明撞墙上了或者前面的 creep 拒绝对穿，重新寻路
             if (crossResult === ERR_BUSY) {
-                moveMemory.path = findPath(creep, targetPos, { ...moveOpt, disableRouteCache: true })
+                moveMemory.path = findPath(creep, targetPos, { ...options, disableRouteCache: true })
                 delete moveMemory.prePos
             }
             else if (crossResult !== OK) {
@@ -121,7 +124,7 @@ export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPos
 
     // 如果路走完了就要重新寻路
     if (!moveMemory.path && !moveMemory.lastMove) {
-        moveMemory.path = findPath(creep, target, moveOpt)
+        moveMemory.path = findPath(creep, target, options)
     }
 
     // 还为空的话就是没找到路径或者已经到了
