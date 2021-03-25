@@ -71,13 +71,6 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
     // 一级的时候移除所有非重要建筑
     if (room.controller.level === 1) clearStructure(room)
 
-    // 当本方法发现有的位置因为某些原因（有其他工地、工地到上限了...）无法建造时，就会将其放入该队列
-    // 本房间的 controller 会接替该模块尝试将这些位置部署工地
-    const delayQueue: string[] = []
-    // 是否需要孵化建造者
-    let needBuild = false
-
-
     // ----- 开始放置工地 -----
 
     // 一直从 1 级放置到房间当前的等级
@@ -101,11 +94,9 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
 
             // 遍历该建筑下的所有预放置点位，推送给建造管理模块
             const sitePosList: ConstructionPos[] = currentLevelLayout[structureType].map(pos => ({ pos, type: structureType}))
+            // 放置工地并发布建造任务
             addConstructionSite(sitePosList)
-            // 发布建造任务
             addBuildTask(room.name)
-            
-            room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
         })
     }
 

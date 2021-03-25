@@ -56,7 +56,7 @@ export default class RoomCreepRelease {
         // 计算真实的调整量，保证最少有 min 人
         let realAdjust = 0
         // 调整完了人数还够，直接用
-        if (oldNumber + adjust > min) realAdjust = adjust
+        if (oldNumber + adjust >= min) realAdjust = adjust
         // 调整值导致人数不够了，根据最小值调整
         else realAdjust = oldNumber > min ? min - oldNumber : oldNumber - min
 

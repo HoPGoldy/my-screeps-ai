@@ -62,7 +62,10 @@ export const transportActions: {
      */
     upgrade: creep => ({
         source: () => getEnergy(creep),
-        target: () => creep.upgrade() === ERR_NOT_ENOUGH_RESOURCES
+        target: () => {
+            const { workRoom: workRoomName } = creep.memory.data
+            return creep.upgradeRoom(workRoomName) === ERR_NOT_ENOUGH_RESOURCES
+        }
     }),
 
     /**

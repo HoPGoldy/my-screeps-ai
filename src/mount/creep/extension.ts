@@ -17,7 +17,7 @@ export default class CreepExtension extends Creep {
             const memory = getMemoryFromCrossShard(this.name)
             // console.log(`${this.name} 从暂存区获取了内存`, memory)
             if (!memory) {
-                this.log(`找不到对应的 creepConfig`, 'yellow')
+                this.log(`找不到对应内存`, 'yellow')
                 this.say('我凉了！')
                 return
             }
@@ -161,12 +161,15 @@ export default class CreepExtension extends Creep {
     /**
      * 填充本房间的 controller
      */
-    public upgrade(): ScreepsReturnCode {
-        const result = this.upgradeController(this.room.controller)
-
-        if (result == ERR_NOT_IN_RANGE) {
-            this.goTo(this.room.controller.pos)
+    public upgradeRoom(roomName: string): ScreepsReturnCode {
+        const workRoom = Game.rooms[roomName]
+        if (!workRoom) {
+            this.goTo(new RoomPosition(25, 25, roomName), { checkTarget: false })
+            return ERR_NOT_IN_RANGE
         }
+        const result = this.upgradeController(workRoom.controller)
+
+        if (result == ERR_NOT_IN_RANGE) this.goTo(workRoom.controller.pos)
         return result
     }
 

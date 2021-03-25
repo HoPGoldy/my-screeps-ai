@@ -63,8 +63,8 @@ export default class ControllerExtension extends StructureController {
             this.decideUpgradeWhenRCL8()
         }
 
-        // 规划布局
-        this.log(this.room.planLayout(), 'green')
+        // 从二级开始规划布局，因为一级没有可以造的东西
+        if (level !== 1) this.log(this.room.planLayout(), 'green')
     }
 
     /**

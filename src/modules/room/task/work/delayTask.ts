@@ -2,7 +2,6 @@
  * 工作任务中相关的延迟任务
  */
 
-import { addConstructionSite } from '@/modules/constructionController'
 import { delayQueue } from '@/modules/delayQueue'
 import { MINE_LIMIT } from '@/setting'
 
@@ -47,7 +46,7 @@ delayQueue.addDelayCallback('addBuildTask', (room, task) => {
     }
 
     // 以指定工地为目标发布建筑
-    room.work.updateTask({ type: 'build', priority: 9 })
+    room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
 })
 
 /**
@@ -68,7 +67,8 @@ export const addSpawnMinerTask = function (roomName: string, delayTime: number) 
     delayQueue.addDelayTask('spawnMiner', { roomName }, delayTime + 1)
 }
 
-/**添加工地建造任务
+/**
+ * 添加工地建造任务
  * 因为工地在下个 tick 才能被发现，所以需要延迟任务
  * 如果下个 tick 没有发现的话就会重新放置并再次发布任务尝试添加
  * 

@@ -55,7 +55,8 @@ const remoteUpgrader: CreepConfig<'remoteUpgrader'> = {
         creep.getEngryFrom(source)
     },
     target: creep => {
-        creep.upgrade()
+        const { targetRoomName } = creep.memory.data
+        creep.upgradeRoom(targetRoomName)
         if (creep.store.getUsedCapacity() === 0) return true
     },
     bodys: createBodyGetter(bodyConfigs.worker)

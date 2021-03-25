@@ -137,9 +137,7 @@ interface Creep {
     defense(): void
     goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
     setWayPoint(target: string[] | string): ScreepsReturnCode
-    requireCross(direction: DirectionConstant): Boolean
-    mutualCross(direction: DirectionConstant): OK | ERR_BUSY | ERR_INVALID_TARGET
-    upgrade(): ScreepsReturnCode
+    upgradeRoom(roomName: string): ScreepsReturnCode
     buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: AllEnergySource): ScreepsReturnCode
