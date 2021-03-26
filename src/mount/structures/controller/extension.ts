@@ -20,7 +20,7 @@ export default class ControllerExtension extends StructureController {
         if (this.stateScanner()) this.onLevelChange(this.level)
 
         // 调整运营 creep 数量
-        this.adjustCreep()
+        if (!(Game.time % 500)) this.adjustCreep()
 
         // 检查外矿有没有被入侵的，有的话是不是可以重新发布 creep
         if (this.room.memory.remote) {
@@ -71,8 +71,6 @@ export default class ControllerExtension extends StructureController {
      * 根据房间情况调整运营单位的数量
      */
     private adjustCreep(): void {
-        if (Game.time % 500) return
-
         this.room.spawner.release.changeBaseUnit('manager', this.room.transport.getExpect())
         this.room.spawner.release.changeBaseUnit('worker', this.room.work.getExpect())
     }

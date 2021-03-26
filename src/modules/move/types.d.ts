@@ -91,18 +91,3 @@ type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep | Powe
 type CrossRules = {
     [role in CreepRoleConstant | 'default']?: AllowCrossRuleFunc
 }
-
-interface Memory {
-    /**
-     * 移动的次数
-     */
-    moveNumber?: number
-    /**
-     * 移动消耗总用时
-     */
-    moveUseCpu?: number
-    /**
-     * 移动寻路总用时
-     */
-    movePathFindUseCpu?: number
-}

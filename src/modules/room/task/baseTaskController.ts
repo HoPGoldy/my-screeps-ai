@@ -28,6 +28,7 @@ export default class TaskController<
 
     /**
      * 该模块负责的任务
+     * 允许外界访问，但是不要直接对其进行修改
      */
     public tasks: CostomTask[] = []
 

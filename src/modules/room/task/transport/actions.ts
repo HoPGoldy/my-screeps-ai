@@ -35,14 +35,11 @@ export const transportActions: {
                 if (!targetStructure) transport.removeTask(task.key)
 
                 // 检查下有没有资源
-                const resAmount = targetStructure.store[task.resourceType]
-                if (!resAmount) {
-                    // 如果任务有结束条件的话就结束，没有就等会
-                    if (task.endWith && task.endWith === 'clear') {
-                        transport.removeTask(task.key)
-                        transport.countWorkTime()
-                    }
-                    else creep.say('😁搬完了')
+                const resAmount = targetStructure.store[task.resourceType] || 0
+                // 剩余资源小于任务结束条件了，结束任务
+                if (resAmount <= (task.endWith || 0)) {
+                    transport.removeTask(task.key)
+                    transport.countWorkTime()
                     return false
                 }
 
@@ -60,13 +57,10 @@ export const transportActions: {
 
                 // 检查下有没有资源
                 const targetRes = targetPos.lookFor(LOOK_RESOURCES).find(res => res.resourceType === task.resourceType)
-                if (!targetRes) {
-                    // 如果任务有结束条件的话就结束，没有就等会
-                    if (task.endWith && task.endWith === 'clear') {
-                        transport.removeTask(task.key)
-                        transport.countWorkTime()
-                    }
-                    else creep.say('🎨')
+                // 资源没了或者到达结束条件
+                if (!targetRes || targetRes.amount <= (task.endWith || 0)) {
+                    transport.removeTask(task.key)
+                    transport.countWorkTime()
                     return false
                 }
 

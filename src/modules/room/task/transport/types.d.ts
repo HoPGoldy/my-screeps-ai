@@ -41,10 +41,10 @@ interface TransportTasks {
          */
         resourceType: ResourceConstant
         /**
-         * 怎么算完成任务：clear 代表目标位置不存在该资源就完成任务
-         * 该字段为空的话该任务将永远不会结束，需要外部模块手动取消（或者 from 指定的建筑不存在了也会结束）
+         * 当目标的资源数量小于该值时即代表任务完成，默认为全部搬完
+         * 注意，如果是 source 旁放能量的 container 的话，creep 一直在往里放能量，默认可能会导致任务迟迟无法完结
          */
-        endWith?: 'clear'
+        endWith?: number
     }
     /**
      * 填充 spawn 及 extension

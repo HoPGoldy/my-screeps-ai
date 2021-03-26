@@ -1,21 +1,6 @@
 import { getMax } from "./findStrategy"
 
 /**
- * 将建筑转换为统一的搜索对象
- * 
- * @param structure 要获取的搜索对象的建筑
- */
-const getLargeTarget = function (structure: EnergySourceStructure) {
-    if (!structure || structure.store[RESOURCE_ENERGY] > 0) return undefined
-
-    return {
-        amount: structure.store[RESOURCE_ENERGY],
-        target: structure,
-        type: structure.structureType
-    }
-}
-
-/**
  * 搜索房间内的可用能量源
  * 会先应用传入的过滤方法，然后使用搜索方法找到唯一目标
  * 

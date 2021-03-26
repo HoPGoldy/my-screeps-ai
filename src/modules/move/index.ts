@@ -28,27 +28,16 @@ export const routeCache: { [routeKey: string]: string } = {}
  */
 const wayPointCache: { [creepName: string]: RoomPosition } = {}
 
-export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt = {}) {
-    const cost1 = Game.cpu.getUsed()
-    const result = goToInner(creep, targetPos, moveOpt)
-
-    const moveUseCpu = Game.cpu.getUsed() - cost1
-    if (moveUseCpu > 0.2) {
-        Memory.moveUseCpu = Memory.moveUseCpu === undefined ? 0 : (Memory.moveUseCpu + moveUseCpu)
-        Memory.moveNumber = Memory.moveNumber === undefined ? 0 : Memory.moveNumber + 1
-    }
-
-    return result
-}
 
 /**
  * 移动 creep
+ * 平均执行消耗 0.220 ~ 0.232（不包含寻路消耗）
  * 
  * @param creep 要进行移动的 creep
  * @param target 要移动到的目标位置
  * @param moveOpt 移动参数
  */
-export const goToInner = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt): ScreepsReturnCode {
+export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt): ScreepsReturnCode {
     // 默认会检查目标变更
     const options = _.defaults<MoveOpt>({ checkTarget: true }, moveOpt)
 
@@ -453,8 +442,6 @@ const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, move
         }
     })
     // console.log("寻路结果", JSON.stringify(result))
-
-    Memory.movePathFindUseCpu = Memory.movePathFindUseCpu === undefined ? 0 : (Memory.movePathFindUseCpu + Game.cpu.getUsed() - cost1)
 
     // 没找到就返回空
     if (result.path.length <= 0) return undefined

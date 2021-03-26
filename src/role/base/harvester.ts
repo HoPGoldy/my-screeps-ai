@@ -194,7 +194,31 @@ const actionStrategy: ActionStrategy = {
          */
         target: creep => {
             const { sourceId } = creep.memory.data
-            creep.getEngryFrom(Game.getObjectById(sourceId))
+            const source = Game.getObjectById(sourceId)
+            creep.getEngryFrom(source)
+
+            // 如果房间里有 storage，则定期发布 container 到 storage 的能量转移任务
+            if (creep.room.storage && !(Game.time % 100)) {
+                const container = source.getContainer()
+
+                // 能量达到数量了就发布任务，这个值应该低一点
+                // 不然有可能出现 worker 吃能量比较快导致任务发布数量太少
+                if (container.store[RESOURCE_ENERGY] > 200) {
+                    // 看看是不是已经有发布好的任务了
+                    const hasTransportTask = creep.room.transport.tasks.find(task => {
+                        return 'from' in task && task.from === container.id
+                    })
+
+                    // 没有任务的话才会发布
+                    !hasTransportTask && creep.room.transport.addTask({
+                        type: 'transport',
+                        from: container.id,
+                        to: creep.room.storage.id,
+                        resourceType: RESOURCE_ENERGY,
+                        endWith: 100
+                    })
+                }
+            }
 
             // 快死了就把身上的能量丢出去，这样就会存到下面的 container 里，否则变成墓碑后能量无法被 container 自动回收
             if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)

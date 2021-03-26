@@ -1,4 +1,5 @@
 import { removeCreep } from '@/modules/creep'
+import { BASE_ROLE_LIMIT } from './constant'
 import { DEFAULT_FLAG_NAME } from '@/setting'
 import { log } from '@/utils'
 import RoomSpawnController from './index'
@@ -49,16 +50,19 @@ export default class RoomCreepRelease {
         const { room } = this.spawner
         // 单位对应在房间内存中保存的键
         const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
-        // 工人和搬运工最少都应该保留一个单位
-        const min = 1
+        // 获取对应的最大数量和最小数量
+        const { MIN, MAX } = BASE_ROLE_LIMIT[type]
 
         const oldNumber = room.memory[memoryKey] || 0
-        // 计算真实的调整量，保证最少有 min 人
+        // 计算真实的调整量，保证最少有 MIN 人，最多有 MAX 人
         let realAdjust = 0
-        // 调整完了人数还够，直接用
-        if (oldNumber + adjust >= min) realAdjust = adjust
+
+        // 调整完的人数超过限制了，就增加到最大值
+        if (oldNumber + adjust > MAX) realAdjust = MAX - oldNumber
+        // 调整完了人数在正常区间，直接用
+        else if (oldNumber + adjust >= MIN) realAdjust = adjust
         // 调整值导致人数不够了，根据最小值调整
-        else realAdjust = oldNumber > min ? min - oldNumber : oldNumber - min
+        else realAdjust = oldNumber > MIN ? MIN - oldNumber : oldNumber - MIN
 
         if (realAdjust >= 0) {
             // 添加新的单位

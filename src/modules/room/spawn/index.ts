@@ -106,7 +106,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
              * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > **移除任务** > tick 末期开始孵化 > extension 扣除能量
              */
             if (spawn.spawning.needTime - spawn.spawning.remainingTime == 1) {
-                this.room.transport.updateTask({ type: 'fillExtension', priority: 10 })
+                this.room.transport.updateTask({ type: 'fillExtension', priority: 10 }, { dispath: true })
 
                 if (
                     // 非战争状态下直接发布 power 填 extension 任务
