@@ -46,12 +46,12 @@ export default class RoomCreepRelease {
      * @param adjust 要增减的数量，为负代表减少
      * @param bodyType 在新增时要设置的特殊体型，减少数量时无效
      */
-    public changeBaseUnit(type: 'worker' | 'manager', adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
+    public changeBaseUnit(type: BaseUnits, adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
         const { room } = this.spawner
         // 单位对应在房间内存中保存的键
         const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
         // 获取对应的最大数量和最小数量
-        const { MIN, MAX } = BASE_ROLE_LIMIT[type]
+        const { MIN, MAX } = JSON.parse(this.spawner.room.memory.baseUnitLimit || '{}')[type] || BASE_ROLE_LIMIT[type]
 
         const oldNumber = room.memory[memoryKey] || 0
         // 计算真实的调整量，保证最少有 MIN 人，最多有 MAX 人
@@ -88,6 +88,24 @@ export default class RoomCreepRelease {
 
         log(`调整 ${type} 单位数量 [修正] ${adjust} [修正后数量] ${room.memory[memoryKey]}`)
         return OK
+    }
+
+    /**
+     * 设置基地运维角色数量
+     * 
+     * @param type 要设置的单位角色
+     * @param limit 设置的限制
+     */
+    public setBaseUnitLimit(type: BaseUnits, limit: Partial<BaseUnitLimit>): void {
+        // 获取当前房间的设置
+        const existLimit: RoomBaseUnitLimit = JSON.parse(this.spawner.room.memory.baseUnitLimit || '{}') || BASE_ROLE_LIMIT
+        // 更新配置
+        const realLimit = _.defaults(limit, existLimit[type], BASE_ROLE_LIMIT[type])
+        // 保存到房间
+        this.spawner.room.memory.baseUnitLimit = JSON.stringify({
+            ...existLimit,
+            realLimit
+        })
     }
 
     /**

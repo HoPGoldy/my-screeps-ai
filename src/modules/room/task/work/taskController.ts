@@ -1,7 +1,7 @@
 import { getRoomStats } from '@/modules/stats'
 import { noTask, transportActions } from './actions'
 import TaskController from '../baseTaskController'
-import { countEnergyChangeRatio } from '@/modules/energyController'
+import { countEnergyChangeRatio } from '@/modules/energyUtils'
 
 /**
  * 能量获取速率到调整期望的 map
@@ -13,11 +13,11 @@ import { countEnergyChangeRatio } from '@/modules/energyController'
  * @property {} expect 对应的期望
  */
 const WORK_PROPORTION_TO_EXPECT = [
-    { rate: 50, expect: 2 },
-    { rate: 10, expect: 1 },
-    { rate: -10, expect: 0 },
-    { rate: -50, expect: -1 },
-    { rate: -100, expect: -2 }
+    { rate: 10, expect: 2 },
+    { rate: 5, expect: 1 },
+    { rate: 0, expect: 0 },
+    { rate: -5, expect: -1 },
+    { rate: -10, expect: -2 }
 ]
 
 /**

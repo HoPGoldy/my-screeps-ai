@@ -1,4 +1,4 @@
-import { getRoomEnergyTarget, findStrategy } from '@/modules/energyController'
+import { getRoomEnergyTarget, findStrategy } from '@/modules/energyUtils'
 import { useCache } from '@/utils'
 import { addSpawnMinerTask } from './delayTask'
 import { WorkActionGenerator } from './taskController'

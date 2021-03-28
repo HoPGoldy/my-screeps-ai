@@ -1,7 +1,6 @@
 import { whiteListFilter } from '@/utils'
 import { setRoomStats, getRoomStats } from '@/modules/stats'
 import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
-import { countEnergyChangeRatio } from '@/modules/energyController'
 import { delayQueue } from '@/modules/delayQueue'
 
 /**
@@ -54,10 +53,6 @@ export default class ControllerExtension extends StructureController {
             this.room.spawner.release.harvester()
             this.room.spawner.release.changeBaseUnit('manager', 1)
             this.room.spawner.release.changeBaseUnit('worker', 2)
-        }
-        else if (level === LEVEL_BUILD_RAMPART[0] || 4) {
-            // 开始刷墙后就开始执行刷墙任务
-            this.room.work.updateTask({ type: 'fillWall' })
         }
         else if (level === 8) {
             this.decideUpgradeWhenRCL8()

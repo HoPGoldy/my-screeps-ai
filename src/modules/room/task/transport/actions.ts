@@ -1,4 +1,4 @@
-import { getRoomEnergyTarget, findStrategy } from '@/modules/energyController'
+import { getRoomEnergyTarget, findStrategy } from '@/modules/energyUtils'
 import { boostResourceReloadLimit } from '@/setting'
 import { useCache } from '@/utils'
 import RoomTransport, { TransportActionGenerator } from './taskController'
