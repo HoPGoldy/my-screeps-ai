@@ -14,10 +14,10 @@ export default class ContainerExtension extends StructureContainer {
         if (this.room.controller.level < 1) return false
         /**
          * 如果是在自己房间里就触发新的 creep 和任务发布
-         * 更新家里的搬运工数量，几个 container 就发布其数量 * 3
+         * 更新家里的搬运工数量，几个 container 就发布其数量 * 4
          * @todo 这里没有考虑外矿的运输需求，等外矿模块完善后再修改
          */
-        this.room.spawner.release.changeBaseUnit('worker', 3)
+        this.room.spawner.release.changeBaseUnit('worker', 4)
         this.room.work.updateTask({ type: 'upgrade', priority: 5 })
     }
 }

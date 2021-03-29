@@ -50,7 +50,10 @@ export const creepNumberListener = function (): void {
  * @param creepMemory creep 死时的内存
  */
 const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMemory) {
-    const { spawnRoom: spawnRoomName, data, role, cantRespawn } = creepMemory
+    const { spawnRoom: spawnRoomName, data, role, cantRespawn, taskKey } = creepMemory
+
+    // 如果有 taskKey，说明还在做任务，去访问对应的任务管理器把自己注销一下 
+    if (taskKey) removeSelfFromTask(creepName, role, data)
 
     // 禁止孵化的 creep 直接移除
     if (cantRespawn) {
@@ -81,4 +84,21 @@ const handleNotExistCreep = function (creepName: string, creepMemory: MyCreepMem
 
     if (result === ERR_NAME_EXISTS) log(`死亡 ${creepName} 孵化任务已存在`, [ 'creepController' ])
     delete Memory.creeps[creepName]
+}
+
+/**
+ * 通知对应的房间任务管理器，他的一个工人凉了
+ * 
+ * @param creepName 正在做任务的 creep 名字
+ * @param role 该 creep 的角色
+ * @param data 该 creep 的 memory.data
+ */
+const removeSelfFromTask = function (creepName: string, role: CreepRoleConstant, data: CreepData): void {
+    if (!('workRoom' in data)) return
+
+    const workRoom = Game.rooms[data.workRoom]
+    if (!workRoom) return
+
+    const controller = role === 'manager' ? workRoom.transport : workRoom.work
+    controller.removeCreep(creepName)
 }

@@ -83,11 +83,12 @@ export const transportActions: {
             if (creep.store[RESOURCE_ENERGY] >= 20) return true
 
             const source = Game.getObjectById(task.sourceId)
-            if (!source) {
-                creep.log(`找不到 source，container 建造任务移除`, 'yellow')
+            if (!source || source.getContainer()) {
+                if (!source) creep.log(`找不到 source，container 建造任务移除`, 'yellow')
                 workController.removeTask(task.key)
                 return false
             }
+
             // 建造初始 container 时一无所有，所以只会捡地上的能量来用
             const droppedEnergy = source.getDroppedInfo().energy
             if (!droppedEnergy || droppedEnergy.amount < 100) {

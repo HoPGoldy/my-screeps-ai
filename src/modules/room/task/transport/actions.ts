@@ -612,7 +612,7 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  * @returns 身上是否已经有足够的能量了
  */
 const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransport): boolean {
-    if (creep.store[RESOURCE_ENERGY] > 10) return true
+    if (creep.store[RESOURCE_ENERGY] > 40) return true
 
     // 从工作房间查询并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
@@ -626,7 +626,8 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransport)
         (source instanceof Resource && source.amount <= 0)
     ) {
         // 先移动到目标附件待命
-        if (source) creep.goTo(source.pos, { range: 3 })
+        let target = source ? source : creep.room.source[0]
+        if (target) creep.goTo(target.pos, { range: 3 })
         else creep.say('😯没能量呀')
 
         delete creep.memory.sourceId

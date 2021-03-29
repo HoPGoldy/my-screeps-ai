@@ -115,7 +115,8 @@ const actionStrategy: ActionStrategy = {
 
             if (posContinaer.length <= 0 && posContinaerSite.length <= 0) {
                 addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
-                creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id })
+                // container 建造任务的优先级应该是最高的
+                creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id, priority: 10 })
                 // creep.log(`发布 source ${source.id} 的 container 建造任务`, 'green')
             }
 
@@ -127,30 +128,21 @@ const actionStrategy: ActionStrategy = {
             if (!useRoom) return false
 
             // 如果有搬运工了就无脑采集
-            if(
+            if (
                 useRoom.transport.getUnit().length <= 0 &&
                 creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0
             ) return true
 
-            const result = creep.harvest(source)
-            if (result === ERR_NOT_IN_RANGE) goToDropPos(creep, source)
+            creep.harvest(source)
+            goToDropPos(creep, source)
         },
         // 把能量运到 spawn
         target: (creep) => {
             const useRoom = Game.rooms[creep.memory.data.useRoom]
             if (!useRoom) return false
 
-            if (creep.store[RESOURCE_ENERGY] <= 0) return true
-
-            // 有运输工了就回去挖能量，在此之前先把身上的能量送给运输工
-            const transports = useRoom.transport.getUnit()
-            if (transports.length > 0) {
-                const result = creep.transferTo(transports[0], RESOURCE_ENERGY)
-                // 如果转移成功了或者对方拿不了了就回去挖能量
-                // 不然会出现对面拿不了但是自己依旧追着给的情况
-                if (result === OK || result === ERR_FULL) return true
-                return false
-            }
+            // 有运输工了就回去挖能量
+            if (creep.store[RESOURCE_ENERGY] <= 0 || useRoom.transport.getUnit().length > 0) return true
 
             // 找到 spawn 然后把身上的能量全塞进去，不搜索 extension，因为启动时还没有 extension
             // 就算是重建，只要保证 spawn 里有能量也能孵化搬运工了
@@ -318,6 +310,9 @@ const goToDropPos = function (creep: MyCreep<'harvester'>, source: Source): {
 
         targetPos = droppedPos ? droppedPos : source.pos
     }
+
+    // 到了就不进行移动了
+    if (creep.pos.isEqualTo(targetPos)) return { result: OK, targetPos, range }
 
     // 执行移动
     const result = creep.goTo(targetPos, { range, checkTarget: false })

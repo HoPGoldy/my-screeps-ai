@@ -35,7 +35,7 @@ export default class TaskController<
     /**
      * 当前正在执行任务的 creep
      */
-    public creeps: { [creepId: string]: TaskUnitInfo } = {}
+    public creeps: { [creepName: string]: TaskUnitInfo } = {}
 
     /**
      * 构造 - 管理指定房间的任务
@@ -193,8 +193,8 @@ export default class TaskController<
         if (!task || !unit) return
 
         task.unit = (task.unit > 0) ? task.unit + 1 : 1
-        if (!this.creeps[unit.id]) this.creeps[unit.id] = {}
-        this.creeps[unit.id].doing = task.key
+        if (!this.creeps[unit.name]) this.creeps[unit.name] = {}
+        this.creeps[unit.name].doing = task.key
         unit.memory.taskKey = task.key
 
         // 如果是特殊任务的话就更新对应的字段
@@ -212,7 +212,7 @@ export default class TaskController<
      */
     protected removeTaskUnit(task: CostomTask, unit?: Creep): void {
         if (unit) {
-            delete this.creeps[unit.id]
+            if (this.creeps[unit.name]) this.creeps[unit.name].doing = null
             delete unit.memory.taskKey
         }
 
@@ -260,7 +260,7 @@ export default class TaskController<
      * @returns 该 creep 分配到的任务
      */
     protected dispatchCreep(creep: Creep): CostomTask {
-        delete this.creeps[creep.id]
+        if (this.creeps[creep.name]) this.creeps[creep.name].doing = null
         delete creep.memory.taskKey
 
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
@@ -275,8 +275,8 @@ export default class TaskController<
             // 挤掉了一个普通单位
             // 例如这个特殊任务有普通工人在做，而自己是符合任务的特殊体型，那自己就会挤占他的工作机会
             if (result === TaskMatchResult.NeedRmoveNormal) {
-                const creepId = Object.keys(this.creeps).find(id => this.creeps[id].doing === checkTask.key)
-                this.removeTaskUnit(checkTask, Game.getObjectById(creepId as Id<Creep>))
+                const creepName = Object.keys(this.creeps).find(name => this.creeps[name].doing === checkTask.key)
+                this.removeTaskUnit(checkTask, Game.creeps[creepName])
             }
 
             // 匹配成功，把单位设置到该任务并结束分派
@@ -367,12 +367,12 @@ export default class TaskController<
      * @param creep 要获取待执行任务的 creep
      */
     public getUnitTask(creep: Creep): CostomTask {
-        let doingTask = this.getTask(this.creeps[creep.id]?.doing)
+        let doingTask = this.getTask(this.creeps[creep.name]?.doing)
 
         // 还未分配过任务，或者任务已经完成了
         if (!doingTask) {
             doingTask = this.dispatchCreep(creep)
-            this.creeps[creep.id] = doingTask ? { doing: doingTask.key } : {}
+            this.creeps[creep.name] = doingTask ? { doing: doingTask.key } : {}
         }
 
         return doingTask
@@ -388,17 +388,17 @@ export default class TaskController<
         const units: Creep[] = []
 
         // 给干完活的单位重新分配任务
-        for (const creepId in this.creeps) {
-            const creep = Game.getObjectById(creepId as Id<Creep>)
+        for (const creepName in this.creeps) {
+            const creep = Game.creeps[creepName]
 
             // 人没了，直接移除
             if (!creep) {
-                this.removeCreep(creepId)
+                this.removeCreep(creepName)
                 continue
             }
 
             // 如果指定了筛选条件并且筛选没通过则不返回
-            if (filter && !filter(this.creeps[creepId], creep)) continue
+            if (filter && !filter(this.creeps[creepName], creep)) continue
 
             units.push(creep)
         }
@@ -411,13 +411,11 @@ export default class TaskController<
      * 不调用的话也不影响模块运行（任务调度时会自行清理）
      * 在对应工作单位去世时主动调用可以获得更准确的任务分派
      * 
-     * @param creepId 要移除的 creep id
+     * @param creepName 要移除的 creep 名称
      */
-    public removeCreep(creepId): void {
-        const { doing } = this.creeps[creepId]
-        delete this.creeps[creepId]
-
-        this.removeTaskUnit(this.getTask(doing))
+    public removeCreep(creepName: string): void {
+        this.removeTaskUnit(this.getTask(this.creeps[creepName].doing))
+        delete this.creeps[creepName]
     }
 
     /**
@@ -445,7 +443,7 @@ export default class TaskController<
      * @param startY 绘制窗口左上角 Y 坐标
      */
     public draw(startX: number, startY: number): void {
-        const logs = [ `已注册单位 ${Object.keys(this.creeps).map((id: Id<Creep>) => Game.getObjectById(id)?.name).join(', ')}` ]
+        const logs = [ `已注册单位 ${Object.keys(this.creeps).join(', ')}` ]
         logs.push(...this.tasks.map(task => `[类型] ${task.type} [索引] ${task.key} [需求数量] ${task.need} [执行数量] ${task.unit} [优先级] ${task.priority}`))
 
         const room = Game.rooms[this.roomName]

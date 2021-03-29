@@ -15,9 +15,9 @@ import { countEnergyChangeRatio } from '@/modules/energyUtils'
 const WORK_PROPORTION_TO_EXPECT = [
     { rate: 10, expect: 2 },
     { rate: 5, expect: 1 },
-    { rate: 0, expect: 0 },
-    { rate: -5, expect: -1 },
-    { rate: -10, expect: -2 }
+    { rate: -5, expect: 0 },
+    { rate: -10, expect: -1 },
+    { rate: -15, expect: -2 }
 ]
 
 /**
@@ -49,7 +49,7 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
         const actionGenerator: WorkActionGenerator = transportActions[task.type]
 
         const { x, y } = creep.pos
-        creep.room.visual.text(task.type, x, y, { opacity: 0.4 })
+        creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
         // 分配完后获取任务执行逻辑
         return actionGenerator(creep, task, this)
     }
