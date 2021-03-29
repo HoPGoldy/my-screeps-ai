@@ -64,7 +64,12 @@ export const transportActions: {
         source: () => getEnergy(creep),
         target: () => {
             const { workRoom: workRoomName } = creep.memory.data
-            return creep.upgradeRoom(workRoomName) === ERR_NOT_ENOUGH_RESOURCES
+
+            if (creep.upgradeRoom(workRoomName) === ERR_NOT_ENOUGH_RESOURCES) {
+                return creep.backToGetEnergy()
+            }
+
+            return false
         }
     }),
 
@@ -134,7 +139,7 @@ export const transportActions: {
     build: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
-            if (creep.store[RESOURCE_ENERGY] === 0) return true
+            if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
 
             // 有新墙就先刷新墙
             if (creep.memory.fillWallId) creep.steadyWall()
@@ -144,7 +149,7 @@ export const transportActions: {
                 const taskTarget = Game.getObjectById(task.targetId)
                 if (creep.buildStructure(taskTarget) === ERR_NOT_FOUND) {
                     workController.removeTask(task.key)
-                    return true
+                    return creep.backToGetEnergy()
                 }
             }
         }
@@ -156,7 +161,7 @@ export const transportActions: {
     repair: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
-            if (creep.store[RESOURCE_ENERGY] === 0) return true
+            if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
             const room = Game.rooms[creep.memory.data.workRoom]
             if (!room) {
                 workController.removeTask(task.key)
@@ -189,7 +194,7 @@ export const transportActions: {
             const result = creep.repair(target)
 
             if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 2 })
-            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
+            else if (result === ERR_NOT_ENOUGH_ENERGY) return creep.backToGetEnergy()
             else if (result !== OK) {
                 creep.say(`给我修傻了${result}`)
                 creep.log(`维修任务异常，repair 返回值: ${result}`)
@@ -219,7 +224,7 @@ export const transportActions: {
                 if (!filling) workController.removeTask(task.key)
             }
 
-            if (creep.store.getUsedCapacity() === 0) return true
+            if (creep.store.getUsedCapacity() === 0) return creep.backToGetEnergy()
         }
     })
 }

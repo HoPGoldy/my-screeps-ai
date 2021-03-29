@@ -108,13 +108,15 @@ export const transportActions: {
         source: () => getEnergy(creep, transport),
         target: () => {
             transport.countWorkTime()
+            if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
+
             const result = fillSpawnStructure(creep)
 
             if (result === ERR_NOT_FOUND) {
                 transport.removeTask(task.key)
-                return true
+                return creep.backToGetEnergy()
             }
-            else if (result === ERR_NOT_ENOUGH_ENERGY) return true
+            else if (result === ERR_NOT_ENOUGH_ENERGY) return creep.backToGetEnergy()
         }
     }),
 
@@ -126,7 +128,7 @@ export const transportActions: {
         source: () => getEnergy(creep, transport),
         target: () => {
             transport.countWorkTime()
-            if (creep.store[RESOURCE_ENERGY] === 0) return true
+            if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
             let target: StructureTower
 
             // 有缓存的话
@@ -151,7 +153,7 @@ export const transportActions: {
                     // 如果还没找到的话就算完成任务了
                     if (towers.length <= 0) {
                         transport.removeTask(task.key)
-                        return true
+                        return creep.backToGetEnergy()
                     }
                     target = creep.pos.findClosestByRange(towers) as StructureTower
                 }
@@ -610,7 +612,6 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  * @returns 身上是否已经有足够的能量了
  */
 const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransport): boolean {
-    transport.countWorkTime()
     if (creep.store[RESOURCE_ENERGY] > 10) return true
 
     // 从工作房间查询并缓存能量来源
@@ -624,13 +625,17 @@ const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransport)
         (source instanceof Structure && source.store[RESOURCE_ENERGY] <= 0) ||
         (source instanceof Resource && source.amount <= 0)
     ) {
-        creep.say('😯没能量呀')
+        // 先移动到目标附件待命
+        if (source) creep.goTo(source.pos, { range: 3 })
+        else creep.say('😯没能量呀')
+
         delete creep.memory.sourceId
         return false
     }
 
     // 获取能量
     const result = creep.getEngryFrom(source)
+    transport.countWorkTime()
     return result === OK
 }
 

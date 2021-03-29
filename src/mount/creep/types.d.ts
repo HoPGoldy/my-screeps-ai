@@ -118,19 +118,10 @@ interface CreepMemory {
 
 /**
  * Creep 拓展
- * 来自于 mount.creep.ts
+ * 来自于 ./extension.ts
  */
 interface Creep {
-    /**
-     * 发送日志
-     * 
-     * @param content 日志内容
-     * @param instanceName 发送日志的实例名
-     * @param color 日志前缀颜色
-     * @param notify 是否发送邮件
-     */
     log(content:string, color?: Colors, notify?: boolean): void
-
     onWork(): void
     checkEnemy(): boolean
     standBy(): void
@@ -141,7 +132,8 @@ interface Creep {
     buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
     fillDefenseStructure(expectHits?: number): boolean
     getEngryFrom(target: AllEnergySource): ScreepsReturnCode
-    transferTo(target: Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
+    transferTo(target:  AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
+    backToGetEnergy(): true
     attackFlag(flagName: string): boolean
     rangedAttackFlag(flagName: string): boolean
     smass(): void

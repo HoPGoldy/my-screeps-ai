@@ -29,6 +29,10 @@ const crossRules: CrossRules = {
     // 填充单位无论什么时候都会允许对穿，因为其不会长时间停在一个位置上工作
     manager: () => true,
 
+    // 采集单位在采集能量时不允许对穿
+    // （采集能量都在 source 阶段，也就是 ↓ working 为 false 的时候）
+    harvester: (creep) => creep.memory.working,
+
     // 中央处理单位在携带有资源时不允许对穿
     processor: creep => !creep.memory.working,
 

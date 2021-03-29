@@ -121,6 +121,7 @@ const actionStrategy: ActionStrategy = {
 
             return true
         },
+        // 挖能量
         source: (creep, source) => {
             const useRoom = Game.rooms[creep.memory.data.useRoom]
             if (!useRoom) return false
@@ -134,12 +135,22 @@ const actionStrategy: ActionStrategy = {
             const result = creep.harvest(source)
             if (result === ERR_NOT_IN_RANGE) goToDropPos(creep, source)
         },
+        // 把能量运到 spawn
         target: (creep) => {
             const useRoom = Game.rooms[creep.memory.data.useRoom]
             if (!useRoom) return false
 
-            // 有运输工了就回去挖能量
-            if (creep.store[RESOURCE_ENERGY] <= 0 || useRoom.transport.getUnit().length > 0) return true
+            if (creep.store[RESOURCE_ENERGY] <= 0) return true
+
+            // 有运输工了就回去挖能量，在此之前先把身上的能量送给运输工
+            const transports = useRoom.transport.getUnit()
+            if (transports.length > 0) {
+                const result = creep.transferTo(transports[0], RESOURCE_ENERGY)
+                // 如果转移成功了或者对方拿不了了就回去挖能量
+                // 不然会出现对面拿不了但是自己依旧追着给的情况
+                if (result === OK || result === ERR_FULL) return true
+                return false
+            }
 
             // 找到 spawn 然后把身上的能量全塞进去，不搜索 extension，因为启动时还没有 extension
             // 就算是重建，只要保证 spawn 里有能量也能孵化搬运工了
@@ -186,13 +197,9 @@ const actionStrategy: ActionStrategy = {
             return true
         },
         /**
-         * 简单模式没有 source 阶段
-         */
-        source: () => true,
-        /**
          * 采集阶段会无脑采集，过量的能量会掉在 container 上然后被接住存起来
          */
-        target: creep => {
+        source: (creep) => {
             const { sourceId } = creep.memory.data
             const source = Game.getObjectById(sourceId)
             creep.getEngryFrom(source)
@@ -223,7 +230,11 @@ const actionStrategy: ActionStrategy = {
             // 快死了就把身上的能量丢出去，这样就会存到下面的 container 里，否则变成墓碑后能量无法被 container 自动回收
             if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
             return false
-        }
+        },
+        /**
+         * 简单模式没有 target 阶段
+         */
+        target: () => true
     },
 
     /**

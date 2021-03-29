@@ -73,6 +73,19 @@ export default class CreepExtension extends Creep {
     }
 
     /**
+     * 切换为能量获取状态
+     * 应在 target 阶段能量不足时调用
+     * 
+     * @param creep 需要获取能量的 creep
+     * @returns true
+     */
+    backToGetEnergy(): true {
+        // 移除能量来源缓存，便于重新查找最近的
+        delete this.memory.sourceId
+        return true
+    }
+
+    /**
      * 检查是否有敌人
      * 注意! 该方法只能检查有视野的房间
      * 
@@ -332,7 +345,7 @@ export default class CreepExtension extends Creep {
      * @param target 要转移到的目标
      * @param RESOURCE 要转移的资源类型
      */
-    public transferTo(target: Structure, RESOURCE: ResourceConstant, moveOpt: MoveOpt = {}): ScreepsReturnCode {
+    public transferTo(target: AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt: MoveOpt = {}): ScreepsReturnCode {
         this.goTo(target.pos, moveOpt)
         return this.transfer(target, RESOURCE)
     }
