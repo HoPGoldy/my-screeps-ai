@@ -37,6 +37,14 @@ interface DelayTaskTypes {
      * 因为工地必须在下个 tick 才能获取到
      */
     addBuildTask: DelayTaskData
+    /**
+     * map 库初始化任务
+     */
+    mapLibraryInit: DelayTaskData
+    /**
+     * map 库保存任务
+     */
+     mapLibrarySave: DelayTaskData
 }
 
 /**

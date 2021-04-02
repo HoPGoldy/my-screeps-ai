@@ -6,6 +6,7 @@ import { creepNumberControlAppPlugin } from './modules/creep'
 import { crossShardAppPlugin } from './modules/crossShard'
 import { delayQueueAppPlugin } from './modules/delayQueue'
 import { constructionAppPlugin } from './modules/constructionController'
+import { mapLibraryAppPlugin } from './modules/mapLibrary'
 import { mountList, extensionAppPlugin } from './mount'
 
 // 挂载所有的原型拓展
@@ -28,6 +29,9 @@ app.on(constructionAppPlugin)
 
 // 注册延迟任务管理模块
 app.on(delayQueueAppPlugin)
+
+// 注册地图库插件
+app.on(mapLibraryAppPlugin)
 
 // 注册搓 pixel 任务
 app.on(generatePixelAppPlugin)

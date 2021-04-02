@@ -33,14 +33,14 @@ const planStaticStructure = function (room: Room): ERR_NOT_FOUND | StructurePlan
         // 如果 LEVEL_BUILD_RAMPART 设置的太高会导致超过 8 级，这里检查下
         if (placeLevel > 8) placeLevel = 8
 
-        mergeStructurePlan(result, walls, placeLevel as AvailableLevel, STRUCTURE_RAMPART)
+        mergeStructurePlan(result, walls, placeLevel as AllRoomControlLevel, STRUCTURE_RAMPART)
     })
 
     // 执行自动道路规划，获取基地之外的 road 位置
     const roadPos = planRoad(room, centerPos, result)
 
     roadPos.forEach((roads, index) => {
-        mergeStructurePlan(result, roads, LEVEL_BUILD_ROAD[index] as AvailableLevel, STRUCTURE_ROAD)
+        mergeStructurePlan(result, roads, LEVEL_BUILD_ROAD[index] as AllRoomControlLevel, STRUCTURE_ROAD)
     })
 
     return result
@@ -168,7 +168,7 @@ const clearStructure = function (room: Room): OK | ERR_NOT_FOUND {
  * @param level 要合并到的等级
  * @param type 要合并到的建筑类型
  */
-const mergeStructurePlan = function (origin: StructurePlanningResult, newData: RoomPosition[], level: AvailableLevel, type: BuildableStructureConstant): OK {
+const mergeStructurePlan = function (origin: StructurePlanningResult, newData: RoomPosition[], level: AllRoomControlLevel, type: BuildableStructureConstant): OK {
     // 先取出已经存在的道路
     const targetStructurePos = origin[level - 1][type] || []
     // 然后把新道路追加进去

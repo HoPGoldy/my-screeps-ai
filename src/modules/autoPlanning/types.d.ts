@@ -30,7 +30,7 @@ interface StructurePlanningCache {
 /**
  * 目前存在的所有有效 RCL 等级
  */
-type AvailableLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
+type AllRoomControlLevel = 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8
 
 interface Memory {
     /**
@@ -40,5 +40,5 @@ interface Memory {
     /**
      * 用于标记布局获取到了那一等级
      */
-    layoutLevel?: AvailableLevel
+    layoutLevel?: AllRoomControlLevel
 }
