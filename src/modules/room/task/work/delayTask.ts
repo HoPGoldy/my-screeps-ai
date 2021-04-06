@@ -77,5 +77,5 @@ export const addSpawnMinerTask = function (roomName: string, delayTime: number) 
 export const addBuildTask = function (handleRoomName: string) {
     delayQueue.addDelayTask('addBuildTask', {
         roomName: handleRoomName
-    }, Game.time + 1)
+    }, Game.time + 2)
 }

@@ -17,7 +17,7 @@ addDelayCallback('mapLibraryInit', () => {
     if (!(RAW_MEMORY_ID in RawMemory.segments)) return initMapLibrary()
 
     const data = RawMemory.segments[RAW_MEMORY_ID]
-    mapLibrary = JSON.parse(data)
+    mapLibrary = JSON.parse(data || '{}')
 })
 
 /**

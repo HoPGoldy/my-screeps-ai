@@ -10,9 +10,9 @@ import { noTask, transportActions } from './actions'
  */
 const WORK_PROPORTION_TO_EXPECT = [
     { proportion: 0.9, expect: 2 },
-    { proportion: 0.8, expect: 1 },
-    { proportion: 0.7, expect: 0 },
-    { proportion: 0.4, expect: -1 },
+    { proportion: 0.7, expect: 1 },
+    { proportion: 0.5, expect: 0 },
+    { proportion: 0.3, expect: -1 },
     { proportion: 0, expect: -2 }
 ]
 
