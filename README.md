@@ -2,7 +2,7 @@
 
 [![](https://img.shields.io/badge/Room-12-success.svg)](https://screeps.com/a/#!/profile/HoPGoldy) ![](https://img.shields.io/badge/avgCPU-15-yellow)
 
-适用于游戏《[Screeps](https://screeps.com/a/#!/map)》的半自动 ai 项目。
+适用于游戏 [Screeps](https://screeps.com/a/#!/map) 的半自动 ai 项目。
 
 注意，本项目尚未完成，后续可能会进行大范围的代码更改，你可以通过本项目了解 Screeps 相关的操作以及如何将 rollup 和 TypeScript 应用在 Screeps 里（本项目包含完整的中文注释），但是请尊重自己和他人的游戏体验，不要将本项目直接部署在官方服务器上。
 
@@ -49,19 +49,23 @@ npm start
 npm run local
 ```
 
-启动开发环境 (只会执行 ts 编译, 不提交代码)
+进行代码构建（不会上传代码）
 
 ```
 npm run build
 ```
 
-执行单元测试
+进行测试
 
 ```bash
-# 仅执行测试
-npm run test
-# 执行测试并生成覆盖率报告（coverage/index.html）
-npm run cover
+# 执行单元测试
+npm run test-unit
+# 执行单元测试并生成覆盖率报告（coverage/index.html）
+npm run test-cover
+# 执行功能测试
+npm run test-behavior
+# 执行集成测试
+npm run test-integration
 ```
 
 ## 设计
