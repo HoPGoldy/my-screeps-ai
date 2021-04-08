@@ -16,7 +16,7 @@ export const costCache: { [roomName: string]: CostMatrix } = {}
  * Creep 在执行远程寻路时会优先检查该缓存
  * 键为路径的起点和终点名，例如："12/32/W1N1 23/12/W2N2"，值是使用 serializeFarPath 序列化后的路径
  */
-export const routeCache: { [routeKey: string]: string } = {}
+export let routeCache: { [routeKey: string]: string } = {}
 
 /**
  * 路径点缓存
@@ -84,6 +84,8 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
                 delete moveMemory.prePos
                 // 撞地形上了说明房间 cost 过期了
                 delete costCache[creep.room.name]
+                routeCache = {}
+
                 return ERR_INVALID_TARGET
             }
             // 尝试对穿，如果自己禁用了对穿的话则直接重新寻路
@@ -100,6 +102,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
                 delete moveMemory.prePos
                 // 不知道撞到了啥，反正重新加载房间缓存
                 delete costCache[creep.room.name]
+                routeCache = {}
             }
 
             // 对穿失败，需要重新寻路，不需要往下继续执行
@@ -111,10 +114,8 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
         delete moveMemory.lastMove
     }
 
-    // 如果路走完了就要重新寻路
-    if (!moveMemory.path && !moveMemory.lastMove) {
-        moveMemory.path = findPath(creep, target, options)
-    }
+    // 如果没有路径的话就重新发起搜索
+    if (!moveMemory.path) moveMemory.path = findPath(creep, target, options)
 
     // 还为空的话就是没找到路径或者已经到了
     if (!moveMemory.path) {
@@ -169,19 +170,20 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
 
     // 移动成功，更新路径
     if (goResult == OK) {
-        // 移动到终端了，不需要再检查位置是否重复了
+        // 移动到终点了，不需要再检查位置是否重复
         if (moveMemory.path.length === 0) {
             delete moveMemory.lastMove
-            delete moveMemory.prePos
         }
         else {
-            moveMemory.prePos = currentPos
-            moveMemory.lastMove = Number(moveMemory.path.substr(0, 1)) as DirectionConstant
+            moveMemory.lastMove = Number(moveMemory.path[0]) as DirectionConstant
             moveMemory.path = moveMemory.path.substr(1)
         }
     }
     // 其他异常直接报告
     else if (goResult != ERR_TIRED && goResult != ERR_BUSY) creep.say(`寻路 ${goResult}`)
+
+    // 更新最后位置
+    moveMemory.prePos = currentPos
 
     return goResult
 }
@@ -351,8 +353,6 @@ const requireCross = function (creep: Creep | PowerCreep, direction: DirectionCo
  * @returns PathFinder.search 的返回值
  */
 const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, moveOpt: MoveOpt = {}): string | undefined {
-    const cost1 = Game.cpu.getUsed()
-
     // 先查询下缓存里有没有值
     const routeKey = `${creep.room.serializePos(creep.pos)} ${creep.room.serializePos(target)}`
 

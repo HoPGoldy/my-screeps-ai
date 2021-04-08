@@ -116,7 +116,7 @@ const actionStrategy: ActionStrategy = {
             if (posContinaer.length <= 0 && posContinaerSite.length <= 0) {
                 addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
                 // container 建造任务的优先级应该是最高的
-                creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id, priority: 10 })
+                creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id, priority: 4 })
                 // creep.log(`发布 source ${source.id} 的 container 建造任务`, 'green')
             }
 
@@ -236,7 +236,25 @@ const actionStrategy: ActionStrategy = {
      * 采集能量 > 存放到指定建筑
      */
     [HARVEST_MODE.TRANSPORT]: {
-        prepare: () => true,
+        prepare: (creep, source) => {
+            const link = Game.getObjectById(creep.memory.targetId as Id<StructureLink>) || creep.room.storage
+
+            // 目标没了，变更为启动模式
+            if (!link) {
+                delete creep.memory.targetId
+                creep.memory.harvestMode = HARVEST_MODE.START
+                return false
+            }
+
+            const { x: sourceX, y: sourceY } = source.pos
+            const { x: linkX, y: linkY } = link.pos
+            
+            // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
+            const targetPos = new RoomPosition(Math.max(sourceX, linkX) - 1, Math.max(sourceY, linkY) - 1, source.room.name)
+            creep.goTo(targetPos, { range: 0 })
+
+            return creep.pos.isEqualTo(targetPos)
+        },
         source: (creep, source) => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
