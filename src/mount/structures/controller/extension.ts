@@ -2,6 +2,7 @@ import { whiteListFilter } from '@/utils'
 import { setRoomStats, getRoomStats } from '@/modules/stats'
 import { LEVEL_BUILD_RAMPART, UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
 import { delayQueue } from '@/modules/delayQueue'
+import { findStrategy, getRoomEnergyTarget } from '@/modules/energyUtils'
 
 /**
  * Controller 拓展
@@ -67,7 +68,18 @@ export default class ControllerExtension extends StructureController {
      */
     private adjustCreep(): void {
         this.room.spawner.release.changeBaseUnit('manager', this.room.transport.getExpect())
-        this.room.spawner.release.changeBaseUnit('worker', this.room.work.getExpect())
+
+        let workerChange: number
+        const { getMax, withLimit } = findStrategy
+        // 如果房间有 storage 了而且里边能量还不够最低使用，这时候将会把 worker 数量限制在 1 个，等到能量够用了再解除限制
+        // work.getExpect 是完全按照房间的能量获取速率来计算期望的，如果不加这个限制的话
+        // 会出现增加了很多 worker（没人用能量，导致获取速率很高）但是没有能量用的异常情况
+        if (this.room.storage && !getRoomEnergyTarget(this.room, getMax, withLimit)) {
+            workerChange = 1 - this.room.memory.workerNumber
+        }
+        else workerChange = this.room.work.getExpect()
+
+        this.room.spawner.release.changeBaseUnit('worker', workerChange)
     }
 
     /**
