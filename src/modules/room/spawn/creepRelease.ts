@@ -101,11 +101,8 @@ export default class RoomCreepRelease {
         const existLimit: RoomBaseUnitLimit = JSON.parse(this.spawner.room.memory.baseUnitLimit || '{}') || BASE_ROLE_LIMIT
         // 更新配置
         const realLimit = _.defaults(limit, existLimit[type], BASE_ROLE_LIMIT[type])
-        // 保存到房间
-        this.spawner.room.memory.baseUnitLimit = JSON.stringify({
-            ...existLimit,
-            realLimit
-        })
+        // 把新配置覆写保存进内存
+        this.spawner.room.memory.baseUnitLimit = JSON.stringify(_.defaults(existLimit, { [type]: realLimit }))
     }
 
     /**
