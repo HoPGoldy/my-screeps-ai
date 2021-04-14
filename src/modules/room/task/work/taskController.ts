@@ -58,17 +58,13 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      * 获取当前的工人调整期望
      * 返回的整数值代表希望增加（正值）/ 减少（负值）多少工作单位
      * 返回 0 代表不需要调整工作单位数量
+     * 
+     * @param energyGetRate 能量获取速率，其值为每 tick 可以获取多少点可用能量
+     * （注意，这个速率对应的能量都应是可以完全被用于 worker 消耗的，如果想为孵化保留能量的话，需要从这个速率中剔除）
      */
-    public getExpect(): number {
-        // 先更新房间能量使用情况，然后根据情况调整期望
-        countEnergyChangeRatio(Game.rooms[this.roomName])
-
-        const stats = getRoomStats(this.roomName)
-        // 没有统计或者能量获取速率为零，不调整搬运工数量
-        if (!stats || !stats.energyGetRate) return 0
-
+    public getExpect(energyGetRate: number): number {
         // 工作时长占比从高到底找到期望调整的搬运工数量
-        const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => stats.energyGetRate >= opt.rate)
+        const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => energyGetRate >= opt.rate)
 
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
     }

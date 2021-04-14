@@ -67,9 +67,6 @@ export class LinkExtension extends StructureLink {
 
         // 注册中央 link 的同时发布 processor
         this.room.spawner.release.processor()
-        // 中央 Link 有了，这时候就可以开放 storage 创建时降低的 worker 上限
-        // 因为 storage 的能量供给已经可以由 link 保障了
-        this.room.spawner.release.setBaseUnitLimit('worker', { MAX: Infinity })
 
         return `${this} 已注册为中央 link，发布 processor 并调整采集单位`
     }
