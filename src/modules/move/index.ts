@@ -495,3 +495,22 @@ export const visualAllCreepPath = function () {
         })
     })
 }
+
+/**
+ * 显示当前所有的路径缓存
+ */
+export const showRouteChche = function(): string {
+    const routeNames = Object.keys(routeCache)
+    if (routeNames.length <= 0) return `暂无路径缓存`
+
+    const logs = routeNames.map(routeKey => {
+        return `[${routeKey.split(' ').join(' > ')}] ${routeCache[routeKey]}`
+    })
+
+    if (logs.length > 0) {
+        logs.unshift(`当前共缓存路径 ${routeNames.length} 条`)
+    }
+    else return `暂无路径缓存`
+
+    return logs.join('\n')
+}

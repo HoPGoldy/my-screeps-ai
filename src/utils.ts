@@ -109,8 +109,16 @@ export function globalSay(words: string[]) {
     if (!Memory.sayIndex) Memory.sayIndex = 0
 
     Object.values(Game.creeps).forEach(creep => creep.say(words[Memory.sayIndex], true))
-
     Memory.sayIndex = Memory.sayIndex + 1 >= words.length ? 0 : Memory.sayIndex + 1
+}
+
+declare global {
+    interface Memory {
+        /**
+         * 全局的喊话索引
+         */
+        sayIndex?: number
+    }
 }
 
 /**

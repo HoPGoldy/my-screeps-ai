@@ -15,3 +15,5 @@ src/config.creep.ts
 coverage
 
 server
+
+.history
