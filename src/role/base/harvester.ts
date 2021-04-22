@@ -245,12 +245,9 @@ const actionStrategy: ActionStrategy = {
                 creep.memory.harvestMode = HARVEST_MODE.START
                 return false
             }
-
-            const { x: sourceX, y: sourceY } = source.pos
-            const { x: linkX, y: linkY } = link.pos
             
             // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
-            const targetPos = new RoomPosition(Math.max(sourceX, linkX) - 1, Math.max(sourceY, linkY) - 1, source.room.name)
+            const targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(link.pos))
             creep.goTo(targetPos, { range: 0 })
 
             return creep.pos.isEqualTo(targetPos)

@@ -86,7 +86,7 @@ export default class RoomCreepRelease {
         // 更新数量到内存
         room.memory[memoryKey] = oldNumber + realAdjust
 
-        log(`调整 ${type} 单位数量 [修正] ${adjust} [上/下限] ${MAX}/${MIN} [修正后数量] ${room.memory[memoryKey]}`)
+        if (adjust !== 0) log(`调整 ${type} 单位数量 [修正] ${adjust} [上/下限] ${MAX}/${MIN} [修正后数量] ${room.memory[memoryKey]}`)
         return OK
     }
 
