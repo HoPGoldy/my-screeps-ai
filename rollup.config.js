@@ -4,6 +4,7 @@ import commonjs from '@rollup/plugin-commonjs'
 import typescript from 'rollup-plugin-typescript2'
 import screeps from 'rollup-plugin-screeps'
 import copy from 'rollup-plugin-copy'
+import html from 'rollup-plugin-html'
 
 let config
 // 根据指定的目标获取对应的配置项
@@ -48,6 +49,10 @@ export default {
         resolve(),
         // 模块化依赖
         commonjs(),
+        // 构建可能存在的 html 文件
+        html({
+			include: '**/*.html'
+		}),
         // 编译 ts
         typescript({ tsconfig: "./tsconfig.json" }),
         // 执行上传或者复制
