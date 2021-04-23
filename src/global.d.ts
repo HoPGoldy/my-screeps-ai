@@ -38,3 +38,11 @@ type StructureWithStore =
 interface ObjectWithId<T extends unknown = unknown> extends RoomObject {
     id: Id<T>
 }
+
+/**
+ * 允许引入 html 文件
+ */
+declare module "*.html" {
+    const content: string;
+    export default content;
+}

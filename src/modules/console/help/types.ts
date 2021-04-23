@@ -1,7 +1,7 @@
 /**
  * 绘制帮助时需要的模块信息
  */
-interface ModuleDescribe {
+export interface ModuleDescribe {
     /**
      * 模块名
      */
@@ -19,7 +19,7 @@ interface ModuleDescribe {
 /**
  * 描述一个函数
  */
-interface FunctionDescribe {
+export interface FunctionDescribe {
     /**
      * 函数的名字
      */

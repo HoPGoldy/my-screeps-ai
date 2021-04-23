@@ -16,7 +16,10 @@ interface ElementDetail {
     type: string
 }
 
-type HTMLElementDetail = InputDetail | SelectDetail
+/**
+ * 所有的 html 元素描述对象
+ */
+export type HTMLElementDetail = HTMLElements[keyof HTMLElements]
 
 /**
  * 输入框
@@ -40,7 +43,7 @@ interface SelectDetail extends ElementDetail {
         /**
          * 选项值
          */
-        value: string | number
+        value: string
         /**
          * 选项显示内容
          */
@@ -52,7 +55,7 @@ interface SelectDetail extends ElementDetail {
 /**
  * 按钮
  */
-interface ButtonDetail {
+export interface ButtonDetail {
     /**
      * 按钮显示文本
      */
@@ -62,3 +65,16 @@ interface ButtonDetail {
      */
     command: string
 }
+
+/**
+ * 所有的 html 元素描述对象
+ */
+export interface HTMLElements {
+    input: InputDetail
+    select: SelectDetail
+}
+
+/**
+ * 所有 html 元素的构造器
+ */
+export type HTMLCreator = (detail: HTMLElements[keyof HTMLElements]) => string
