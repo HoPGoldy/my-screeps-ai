@@ -160,6 +160,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
         // 报自己身上资源不足了就说明能量放完了
         if (result === ERR_NOT_ENOUGH_RESOURCES) return true
         else if (result === ERR_FULL) creep.say('满了啊')
+        else if (result === ERR_NOT_IN_RANGE) creep.say('在路上啦')
         else if (result !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${result}`, 'red')
 
         return false
