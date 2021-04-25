@@ -4,12 +4,13 @@
  * 本文件包含了 Room 中用于控制台交互的方法
  */
 
-import { createHelp } from '@/modules/help'
+import { createHelp, createForm } from '@/modules/console'
 import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE, ROOM_REMOVE_INTERVAL } from '@/setting'
-import { getName, createElement, colorful } from '@/utils'
+import { getName, colorful } from '@/utils'
 import { setBaseCenter } from '@/modules/autoPlanning/planBasePos'
 import RoomExtension from './extension'
 import { manageStructure } from '@/modules/autoPlanning'
+import { ModuleDescribe } from '@/modules/console/help/types'
 
 export default class RoomConsole extends RoomExtension {
     /**
@@ -236,19 +237,19 @@ export default class RoomConsole extends RoomExtension {
      * 可视化用户操作 - 添加终端监听任务
      */
     public tadd(): string { 
-        return createElement.form('terminalAdd', [
+        return createForm('terminalAdd', [
             { name: 'resourceType', label: '资源类型', type: 'input', placeholder: '资源的实际值' },
             { name: 'amount', label: '期望值', type: 'input', placeholder: '交易策略的触发值' },
             { name: 'priceLimit', label: '[可选]价格限制', type: 'input', placeholder: '置空该值以启动价格检查' },
             { name: 'mod', label: '物流方向', type: 'select', options: [
-                { value: 0, label: '获取' },
-                { value: 1, label: '提供' }
+                { value: '0', label: '获取' },
+                { value: '1', label: '提供' }
             ]},
             { name: 'channel', label: '物流渠道', type: 'select', options: [
-                { value: 0, label: '拍单' },
-                { value: 1, label: '挂单' },
-                { value: 2, label: '共享' },
-                { value: 3, label: '支援' }
+                { value: '0', label: '拍单' },
+                { value: '1', label: '挂单' },
+                { value: '2', label: '共享' },
+                { value: '3', label: '支援' }
             ]},
             { name: 'supportRoomName', label: '[可选]支援房间', type: 'input', placeholder: 'channel 为支援时必填' },
         ], {

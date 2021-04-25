@@ -27,7 +27,23 @@ const creators: {
     select({ name, label = '', options }: HTMLElements['select']): string {
         const optionHtml = options.map(opt => replaceHtml(optionTemplate, opt))
         return label + replaceHtml(selectTemplate, { name, options: optionHtml.join('') })
-    }
+    },
+
+    /**
+     * 创建 radio 单选框
+     * @param detail 创建需要的信息
+     */
+    radio({ name, label = '', options }: HTMLElements['radio']): string {
+        return label + options.map(opt => replaceHtml(radioTemplate, { ...opt, name }))
+    },
+
+    /**
+     * 创建 checkout 复选框
+     * @param detail 创建需要的信息
+     */
+    checkbox({ name, label = '', options }: HTMLElements['checkbox']): string {
+        return label + options.map(opt => replaceHtml(checkboxTemplate, { ...opt, name }))
+    },
 }
 
 /**

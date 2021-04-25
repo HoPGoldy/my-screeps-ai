@@ -1,6 +1,6 @@
 import { DEPOSIT_MAX_COOLDOWN, OBSERVER_POWERBANK_MAX, OBSERVER_DEPOSIT_MAX, observerInterval } from '@/setting'
 import { colorful, createRoomLink } from '@/utils'
-import { createHelp } from '@/modules/help'
+import { createHelp } from '@/modules/console'
 
 /**
  * Observer 拓展

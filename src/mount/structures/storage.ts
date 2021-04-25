@@ -1,4 +1,4 @@
-import { createHelp } from '@/modules/help'
+import { createHelp } from '@/modules/console'
 import { DEFAULT_ENERGY_KEEP_AMOUNT, DEFAULT_ENERGY_KEEP_LIMIT, ENERGY_SHARE_LIMIT } from '@/setting'
 
 /**

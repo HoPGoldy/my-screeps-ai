@@ -1,4 +1,4 @@
-import { createHelp } from "@/modules/help"
+import { createHelp } from "@/modules/console"
 
 /**
  * 掠夺配置 api

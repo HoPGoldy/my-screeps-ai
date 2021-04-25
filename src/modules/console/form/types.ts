@@ -35,7 +35,7 @@ interface InputDetail extends ElementDetail {
 /**
  * 下拉框
  */
-interface SelectDetail extends ElementDetail {
+ interface SelectDetail extends ElementDetail {
     /**
      * 下拉框待选项
      */
@@ -50,6 +50,46 @@ interface SelectDetail extends ElementDetail {
         label: string
     }[]
     type: 'select'
+}
+
+/**
+ * 单选框
+ */
+ interface RadioDetail extends ElementDetail {
+    /**
+     * 待选项
+     */
+    options: {
+        /**
+         * 选项值
+         */
+        value: string
+        /**
+         * 选项显示内容
+         */
+        label: string
+    }[]
+    type: 'radio'
+}
+
+/**
+ * 复选框
+ */
+ interface CheckboxDetail extends ElementDetail {
+    /**
+     * 待选项
+     */
+    options: {
+        /**
+         * 选项值
+         */
+        value: string
+        /**
+         * 选项显示内容
+         */
+        label: string
+    }[]
+    type: 'checkbox'
 }
 
 /**
@@ -72,6 +112,8 @@ export interface ButtonDetail {
 export interface HTMLElements {
     input: InputDetail
     select: SelectDetail
+    checkbox: CheckboxDetail
+    radio: RadioDetail
 }
 
 /**
