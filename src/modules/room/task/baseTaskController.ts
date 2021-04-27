@@ -414,7 +414,8 @@ export default class TaskController<
      * @param creepName 要移除的 creep 名称
      */
     public removeCreep(creepName: string): void {
-        this.removeTaskUnit(this.getTask(this.creeps[creepName].doing))
+        const creepInfo = this.creeps[creepName]
+        if (creepInfo) this.removeTaskUnit(this.getTask(creepInfo.doing))
         delete this.creeps[creepName]
     }
 
