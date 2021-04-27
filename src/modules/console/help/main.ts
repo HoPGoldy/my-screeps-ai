@@ -4,7 +4,7 @@ import style from './style.html'
 import { replaceHtml, fixRetraction } from '../utils'
 import { ModuleDescribe, FunctionDescribe } from './types'
 
-const [ moduleContainerTemplate, moduleTemplate, apiContainerTemplate, apiLineTemplate ] = template.split(',,')
+const [ moduleContainerTemplate, moduleTemplate, apiContainerTemplate, apiLineTemplate ] = template.split(';;')
 
 /**
  * 创建帮助信息
@@ -52,7 +52,7 @@ const createApiHelp = function(func: FunctionDescribe): string {
         })
 
         // 把字符串更新为 html 片段
-        contents.push(...describes.map(content => {
+        contents.push(describes.map(content => {
             return replaceHtml(apiLineTemplate, { content })
         }).join(''))
     }

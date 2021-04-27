@@ -51,7 +51,13 @@ export default {
         commonjs(),
         // 构建可能存在的 html 文件
         html({
-			include: '**/*.html'
+			include: '**/*.html',
+            htmlMinifierOptions: {
+                collapseWhitespace: true,
+                collapseInlineTagWhitespace: true,
+                minifyCSS: true,
+                removeComments: true
+            }
 		}),
         // 编译 ts
         typescript({ tsconfig: "./tsconfig.json" }),

@@ -4,7 +4,7 @@ import { replaceHtml, fixRetraction } from '../utils'
 import { HTMLElementDetail, HTMLElements, HTMLCreator, ButtonDetail } from './types'
 
 const [ formTemplate, selectTemplate, optionTemplate, inputTemplate,
-    checkboxTemplate, radioTemplate ] = template.split(',,')
+    checkboxTemplate, radioTemplate, fieldTemplate ] = template.split(';;')
 
 /**
  * 所有的 html 元素构造器
@@ -17,7 +17,8 @@ const creators: {
      * @param detail 创建需要的信息
      */
     input({ name, label = '', placeholder = ''}: HTMLElements['input']): string {
-        return label + replaceHtml(inputTemplate, { name, placeholder })
+        const content = replaceHtml(inputTemplate, { name, placeholder })
+        return replaceHtml(fieldTemplate, { label, content })
     },
 
     /**
@@ -26,7 +27,8 @@ const creators: {
      */
     select({ name, label = '', options }: HTMLElements['select']): string {
         const optionHtml = options.map(opt => replaceHtml(optionTemplate, opt))
-        return label + replaceHtml(selectTemplate, { name, options: optionHtml.join('') })
+        const content = replaceHtml(selectTemplate, { name, option: optionHtml.join('') })
+        return replaceHtml(fieldTemplate, { label, content })
     },
 
     /**
@@ -34,7 +36,8 @@ const creators: {
      * @param detail 创建需要的信息
      */
     radio({ name, label = '', options }: HTMLElements['radio']): string {
-        return label + options.map(opt => replaceHtml(radioTemplate, { ...opt, name }))
+        const content = options.map(opt => replaceHtml(radioTemplate, { ...opt, name })).join('')
+        return replaceHtml(fieldTemplate, { label, content })
     },
 
     /**
@@ -42,7 +45,8 @@ const creators: {
      * @param detail 创建需要的信息
      */
     checkbox({ name, label = '', options }: HTMLElements['checkbox']): string {
-        return label + options.map(opt => replaceHtml(checkboxTemplate, { ...opt, name }))
+        const content = options.map(opt => replaceHtml(checkboxTemplate, { ...opt, name })).join('')
+        return replaceHtml(fieldTemplate, { label, content })
     },
 }
 

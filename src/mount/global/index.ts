@@ -13,6 +13,8 @@ import whitelist from './whiteList'
 import { showRouteChche as route } from '@/modules/move'
 import { orderExtend, seeres, hail, base, give } from './common'
 
+import { getForm as getform } from '@/modules/console/form/example'
+
 // 全局拓展操作
 const extensions =  {
     // Game.getObjectById 别名
@@ -40,7 +42,7 @@ const extensions =  {
     // 掠夺模块
     reive,
     // 白名单
-    whitelist,
+    whitelist
 }
 
 // 全局拓展别名（执行时不需要加后括号）
@@ -57,6 +59,8 @@ const alias = {
     nuker, cancelnuker, confirmnuker,
     // 挂载全局建筑状态查看
     ps, ob, storage,
+    // 控制台表单示例
+    getform
 }
 
 // 挂载全局拓展
