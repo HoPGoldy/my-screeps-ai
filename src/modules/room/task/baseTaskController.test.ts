@@ -26,7 +26,7 @@ describe('房间任务核心测试', () => {
         }
         const roomMemory = {
             transportTasks: JSON.stringify([task]),
-            transportCreeps: JSON.stringify({ [creep.id]: { doing: taskKey }})
+            transportCreeps: JSON.stringify({ [creep.name]: { doing: taskKey }})
         } as RoomMemory
         Memory.rooms = { [roomName]: roomMemory }
 
@@ -39,11 +39,10 @@ describe('房间任务核心测试', () => {
     })
 
     it('可以给任务分配工人', () => {
-        const creepId = 'testCreepId' as Id<Creep>
         const roomName = 'W1N1'
 
         // 构建测试场景：一个新工人和一个新任务
-        const creep = getMockCreep({ id: creepId })
+        const creep = getMockCreep({ name: 'testCreepName' })
         const task: RoomTask<'test'> = { type: 'test' }
         Memory.rooms = { [roomName]: {} as RoomMemory }
 
@@ -156,8 +155,8 @@ describe('房间任务核心测试', () => {
         const specialType = 'special'
         const normalCreep = getMockCreep()
         Memory.rooms = { [roomName]: {} as RoomMemory }
-        // 因为模块内部会使用 Game.getObjectById 获取普通工人，所以这里需要伪造一下
-        mockGetObjectById([normalCreep])
+        // 因为模块内部会访问 Game.creeps 来获取工人，所以这里需要伪造下
+        Game.creeps[normalCreep.name] = normalCreep;
 
         const controller = new baseTaskController(roomName, 'transport')
         // 添加一个特殊任务
