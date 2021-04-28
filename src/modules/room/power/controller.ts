@@ -221,7 +221,7 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
      * @param pc 该房间的运维 pc
      */
     public addSkill(pc: PowerCreep): void {
-        const newPowers = Object.keys(pc.powers) as unknown as PowerConstant[]
+        const newPowers = Object.keys(pc.powers).map(Number) as PowerConstant[]
         // 进行去重，放置房间内有多个 Pc 时互相覆盖彼此的能力
         this.powers = _.uniq([ ...newPowers, ...this.powers])
     }
