@@ -18,6 +18,9 @@ export const replaceHtml = function (html: string, replaceContent: ReplaceConten
 
 /**
  * 修复 js 内容缩进引起的问题
+ * 
+ * @param html 要进行修复的 html 字符串
+ * @returns 修复完成的 html 字符串
  */
 export const fixRetraction = function (html: string): string {
     return html.replace(/\n/g, '')
