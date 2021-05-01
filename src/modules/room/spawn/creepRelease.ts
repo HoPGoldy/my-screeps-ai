@@ -62,7 +62,7 @@ export default class RoomCreepRelease {
         // 调整完了人数在正常区间，直接用
         else if (oldNumber + adjust >= MIN) realAdjust = adjust
         // 调整值导致人数不够了，根据最小值调整
-        else realAdjust = oldNumber > MIN ? MIN - oldNumber : oldNumber - MIN
+        else realAdjust = MIN - oldNumber
 
         if (realAdjust >= 0) {
             // 添加新的单位

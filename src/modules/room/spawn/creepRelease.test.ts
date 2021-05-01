@@ -85,3 +85,30 @@ it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
         GetName.worker('W1N1', 1)
     ])
 })
+
+it('setBaseUnitLimit 重设数量上下限后，可以自动矫正数量', () => {
+    // 新增10个工人
+    release.changeBaseUnit('worker', 10)
+    mockAddTask.mockReset()
+    release.setBaseUnitLimit('worker', { MAX: 5 })
+
+    // 不会新增，并且还会减少 5 个 worker，因为上限被设置成了 5
+    release.changeBaseUnit('worker', 10)
+
+    expect(mockAddTask.mock.calls.length).toEqual(0)
+    expect(mockRemoveCreep.mock.calls.length).toEqual(5)
+
+    // 新增 5 个搬运工
+    release.changeBaseUnit('manager', 5)
+    mockAddTask.mockReset()
+    mockRemoveCreep.mockReset()
+    // 把下限设置为 10
+    release.setBaseUnitLimit('manager', { MIN: 10 })
+
+    // 不会减少，并且还会新增 5 个搬运工
+    release.changeBaseUnit('manager', -5)
+
+    // 不会
+    expect(mockRemoveCreep.mock.calls.length).toEqual(0)
+    expect(mockAddTask.mock.calls.length).toEqual(5)
+})
