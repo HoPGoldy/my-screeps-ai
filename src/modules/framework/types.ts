@@ -67,6 +67,12 @@ type CallbackStore = {
  */
 type ErrorCatcher = (next: () => any) => any
 
+/**
+ * 内存缓存方法
+ * 调用 next 可以执行实际业务逻辑
+ */
+type MemoryCacher = (next: () => any) => any
+
 declare module NodeJS {
     interface Global {
         /**
@@ -91,4 +97,11 @@ interface CreateOptions {
      * 会对每个元组执行 mount 方法
      */
     mountList?: [ AnyClass, AnyClass ][]
+}
+
+interface RawMemory {
+    /**
+     * **不稳定** 的内存保存器
+     */
+    _parsed: Memory
 }

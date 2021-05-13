@@ -44,6 +44,53 @@ export default class App {
     }
 
     /**
+     * 默认的 Memory 缓存存放处
+     */
+    private _cachedMemory: Memory
+
+    /**
+     * 默认的内存缓存器
+     * 来源 @see https://screeps.slack.com/files/U33SKDU0P/F5GKDBBAA/Memory_Cache.js?origin_team=T0HJCPP9T&origin_channel=C2G22RFPF
+     */
+    private _memoryCacher: MemoryCacher = next => {
+        if (this._cachedMemory) {
+            delete global.Memory;
+            // 因为 Memory 被定义为常量，所以这里断言一下才能将其复写
+            (Memory as unknown) = this._cachedMemory
+        } else {
+            this._cachedMemory = Memory
+        }
+
+        next()
+
+        /**
+         * RawMemory._parsed 是一个没有隐藏的私有变量，通过这种方法可以避免保存内存造成的消耗
+         * 但是该方法并不属于官方承认的 api，所以随时可能被取消
+         */
+        if (RawMemory._parsed) RawMemory._parsed = Memory
+        /**
+         * 下面这种方法是官方 api，所以比较稳定，但是有如下缺点：
+         * - 无法避免保存内存的消耗
+         * - 通过 Memory UI 手动修改的内存值不会直接生效（而是在全局重置后才会生效）
+         */
+        else {
+            console.log('[警告] 正在使用 RawMemory.set 保存内存')
+            RawMemory.set(JSON.stringify(Memory))
+        }
+    }
+
+    /**
+     * 设置新的异常捕获器
+     * 设置为空则不适用内存缓存
+     * 
+     * @danger 请务必执行 next 方法！不然框架将无法正常使用
+     */
+    set memoryCacher(newCatcher: MemoryCacher) {
+        if (!newCatcher) return
+        this._catcher = newCatcher
+    }
+
+    /**
      * 默认的异常捕获
      */
     private _catcher: ErrorCatcher = next => {
@@ -128,6 +175,17 @@ export default class App {
      * 运行 bot
      */
     public run(): App {
+        // 有内存缓存的话就包裹一下，否则就直接运行
+        if (this._memoryCacher) this._memoryCacher(this._run)
+        else this._run()
+
+        return this
+    }
+
+    /**
+     * 实际的框架工作
+     */
+    private _run() {
         if (!global._mountComplete) this.onGlobalReset()
 
         this.execLifecycleCallback('tickStart')
@@ -140,8 +198,6 @@ export default class App {
 
         this.execLifecycleCallback('afterWork')
         this.execLifecycleCallback('tickEnd')
-
-        return this
     }
 
     /**
