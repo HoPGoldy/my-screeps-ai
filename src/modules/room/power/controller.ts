@@ -36,7 +36,6 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
         if (!this.room.controller.isPowerEnabled) {
             if (!this.hasTask(PWR_ENABLE_ROOM)) {
                 this.memory.push(PWR_ENABLE_ROOM)
-                this.saveMemory()
             }
             return ERR_INVALID_TARGET
         }
@@ -51,8 +50,6 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
         if (!priority) this.memory.push(task)
         // 追加到队列指定位置
         else this.memory.splice(priority, 0, task)
-
-        this.saveMemory()
 
         return OK
     }
@@ -80,7 +77,6 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
      */
     public hangTask(): void {
         this.memory.push(this.memory.shift())
-        this.saveMemory()
     }
 
     /**

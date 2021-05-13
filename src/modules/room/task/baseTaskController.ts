@@ -161,8 +161,8 @@ export default class TaskController<
         const roomMemory = Memory.rooms?.[this.roomName]
         if (!roomMemory) return
         // 从内存中解析数据
-        this.tasks = JSON.parse(roomMemory[this.TASK_SAVE_KEY] || '[]')
-        this.creeps = JSON.parse(roomMemory[this.CREEP_SAVE_KEY] || '{}')
+        this.tasks = roomMemory[this.TASK_SAVE_KEY] || []
+        this.creeps = roomMemory[this.CREEP_SAVE_KEY] || {}
     }
 
     /**
@@ -173,13 +173,13 @@ export default class TaskController<
         const roomMemory = Memory.rooms[this.roomName]
 
         if (this.tasks.length <= 0) delete roomMemory[this.TASK_SAVE_KEY]
-        else roomMemory[this.TASK_SAVE_KEY] = JSON.stringify(this.tasks.map(task => {
+        else roomMemory[this.TASK_SAVE_KEY] = this.tasks.map(task => {
             // 注意，这里没有保存正在执行该任务的人数，因为这两个是有时效性的，后面读取的时候有可能这个数据已经过期了
             return ({ ...task, unit: 0, requireUnit: 0 })
-        }))
+        })
 
         if (Object.keys(this.creeps).length <= 0) delete roomMemory[this.CREEP_SAVE_KEY]
-        else roomMemory[this.CREEP_SAVE_KEY] = JSON.stringify(this.creeps)
+        else roomMemory[this.CREEP_SAVE_KEY] = this.creeps
     }
 
     /**

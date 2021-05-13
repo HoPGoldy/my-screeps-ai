@@ -51,7 +51,6 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         if (!this.hasTask(task.name)) {
             // 任务加入队列
             this.memory.push(task)
-            this.saveMemory()
 
             return this.memory.length - 1
         }
@@ -83,7 +82,6 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      */
     public hangTask(): void {
         this.memory.push(this.memory.shift())
-        this.saveMemory()
     }
 
     /**
@@ -91,7 +89,6 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      */
     public removeCurrentTask(): void {
         this.memory.shift()
-        this.saveMemory()
     }
 
     public runSpawn(spawn: StructureSpawn): void {

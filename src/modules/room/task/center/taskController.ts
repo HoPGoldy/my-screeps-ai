@@ -49,8 +49,6 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
      */
     public hangTask(): number {
         this.memory.push(this.memory.shift())
-        this.saveMemory()
-        
         return this.memory.length - 1
     }
 
@@ -74,7 +72,6 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
         if (this.memory[0].amount <= 0) {
             this.deleteCurrentTask()
         }
-        else this.saveMemory()
     }
 
     /**
@@ -82,6 +79,5 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
      */
     public deleteCurrentTask(): void {
         this.memory.shift()
-        this.saveMemory()
     }
 }

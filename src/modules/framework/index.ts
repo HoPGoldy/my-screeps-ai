@@ -55,28 +55,14 @@ export default class App {
     private _memoryCacher: MemoryCacher = next => {
         if (this._cachedMemory) {
             delete global.Memory;
-            // 因为 Memory 被定义为常量，所以这里断言一下才能将其复写
-            (Memory as unknown) = this._cachedMemory
+            global.Memory= this._cachedMemory
         } else {
             this._cachedMemory = Memory
         }
 
         next()
 
-        /**
-         * RawMemory._parsed 是一个没有隐藏的私有变量，通过这种方法可以避免保存内存造成的消耗
-         * 但是该方法并不属于官方承认的 api，所以随时可能被取消
-         */
-        if (RawMemory._parsed) RawMemory._parsed = Memory
-        /**
-         * 下面这种方法是官方 api，所以比较稳定，但是有如下缺点：
-         * - 无法避免保存内存的消耗
-         * - 通过 Memory UI 手动修改的内存值不会直接生效（而是在全局重置后才会生效）
-         */
-        else {
-            console.log('[警告] 正在使用 RawMemory.set 保存内存')
-            RawMemory.set(JSON.stringify(Memory))
-        }
+        RawMemory.set(JSON.stringify(Memory))
     }
 
     /**
@@ -176,7 +162,7 @@ export default class App {
      */
     public run(): App {
         // 有内存缓存的话就包裹一下，否则就直接运行
-        if (this._memoryCacher) this._memoryCacher(this._run)
+        if (this._memoryCacher) this._memoryCacher(this._run.bind(this))
         else this._run()
 
         return this
