@@ -37,7 +37,6 @@ export const bodyConfigs: BodyConfigs = {
 
     /**
      * 工作单位
-     * 诸如 harvester、builder 之类的
      */
     worker: getBodyConfig(
         { [WORK]: 1, [CARRY]: 1, [MOVE]: 1 },

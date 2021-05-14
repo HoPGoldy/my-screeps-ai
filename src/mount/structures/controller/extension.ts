@@ -3,6 +3,7 @@ import { setRoomStats, getRoomStats } from '@/modules/stats'
 import { UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
 import { delayQueue } from '@/modules/delayQueue'
 import { countEnergyChangeRatio } from '@/modules/energyUtils'
+import { WORK_TASK_PRIOIRY } from '@/modules/room/task/work/constant'
 
 /**
  * Controller 拓展
@@ -91,7 +92,7 @@ export default class ControllerExtension extends StructureController {
         }
         else {
             // 限制只需要一个单位升级
-            this.room.work.updateTask({ type: 'upgrade', need: 1, priority: 5 })
+            this.room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
         }
     }
 
@@ -153,5 +154,5 @@ delayQueue.addDelayCallback('spawnUpgrader', room => {
         room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
     ) return delayQueue.addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
 
-    room.work.updateTask({ type: 'upgrade', need: 1, priority: 5 })
+    room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
 })

@@ -2,6 +2,7 @@ import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
 import { HARVEST_MODE } from '@/setting'
 import { addConstructionSite } from '@/modules/constructionController'
+import { WORK_TASK_PRIOIRY } from '@/modules/room/task/work/constant'
 
 /**
  * 采集者
@@ -182,8 +183,8 @@ const actionStrategy: ActionStrategy = {
             if (container.hits < container.hitsMax) {
                 const useRoom = Game.rooms[creep.memory.data.useRoom]
                 if (!useRoom) return false
-                // 修个小 container，派一个人来修就可以了，所以不用指定高优先级
-                useRoom.work.updateTask({ type: 'repair' }, { dispath: true })
+                // 修个小 container，派一个人来修就可以了
+                useRoom.work.updateTask({ type: 'repair', need: 1, priority: WORK_TASK_PRIOIRY.REPAIR }, { dispath: true })
             }
 
             return true

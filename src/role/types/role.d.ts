@@ -16,6 +16,7 @@ interface RoleDatas {
     worker: WorkerData
     manager: transporterData
     processor: ProcessorData
+    miner: WorkerData
 
     /**
      * 外派单位

@@ -43,7 +43,7 @@ export default class TerminalExtension extends StructureTerminal {
     public onBuildComplete(): void {
         // 有 extractor 了，发布矿工并添加对应的共享协议
         if (this.room.extractor) {
-            this.room.work.updateTask({ type: 'mine' })
+            this.room.spawner.release.miner()
             this.addTask(this.room.mineral.mineralType, 30000, terminalModes.put, terminalChannels.share)
         }
     }

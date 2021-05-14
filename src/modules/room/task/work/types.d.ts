@@ -25,10 +25,6 @@ type AllRoomWorkTask = WorkTasks[AllWorkTaskType]
  */
 interface WorkTasks {
     /**
-     * 元素采集任务
-     */
-    mine: RoomTask<'mine'>
-    /**
      * 升级任务
      */
     upgrade: RoomTask<'upgrade'>

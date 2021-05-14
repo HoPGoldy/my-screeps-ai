@@ -3,7 +3,7 @@
  */
 
 import { delayQueue } from '@/modules/delayQueue'
-import { MINE_LIMIT } from '@/setting'
+import { WORK_TASK_PRIOIRY } from './constant'
 
 /**
  * 注册刷墙工的延迟孵化任务
@@ -18,24 +18,6 @@ delayQueue.addDelayCallback('spawnFiller', room => {
 })
 
 /**
- * 注册 miner 的延迟孵化任务
- */
-delayQueue.addDelayCallback('spawnMiner', room => {
-    // 房间或终端没了就不在孵化
-    if (!room || !room.terminal) return
-
-    // 满足以下条件时就延迟发布
-    if (
-        // cpu 不够
-        Game.cpu.bucket < 700 ||
-        // 矿采太多了
-        room.terminal.store[room.mineral.mineralType] >= MINE_LIMIT
-    ) return addSpawnMinerTask(room.name, 1000)
-
-    room.work.updateTask({ type: 'mine', need: 1 })
-})
-
-/**
  * 注册建筑任务发布
  */
 delayQueue.addDelayCallback('addBuildTask', (room, task) => {
@@ -46,7 +28,7 @@ delayQueue.addDelayCallback('addBuildTask', (room, task) => {
     }
 
     // 以指定工地为目标发布建筑
-    room.work.updateTask({ type: 'build', priority: 9 }, { dispath: true })
+    room.work.updateTask({ type: 'build', priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true })
 })
 
 /**
@@ -56,15 +38,6 @@ delayQueue.addDelayCallback('addBuildTask', (room, task) => {
  */
 export const addSpawnRepairerTask = function (roomName: string) {
     delayQueue.addDelayTask('spawnFiller', { roomName }, Game.time + 5000)
-}
-
-/**
- * 添加 miner 的延迟孵化任务
- * @param roomName 添加到的房间名
- * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
- */
-export const addSpawnMinerTask = function (roomName: string, delayTime: number) {
-    delayQueue.addDelayTask('spawnMiner', { roomName }, delayTime + 1)
 }
 
 /**

@@ -4,6 +4,7 @@
  */
 export class GetName {
     static harvester = (roomName: string, index: number) => `${roomName} harvester${index}`
+    static miner = (roomName: string) => `${roomName} miner`
     static worker = (roomName: string, index: number) => `${roomName} worker${index}`
     static manager = (roomName: string, index: number) => `${roomName} manager${index}`
     static processor = (roomName: string) => `${roomName} processor`

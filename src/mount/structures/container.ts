@@ -1,3 +1,5 @@
+import { WORK_TASK_PRIOIRY } from "@/modules/room/task/work/constant"
+
 /**
  * container 拓展
  * 
@@ -18,6 +20,6 @@ export default class ContainerExtension extends StructureContainer {
          * @todo 这里没有考虑外矿的运输需求，等外矿模块完善后再修改
          */
         this.room.spawner.release.changeBaseUnit('worker', 4)
-        this.room.work.updateTask({ type: 'upgrade', priority: 5 })
+        this.room.work.updateTask({ type: 'upgrade', priority: WORK_TASK_PRIOIRY.UPGRADE })
     }
 }

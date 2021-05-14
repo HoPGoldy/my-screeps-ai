@@ -1,6 +1,5 @@
 import { getRoomEnergyTarget, findStrategy } from '@/modules/energyUtils'
 import { useCache } from '@/utils'
-import { addSpawnMinerTask } from './delayTask'
 import { WorkActionGenerator } from './taskController'
 
 /**
@@ -25,38 +24,6 @@ export const noTask = creep => ({
 export const transportActions: {
     [TaskType in AllWorkTaskType]: WorkActionGenerator<TaskType>
 } = {
-    /**
-     * 元素采集任务
-     */
-    mine: (creep, task, workController) => ({
-        source: () => {
-            if (creep.store.getFreeCapacity() === 0) return true
-
-            // 采矿
-            const mineral = Game.rooms[creep.memory.data.workRoom]?.mineral
-            // 找不到矿或者矿采集完了，添加延迟孵化并结束任务
-            if (!mineral || mineral.mineralAmount <= 0) {
-                addSpawnMinerTask(mineral.room.name, mineral.ticksToRegeneration)
-                workController.removeTask(task.key)
-            }
-
-            const harvestResult = creep.harvest(mineral)
-            if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(mineral.pos)
-        },
-        target: () => {
-            const target: StructureTerminal = Game.rooms[creep.memory.data.workRoom]?.terminal
-            if (!target) {
-                creep.say('放哪？')
-                workController.removeTask(task.key)
-                return false
-            }
-    
-            creep.transferTo(target, Object.keys(creep.store)[0] as ResourceConstant)
-    
-            if (creep.store.getUsedCapacity() === 0) return true
-        },
-    }),
-
     /**
      * 升级任务
      */

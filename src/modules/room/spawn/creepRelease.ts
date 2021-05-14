@@ -91,6 +91,19 @@ export default class RoomCreepRelease {
     }
 
     /**
+     * 发布元素矿采集单位
+     */
+    public miner(): void {
+        const { name: roomName } = this.spawner.room;
+
+        this.spawner.addTask({
+            name: GetName.miner(roomName),
+            role: 'miner',
+            data: { workRoom: roomName }
+        })
+    }
+
+    /**
      * 设置基地运维角色数量
      * 
      * @param type 要设置的单位角色
