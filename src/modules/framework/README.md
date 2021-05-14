@@ -1,6 +1,6 @@
 # 核心框架
 
-一个轻量级 screeps 框架，只有不到两百行代码。包含生命周期回调、原型拓展、异常隔离功能。整个框架的核心 api 只有两个：`on` 和 `mount`。
+一个轻量级 screeps 框架，只有不到三百行代码。包含生命周期回调、原型拓展、异常隔离功能。整个框架的核心 api 只有两个：`on` 和 `mount`。
 
 ## 如何使用
 
@@ -293,6 +293,28 @@ app.catcher = next => ErrorMapper.wrapLoop(next)()
 ```
 
 *实际上，由于 ErrorMapper 会返回一个新的函数来包裹对应的逻辑，在本框架里直接使用会导致出现一丢丢的性能损耗，如果你介意的话，可以按照 [这里](https://github.com/HoPGoldy/my-screeps-ai/blob/dev/src/modules/errorMapper.ts#L77) 的做法进行修改。*
+
+## 功能4：内存缓存
+
+如果你对 screeps 的 [Memory 机制](https://screeps-cn.gitee.io/global-objects.html#%E5%BA%8F%E5%88%97%E5%8C%96) 比较熟悉的话，那么应该知道内存在每 Tick 开始时会进行 JSON 反序列化，在内存使用量较大时会消耗不少的 CPU。
+
+而本框架内建了一套内存缓存机制，该功能默认启用且无需配置，只要使用了本框架就不再产生 Memory 初始化消耗。
+
+当然，你也可以通过修改 `app.memoryCacher` 的方式来使用你的内存缓存功能，用法和上文中的 catcher 完全一致，你也可以将其设置空值来关闭内存缓存：
+
+```ts
+// 自定义内存缓存
+app.memoryCacher = next => {
+    console.log('我通过意念来缓存 Memory')
+    // 必须执行！否则将无法运行
+    next()
+}
+
+// 关闭内存缓存
+app.memoryCacher = undefined
+```
+
+*你可以在 [这里](https://github.com/HoPGoldy/my-screeps-ai/blob/dev/src/modules/framework/index.ts#L55) 找到默认的内存缓存实现。*
 
 ## bot 名称
 

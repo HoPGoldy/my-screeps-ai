@@ -28,7 +28,7 @@ export default class RoomAccessor<MemoryType> {
      * 初始化房间访问
      * 
      * @param moduleName 本模块的名称
-     * @param roomName 要管理的房间名
+     * @param roomName 所在的房间名
      * @param memoryKey 模块数据要保存到房间哪个键上
      * @param defaultMemory 缺省的模块内存
      */
@@ -52,7 +52,7 @@ export default class RoomAccessor<MemoryType> {
      */
     public get room(): Room {
         if (!Game.rooms[this.roomName]) {
-            log(`无法访问房间实例，模块已停止运行`, [this.moduleName], 'red', true)
+            log(`无法访问房间实例，模块已停止运行`, [this.roomName, this.moduleName], 'red', true)
             throw new Error(`${this.roomName} ${this.moduleName} 房间实例不存在`)
         }
         return Game.rooms[this.roomName]
