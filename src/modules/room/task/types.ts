@@ -1,8 +1,13 @@
+interface RoomTaskMemory<Task extends RoomTask> {
+    tasks: Task[]
+    creeps: { [creepName: string]: TaskUnitInfo }
+}
+
 /**
  * 房间任务基础信息
  * 该任务是物流任务和工作任务的基础
  */
-interface RoomTask<T extends string> {
+interface RoomTask<T extends string = string> {
     /**
      * 该任务的类型
      */

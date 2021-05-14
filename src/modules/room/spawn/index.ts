@@ -88,7 +88,8 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 移除第一个孵化任务
      */
     public removeCurrentTask(): void {
-        this.memory.shift()
+        if (this.memory.length > 1) this.memory.shift()
+        else this.memory = undefined
     }
 
     public runSpawn(spawn: StructureSpawn): void {

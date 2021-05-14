@@ -46,7 +46,7 @@ it('可以正常增减任务', () => {
 
     controller.addTask(spawnTaskA)
     // 在内存中可以读到保存的任务
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskA]))
+    expect(room.memory).toHaveProperty('spawnList', [spawnTaskA])
 
     controller.removeCurrentTask()
     // 任务正常被移除
@@ -56,7 +56,7 @@ it('可以正常增减任务', () => {
     const result = controller.addTask(spawnTaskA)
     // 重名的任务不会被添加
     expect(result).toEqual(ERR_NAME_EXISTS)
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskA]))
+    expect(room.memory).toHaveProperty('spawnList', [spawnTaskA])
 })
 
 it('可以挂起任务', () => {
@@ -70,11 +70,11 @@ it('可以挂起任务', () => {
     controller.addTask(spawnTaskA)
     controller.addTask(spawnTaskB)
     // 在内存中可以读到保存的任务
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskA, spawnTaskB]))
+    expect(room.memory).toHaveProperty('spawnList', [spawnTaskA, spawnTaskB])
 
     controller.hangTask()
     // 任务被挂起到末尾
-    expect(room.memory).toHaveProperty('spawnList', JSON.stringify([spawnTaskB, spawnTaskA]))
+    expect(room.memory).toHaveProperty('spawnList', [spawnTaskB, spawnTaskA])
 })
 
 it('spawnCreep 测试', () => {
@@ -147,26 +147,26 @@ it('能量不足时会挂起非重要孵化任务', () => {
 
     controller.runSpawn(spawn)
     // 由于返回能量不足，所以 creepB 被挂起
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskC)
+    expect(room.memory.spawnList[0]).toEqual(spawnTaskC)
 
     controller.runSpawn(spawn)
     // 由于返回能量不足，所以 creepC 被挂起
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskA)
+    expect(room.memory.spawnList[0]).toEqual(spawnTaskA)
 
     controller.runSpawn(spawn)
     // 但是由于 creepA 是重要角色，所以它不会被挂起
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskA)
+    expect(room.memory.spawnList[0]).toEqual(spawnTaskA)
 
     controller.runSpawn(spawn)
     // 再执行一次也一样
-    expect(JSON.parse(room.memory.spawnList)[0]).toEqual(spawnTaskA)
+    expect(room.memory.spawnList[0]).toEqual(spawnTaskA)
 
     spawnCreep.mockReturnValueOnce(OK)
     controller.runSpawn(spawn)
     // 返回 OK，creepA 应该被正确移除（孵化了）
-    expect(JSON.parse(room.memory.spawnList)).toEqual([spawnTaskB, spawnTaskC])
+    expect(room.memory.spawnList).toEqual([spawnTaskB, spawnTaskC])
 
     controller.runSpawn(spawn)
     // 再次能量不足，creepB 被挂起到末尾
-    expect(JSON.parse(room.memory.spawnList)).toEqual([spawnTaskC, spawnTaskB])
+    expect(room.memory.spawnList).toEqual([spawnTaskC, spawnTaskB])
 })

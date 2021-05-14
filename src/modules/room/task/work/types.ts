@@ -1,13 +1,8 @@
 interface RoomMemory {
     /**
-     * 房间工作任务的备份数据
-     * 会在全局重置时通过该数据重建工作任务
+     * 房间工作任务内存
      */
-    workTasks: string
-    /**
-     * 正在执行工作任务的 creep 的数据
-     */
-    workCreeps: string
+    work: RoomTaskMemory<AllRoomWorkTask>
 }
 
 /**

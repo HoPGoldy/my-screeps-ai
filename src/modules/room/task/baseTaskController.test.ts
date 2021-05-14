@@ -1,5 +1,5 @@
 import baseTaskController from './baseTaskController'
-import { getMockCreep, mockGetObjectById } from '@test/mock'
+import { getMockCreep, getMockRoom, mockGetObjectById } from '@test/mock'
 
 describe('房间任务核心测试', () => {
     // 获取指定优先级的任务
@@ -25,10 +25,13 @@ describe('房间任务核心测试', () => {
             type: 'test', priority: 10, key: taskKey, need: 1, unit: 0
         }
         const roomMemory = {
-            transportTasks: JSON.stringify([task]),
-            transportCreeps: JSON.stringify({ [creep.name]: { doing: taskKey }})
-        } as RoomMemory
+            transport: {
+                tasks: [task],
+                creeps: { [creep.name]: { doing: taskKey }}
+            }
+        } as unknown as RoomMemory
         Memory.rooms = { [roomName]: roomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName, memory: roomMemory })
 
         // 从控制器获取该工人的任务
         const controller = new baseTaskController(roomName, 'transport')
@@ -45,6 +48,7 @@ describe('房间任务核心测试', () => {
         const creep = getMockCreep({ name: 'testCreepName' })
         const task: RoomTask<'test'> = { type: 'test' }
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         const controller = new baseTaskController(roomName, 'transport')
         // 先添加任务，并让新工人去获取任务
@@ -59,6 +63,7 @@ describe('房间任务核心测试', () => {
     it('按照优先级分配工人' /** 且不受任务添加顺序影响 */, () => {
         const roomName = 'W1N1'
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         const controller = new baseTaskController(roomName, 'transport')
         // 乱序添加任务
@@ -86,6 +91,7 @@ describe('房间任务核心测试', () => {
     it('溢出后将被分配到优先级最高的任务', () => {
         const roomName = 'W1N1'
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         const controller = new baseTaskController(roomName, 'transport')
         // 乱序添加任务
@@ -110,6 +116,7 @@ describe('房间任务核心测试', () => {
         const specialTypeA = 'specialA'
         const specialTypeB = 'specialB'
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         // 一个高优先级的普通任务和两个低优先级的特殊任务
         const normalTask = getTask(10)
@@ -137,6 +144,7 @@ describe('房间任务核心测试', () => {
         const specialTypeA = 'typeA'
         const specialTypeB = 'typeB'
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         const controller = new baseTaskController(roomName, 'transport')
         // 添加两个特殊任务
@@ -155,6 +163,7 @@ describe('房间任务核心测试', () => {
         const specialType = 'special'
         const normalCreep = getMockCreep()
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
         // 因为模块内部会访问 Game.creeps 来获取工人，所以这里需要伪造下
         Game.creeps[normalCreep.name] = normalCreep;
 
@@ -179,6 +188,7 @@ describe('房间任务核心测试', () => {
         const taskANeed = 2
         const taskBNeed = 4
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         const specialTaskA = getSpecialTask(10, 'typeA')
         specialTaskA.need = taskANeed
@@ -216,6 +226,7 @@ describe('房间任务核心测试', () => {
     it('任务完成后对应的工人会分配到新任务', () => {
         const roomName = 'W1N1'
         Memory.rooms = { [roomName]: {} as RoomMemory }
+        Game.rooms[roomName] = getMockRoom({ name: roomName })
 
         const controller = new baseTaskController(roomName, 'transport')
         const creep = getMockCreep()
