@@ -55,7 +55,7 @@ export default class App {
     private _memoryCacher: MemoryCacher = next => {
         if (this._cachedMemory) {
             delete global.Memory;
-            global.Memory= this._cachedMemory
+            global.Memory = this._cachedMemory
         } else {
             this._cachedMemory = Memory
         }

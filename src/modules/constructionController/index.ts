@@ -50,6 +50,11 @@ const saveWaiting = function () {
  */
 export const initConstructionController = function () {
     waitingConstruction = JSON.parse(Memory[SAVE_KEY] || '[]').map(({ pos, type }) => {
+        if (!pos || !type) {
+            log(`发现了异常的工地任务，请检查代码是否正确 pos：${pos} type：${type}`, ['建造控制器'], 'yellow')
+            return
+        }
+
         // 这里把位置重建出来
         const { x, y, roomName } = pos
         return { pos: new RoomPosition(x, y, roomName), type }
@@ -76,9 +81,10 @@ const planSite = function () {
 
     // 取出本 tick 的最大允许放置数量
     const preparePlaceSites = waitingConstruction.splice(0, MAX_CONSTRUCTION_SITES - buildingSiteLength)
-    
-    const cantPlaceSites = preparePlaceSites.filter(site => {
-        const { pos, type } = site
+
+    const cantPlaceSites = preparePlaceSites.filter(({ pos, type }) => {
+        if (!pos || !type) return
+
         const result = pos.createConstructionSite(type)
 
         if (result === ERR_INVALID_TARGET) {
@@ -192,6 +198,6 @@ export const getSiteStructure = function (site: ConstructionSite): Structure {
  */
 export const constructionAppPlugin: AppLifecycleCallbacks = {
     reset: initConstructionController,
-    afterWork: manageConstruction,
+    tickStart: manageConstruction,
     tickEnd: saveWaiting
 }

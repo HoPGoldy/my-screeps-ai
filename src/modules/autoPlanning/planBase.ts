@@ -65,11 +65,17 @@ const getOutLinkPos = function (room: Room): RoomPosition[] {
     const result = []
 
     for (const target of targets) {
-        // 旁边已经造好了 link 或者有工地了，就检查下一个目标
-        if (
-            (target.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0) ||
-            (target.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK}).length > 0)
-        ) continue
+        // 旁边已经造好了 link 或者有工地了，就直接返回对应位置
+        const existLink = target.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK})
+        if (existLink.length > 0) {
+            result.push(existLink[0].pos)
+            continue
+        }
+        const existLinkSite = target.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK})
+        if (existLinkSite.length > 0) {
+            result.push(existLinkSite[0].pos)
+            continue
+        }
 
         // 获取目标点位旁边的所有可用的开采空位
         const harvesterPos = target.pos.getFreeSpace()

@@ -51,7 +51,7 @@ export default class RoomCreepRelease {
         // 单位对应在房间内存中保存的键
         const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
         // 获取对应的最大数量和最小数量
-        const { MIN, MAX } = JSON.parse(this.spawner.room.memory.baseUnitLimit || '{}')[type] || BASE_ROLE_LIMIT[type]
+        const { MIN, MAX } = (this.spawner.room.memory.baseUnitLimit || {})[type] || BASE_ROLE_LIMIT[type]
 
         const oldNumber = room.memory[memoryKey] || 0
         // 计算真实的调整量，保证最少有 MIN 人，最多有 MAX 人
@@ -111,11 +111,11 @@ export default class RoomCreepRelease {
      */
     public setBaseUnitLimit(type: BaseUnits, limit: Partial<BaseUnitLimit>): void {
         // 获取当前房间的设置
-        const existLimit: RoomBaseUnitLimit = JSON.parse(this.spawner.room.memory.baseUnitLimit || '{}') || BASE_ROLE_LIMIT
+        const existLimit: RoomBaseUnitLimit = this.spawner.room.memory.baseUnitLimit || BASE_ROLE_LIMIT
         // 更新配置
         const realLimit = _.defaults(limit, existLimit[type], BASE_ROLE_LIMIT[type])
         // 把新配置覆写保存进内存
-        this.spawner.room.memory.baseUnitLimit = JSON.stringify(_.defaults({ [type]: realLimit }, existLimit))
+        this.spawner.room.memory.baseUnitLimit = _.defaults({ [type]: realLimit }, existLimit)
     }
 
     /**
