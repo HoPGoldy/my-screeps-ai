@@ -238,7 +238,9 @@ const actionStrategy: ActionStrategy = {
      */
     [HARVEST_MODE.TRANSPORT]: {
         prepare: (creep, source) => {
-            const link = Game.getObjectById(creep.memory.targetId as Id<StructureLink>) || creep.room.storage
+            const link = Game.getObjectById(creep.memory.targetId as Id<StructureLink>)
+
+            creep.memory.data.standPos
 
             // 目标没了，变更为启动模式
             if (!link) {
@@ -246,12 +248,26 @@ const actionStrategy: ActionStrategy = {
                 creep.memory.harvestMode = HARVEST_MODE.START
                 return false
             }
-            
-            // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
-            const targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(link.pos))
+
+            let targetPos: RoomPosition = source.pos
+            if (creep.memory.data.standPos) {
+                const [x, y, roomName] = creep.memory.data.standPos.split(',')
+                targetPos = new RoomPosition(Number(x), Number(y), roomName)
+            }
+            else {
+                // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
+                targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(link.pos))
+
+                if (targetPos) {
+                    const { x, y, roomName } = targetPos
+                    creep.memory.data.standPos = `${x},${y},${roomName}`
+                }
+            }
+
             creep.goTo(targetPos, { range: 0 })
 
-            return creep.pos.isEqualTo(targetPos)
+            // 如果没有找到又挨着 source 又挨着 link 的位置，走到 source 附近就算完成，找到了的话要走到位置上才算完成
+            return targetPos.isEqualTo(source.pos) ? creep.pos.isNearTo(targetPos) : creep.pos.isEqualTo(targetPos)
         },
         source: (creep, source) => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true

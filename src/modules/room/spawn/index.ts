@@ -89,7 +89,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      */
     public removeCurrentTask(): void {
         if (this.memory.length > 1) this.memory.shift()
-        else this.memory = undefined
+        else this.memory.shift()
     }
 
     public runSpawn(spawn: StructureSpawn): void {
@@ -120,6 +120,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         if (spawn.spawning || this.memory.length == 0) return 
 
         const task = this.memory[0]
+        // console.log(this.roomName, JSON.stringify(task), JSON.stringify(this.room.memory))
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.spawnCreep(spawn, task)
 

@@ -48,7 +48,7 @@ interface RoomMemory {
             /**
              * 该 source 配套的 link id
              */
-            LinkId?: Id<StructureLink>
+            linkId?: Id<StructureLink>
         }
     }
 }

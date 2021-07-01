@@ -85,7 +85,7 @@ export default class SourceExtension extends Source {
      */
     public setLink(link: StructureLink): void {
         this.keepKeyExist()
-        this.room.memory.source[this.id].LinkId = link.id
+        this.room.memory.source[this.id].linkId = link.id
     }
 
     /**
@@ -94,12 +94,12 @@ export default class SourceExtension extends Source {
     public getLink(): StructureLink | undefined {
         this.keepKeyExist()
 
-        const { LinkId } = this.room.memory.source[this.id]
-        if (!LinkId) return undefined
+        const { linkId } = this.room.memory.source[this.id]
+        if (!linkId) return undefined
 
-        const link = Game.getObjectById(LinkId)
+        const link = Game.getObjectById(linkId)
         if (!link) {
-            delete this.room.memory.source[this.id].LinkId
+            delete this.room.memory.source[this.id].linkId
             return undefined
         }
 

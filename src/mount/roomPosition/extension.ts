@@ -29,8 +29,11 @@ export default class PositionExtension extends RoomPosition {
 
     /**
      * 获取该位置周围的开采位空位
+     * 也会搜索建筑、工地和 creep
      */
     public getFreeSpace(): RoomPosition[] {
+        if (this._freeSpace) return this._freeSpace
+
         const terrain = new Room.Terrain(this.roomName)
         const result: RoomPosition[] = []
 
@@ -43,6 +46,23 @@ export default class PositionExtension extends RoomPosition {
             if (terrain.get(x, y) != TERRAIN_MASK_WALL) result.push(new RoomPosition(x, y, this.roomName))
         }))
 
-        return result
+        // 附近会占据位置的游戏对象
+        const nearGameObject = [
+            ...this.findInRange(FIND_STRUCTURES, 1),
+            ...this.findInRange(FIND_CONSTRUCTION_SITES, 1),
+            // 暂时不包含 creep，因为如果自己在附近的话会把自己的位置筛掉，这就导致无论如何自己所在的位置都不是空余开采位
+            // ...this.findInRange(FIND_CREEPS, 1),
+            // ...this.findInRange(FIND_POWER_CREEPS, 1)
+        ]
+
+        // 筛掉会占据位置的对象
+        return this._freeSpace = result.filter(pos => nearGameObject.every(obj => !obj.pos.isEqualTo(pos)))
+    }
+}
+
+declare global {
+    interface RoomPosition {
+        /** 本 tick 的周围空余开采位缓存 */
+        _freeSpace: RoomPosition[]
     }
 }

@@ -64,8 +64,10 @@ export default class RoomAccessor<MemoryType> {
      * 设置模块内存
      */
     protected set memory(newMemory: MemoryType) {
-        if (!newMemory) delete this.room.memory[this.memoryKey]
-        else this.room.memory[this.memoryKey] = newMemory
+        this.room.memory[this.memoryKey] = newMemory
+
+        // if (!newMemory) delete this.room.memory[this.memoryKey]
+        // else this.room.memory[this.memoryKey] = newMemory
     }
 
     /**
