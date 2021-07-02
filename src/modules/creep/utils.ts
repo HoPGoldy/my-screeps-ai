@@ -82,3 +82,15 @@ export const showCreep = function (): string {
 export const hasCreep = function (creepName: string): boolean {
     return creepName in Game.creeps
 }
+
+/**
+ * 更新 creep data
+ * 由于下一代 creep 的初始 data 数据继承自上一代 creep，所以在需要更新 data 时可以使用这个方法
+ * 
+ * @param creepName 要更新 data 的 creep 名称
+ * @param newData 新的 data
+ */
+export const updateCreepData = function (creepName: string, newData: CreepData): OK | ERR_NOT_FOUND {
+    if (!(creepName in Game.creeps)) return ERR_NOT_FOUND
+    Game.creeps[creepName].memory.data = newData
+}

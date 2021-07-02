@@ -2,6 +2,7 @@ import { creepDefaultMemory, importantRoles } from './constant'
 import RoomAccessor from '../RoomAccessor'
 import roles from '@/role'
 import RoomCreepRelease from './creepRelease'
+import { updateCreepData } from '@/modules/creep/utils'
 
 /**
  * 孵化任务
@@ -162,6 +163,8 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
             this.log(`${name} 已经存在 ${this.roomName} 将不再生成`)
+            // creep 已经存在，把数据直接更新给他
+            updateCreepData(name, data)
             // 这里返回 ok，然后让外层方法移除对应的孵化任务
             return OK
         }
