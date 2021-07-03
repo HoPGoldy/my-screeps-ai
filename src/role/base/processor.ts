@@ -85,7 +85,7 @@ const processor: CreepConfig<'processor'> = {
             creep.say(`取出资源`)
             return true
         }
-        else {
+        else if (result !== ERR_NOT_IN_RANGE) {
             creep.say(`存入 ${result}`)
             creep.room.centerTransport.hangTask()
         }

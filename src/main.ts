@@ -15,9 +15,6 @@ const app = new App({ mountList })
 // 使用 sourceMap 校正报错信息
 app.catcher = errorMapper
 
-// 暂时禁用内存缓存
-app.memoryCacher = null
-
 // 注册主拓展模块
 app.on(extensionAppPlugin)
 

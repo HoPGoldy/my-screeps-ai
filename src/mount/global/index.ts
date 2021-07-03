@@ -14,6 +14,7 @@ import { showRouteChche as route } from '@/modules/move'
 import { orderExtend, seeres, hail, base, give } from './common'
 
 import { getForm as getform } from '@/modules/console/form/example'
+import { updateCreepData } from '@/modules/creep/utils'
 
 // 全局拓展操作
 const extensions =  {
@@ -35,7 +36,8 @@ const extensions =  {
     creep: {
         show: showCreep,
         remove: removeCreep,
-        has: hasCreep
+        has: hasCreep,
+        update: updateCreepData
     },
     // 绕路模块
     bypass,
@@ -60,7 +62,16 @@ const alias = {
     // 挂载全局建筑状态查看
     ps, ob, storage,
     // 控制台表单示例
-    getform
+    getform,
+    /**
+     * 把房间挂载到全局
+     * 来方便控制台操作，在访问时会实时的获取房间对象
+     * 注意：仅会挂载 Memory.rooms 里有的房间
+     */
+    ...Object.keys(Memory.rooms || {}).reduce((getters, roomName) => {
+        getters[roomName] = (() => Game.rooms[roomName])
+        return getters
+    }, {})
 }
 
 // 挂载全局拓展

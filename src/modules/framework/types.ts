@@ -98,10 +98,3 @@ interface CreateOptions {
      */
     mountList?: [ AnyClass, AnyClass ][]
 }
-
-interface RawMemory {
-    /**
-     * **不稳定** 的内存保存器
-     */
-    _parsed: Memory
-}

@@ -37,7 +37,7 @@ delayQueue.addDelayCallback('addBuildTask', (room, task) => {
  * @param roomName 添加到的房间名
  */
 export const addSpawnRepairerTask = function (roomName: string) {
-    delayQueue.addDelayTask('spawnFiller', { roomName }, Game.time + 5000)
+    delayQueue.addDelayTask('spawnFiller', { roomName }, 5000)
 }
 
 /**
@@ -50,5 +50,5 @@ export const addSpawnRepairerTask = function (roomName: string) {
 export const addBuildTask = function (handleRoomName: string) {
     delayQueue.addDelayTask('addBuildTask', {
         roomName: handleRoomName
-    }, Game.time + 2)
+    }, 2)
 }

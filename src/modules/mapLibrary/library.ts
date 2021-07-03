@@ -41,7 +41,7 @@ addDelayCallback('mapLibrarySave', () => {
  */
 export const initMapLibrary = function () {
     RawMemory.setActiveSegments([RAW_MEMORY_ID])
-    addDelayTask('mapLibraryInit', { roomName: '' }, Game.time + 1)
+    addDelayTask('mapLibraryInit', { roomName: '' }, 1)
 }
 
 /**
@@ -49,5 +49,5 @@ export const initMapLibrary = function () {
  */
 export const saveMapLibrary = function () {
     RawMemory.setActiveSegments([RAW_MEMORY_ID])
-    addDelayTask('mapLibrarySave', { roomName: '' }, Game.time + 1)
+    addDelayTask('mapLibrarySave', { roomName: '' }, 1)
 }

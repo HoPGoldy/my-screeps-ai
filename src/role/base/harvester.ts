@@ -249,7 +249,7 @@ const actionStrategy: ActionStrategy = {
                 return false
             }
 
-            let targetPos: RoomPosition = source.pos
+            let targetPos: RoomPosition
             if (creep.memory.data.standPos) {
                 const [x, y, roomName] = creep.memory.data.standPos.split(',')
                 targetPos = new RoomPosition(Number(x), Number(y), roomName)
@@ -264,10 +264,10 @@ const actionStrategy: ActionStrategy = {
                 }
             }
 
-            creep.goTo(targetPos, { range: 0 })
+            creep.goTo(targetPos || source.pos, { range: 0 })
 
             // 如果没有找到又挨着 source 又挨着 link 的位置，走到 source 附近就算完成，找到了的话要走到位置上才算完成
-            return targetPos.isEqualTo(source.pos) ? creep.pos.isNearTo(targetPos) : creep.pos.isEqualTo(targetPos)
+            return targetPos ? creep.pos.isEqualTo(targetPos) : creep.pos.isNearTo(source.pos)
         },
         source: (creep, source) => {
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true

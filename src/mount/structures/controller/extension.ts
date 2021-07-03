@@ -82,18 +82,18 @@ export default class ControllerExtension extends StructureController {
      */
     private decideUpgradeWhenRCL8(): void {
         // 满足以下条件就暂停升级
-        if (
-            Game.cpu.bucket < 700 ||
-            !this.room.storage || this.room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
-        ) {
+        if (needContinueUpgrade(this.room)) {
+            // 限制只需要一个单位升级
+            this.room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
+        }
+        else {
             // 暂时停止升级计划
             this.room.work.removeTask('upgrade')
             delayQueue.addDelayTask('spawnUpgrader', { roomName: this.room.name }, 10000)
         }
-        else {
-            // 限制只需要一个单位升级
-            this.room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
-        }
+
+        // 允许没有升级工
+        this.room.spawner.release.setBaseUnitLimit('worker', { MIN: 0 })
     }
 
     /**
@@ -140,6 +140,23 @@ export default class ControllerExtension extends StructureController {
 }
 
 /**
+ * 判断指定房间是否需要继续升级
+ * 
+ * @param room 要判断的房间
+ * @returns 是否需要继续升级
+ */
+const needContinueUpgrade = function (room: Room): boolean {
+    // 快掉级了，必须升
+    if (room.controller.ticksToDowngrade <= 12000) return true
+
+    // cpu 不够或者能量不够了就不升级了
+    return !(
+        Game.cpu.bucket < 700 ||
+        room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
+    )
+}
+
+/**
  * 注册升级工的延迟孵化任务
  */
 delayQueue.addDelayCallback('spawnUpgrader', room => {
@@ -147,12 +164,10 @@ delayQueue.addDelayCallback('spawnUpgrader', room => {
     if (!room || !room.storage) return
 
     // 满足以下条件时就延迟发布
-    if (
-        // cpu 不够
-        Game.cpu.bucket < 700 ||
-        // 能量不足
-        room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
-    ) return delayQueue.addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
+    if (!needContinueUpgrade(room)) {
+        return delayQueue.addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
+    }
 
     room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
+    room.spawner.release.changeBaseUnit('worker', 1)
 })

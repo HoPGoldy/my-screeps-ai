@@ -43,7 +43,7 @@ export default class RoomAccessor<MemoryType> {
      * 模块内存
      */
     protected get memory(): MemoryType {
-        const { memory } = this.room
+        const memory = Memory.rooms[this.roomName]
 
         if (!memory[this.memoryKey]) memory[this.memoryKey] = this.defaultMemory
         return memory[this.memoryKey]
@@ -64,10 +64,10 @@ export default class RoomAccessor<MemoryType> {
      * 设置模块内存
      */
     protected set memory(newMemory: MemoryType) {
-        this.room.memory[this.memoryKey] = newMemory
+        const memory = Memory.rooms[this.roomName]
 
-        // if (!newMemory) delete this.room.memory[this.memoryKey]
-        // else this.room.memory[this.memoryKey] = newMemory
+        if (!newMemory) delete memory[this.memoryKey]
+        else memory[this.memoryKey] = newMemory
     }
 
     /**

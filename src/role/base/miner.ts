@@ -61,7 +61,7 @@ delayQueue.addDelayCallback('spawnMiner', room => {
  * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
  */
 const addSpawnMinerTask = function (roomName: string, delayTime: number) {
-    delayQueue.addDelayTask('spawnMiner', { roomName }, Game.time + delayTime + 1)
+    delayQueue.addDelayTask('spawnMiner', { roomName }, delayTime + 1)
 }
 
 export default miner

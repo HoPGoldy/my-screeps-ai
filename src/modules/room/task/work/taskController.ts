@@ -15,9 +15,8 @@ import { countEnergyChangeRatio } from '@/modules/energyUtils'
 const WORK_PROPORTION_TO_EXPECT = [
     { rate: 10, expect: 2 },
     { rate: 5, expect: 1 },
-    { rate: -5, expect: 0 },
-    { rate: -10, expect: -1 },
-    { rate: -15, expect: -2 }
+    { rate: -5, expect: -1 },
+    { rate: -10, expect: -2 }
 ]
 
 /**
@@ -63,6 +62,12 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      * （注意，这个速率对应的能量都应是可以完全被用于 worker 消耗的，如果想为孵化保留能量的话，需要从这个速率中剔除）
      */
     public getExpect(energyGetRate: number): number {
+        // 没有工作任务时慢慢减少工作人数
+        if (this.tasks.length === 0) {
+            if (Object.keys(this.creeps).length > 0) return -1
+            else return 0
+        }
+
         // 工作时长占比从高到底找到期望调整的搬运工数量
         const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => energyGetRate >= opt.rate)
 

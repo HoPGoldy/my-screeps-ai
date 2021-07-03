@@ -62,18 +62,17 @@ export default class App {
 
         next()
 
-        RawMemory.set(JSON.stringify(Memory))
+        RawMemory.set(JSON.stringify(global.Memory))
     }
 
     /**
-     * 设置新的异常捕获器
-     * 设置为空则不适用内存缓存
+     * 设置新的内存缓存器
+     * 设置为空则不使用内存缓存
      * 
      * @danger 请务必执行 next 方法！不然框架将无法正常使用
      */
     set memoryCacher(newCatcher: MemoryCacher) {
-        if (!newCatcher) return
-        this._catcher = newCatcher
+        this._memoryCacher = newCatcher
     }
 
     /**

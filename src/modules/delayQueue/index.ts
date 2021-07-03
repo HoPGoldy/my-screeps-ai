@@ -34,21 +34,22 @@ export const DelayQueue = function () {
      * 
      * @param name 要添加的任务名
      * @param data 该任务调用时接受的数据
-     * @param callTime 任务的调用时间（Game.time）
+     * @param callTime 任务在多少 tick 后调用
      */
     const addDelayTask = function <K extends AllDelayTaskName>(
         name: K,
         data: DelayTaskTypes[K],
         call: number
     ): void {
+        const callTick = Game.time + call
         // 不能添加过去的延迟任务
-        if (call < Game.time) return
+        if (callTick < Game.time) return
         // 当前 tick 的任务，直接触发
-        else if (call == Game.time) execDelayTask({ name, data })
+        else if (callTick == Game.time) execDelayTask({ name, data })
 
         // 保存到对应的队列里
-        if (delayTasks[call]) delayTasks[call].push({ name, data })
-        else delayTasks[call] = [{ name, data }]
+        if (delayTasks[callTick]) delayTasks[callTick].push({ name, data })
+        else delayTasks[callTick] = [{ name, data }]
 
         Game._needSaveDelayQueueData = true
     }
