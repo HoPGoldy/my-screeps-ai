@@ -36,7 +36,7 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
      * @param submit 提交者的身份
      * @returns 是否有该任务
      */
-    public hasTask(submit: CenterStructures | number): boolean {
+    public hasTask(submit: CenterStructures | number | string): boolean {
         const task = this.memory.find(task => task.submit === submit)
         return task ? true : false
     }

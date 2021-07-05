@@ -12,8 +12,8 @@ export const getRoomEnergyTarget = function (room: Room, finder?: EnergyTargetFi
     let allEnergyTargets = room._energyFilterObj
 
     if (!allEnergyTargets) {
-        // 查找 storage、terminal 和 container
-        const structureTargets = [ room.storage, room.terminal, ...room[STRUCTURE_CONTAINER] ]
+        // 查找 storage、terminal、container 以及 link
+        const structureTargets = [ room.storage, room.terminal, ...room[STRUCTURE_CONTAINER], ...room[STRUCTURE_LINK] ]
             .filter(structure => structure && structure.store[RESOURCE_ENERGY] > 0)
 
         // 查找 source 旁边地上扔的

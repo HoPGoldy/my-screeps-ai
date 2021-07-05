@@ -6,7 +6,7 @@ interface CenterTransportTask {
      * 任务提交者类型
      * number 类型是为了运行玩家自己推送中央任务
      */
-    submit: CenterStructures | number
+    submit: CenterStructures | number | string
     /**
      * 资源的提供建筑类型
      */
