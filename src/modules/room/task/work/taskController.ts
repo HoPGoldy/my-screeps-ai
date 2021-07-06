@@ -15,6 +15,7 @@ import { countEnergyChangeRatio } from '@/modules/energyUtils'
 const WORK_PROPORTION_TO_EXPECT = [
     { rate: 10, expect: 2 },
     { rate: 5, expect: 1 },
+    { rate: 0, expect: 1 },
     { rate: -5, expect: -1 },
     { rate: -10, expect: -2 }
 ]

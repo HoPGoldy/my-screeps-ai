@@ -32,8 +32,6 @@ export default class PowerCreepExtension extends PowerCreep {
      * @returns 是否可以执行后面的工作
      */
     private keepAlive(): boolean {
-        // pc 是所有 shard 通用的，所以这里需要特判下
-        if (this.shard !== Game.shard.name) return false
         // 离死还早，继续工作
         if (this.ticksToLive > 100) return true
 

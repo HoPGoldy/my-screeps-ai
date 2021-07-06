@@ -44,8 +44,11 @@ export default class RoomAccessor<MemoryType> {
      */
     protected get memory(): MemoryType {
         const memory = Memory.rooms[this.roomName]
+        // 未定义的话就用默认内存
+        if (!memory[this.memoryKey]) {
+            memory[this.memoryKey] = _.cloneDeep(this.defaultMemory)
+        }
 
-        if (!memory[this.memoryKey]) memory[this.memoryKey] = this.defaultMemory
         return memory[this.memoryKey]
     }
 
