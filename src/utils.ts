@@ -69,7 +69,7 @@ export function colorful(content: string, colorName: Colors = null, bolder: bool
     const colorStyle = colorName ? `color: ${colors[colorName]};` : ''
     const bolderStyle = bolder ? 'font-weight: bolder;' : ''
 
-    return `<text style="${[ colorStyle, bolderStyle ].join(' ')}">${content}</text>`
+    return `<span style="${[ colorStyle, bolderStyle ].join(' ')}">${content}</span>`
 }
 
 /**

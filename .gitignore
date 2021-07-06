@@ -17,3 +17,7 @@ coverage
 server
 
 .history
+
+.screeps-multimeter.history
+.screeps.yaml
+multimeter.log
