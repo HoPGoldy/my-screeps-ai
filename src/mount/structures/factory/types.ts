@@ -1,9 +1,27 @@
+import { FactoryState } from "./constant"
+
+declare global {
+    interface RoomMemory {
+        /**
+         * 工厂内存
+         */
+        factory?: FactoryMemory
+    }
+
+    interface StructureFactory {
+        /**
+         * 查看工厂状态，在 room 的 fshow 中调用
+         */
+        stats(): string
+    }
+}
+
 /**
  * 工厂的内存
  */
-interface FactoryMemory {
+export interface FactoryMemory {
     /**
-     * 当前房间的等级，由用户指定
+     * 当前房间的工厂等级，由用户指定
      */
     level?: FactoryLevel
     /**
@@ -21,11 +39,11 @@ interface FactoryMemory {
     /**
      * 当前工厂所处的阶段
      */
-    state: string
+    state: FactoryState
     /**
      * 工厂生产队列
      */
-    taskList: IFactoryTask[]
+    taskList: FactoryTask[]
     /**
      * 工厂是否即将移除
      * 在该字段存在时，工厂会搬出所有材料，并在净空后移除 room.factory 内存
@@ -53,7 +71,7 @@ interface FactoryMemory {
 /**
  * 工厂的任务队列中的具体任务配置
  */
-interface IFactoryTask {
+export interface FactoryTask {
     /**
      * 任务目标
      */
@@ -67,21 +85,11 @@ interface IFactoryTask {
 /**
  * 所有可用的工厂等级
  */
-type FactoryLevel = 1 | 2 | 3 | 4 | 5
-
-/**
- * 工厂拓展
- */
-interface StructureFactory {
-    /**
-     * 查看工厂状态，在 room 的 fshow 中调用
-     */
-    stats(): string
-}
+export type FactoryLevel = 1 | 2 | 3 | 4 | 5
 
 /**
  * 工厂 1-5 级能生产的顶级商品
  */
-type TopTargetConfig = {
+export type TopTargetConfig = {
     [level in FactoryLevel]: CommodityConstant[]
 }

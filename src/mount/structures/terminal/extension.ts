@@ -1,9 +1,10 @@
-import { DEAL_RATIO, terminalModes, terminalChannels } from '@/setting'
+import { DEAL_RATIO, TerminalChannel, TerminalMode } from './constant'
 import { setRoomStats } from '@/modules/stats'
+import { TerminalListenTask } from './types'
+import { BASE_MINERAL } from '@/setting'
 
 /**
  * 全局缓存的订单价格表
- * 
  * 键为资源和订单类型，如："energy/buy"、"power/sell"，值是缓存下来的订单价格
  */
 const resourcePrice = {}
@@ -17,23 +18,25 @@ const resourcePrice = {}
  */
 export default class TerminalExtension extends StructureTerminal {
     public onWork(): void {
-        if (!this.room.controller.owner) return
-        // 没有冷却好或者不到 10 tick 就跳过
-        if (this.cooldown !== 0 || Game.time % 10) return
-        
+        if (!this.room.controller.owner || !this.room.memory.terminal) return
+        // 没有冷却好就跳过，或者每 10t 执行一次
+        if (this.cooldown || Game.time % 10) return
+
         // 资源统计
         this.stateScanner()
 
         // 优先执行共享任务
         this.execShareTask()
 
-        // 执行终端工作
-        const resource = this.getResourceByIndex()
-        // 没有配置监听任务的话就跳过
-        if (!resource) return 
+        // 获取资源规则
+        const task = this.getTask()
+        if (!task) return 
 
-        // 只有 dealOrder 下命令了才能继续执行 resourceListener
-        if (this.dealOrder(resource)) this.resourceListener(resource)
+        // 处理之前没做完的订单
+        if (!this.dealOrder(task)) return
+
+        // 没有待处理订单，继续监听任务
+        this.resourceListener(task)
     }
 
     /**
@@ -44,8 +47,31 @@ export default class TerminalExtension extends StructureTerminal {
         // 有 extractor 了，发布矿工并添加对应的共享协议
         if (this.room.extractor) {
             this.room.spawner.release.miner()
-            this.addTask(this.room.mineral.mineralType, 30000, terminalModes.put, terminalChannels.share)
         }
+        this.resetConfig()
+    }
+
+    /**
+     * 将终端监听规则设置为默认值
+     * 
+     * @param hard 设为 true 来移除其默认值中不包含的规则
+     */
+    public resetConfig(hard: boolean = false): void {
+        if (!this.room.memory.terminal) {
+            this.room.memory.terminal = { tasks: [], index: 0 }
+        }
+
+        if (hard) this.room.memory.terminal.tasks = []
+        this.room.memory.terminal.index = 0
+
+        // 该房间的矿物种类
+        const roomMineral = this.room.mineral.mineralType
+
+        // 默认选项为从资源共享协议获取所有的基础元素，自己房间的产出矿物则为提供
+        BASE_MINERAL.forEach(res => {
+            if (res === roomMineral) this.addTask(res, 30000, TerminalMode.Put, TerminalChannel.Share)
+            else this.addTask(res, 5000, TerminalMode.Get, TerminalChannel.Share)
+        })
     }
 
     /**
@@ -184,14 +210,14 @@ export default class TerminalExtension extends StructureTerminal {
      * 
      * @returns 是否有空闲精力继续工作
      */
-    public dealOrder(resource: TerminalListenerTask): boolean {
+    public dealOrder(resource: TerminalListenTask): boolean {
         // 没有订单需要处理
-        if (!this.room.memory.targetOrderId) return true
+        if (!this.room.memory.terminal?.orderId) return true
         // 获取订单
-        const targetOrder = Game.market.getOrderById(this.room.memory.targetOrderId)
+        const targetOrder = Game.market.getOrderById(this.room.memory.terminal?.orderId)
         // 订单无效则移除缓存并继续检查
         if (!targetOrder) {
-            delete this.room.memory.targetOrderId
+            delete this.room.memory.terminal?.orderId
             return true
         }
 
@@ -216,14 +242,14 @@ export default class TerminalExtension extends StructureTerminal {
             const crChange = (targetOrder.type == ORDER_BUY ? '+ ' : '- ') + (amount * targetOrder.price).toString() + ' Cr' 
             const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.resourceType} 单价: ${targetOrder.price}`
             this.log(`交易成功! ${introduce} ${crChange}`, 'green')
-            delete this.room.memory.targetOrderId
+            delete this.room.memory.terminal?.orderId
 
             this.setNextIndex()
             this.energyCheck()
             
-            return false // 把这个改成 true 可以加快交易速度
+            return false
         }
-        else if (dealResult === ERR_INVALID_ARGS) delete this.room.memory.targetOrderId
+        else if (dealResult === ERR_INVALID_ARGS) delete this.room.memory.terminal?.orderId
         else this.log(`${this.room.name} 处理订单异常 ${dealResult}`, 'yellow')
     }
 
@@ -231,15 +257,15 @@ export default class TerminalExtension extends StructureTerminal {
      * 资源监听
      * 检查资源是否符合用户给定的期望
      */
-    public resourceListener(resource: TerminalListenerTask): void {
+    public resourceListener(resource: TerminalListenTask): void {
         const resourceAmount = this.store[resource.type]
 
         // 资源移出监听，超过才进行移出（卖出或共享资源）
-        if (resource.mod === terminalModes.put) {
+        if (resource.mod === TerminalMode.Put) {
             if (resourceAmount <= resource.amount) return this.setNextIndex()
         }
         // 资源获取监听，低于标准才进行获取
-        else if (resource.mod === terminalModes.get) {
+        else if (resource.mod === TerminalMode.Get) {
             if (resourceAmount >= resource.amount) return this.setNextIndex()
         }
         else {
@@ -251,41 +277,29 @@ export default class TerminalExtension extends StructureTerminal {
         switch (resource.channel) {
 
             // 需要挂单
-            case terminalChannels.release:
+            case TerminalChannel.Release:
                 this.releaseOrder(
                     resource.type,
-                    resource.mod === terminalModes.get ? ORDER_BUY : ORDER_SELL,
+                    resource.mod === TerminalMode.Get ? ORDER_BUY : ORDER_SELL,
                     Math.abs(resourceAmount - resource.amount)
                 )
             break
 
             // 需要拍单
-            case terminalChannels.take:
+            case TerminalChannel.Take:
                 this.takeOrder(
                     resource.type,
                     // 这里订单类型取反是因为如果我想**买入**一个订单，那我就要拍下一个**卖单**
-                    resource.mod === terminalModes.get ? ORDER_SELL : ORDER_BUY, 
+                    resource.mod === TerminalMode.Get ? ORDER_SELL : ORDER_BUY, 
                     Math.abs(resourceAmount - resource.amount),
                     resource.priceLimit
                 )
             break
 
             // 进行共享
-            case terminalChannels.share:
-                if (resource.mod === terminalModes.get) this.room.share.request(resource.type, resource.amount - resourceAmount)
+            case TerminalChannel.Share:
+                if (resource.mod === TerminalMode.Get) this.room.share.request(resource.type, resource.amount - resourceAmount)
                 else this.room.share.becomeSource(resource.type)
-
-                return this.setNextIndex()
-            break
-
-            // 进行支援
-            case terminalChannels.support:
-                if (resource.mod === terminalModes.put) {
-                    // 向自己房间添加一个指向目标房间的资源共享任务来进行支援
-                    // 这里的容量直接 resourceAmount - resource.amount，因为 mod 为 put 时代码能走到这里证明现有的资源数量一定是大于阈值的，所以这个值一定为正数
-                    this.room.share.handle(resource.supportRoomName, resource.type, resourceAmount - resource.amount)
-                }
-                else this.log('支援渠道的资源监听任务，其物流方向必须为 put（提供）', 'yellow')
 
                 return this.setNextIndex()
             break
@@ -392,7 +406,7 @@ export default class TerminalExtension extends StructureTerminal {
         }
         
         // 订单合适，写入缓存并要路费
-        this.room.memory.targetOrderId = targetOrder.id as Id<Order>
+        this.room.memory.terminal.orderId = targetOrder.id as Id<Order>
 
         // 想要卖出的数量有可能比订单数量大，所以计算路费的时候要考虑到
         const cost = Game.market.calcTransactionCost(Math.min(amount, targetOrder.amount), this.room.name, targetOrder.roomName)
@@ -407,10 +421,10 @@ export default class TerminalExtension extends StructureTerminal {
      * 将索引指向下一个要监听的资源
      */
     private setNextIndex(): void {
-        let index = this.room.memory.terminalIndex | 0
-        const tasksLength = this.room.memory.terminalTasks.length
+        let index = this.room.memory.terminal.index | 0
+        const tasksLength = this.room.memory.terminal.tasks.length
         // 循环设置索引
-        this.room.memory.terminalIndex = (index + 1 >= tasksLength) ? 0 : index + 1
+        this.room.memory.terminal.index = (index + 1 >= tasksLength) ? 0 : index + 1
     }
 
     /**
@@ -420,17 +434,17 @@ export default class TerminalExtension extends StructureTerminal {
      *   @property {} type 资源类型
      *   @property {} amount 期望数量
      */
-    private getResourceByIndex(): TerminalListenerTask | null {
-        if (!this.room.memory.terminalTasks) return null
-        let index = this.room.memory.terminalIndex | 0
+    private getTask(): TerminalListenTask | null {
+        if (!this.room.memory.terminal.tasks || this.room.memory.terminal.tasks.length === 0) return null
+        let index = this.room.memory.terminal.index | 0
 
         // 做个兜底，防止玩家手动移除任务后指针指向 undefined
-        if (index >= this.room.memory.terminalTasks.length) {
-            this.room.memory.terminalIndex = index = 0
+        if (index >= this.room.memory.terminal.tasks.length) {
+            this.room.memory.terminal.index = index = 0
         }
 
         // 对序列化的任务进行重建
-        return this.unstringifyTask(this.room.memory.terminalTasks[index])
+        return this.unstringifyTask(this.room.memory.terminal.tasks[index])
     }
 
     /**
@@ -547,14 +561,26 @@ export default class TerminalExtension extends StructureTerminal {
      * @param priceLimit 价格限制
      * @param supportRoomName 要支援的房间名【在 channel 为 support 时生效】
      */
-    public addTask(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined, supportRoomName: string = undefined): void {
+    public addTask(
+        resourceType: ResourceConstant,
+        amount: number,
+        mod: TerminalMode = TerminalMode.Get,
+        channel: TerminalChannel = TerminalChannel.Take,
+        priceLimit: number = undefined
+    ): void {
         // 先移除同类型的监听任务
         this.removeByType(resourceType, mod, channel)
 
-        if (!this.room.memory.terminalTasks) this.room.memory.terminalTasks = []
+        // 非空兜底
+        if (!this.room.memory.terminal) {
+            this.room.memory.terminal = { tasks: [], index: 0 }
+        }
+        if (!this.room.memory.terminal.tasks) {
+            this.room.memory.terminal.tasks = []
+        }
 
         // 再保存任务
-        this.room.memory.terminalTasks.push(this.stringifyTask({ mod, channel, type: resourceType, amount, priceLimit, supportRoomName }))
+        this.room.memory.terminal.tasks.push(this.stringifyTask({ mod, channel, type: resourceType, amount, priceLimit }))
     }
 
     /**
@@ -566,11 +592,11 @@ export default class TerminalExtension extends StructureTerminal {
      * @returns ERR_NOT_FOUND 该房间暂无监听任务
      */
     public removeTask(index: number): OK | ERR_INVALID_ARGS | ERR_NOT_FOUND {
-        if (!this.room.memory.terminalTasks) return OK
-        if (_.isUndefined(index) || index >= this.room.memory.terminalTasks.length) return ERR_INVALID_ARGS
+        if (!this.room.memory.terminal.tasks) return OK
+        if (_.isUndefined(index) || index >= this.room.memory.terminal.tasks.length) return ERR_INVALID_ARGS
 
-        this.room.memory.terminalTasks.splice(index, 1)
-        if (this.room.memory.terminalTasks.length <= 0) delete this.room.memory.terminalTasks
+        this.room.memory.terminal.tasks.splice(index, 1)
+        if (this.room.memory.terminal.tasks.length <= 0) delete this.room.memory.terminal.tasks
 
         return OK
     }
@@ -586,8 +612,8 @@ export default class TerminalExtension extends StructureTerminal {
      * @danger 注意，这个序列化格式是固定的，单独修改将会导致任务读取时出现问题
      * @param task 要序列化的任务
      */
-    protected stringifyTask({ mod, channel, type, amount, priceLimit, supportRoomName }: TerminalListenerTask): string {
-        let stringifyTask = `${mod} ${channel} ${type} ${amount} ${priceLimit} ${supportRoomName}`
+    protected stringifyTask({ mod, channel, type, amount, priceLimit }: TerminalListenTask): string {
+        let stringifyTask = `${mod} ${channel} ${type} ${amount} ${priceLimit}`
 
         return stringifyTask
     }
@@ -598,17 +624,16 @@ export default class TerminalExtension extends StructureTerminal {
      * @danger 注意，这个序列化格式是固定的，单独修改将会导致无法读取已保存任务
      * @param taskStr 要反序列化的任务
      */
-    protected unstringifyTask(taskStr: string): TerminalListenerTask {
+    protected unstringifyTask(taskStr: string): TerminalListenTask {
         // 对序列化的任务进行重建
-        const [ mod, channel, type, amount, priceLimit, supportRoomName ] = taskStr.split(' ')
+        const [ mod, channel, type, amount, priceLimit ] = taskStr.split(' ')
 
         return {
-            mod: (Number(mod) as TerminalModes),
-            channel: (Number(channel) as TerminalChannels),
+            mod: (Number(mod) as TerminalMode),
+            channel: (Number(channel) as TerminalChannel),
             type: (type as ResourceConstant),
             amount: Number(amount),
-            priceLimit: priceLimit ? Number(priceLimit) : undefined,
-            supportRoomName: supportRoomName ? supportRoomName : undefined
+            priceLimit: priceLimit ? Number(priceLimit) : undefined
         }
     }
 
@@ -620,15 +645,15 @@ export default class TerminalExtension extends StructureTerminal {
      * @param channel 交易渠道
      * @returns 成功匹配的任务在内存 terminalTasks 中的索引，未找到返回 ERR_NOT_FOUND
      */
-    public removeByType(type: ResourceConstant, mod: TerminalModes, channel: TerminalChannels): void {
-        if (!this.room.memory.terminalTasks) return
+    public removeByType(type: ResourceConstant, mod: TerminalMode, channel: TerminalChannel): void {
+        if (!this.room.memory.terminal.tasks) return
 
         const matchKey = `${mod} ${channel} ${type}`
-        this.room.memory.terminalTasks.find((task, index) => {
+        this.room.memory.terminal.tasks.find((task, index) => {
             if (!task.includes(matchKey)) return false
 
             // 移除找到的任务
-            this.remove(index)
+            this.removeTask(index)
             return true
         })
     }

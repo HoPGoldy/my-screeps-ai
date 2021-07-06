@@ -65,11 +65,11 @@ const colors: { [name in Colors]: string } = {
  * @param colorName 要添加的颜色常量字符串
  * @param bolder 是否加粗
  */
-export function colorful(content: string, colorName: Colors = null, bolder: boolean = false): string {
+export function colorful(content: string, colorName: Colors = null, bold: boolean = false): string {
     const colorStyle = colorName ? `color: ${colors[colorName]};` : ''
-    const bolderStyle = bolder ? 'font-weight: bolder;' : ''
+    const boldStyle = bold ? 'font-weight: bold;' : ''
 
-    return `<span style="${[ colorStyle, bolderStyle ].join(' ')}">${content}</span>`
+    return `<span style="${[ colorStyle, boldStyle ].join(' ')}">${content}</span>`
 }
 
 /**

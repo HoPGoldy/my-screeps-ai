@@ -1,37 +1,47 @@
-interface StructureTerminal {
-    addTask(resourceType: ResourceConstant, amount: number, mod?: TerminalModes, channel?: TerminalChannels, priceLimit?: number): void
-    add(resourceType: ResourceConstant, amount: number, mod?: TerminalModes, channel?: TerminalChannels, priceLimit?: number): string
-    removeByType(type: ResourceConstant, mod: TerminalModes, channel: TerminalChannels): void
-    remove(index: number): string
-    show(): string
-    /**
-     * 在所有启用 powerspawn 的房间内平衡 power
-     */
-    balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND
+import { TerminalChannel, TerminalMode } from "./constant"
+
+declare global {
+    interface StructureTerminal {
+        addTask(resourceType: ResourceConstant, amount: number, mod?: TerminalMode, channel?: TerminalChannel, priceLimit?: number): void
+        add(resourceType: ResourceConstant, amount: number, mod?: TerminalMode, channel?: TerminalChannel, priceLimit?: number): string
+        removeByType(type: ResourceConstant, mod: TerminalMode, channel: TerminalChannel): void
+        remove(index: number): string
+        show(): string
+        /**
+         * 在所有启用 powerspawn 的房间内平衡 power
+         */
+        balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND
+    }
+
+    interface RoomMemory {
+        /**
+         * 终端内存
+         */
+        terminal?: TerminalMemory
+    }
 }
 
-/**
- * 终端监听规则类型
- * 具体值详见 ./setting.ts > terminalModes
- */
-type ModeGet = 0
-type ModePut = 1
-type TerminalModes = ModeGet | ModePut
-
-/**
- * 终端监听规则的资源渠道
- * 具体值详见 ./setting.ts > terminalChannels
- */
-type ChannelTake = 0
-type ChannelRelease = 1
-type ChannelShare = 2
-type ChannelSupport = 3
-type TerminalChannels = ChannelTake | ChannelRelease | ChannelShare | ChannelSupport
+interface TerminalMemory {
+    /**
+     * 终端监听矿物列表
+     * 数组中每一个字符串都代表了一个监听任务，形如 "0 0 power"
+     * 第一位对应 TerminalModes，第二位对应 TerminalChannels，第三位对应资源类型
+     */
+    tasks: string[]
+    /**
+     * 房间内终端缓存的订单id
+     */
+    orderId?: Id<Order>
+    /**
+     * 当前终端要监听的资源索引
+     */
+    index: number
+}
 
 /**
  * 终端监听任务，详见 doc/终端设计案
  */
-interface TerminalListenerTask {
+export interface TerminalListenTask {
     /**
      * 要监听的资源类型
      */
@@ -43,19 +53,15 @@ interface TerminalListenerTask {
     /**
      * 监听类型
      */
-    mod: TerminalModes
+    mod: TerminalMode
     /**
-     * 渠道: market, share
+     * 物流渠道
      */
-    channel: TerminalChannels
+    channel: TerminalChannel
     /**
      * 价格限制
      */
     priceLimit?: number
-    /**
-     * 要支援的房间名
-     */
-    supportRoomName?: string
 }
 
 /**
@@ -63,14 +69,14 @@ interface TerminalListenerTask {
  * 将以昨日该资源的交易范围为基准，上(MAX)下(MIN)浮动出一个区间，超过该区间的订单将被不会交易
  * 如果没有特别指定的话将以 default 指定的区间为基准
  */
-type DealRatios = {
+export type DealRatios = {
     [resType in ResourceConstant | 'default']?: {
         /**
-         * 卖单的最高价格
+         * 卖单的最高价格比率
          */
         MAX: number,
         /**
-         * 买单的最低价格
+         * 买单的最低价格比率
          */
         MIN: number
     }

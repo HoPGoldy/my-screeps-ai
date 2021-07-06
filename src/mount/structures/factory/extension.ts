@@ -1,5 +1,6 @@
-import { FACTORY_STATE, factoryTopTargets, factoryBlacklist, FACTORY_LOCK_AMOUNT, factoryEnergyLimit, commodityMax } from '@/setting'
 import { setRoomStats } from '@/modules/stats'
+import { FactoryState, TOP_TARGET, BLACK_LIST, ENERGY_LIMIT, COMMODITY_MAX, FACTORY_LOCK_AMOUNT } from './constant';
+import { FactoryTask } from './types';
 
 /**
  * Factory 原型拓展
@@ -15,11 +16,11 @@ export default class FactoryExtension extends StructureFactory {
         }
 
         // 执行 factory 工作
-        if (this.runFactory()) {
-            // 如果 storage 里能量不足了则休眠
-            if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= factoryEnergyLimit) return
-            else this.gotoBed(10000, '能量不足')
-        }
+        if (!this.runFactory()) return
+
+        // 如果 storage 里能量不足了则休眠
+        if (this.room.storage && this.room.storage.store[RESOURCE_ENERGY] >= ENERGY_LIMIT) return
+        else this.gotoBed(10000, '能量不足')
     }
 
     /**
@@ -30,18 +31,18 @@ export default class FactoryExtension extends StructureFactory {
      */
     private runFactory(): boolean {
         switch (this.room.memory.factory.state) {
-            case FACTORY_STATE.PREPARE: 
+            case FactoryState.Prepare: 
                 if (Game.time % 5) return false
                 this.prepare()
             break
-            case FACTORY_STATE.GET_RESOURCE:
+            case FactoryState.GetResource:
                 if (Game.time % 5) return false
                 this.getResource()
             break
-            case FACTORY_STATE.WORKING:
+            case FactoryState.Working:
                 this.working()
             break
-            case FACTORY_STATE.PUT_RESOURCE:
+            case FactoryState.PutResource:
                 if (Game.time % 5) return false
                 this.putResource()
             break
@@ -92,7 +93,7 @@ export default class FactoryExtension extends StructureFactory {
         }
 
         // 通过了底物检查就说明可以合成，进入下个阶段
-        this.room.memory.factory.state = FACTORY_STATE.GET_RESOURCE
+        this.room.memory.factory.state = FactoryState.GetResource
     }
 
     /**
@@ -102,7 +103,7 @@ export default class FactoryExtension extends StructureFactory {
      * 不然就会自动拆分出很多重复的任务，比如：发现需要能量 > 添加电池合成任务 > 添加能量合成任务 > ...
      */
     private inBlacklist(resType: ResourceConstant): boolean {
-        return factoryBlacklist.includes(resType as MineralConstant) || !(resType in COMMODITIES)
+        return BLACK_LIST.includes(resType as MineralConstant) || !(resType in COMMODITIES)
     }
 
     /**
@@ -174,7 +175,7 @@ export default class FactoryExtension extends StructureFactory {
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
         if (!task) {
-            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            this.room.memory.factory.state = FactoryState.Prepare
             return
         }
 
@@ -193,7 +194,7 @@ export default class FactoryExtension extends StructureFactory {
                 if (source === STRUCTURE_TERMINAL && this.room.terminal) {
                     if (this.room.terminal.store[resType] < needAmount) {
                         // 不在黑名单里就尝试自己合成
-                        if (this.inBlacklist(resType as ResourceConstant)) {
+                        if (!this.inBlacklist(resType as ResourceConstant)) {
                             this.handleInsufficientResource(resType as ResourceConstant, needAmount)
                             this.log(`发现底物不足，进行拆分：${resType} ${needAmount}`, 'yellow', true)
                         }
@@ -216,7 +217,7 @@ export default class FactoryExtension extends StructureFactory {
         }
 
         // 能到这里说明底物都已转移完毕
-        this.room.memory.factory.state = FACTORY_STATE.WORKING
+        this.room.memory.factory.state = FactoryState.Working
     }
 
     /**
@@ -227,7 +228,7 @@ export default class FactoryExtension extends StructureFactory {
         if (this.cooldown !== 0) {
             if (this.room.memory.factory.produceCheck) {
                 // 发现材料不足了就进入下个阶段
-                if (!this.canContinueProduce()) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
+                if (!this.canContinueProduce()) this.room.memory.factory.state = FactoryState.PutResource
                 // 移除标志位，每个冷却阶段只检查一次材料是否充足就够了
                 delete this.room.memory.factory.produceCheck
             }
@@ -237,7 +238,7 @@ export default class FactoryExtension extends StructureFactory {
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
         if (!task) {
-            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            this.room.memory.factory.state = FactoryState.Prepare
             return
         }
 
@@ -246,7 +247,7 @@ export default class FactoryExtension extends StructureFactory {
         // 成功生产了就将举起检查标志位，等待下个 tick 检查底物数量
         if (actionResult === OK) this.room.memory.factory.produceCheck = true
         // 这里只是个兜底，一般情况下在上面的 this.canContinueProduce() 判断后就已经确定了是否要进入下个阶段
-        else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
+        else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.room.memory.factory.state = FactoryState.PutResource
         else if (actionResult === ERR_INVALID_TARGET || actionResult === ERR_BUSY) this.requirePower()
         else this.log(`working 阶段出现异常，错误码: ${actionResult}`, 'red')
     }
@@ -260,7 +261,7 @@ export default class FactoryExtension extends StructureFactory {
         // 获取当前任务
         const task = this.getCurrentTask()
         if (!task) {
-            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            this.room.memory.factory.state = FactoryState.Prepare
             return false
         }
 
@@ -283,14 +284,14 @@ export default class FactoryExtension extends StructureFactory {
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
         if (!task) {
-            this.room.memory.factory.state = FACTORY_STATE.PREPARE
+            this.room.memory.factory.state = FactoryState.Prepare
             return
         }
 
         // 把所有东西都搬出去，保持工厂存储净空
         for (const resType in this.store) {
             // 是目标产物的话就更新统计信息
-            if (resType === task.target) this.updateStats(resType)
+            if (resType === task.target) this.updateStats(resType as ResourceConstant)
 
             // 资源不足，发布任务
             const target = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
@@ -309,7 +310,7 @@ export default class FactoryExtension extends StructureFactory {
         // 原因是后面合成高级任务的时候如果发现材料不足就会自动发布数量合适的新任务
         // 所以没必要在这里增加代码复杂度
         this.deleteCurrentTask()
-        this.room.memory.factory.state = FACTORY_STATE.PREPARE
+        this.room.memory.factory.state = FactoryState.Prepare
     }
 
     /**
@@ -337,7 +338,7 @@ export default class FactoryExtension extends StructureFactory {
     /**
      * 获取当前合成任务
      */
-    private getCurrentTask(): IFactoryTask | undefined {
+    private getCurrentTask(): FactoryTask | undefined {
         if (this.room.memory.factory.taskList.length <= 0) return undefined
         else return this.room.memory.factory.taskList[0]
     }
@@ -357,7 +358,7 @@ export default class FactoryExtension extends StructureFactory {
      * @param task 如果指定则将其添加为新任务，否则新增顶级产物合成任务
      * @returns 新任务在队列中的位置，第一个为 1
      */
-    private addTask(task: IFactoryTask = undefined): number {
+    private addTask(task: FactoryTask = undefined): number {
         if (task) return this.room.memory.factory.taskList.push(task)
 
         let memory = this.room.memory.factory
@@ -383,7 +384,7 @@ export default class FactoryExtension extends StructureFactory {
         const shareTask = this.room.memory.shareTask
         // 遍历自己内存中的所有生产线类型，从 factoryTopTargets 取出对应的顶级产物，然后展平为一维数组
         const depositTypes = memory.depositTypes || []
-        const topTargets: CommodityConstant[] = _.flatten(depositTypes.map(type => factoryTopTargets[type][memory.level]))
+        const topTargets: CommodityConstant[] = _.flatten(depositTypes.map(type => TOP_TARGET[type][memory.level]))
         
         // 如果房间有共享任务并且任务目标需要自己生产的话
         if (shareTask && topTargets.includes(shareTask.resourceType as CommodityConstant)) {
@@ -402,11 +403,11 @@ export default class FactoryExtension extends StructureFactory {
         let topTarget = topTargets[memory.targetIndex]
 
         // 如果该顶级产物存在并已经超过最大生产上限，则遍历检查是否有未到上限的
-        if (this.room.terminal && topTarget in commodityMax && this.room.terminal.store[topTarget] >= commodityMax[topTarget]) {
+        if (this.room.terminal && topTarget in COMMODITY_MAX && this.room.terminal.store[topTarget] >= COMMODITY_MAX[topTarget]) {
             let targetIndex = 0
             // 修正预定目标
             topTarget = topTargets.find((res, index) => {
-                if (this.room.terminal.store[res] >= commodityMax[res]) return false
+                if (this.room.terminal.store[res] >= COMMODITY_MAX[res]) return false
                 else {
                     targetIndex = index
                     return true
@@ -514,7 +515,7 @@ export default class FactoryExtension extends StructureFactory {
         // 与资源共享协议交互
         depositTypes = depositTypes || []
         depositTypes.forEach(type => {
-            factoryTopTargets[type][level].forEach(resType => {
+            TOP_TARGET[type][level].forEach(resType => {
                 if (action === 'register') this.room.share.becomeSource(resType)
                 else this.room.share.leaveSource(resType)
             })
@@ -531,7 +532,7 @@ export default class FactoryExtension extends StructureFactory {
         // 进入废弃进程
         this.room.memory.factory.remove = true
         // 置为移出资源阶段
-        this.room.memory.factory.state = FACTORY_STATE.PUT_RESOURCE
+        this.room.memory.factory.state = FactoryState.PutResource
         // 移除队列中的后续任务
         const task = this.getCurrentTask()
         this.room.memory.factory.taskList = [ task ]
@@ -540,12 +541,12 @@ export default class FactoryExtension extends StructureFactory {
     }
 
     /**
-     * 初始化工厂内存 
+     * 初始化工厂内存
      */
     protected initMemory(): void {
         this.room.memory.factory = {
             targetIndex: 0,
-            state: FACTORY_STATE.PREPARE,
+            state: FactoryState.Prepare,
             taskList: []
         }
     }

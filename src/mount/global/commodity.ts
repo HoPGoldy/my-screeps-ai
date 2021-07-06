@@ -1,5 +1,6 @@
-import { factoryTopTargets } from '@/setting'
 import { colorful, createRoomLink } from '@/utils'
+import { TOP_TARGET } from '@/mount/structures/factory/constant'
+import { FactoryLevel } from '@/mount/structures/factory/types'
 
 export default function(): string {
     if (!Memory.commodities) return '未启动商品生产线'
@@ -70,7 +71,7 @@ export default function(): string {
     // 统计顶级产物数量
     if (room.terminal) {
         const topResource = _.flatten(memory.depositTypes.map<string[]>(type => {
-            return factoryTopTargets[type][memory.level].map<string>(res => `${res}*${room.terminal.store[res]}`)
+            return TOP_TARGET[type][memory.level].map<string>(res => `${res}*${room.terminal.store[res]}`)
         }))
         logs.push('[产物数量]', ...topResource)
     }

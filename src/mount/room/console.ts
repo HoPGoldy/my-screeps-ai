@@ -11,6 +11,7 @@ import { setBaseCenter } from '@/modules/autoPlanning/planBasePos'
 import RoomExtension from './extension'
 import { manageStructure } from '@/modules/autoPlanning'
 import { ModuleDescribe } from '@/modules/console/help/types'
+import { TerminalChannel, TerminalMode } from '@/mount/structures/terminal/constant'
 
 export default class RoomConsole extends RoomExtension {
     /**
@@ -261,7 +262,13 @@ export default class RoomConsole extends RoomExtension {
     /**
      * 用户操作：addTerminalTask
      */
-    public ta(resourceType: ResourceConstant, amount: number, mod: TerminalModes = 0, channel: TerminalChannels = 0, priceLimit: number = undefined): string { 
+    public ta(
+        resourceType: ResourceConstant,
+        amount: number,
+        mod: TerminalMode = TerminalMode.Get,
+        channel: TerminalChannel = TerminalChannel.Take,
+        priceLimit: number = undefined
+    ): string { 
         if (!this.terminal) return `[${this.name}] 未找到终端`
 
         return this.terminal.add(resourceType, amount, mod, channel, priceLimit)
