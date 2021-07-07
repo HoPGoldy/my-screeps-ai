@@ -1,9 +1,9 @@
 import { whiteListFilter } from '@/utils'
-import { setRoomStats, getRoomStats } from '@/modules/stats'
+import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
 import { UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
-import { delayQueue } from '@/modules/delayQueue'
-import { countEnergyChangeRatio } from '@/modules/energyUtils'
-import { WORK_TASK_PRIOIRY } from '@/modules/room/task/work/constant'
+import { delayQueue } from '@/modulesGlobal/delayQueue'
+import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 
 /**
  * Controller 拓展

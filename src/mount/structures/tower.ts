@@ -1,4 +1,4 @@
-import { GetName } from '@/modules/room/spawn/nameGetter'
+import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { repairSetting, TOWER_FILL_WALL_LEVEL } from '@/setting'
 import { whiteListFilter } from '@/utils'
 

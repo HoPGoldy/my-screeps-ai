@@ -1,8 +1,8 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
 import { HARVEST_MODE } from '@/setting'
-import { addConstructionSite } from '@/modules/constructionController'
-import { WORK_TASK_PRIOIRY } from '@/modules/room/task/work/constant'
+import { addConstructionSite } from '@/modulesGlobal/construction'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 
 /**
  * 采集者

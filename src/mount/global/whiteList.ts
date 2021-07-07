@@ -1,4 +1,4 @@
-import { createHelp } from "@/modules/console"
+import { createHelp } from "@/modulesGlobal/console"
 
 /**
  * 白名单控制 api

@@ -10,7 +10,7 @@ import {
 } from './structures'
 import SourceExtension from './source/extension'
 import { log } from '@/utils'
-import { setBornCenter } from '@/modules/autoPlanning/planBasePos'
+import { setBornCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 
 /**
  * 所有需要挂载的原型拓展

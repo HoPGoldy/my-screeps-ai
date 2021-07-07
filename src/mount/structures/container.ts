@@ -1,4 +1,4 @@
-import { WORK_TASK_PRIOIRY } from "@/modules/room/task/work/constant"
+import { WORK_TASK_PRIOIRY } from "@/modulesRoom/taskWork/constant"
 
 /**
  * container 拓展

@@ -1,4 +1,4 @@
-import { createHelp } from '@/modules/console'
+import { createHelp } from '@/modulesGlobal/console'
 
 // Link 原型拓展
 export class LinkExtension extends StructureLink {

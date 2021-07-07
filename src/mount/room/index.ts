@@ -10,7 +10,7 @@ import {
     RoomWorkTaskController,
     RoomSpawnController,
     RoomPowerController
-} from '@/modules/room'
+} from '@/modulesRoom'
 
 /**
  * 房间插件

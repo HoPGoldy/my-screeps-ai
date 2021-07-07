@@ -1,4 +1,4 @@
-import { removeCreep } from '@/modules/creep/utils'
+import { removeCreep } from '@/modulesGlobal/creep/utils'
 import { PB_HARVESTE_STATE } from '@/setting'
 import { calcBodyPart } from '@/utils'
 

@@ -1,6 +1,6 @@
 import TerminalExtension from "./extension"
 import { colorful } from '@/utils'
-import { createHelp } from '@/modules/console'
+import { createHelp } from '@/modulesGlobal/console'
 import { TerminalChannel, TerminalMode } from "./constant"
 
 /**

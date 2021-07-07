@@ -1,5 +1,5 @@
 import { DEAL_RATIO, TerminalChannel, TerminalMode } from './constant'
-import { setRoomStats } from '@/modules/stats'
+import { setRoomStats } from '@/modulesGlobal/stats'
 import { TerminalListenTask } from './types'
 import { BASE_MINERAL } from '@/setting'
 

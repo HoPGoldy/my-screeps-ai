@@ -1,0 +1,7 @@
+export { default as RoomCenterTaskController } from './taskCenter/controller'
+export { default as RoomTransportTaskController } from './taskTransport/controller'
+export { default as RoomWorkTaskController } from './taskWork/controller'
+export { default as RoomPowerController } from './power/controller'
+export { default as RoomShareController } from './share'
+export { default as RoomSpawnController } from './spawn'
+export { default as mountShortcut } from './shortcut'

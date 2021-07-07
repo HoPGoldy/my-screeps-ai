@@ -6,11 +6,11 @@
  */
 
 import { BOOST_RESOURCE } from '@/setting'
-import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modules/autoPlanning/planBasePos'
-import { manageStructure } from '@/modules/autoPlanning'
+import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
+import { manageStructure } from '@/modulesGlobal/autoPlanning'
 import { createRoomLink, log } from '@/utils'
-import { GetName } from '@/modules/room/spawn/nameGetter'
-import { removeCreep } from '@/modules/creep'
+import { GetName } from '@/modulesRoom/spawn/nameGetter'
+import { removeCreep } from '@/modulesGlobal/creep'
 
 export default class RoomExtension extends Room {
     /**

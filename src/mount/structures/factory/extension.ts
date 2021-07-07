@@ -1,4 +1,4 @@
-import { setRoomStats } from '@/modules/stats'
+import { setRoomStats } from '@/modulesGlobal/stats'
 import { FactoryState, TOP_TARGET, BLACK_LIST, ENERGY_LIMIT, COMMODITY_MAX, FACTORY_LOCK_AMOUNT } from './constant';
 import { FactoryTask } from './types';
 

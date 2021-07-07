@@ -1,4 +1,4 @@
-import { createHelp } from "@/modules/console"
+import { createHelp } from "@/modulesGlobal/console"
 
 /**
  * 绕过房间 api

@@ -1,4 +1,4 @@
-import { showCreep, removeCreep, hasCreep } from '@/modules/creep'
+import { showCreep, removeCreep, hasCreep } from '@/modulesGlobal/creep'
 import { clearFlag } from '@/utils'
 import comm from './/commodity'
 import res from './resourcesHelp'
@@ -10,11 +10,11 @@ import storage from './storage'
 import bypass from './bypass'
 import reive from './reive'
 import whitelist from './whiteList'
-import { showRouteChche as route } from '@/modules/move'
+import { showRouteChche as route } from '@/modulesGlobal/move'
 import { orderExtend, seeres, hail, base, give } from './common'
 
-import { getForm as getform } from '@/modules/console/form/example'
-import { updateCreepData } from '@/modules/creep/utils'
+import { getForm as getform } from '@/modulesGlobal/console/form/example'
+import { updateCreepData } from '@/modulesGlobal/creep/utils'
 
 // 全局拓展操作
 const extensions =  {

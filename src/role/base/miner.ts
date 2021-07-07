@@ -1,8 +1,8 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
-import { delayQueue } from '@/modules/delayQueue'
+import { delayQueue } from '@/modulesGlobal/delayQueue'
 import { MINE_LIMIT } from '@/setting'
-import { removeCreep } from '@/modules/creep/utils'
+import { removeCreep } from '@/modulesGlobal/creep/utils'
 
 /**
  * 元素矿采集单位

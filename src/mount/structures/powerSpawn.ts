@@ -1,6 +1,6 @@
 import { powerSettings } from '@/setting'
 import { colorful, createRoomLink } from '@/utils'
-import { createHelp } from '@/modules/console'
+import { createHelp } from '@/modulesGlobal/console'
 
 /**
  * PowerSpawn 拓展
