@@ -1,9 +1,5 @@
 import { whiteListFilter } from '@/utils'
 import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
-import { UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
-import { delayQueue } from '@/modulesGlobal/delayQueue'
-import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 
 /**
  * Controller 拓展
@@ -18,10 +14,17 @@ export default class ControllerExtension extends StructureController {
         if (Game.time % 20) return
 
         // 如果等级发生变化了就运行 creep 规划
-        if (this.stateScanner()) this.onLevelChange(this.level)
+        if (this.stateScanner())  this.onLevelChange(this.level)
 
-        // 调整运营 creep 数量
-        if (!(Game.time % 500)) this.adjustCreep()
+       
+        if (!(Game.time % 500)) {
+             // 调整运营 creep 数量
+            this.room.strategy.operation.adjustBaseUnit()
+            // 并在日常事情执行任务调整（防御时期任务由 tower 接管）
+            if (this.level === 8 && !this.room.memory.defenseMode) {
+                this.room.strategy.operation.adjustTaskWhenRCL8()
+            }
+        }
 
         // 检查外矿有没有被入侵的，有的话是不是可以重新发布 creep
         if (this.room.memory.remote) {
@@ -51,49 +54,14 @@ export default class ControllerExtension extends StructureController {
      */
     public onLevelChange(level: number): void {
         // 刚占领，添加工作单位
-        if (level === 1) {
-            this.room.spawner.release.harvester()
-            this.room.spawner.release.changeBaseUnit('manager', 1)
-            this.room.spawner.release.changeBaseUnit('worker', 2)
-        }
+        if (level === 1) this.room.strategy.operation.initRoomUnit()
         else if (level === 8) {
-            this.decideUpgradeWhenRCL8()
+            this.room.strategy.operation.setUpgraderWhenRCL8()
+            this.room.strategy.operation.useUnitSetting()
         }
 
         // 从二级开始规划布局，因为一级没有可以造的东西
         if (level !== 1) this.log(this.room.planLayout(), 'green')
-    }
-
-    /**
-     * 根据房间情况调整运营单位的数量
-     */
-    private adjustCreep(): void {
-        this.room.spawner.release.changeBaseUnit('manager', this.room.transport.getExpect())
-
-        // 先更新房间能量使用情况，然后根据情况调整期望
-        const energyGetRate = countEnergyChangeRatio(this.room, true)
-        const workerChange = this.room.work.getExpect(energyGetRate)
-
-        this.room.spawner.release.changeBaseUnit('worker', workerChange)
-    }
-
-    /**
-     * 房间升到 8 级后的升级计划
-     */
-    private decideUpgradeWhenRCL8(): void {
-        // 满足以下条件就暂停升级
-        if (needContinueUpgrade(this.room)) {
-            // 限制只需要一个单位升级
-            this.room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
-        }
-        else {
-            // 暂时停止升级计划
-            this.room.work.removeTask('upgrade')
-            delayQueue.addDelayTask('spawnUpgrader', { roomName: this.room.name }, 10000)
-        }
-
-        // 允许没有升级工
-        this.room.spawner.release.setBaseUnitLimit('worker', { MIN: 0 })
     }
 
     /**
@@ -138,36 +106,3 @@ export default class ControllerExtension extends StructureController {
         return bodyNum > MAX_CREEP_SIZE
     }
 }
-
-/**
- * 判断指定房间是否需要继续升级
- * 
- * @param room 要判断的房间
- * @returns 是否需要继续升级
- */
-const needContinueUpgrade = function (room: Room): boolean {
-    // 快掉级了，必须升
-    if (room.controller.ticksToDowngrade <= 12000) return true
-
-    // cpu 不够或者能量不够了就不升级了
-    return !(
-        Game.cpu.bucket < 700 ||
-        room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
-    )
-}
-
-/**
- * 注册升级工的延迟孵化任务
- */
-delayQueue.addDelayCallback('spawnUpgrader', room => {
-    // 房间或终端没了就不在孵化
-    if (!room || !room.storage) return
-
-    // 满足以下条件时就延迟发布
-    if (!needContinueUpgrade(room)) {
-        return delayQueue.addDelayTask('spawnUpgrader', { roomName: room.name }, 10000)
-    }
-
-    room.work.updateTask({ type: 'upgrade', need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
-    room.spawner.release.changeBaseUnit('worker', 1)
-})

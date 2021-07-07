@@ -9,7 +9,8 @@ import {
     RoomTransportTaskController,
     RoomWorkTaskController,
     RoomSpawnController,
-    RoomPowerController
+    RoomPowerController,
+    RoomStrategyController
 } from '@/modulesRoom'
 
 /**
@@ -43,7 +44,8 @@ export default () => {
         [ 'transport', RoomTransportTaskController ],
         [ 'work', RoomWorkTaskController ],
         [ 'spawner', RoomSpawnController ],
-        [ 'power', RoomPowerController ]
+        [ 'power', RoomPowerController ],
+        [ 'strategy', RoomStrategyController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -53,11 +55,13 @@ export default () => {
     plugins.forEach(([pluginName, Plugin]) => {
         pluginStorage[pluginName] = {}
 
-        // 在房间上创建插件的访问器
+        // 在房间上创建插件的懒加载访问器
         createGetter(Room, pluginName, function () {
             // 还没访问过, 进行实例化
             if (!(this.name in pluginStorage[pluginName])) {
                 pluginStorage[pluginName][this.name] = new Plugin(this.name)
+                // 覆盖 getter 属性
+                Object.defineProperty(this, pluginName, { value: pluginStorage[pluginName][this.name] })
             }
             // 直接返回插件实例
             return pluginStorage[pluginName][this.name]
@@ -91,5 +95,9 @@ declare global {
          * power 管理模块
          */
         power: RoomPowerController
+        /**
+         * 策略模块
+         */
+        strategy: RoomStrategyController
     }
 }

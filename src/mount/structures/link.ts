@@ -55,7 +55,7 @@ export class LinkExtension extends StructureLink {
             nearContainer && nearContainer.destroy()
         }
 
-        return `${this} 已注册为源 link，已重定向对应 harvester 的存放目标`
+        return `${this} 已注册为源 link`
     }
 
     /**

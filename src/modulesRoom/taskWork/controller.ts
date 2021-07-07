@@ -57,15 +57,19 @@ export default class RoomWork extends TaskController<AllWorkTaskType, AllRoomWor
      * 返回的整数值代表希望增加（正值）/ 减少（负值）多少工作单位
      * 返回 0 代表不需要调整工作单位数量
      * 
+     * @param totalEnergy 可用于使用的能量总量
      * @param energyGetRate 能量获取速率，其值为每 tick 可以获取多少点可用能量
-     * （注意，这个速率对应的能量都应是可以完全被用于 worker 消耗的，如果想为孵化保留能量的话，需要从这个速率中剔除）
+     * （注意，这两个值对应的能量都应是可以完全被用于 worker 消耗的，如果想为孵化保留能量的话，需要从这个速率中剔除）
      */
-    public getExpect(energyGetRate: number): number {
+    public getExpect(totalEnergy: number, energyGetRate: number): number {
         // 没有工作任务时慢慢减少工作人数
         if (this.tasks.length === 0) {
             if (Object.keys(this.creeps).length > 0) return -1
             else return 0
         }
+
+        // 这时候能量速率也保持为 0 的，但是没能量可用，所以减少工人
+        if (totalEnergy <= 0) return -1
 
         // 工作时长占比从高到底找到期望调整的搬运工数量
         const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => energyGetRate >= opt.rate)

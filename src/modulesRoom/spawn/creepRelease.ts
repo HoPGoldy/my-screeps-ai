@@ -107,9 +107,14 @@ export default class RoomCreepRelease {
      * 设置基地运维角色数量
      * 
      * @param type 要设置的单位角色
-     * @param limit 设置的限制
+     * @param limit 设置的限制，设置为空来使用默认配置
      */
-    public setBaseUnitLimit(type: BaseUnits, limit: Partial<BaseUnitLimit>): void {
+    public setBaseUnitLimit(type: BaseUnits, limit?: Partial<BaseUnitLimit>): void {
+        if (!limit && this.spawner.room.memory.baseUnitLimit) {
+            delete this.spawner.room.memory.baseUnitLimit[type]
+            return
+        }
+
         // 获取当前房间的设置
         const existLimit: RoomBaseUnitLimit = this.spawner.room.memory.baseUnitLimit || BASE_ROLE_LIMIT
         // 更新配置

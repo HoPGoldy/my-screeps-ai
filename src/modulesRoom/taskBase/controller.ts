@@ -185,7 +185,7 @@ export default class TaskController<
      * 调度 - 重新分配所有 creep
      * 给当前现存的任务按照优先级重新分配 creep
      */
-    protected dispatchTask() {
+    public dispatchTask() {
         // 先按照优先级降序排序
         this.memory.tasks = _.sortBy(this.tasks, task => -task.priority)
 

@@ -59,7 +59,9 @@ export default class TowerExtension extends StructureTower {
         if (enemys.length <= 0){
             // this.log('威胁解除，返回日常模式')
             delete this.room.memory.defenseMode
+            // 重新跑一遍建筑规划，防止有建筑被拆了
             this.room.planLayout()
+            this.room.strategy.operation.useUnitSetting()
             return
         }
 
@@ -67,12 +69,7 @@ export default class TowerExtension extends StructureTower {
         if (this.room.controller.checkEnemyThreat()) {
             // 启动主动防御模式
             this.room.memory.defenseMode = 'active'
-
-            // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
-            const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
-            // 提高刷墙任务优先级并孵化额外工作单位
-            this.room.work.updateTask({ type: 'fillWall', priority: 9 })
-            this.room.spawner.release.changeBaseUnit('worker', newWorkerNumber)
+            this.room.strategy.defense.useUnitSetting()
             // this.log('已启动主动防御')
         }
 

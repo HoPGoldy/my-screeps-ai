@@ -8,7 +8,7 @@ import { ENERGY_USE_LIMIT } from './findStrategy'
  * @param withLimit 是否剔除需要保留的能量（用在孵化上的能量）
  * @returns 该房间的能量获取速率，单位（点/tick）
  */
-export const countEnergyChangeRatio = function (room: Room, withLimit: boolean = false): number {
+export const countEnergyChangeRatio = function (room: Room, withLimit: boolean = false) {
     // 收集房间建筑内的可用总能量
     const structureEnergy = [room.terminal, room.storage, ...room[STRUCTURE_CONTAINER]]
         .filter(Boolean)
@@ -52,5 +52,5 @@ export const countEnergyChangeRatio = function (room: Room, withLimit: boolean =
         }
     })
 
-    return energyGetRate   
+    return { totalEnergy, energyGetRate }   
 }
