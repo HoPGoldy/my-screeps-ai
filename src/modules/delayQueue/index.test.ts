@@ -39,7 +39,7 @@ describe('延迟任务队列测试', () => {
         const mockCallback = jest.fn()
 
         // 添加任务并加载回调
-        addDelayTask('spawnMiner', mockData, 1)
+        addDelayTask('spawnMiner', mockData, 0)
         addDelayCallback('spawnMiner', mockCallback)
 
         // 执行模块
@@ -62,7 +62,7 @@ describe('延迟任务队列测试', () => {
         saveDelayTasks()
 
         expect(Memory).toHaveProperty('delayTasks')
-        expect(Memory.delayTasks).toEqual(JSON.stringify({ 1: [mockTask] }))
+        expect(Memory.delayTasks).toEqual(JSON.stringify({ 2: [mockTask] }))
     })
 
     it('任务可以延迟触发', () => {
@@ -70,7 +70,7 @@ describe('延迟任务队列测试', () => {
         const mockCallback = jest.fn()
 
         // 添加不在本 tick 的任务并加载回调
-        addDelayTask('spawnMiner', mockData, 2)
+        addDelayTask('spawnMiner', mockData, 1)
         addDelayCallback('spawnMiner', mockCallback)
 
         // 执行模块

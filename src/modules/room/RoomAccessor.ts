@@ -43,7 +43,7 @@ export default class RoomAccessor<MemoryType> {
      * 模块内存
      */
     protected get memory(): MemoryType {
-        const memory = Memory.rooms[this.roomName]
+        const { memory } = this.room
         // 未定义的话就用默认内存
         if (!memory[this.memoryKey]) {
             memory[this.memoryKey] = _.cloneDeep(this.defaultMemory)
@@ -67,7 +67,7 @@ export default class RoomAccessor<MemoryType> {
      * 设置模块内存
      */
     protected set memory(newMemory: MemoryType) {
-        const memory = Memory.rooms[this.roomName]
+        const { memory } = this.room
 
         if (!newMemory) delete memory[this.memoryKey]
         else memory[this.memoryKey] = newMemory
