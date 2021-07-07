@@ -1,22 +1,11 @@
 import { errorMapper } from '@/modulesGlobal/errorMapper'
 
 /**
- * 延迟任务模块
- * 
- * 某些任务需要在未来执行，例如一万 tick 后检查下 storage 能量还有多少，或者 mineral 采空之后需要等矿恢复好后再采集
- * 本模块就是用于处理这些需求，流程如下：
- * 
- * - 在 loop 循环里（任意位置）调用 manageDelayTask 来管理并触发这些延迟任务
- * - 通过 addDelayCallback 给指定的任务绑定回调
- * - 通过 addDelayTask 发布任务并指定触发时间
+ * 延迟任务队列的数据保存在 Memory 下的哪个字段里
  */
-
- /**
-  * 延迟任务队列的数据保存在 Memory 下的哪个字段里
-  */
 const SAVE_KEY = 'delayTasks'
 
-export const DelayQueue = function () {
+export const CreateDelayQueue = function () {
     /**
      * 所有的任务回调都会被存放到这里
      */
@@ -127,7 +116,7 @@ export const DelayQueue = function () {
     return { addDelayTask, initDelayTasks, manageDelayTask, addDelayCallback, saveDelayTasks }
 }
 
-export const delayQueue = DelayQueue()
+export const delayQueue = CreateDelayQueue()
 
 /**
  * 延迟任务模块注册插件

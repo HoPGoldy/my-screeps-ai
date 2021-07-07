@@ -1,7 +1,7 @@
 const mockRemoveCreep = jest.fn()
 const mockAddTask = jest.fn()
 
-jest.mock('@/modules/creep', () => ({
+jest.mock('@/modulesGlobal/creep', () => ({
     removeCreep: mockRemoveCreep
 }))
 jest.mock('@/setting', () => ({

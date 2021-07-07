@@ -1,6 +1,6 @@
-import { creepNumberListener } from './creepNumberListener'
+import { creepNumberListener } from './numberListener'
 
-export { creepNumberListener } from './creepNumberListener'
+export { creepNumberListener } from './numberListener'
 export { removeCreep, showCreep, hasCreep } from './utils'
 
 /**

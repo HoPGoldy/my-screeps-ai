@@ -4,7 +4,7 @@ import { createRoomLink, log } from '@/utils'
  * 房间访问器
  * 
  * 提供了一套用于和所在房间进行交互的接口
- * 如获取所在房间，获取模块内存，保存模块内存
+ * 如获取所在房间，获取模块内存
  */
 export default class RoomAccessor<MemoryType> {
     /**
