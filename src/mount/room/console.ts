@@ -227,14 +227,6 @@ export default class RoomConsole extends RoomExtension {
     }
 
     /**
-     * 用户操作 - 查看房间工作状态
-     */
-    public fs(): string {
-        if (!this.factory) return `[${this.name}] 未建造工厂`
-        return this.factory.stats()
-    }
-
-    /**
      * 可视化用户操作 - 添加终端监听任务
      */
     public tadd(): string { 

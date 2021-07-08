@@ -11,6 +11,20 @@ import { TopTargetConfig } from "./types"
 }
 
 /**
+ * 与外界交互
+ */
+export enum InteractAction {
+    /**
+     * 在全局资源共享中注销自己的提供
+     */
+    Unregister = 1,
+    /**
+     * 在全局资源共享中提供自己的商品
+     */
+    Register
+}
+
+/**
  * factory 合成黑名单
  * 工厂在合成时不会将下属材料设置为任务目标
  * 因为工厂会自行分级大型任务，当出现互为底物的产品时，就会出现下面的循环问题：

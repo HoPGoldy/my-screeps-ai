@@ -7,7 +7,7 @@ export { StorageExtension, StorageConsole } from './storage'
 export { default as NukerExtension } from './nuker'
 export { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
 export { ObserverExtension, ObserverConsole } from './observer/extension'
-export { FactoryExtension, FactoryConsole } from './factory'
+export { default as FactoryExtension } from './factory'
 export { TerminalExtension, TerminalConsole } from "./terminal"
 export { default as LabExtension } from "./lab/extension"
 export { default as StructuresExtension } from './structure'

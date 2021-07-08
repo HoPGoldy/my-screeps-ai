@@ -10,7 +10,8 @@ import {
     RoomWorkTaskController,
     RoomSpawnController,
     RoomPowerController,
-    RoomStrategyController
+    RoomStrategyController,
+    FactoryController
 } from '@/modulesRoom'
 
 /**
@@ -45,7 +46,8 @@ export default () => {
         [ 'work', RoomWorkTaskController ],
         [ 'spawner', RoomSpawnController ],
         [ 'power', RoomPowerController ],
-        [ 'strategy', RoomStrategyController ]
+        [ 'strategy', RoomStrategyController ],
+        [ 'myFactory', FactoryController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -99,5 +101,9 @@ declare global {
          * 策略模块
          */
         strategy: RoomStrategyController
+        /**
+         * 工厂管理模块
+         */
+        myFactory: FactoryController
     }
 }

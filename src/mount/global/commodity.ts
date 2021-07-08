@@ -1,6 +1,6 @@
 import { colorful, createRoomLink } from '@/utils'
-import { TOP_TARGET } from '@/mount/structures/factory/constant'
-import { FactoryLevel } from '@/mount/structures/factory/types'
+import { TOP_TARGET } from '@/modulesRoom/factory/constant'
+import { FactoryLevel } from '@/modulesRoom/factory/types'
 
 export default function(): string {
     if (!Memory.commodities) return '未启动商品生产线'
