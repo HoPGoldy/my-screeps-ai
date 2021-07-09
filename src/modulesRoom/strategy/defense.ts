@@ -1,7 +1,3 @@
-import { UPGRADER_WITH_ENERGY_LEVEL_8 } from "@/setting"
-import { delayQueue } from "@/modulesGlobal/delayQueue"
-import { countEnergyChangeRatio } from "@/modulesGlobal/energyUtils"
-import { WORK_TASK_PRIOIRY } from "@/modulesRoom/taskWork/constant"
 import RoomStrategyController from "./controller"
 
 /**

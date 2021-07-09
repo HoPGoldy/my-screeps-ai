@@ -198,10 +198,6 @@ export const DEFAULT_FLAG_NAME = {
     REIVER: 'reiver'
 }
 
-// 房间 storage 中的数量超过下面值时
-// 该房间就会将自己注册为能量共享的提供房间
-export const ENERGY_SHARE_LIMIT = 600000
-
 /**
  * miner 的矿物采集上限
  * 当 terminal 中的资源多余这个值时，miner 将不再继续采矿
@@ -211,49 +207,14 @@ export const MINE_LIMIT = 200000
 // 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
 export const minWallHits = 8000
 
-// pc 空闲时会搓 ops，下面是搓的上限
+// pc 空闲时会搓 ops，这个是搓的上限
 export const maxOps = 50000
-
-// 每个房间最多同时存在多少 upgrader 和 harvester
-export const MAX_UPGRADER_NUM = 8
-export const MAX_HARVESTER_NUM = 4
-
-/**
- * terminal 中能量和对应发布的 upgrader 数量
- * upgrader 自动发布时会优先使用 terminal 中的能量，不满足下表 [0] 的能量标准时才会去使用 storage 里的能量
- * 请确保最少有一条内容
- */
-export const UPGRADE_WITH_TERMINAL = [
-    { energy: 60000, num: 6 },
-    { energy: 50000, num: 5 },
-    { energy: 40000, num: 4 },
-    { energy: 30000, num: 3 },
-    { energy: 20000, num: 2 }
-]
-
-/**
- * storage 中的能量和对应发布的 upgrader 数量
- */
-export const UPGRADE_WITH_STORAGE = [
-    { energy: 700000, num: 3 },
-    { energy: 500000, num: 2 },
-    { energy: 100000, num: 1 }
-]
 
 /**
  * 8级时只要 cpu 足够，依旧会孵化一个 upgrader 进行升级
  * 这个限制代表了在房间 8 级时 storage 里的能量大于多少才会持续孵化 upgarder
  */
 export const UPGRADER_WITH_ENERGY_LEVEL_8 = 700000
-
-/**
- * source container 离基地中心的距离与对应发布的 filler 数量
- * 这个值是每个 container 发布的 filler
- */
-export const FILLER_WITH_CONTAINER_RANGE = [
-    { range: 25, num: 2 },
-    { range: 0, num: 1 }
-]
 
 /**
  * 所有的 shard 名称，用于跨 shard 通讯，
@@ -268,9 +229,6 @@ export const ROOM_REMOVE_INTERVAL: number = 30
 export const OBSERVER_POWERBANK_MAX = 1
 export const OBSERVER_DEPOSIT_MAX = 2
 
-// tower 将在几级之后参与刷墙
-export const TOWER_FILL_WALL_LEVEL = 6
-
 /**
  * RCL 分别在几级时放置外墙
  * 例如 [ 3, 7, 8 ] 代表分别在第 3、7、8 级时放置第 1（最外层）、2、3 层 rampart
@@ -280,26 +238,3 @@ export const LEVEL_BUILD_RAMPART = [ 4, 8, 8 ]
 // RCL 几级的时候开始放置通向 [ source, controller, mineral ] 的道路
 // 注意这个顺序要和 src\modules\autoPlanning\planRoad.ts 的默认方法返回值保持一致
 export const LEVEL_BUILD_ROAD = [ 3, 4, 6 ]
-
-/**
- * storage 填充到其他建筑的能量填充设置的下限默认值
- */
-export const DEFAULT_ENERGY_KEEP_LIMIT = 900000
-
-/**
- * storage 填充到其他建筑的能量填充设置的填充量默认值
- */
-export const DEFAULT_ENERGY_KEEP_AMOUNT = 50000
-
-/**
- * source 采集单位的行为模式
- */
-export const HARVEST_MODE: {
-    START: HarvestModeStart,
-    SIMPLE: HarvestModeSimple,
-    TRANSPORT: HarvestModeTransport
-} = {
-    START: 1,
-    SIMPLE: 2,
-    TRANSPORT: 3
-}

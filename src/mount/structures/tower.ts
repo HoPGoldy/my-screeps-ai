@@ -1,5 +1,5 @@
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
-import { repairSetting, TOWER_FILL_WALL_LEVEL } from '@/setting'
+import { repairSetting } from '@/setting'
 import { whiteListFilter } from '@/utils'
 
 // Tower 原型拓展
@@ -38,12 +38,6 @@ export default class TowerExtension extends StructureTower {
         if (this.dailyAlert()) { }
         // 找不到敌人再维修建筑
         else if (this.commandRepair()) { }
-        // 找不到要维修的建筑就刷墙
-        // 房间等级大于 5 才会刷墙，因为低等级的能量运力可能不足
-        // 如果 tower 参与刷墙的话可能会导致 filler 一直卡在给 tower 填充能量的任务
-        // else {
-        //     if (this.room.controller.level >= TOWER_FILL_WALL_LEVEL) this.commandFillWall()
-        // }
 
         // 如果能量低了就发布填充任务
         this.requireEnergy(600)

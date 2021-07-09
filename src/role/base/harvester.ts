@@ -1,8 +1,28 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
-import { HARVEST_MODE } from '@/setting'
 import { addConstructionSite } from '@/modulesGlobal/construction'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+
+/**
+ * 能量采集单位的行为模式
+ */
+ enum HarvestMode {
+    /**
+     * 启动模式
+     * 会采集能量然后运送会 spawn 和 extension
+     */
+    Start = 1,
+     /**
+     * 简单模式
+     * 会无脑采集能量，配合 container 使用
+     */
+    Simple,
+     /**
+     * 转移模式
+     * 会采集能量然后存放到指定建筑，配合 link 使用
+     */
+    Transport
+}
 
 /**
  * 采集者
@@ -53,14 +73,14 @@ const harvester: CreepConfig<'harvester'> = {
 const setHarvestMode = function (creep: Creep, source: Source): void {
     // 外矿就采集了运到家
     if (!source.room.controller || source.room.controller.level <= 0) {
-        creep.memory.harvestMode = HARVEST_MODE.START
+        creep.memory.harvestMode = HarvestMode.Start
         return
     }
 
     // 有 link 就往里运
     const nearLink = source.getLink()
     if (nearLink) {
-        creep.memory.harvestMode = HARVEST_MODE.TRANSPORT
+        creep.memory.harvestMode = HarvestMode.Transport
         creep.memory.targetId = nearLink.id
         return
     }
@@ -68,13 +88,13 @@ const setHarvestMode = function (creep: Creep, source: Source): void {
     // 有 container 就往上走
     const nearContainer = source.getContainer()
     if (nearContainer) {
-        creep.memory.harvestMode = HARVEST_MODE.SIMPLE
+        creep.memory.harvestMode = HarvestMode.Simple
         creep.memory.targetId = nearContainer.id
         return
     }
 
     // 啥都没有就启动模式
-    creep.memory.harvestMode = HARVEST_MODE.START
+    creep.memory.harvestMode = HarvestMode.Start
 }
 
 type ActionStrategy = {
@@ -95,7 +115,7 @@ const actionStrategy: ActionStrategy = {
      * 当房间内没有搬运工时，采集能量，填充 spawn 跟 extension
      * 当有搬运工时，无脑采集能量
      */
-    [HARVEST_MODE.START]: {
+    [HarvestMode.Start]: {
         prepare: (creep, source) => {
             const { targetPos, range } = goToDropPos(creep, source)
 
@@ -167,11 +187,11 @@ const actionStrategy: ActionStrategy = {
      * 在 container 不存在时切换为启动模式
      * 往 container 移动 > 检查 container 状态 > 无脑采集
      */
-    [HARVEST_MODE.SIMPLE]: {
+    [HarvestMode.Simple]: {
         prepare: (creep, source) => {
             const container = source.getContainer()
             if (!container) {
-                creep.memory.harvestMode = HARVEST_MODE.START
+                creep.memory.harvestMode = HarvestMode.Start
                 return false
             }
 
@@ -236,7 +256,7 @@ const actionStrategy: ActionStrategy = {
      * 在 link 不存在时切换为启动模式
      * 采集能量 > 存放到指定建筑
      */
-    [HARVEST_MODE.TRANSPORT]: {
+    [HarvestMode.Transport]: {
         prepare: (creep, source) => {
             const link = Game.getObjectById(creep.memory.targetId as Id<StructureLink>)
 
@@ -245,7 +265,7 @@ const actionStrategy: ActionStrategy = {
             // 目标没了，变更为启动模式
             if (!link) {
                 delete creep.memory.targetId
-                creep.memory.harvestMode = HARVEST_MODE.START
+                creep.memory.harvestMode = HarvestMode.Start
                 return false
             }
 
@@ -299,7 +319,7 @@ const actionStrategy: ActionStrategy = {
             // 目标没了，变更为启动模式
             if (!target) {
                 delete creep.memory.targetId
-                creep.memory.harvestMode = HARVEST_MODE.START
+                creep.memory.harvestMode = HarvestMode.Start
                 return true
             }
 
