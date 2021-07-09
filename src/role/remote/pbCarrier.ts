@@ -78,7 +78,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
 
             targetFlag.remove()
             // 通知 terminal 进行 power 平衡
-            room.terminal.balancePower()
+            room.myTerminal.balancePower()
 
             return true
         }

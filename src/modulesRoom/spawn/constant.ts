@@ -1,3 +1,5 @@
+import { RoomBaseUnitLimit } from "./types"
+
 // 用于维持房间能量正常运转的重要角色
 export const importantRoles: CreepRoleConstant[] = [ 'harvester', 'manager', 'processor' ]
 

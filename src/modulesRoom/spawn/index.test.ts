@@ -2,7 +2,8 @@ import { getMockRoom, getMockSpawn } from '@test/mock'
 import { getMockSpawning } from '@test/mock/structures/Spawning'
 import RoomTransportTaskController from '@/modulesRoom/taskTransport/controller'
 import { creepDefaultMemory } from './constant'
-import RoomSpawnController, { SpawnTask } from './index'
+import RoomSpawnController from './controller'
+import { SpawnTask } from './types'
 
 jest.mock('@/role', () => {
     return {

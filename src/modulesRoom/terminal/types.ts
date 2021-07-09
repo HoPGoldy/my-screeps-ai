@@ -1,18 +1,6 @@
 import { TerminalChannel, TerminalMode } from "./constant"
 
 declare global {
-    interface StructureTerminal {
-        addTask(resourceType: ResourceConstant, amount: number, mod?: TerminalMode, channel?: TerminalChannel, priceLimit?: number): void
-        add(resourceType: ResourceConstant, amount: number, mod?: TerminalMode, channel?: TerminalChannel, priceLimit?: number): string
-        removeByType(type: ResourceConstant, mod: TerminalMode, channel: TerminalChannel): void
-        remove(index: number): string
-        show(): string
-        /**
-         * 在所有启用 powerspawn 的房间内平衡 power
-         */
-        balancePower(): OK | ERR_NOT_ENOUGH_RESOURCES | ERR_NAME_EXISTS | ERR_NOT_FOUND
-    }
-
     interface RoomMemory {
         /**
          * 终端内存
@@ -21,7 +9,7 @@ declare global {
     }
 }
 
-interface TerminalMemory {
+export interface TerminalMemory {
     /**
      * 终端监听矿物列表
      * 数组中每一个字符串都代表了一个监听任务，形如 "0 0 power"
@@ -39,7 +27,7 @@ interface TerminalMemory {
 }
 
 /**
- * 终端监听任务，详见 doc/终端设计案
+ * 终端监听任务
  */
 export interface TerminalListenTask {
     /**

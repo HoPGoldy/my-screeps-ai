@@ -2,8 +2,9 @@ import { removeCreep } from '@/modulesGlobal/creep'
 import { BASE_ROLE_LIMIT } from './constant'
 import { DEFAULT_FLAG_NAME } from '@/setting'
 import { log } from '@/utils'
-import RoomSpawnController from './index'
+import RoomSpawnController from './controller'
 import { GetName } from './nameGetter'
+import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 
 /**
  * creep 发布工具

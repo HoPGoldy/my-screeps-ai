@@ -109,6 +109,82 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
     }
 
     /**
+     * 执行已经存在的共享任务
+     * 
+     * @param terminal 执行任务的终端
+     */
+    public execShareTask(terminal: StructureTerminal): void {
+        // 获取任务
+        const task = this.memory
+        if (!task) return
+
+        if (task.amount <= 0) {
+            this.log(`共享资源的数量不可为负 (${task.resourceType}/${task.amount})，任务已移除`, 'yellow')
+            this.memory = undefined
+            return
+        }
+
+        // 如果终端存储的资源数量已经足够了
+        if (terminal.store[task.resourceType] >= task.amount) {
+            const cost = Game.market.calcTransactionCost(task.amount, this.roomName, task.target)
+
+            // 如果要转移能量就需要对路费是否足够的判断条件进行下特殊处理
+            const costCondition = (task.resourceType === RESOURCE_ENERGY) ?
+                terminal.store[RESOURCE_ENERGY] - task.amount < cost :
+                terminal.store[RESOURCE_ENERGY] < cost
+
+            // 如果路费不够的话就继续等
+            if (costCondition) {
+                if (this.putEnergyToTerminal(cost) == -2) Game.notify(`[${this.roomName}] 终端中央物流添加失败 —— 等待路费, ${cost}`)
+                // this.getEnergy(cost)
+                return
+            }
+
+            // 路费够了就执行转移
+            const sendResult = terminal.send(
+                task.resourceType, task.amount, task.target,
+                `HaveFun! 来自 ${terminal.owner.username} 的资源共享 - ${this.roomName}`
+            )
+
+            if (sendResult == OK) this.memory = undefined
+            else if (sendResult == ERR_INVALID_ARGS) {
+                this.log(`共享任务参数异常，无法执行传送，已移除`, 'yellow')
+                this.memory = undefined
+            }
+            else this.log(`执行共享任务出错, 错误码：${sendResult}`, 'yellow')
+        }
+        // 如果不足
+        else {
+            // 如果要共享能量，则从 storage 里拿
+            if (task.resourceType === RESOURCE_ENERGY) {
+                if (this.putEnergyToTerminal(task.amount - terminal.store[RESOURCE_ENERGY]) == -2) {
+                    this.log(`终端中央物流添加失败 —— 获取路费, ${task.amount - terminal.store[RESOURCE_ENERGY]}`, 'yellow', true)
+                }
+            }
+            // 资源不足就不予响应
+            else {
+                this.log(`由于 ${task.resourceType} 资源不足 ${terminal.store[task.resourceType] || 0}/${task.amount}，${task.target} 的共享任务已被移除`)
+                this.memory = undefined
+            }
+        }
+    }
+
+    /**
+     * 从 storage 获取能量
+     * @param amount 需要能量的数量
+     */
+    public putEnergyToTerminal(amount: number): number {
+        // 添加时会自动判断有没有对应的建筑，不会重复添加
+        return this.room.centerTransport.addTask({
+            submit: 'share',
+            source: STRUCTURE_STORAGE,
+            target: STRUCTURE_TERMINAL,
+            resourceType: RESOURCE_ENERGY,
+            amount
+        })
+    }
+
+    /**
      * 根据资源类型查找来源房间
      * 
      * @param resourceType 要查找的资源类型

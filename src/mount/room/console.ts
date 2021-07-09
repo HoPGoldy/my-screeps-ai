@@ -11,7 +11,6 @@ import { setBaseCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import RoomExtension from './extension'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
 import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
-import { TerminalChannel, TerminalMode } from '@/mount/structures/terminal/constant'
 
 export default class RoomConsole extends RoomExtension {
     /**
@@ -224,64 +223,6 @@ export default class RoomConsole extends RoomExtension {
         // 设置好了之后自动运行布局规划
         manageStructure(this)
         return `[${this.name}] 已将 ${flagName} 设置为中心点，controller 升级时自动执行布局规划`
-    }
-
-    /**
-     * 可视化用户操作 - 添加终端监听任务
-     */
-    public tadd(): string { 
-        return createForm('terminalAdd', [
-            { name: 'resourceType', label: '资源类型', type: 'input', placeholder: '资源的实际值' },
-            { name: 'amount', label: '期望值', type: 'input', placeholder: '交易策略的触发值' },
-            { name: 'priceLimit', label: '[可选]价格限制', type: 'input', placeholder: '置空该值以启动价格检查' },
-            { name: 'mod', label: '物流方向', type: 'select', options: [
-                { value: '0', label: '获取' },
-                { value: '1', label: '提供' }
-            ]},
-            { name: 'channel', label: '物流渠道', type: 'select', options: [
-                { value: '0', label: '拍单' },
-                { value: '1', label: '挂单' },
-                { value: '2', label: '共享' },
-                { value: '3', label: '支援' }
-            ]},
-            { name: 'supportRoomName', label: '[可选]支援房间', type: 'input', placeholder: 'channel 为支援时必填' },
-        ], {
-            content: '提交',
-            command: `({resourceType, amount, mod, channel, priceLimit, supportRoomName}) => Game.rooms['${this.name}'].terminal.add(resourceType, amount, mod, channel, priceLimit, supportRoomName)`
-        })
-    }
-
-    /**
-     * 用户操作：addTerminalTask
-     */
-    public ta(
-        resourceType: ResourceConstant,
-        amount: number,
-        mod: TerminalMode = TerminalMode.Get,
-        channel: TerminalChannel = TerminalChannel.Take,
-        priceLimit: number = undefined
-    ): string { 
-        if (!this.terminal) return `[${this.name}] 未找到终端`
-
-        return this.terminal.add(resourceType, amount, mod, channel, priceLimit)
-    }
-
-    /**
-     * 用户操作：removeTerminalTask
-     */
-    public tr(index: number): string { 
-        if (!this.terminal) return `[${this.name}] 未找到终端`
-
-        return this.terminal.remove(index)
-    }
-
-    /**
-     * 用户操作：showTerminalTask
-     */
-    public ts(): string {
-        if (!this.terminal) return `[${this.name}] 未找到终端`
-
-        return this.terminal.show()
     }
 
     /**
