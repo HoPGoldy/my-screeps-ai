@@ -1,5 +1,5 @@
-import { ENERGY_SHARE_LIMIT } from '@/setting'
 import RoomAccessor from '../RoomAccessor'
+import { ENERGY_SHARE_LIMIT } from '../storage/constant'
 import { RoomShareTask, ResourceSourceMap } from './types'
 
 /**
@@ -33,13 +33,14 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
      * 
      * @param resourceType 请求的资源类型
      * @param amount 请求的数量
+     * @returns 响应请求的房间
      */
-    public request(resourceType: ResourceConstant, amount: number): boolean {
+    public request(resourceType: ResourceConstant, amount: number): Room {
         const targetRoom = this.getSource(resourceType)
-        if (!targetRoom) return false
+        if (!targetRoom) return undefined
 
         const addResult = targetRoom.share.handle(this.roomName, resourceType, amount)
-        return addResult
+        return addResult ? targetRoom : undefined
     }
 
     /**
@@ -210,10 +211,9 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
                 // 该房间 storage 中能量低于要求的话，就从资源提供列表中移除该房间
                 if (room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return false
             }
-            else {
-                // 如果请求的资源已经没有的话就暂时跳过（因为无法确定之后是否永远无法提供该资源）
-                if ((room.terminal.store[resourceType] || 0) <= 0) return true
-            }
+
+            // 如果请求的资源已经没有的话就暂时跳过（因为无法确定之后是否永远无法提供该资源）
+            if ((room.myStorage.getResource(resourceType)) <= 0) return true
 
             // 接受任务的房间就是你了！
             targetRoom = room

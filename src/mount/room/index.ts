@@ -12,7 +12,8 @@ import {
     RoomPowerController,
     RoomStrategyController,
     FactoryController,
-    TerminalController
+    TerminalController,
+    StorageController
 } from '@/modulesRoom'
 
 /**
@@ -49,7 +50,8 @@ export default () => {
         [ 'power', RoomPowerController ],
         [ 'strategy', RoomStrategyController ],
         [ 'myFactory', FactoryController ],
-        [ 'myTerminal', TerminalController ]
+        [ 'myTerminal', TerminalController ],
+        [ 'myStorage', StorageController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -111,5 +113,9 @@ declare global {
          * 终端管理模块
          */
         myTerminal: TerminalController
+        /**
+         * storage 管理模块
+         */
+        myStorage: StorageController
     }
 }

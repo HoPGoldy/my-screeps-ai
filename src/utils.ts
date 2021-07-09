@@ -257,3 +257,12 @@ export const useCache = function <T extends ObjectWithId>(initValue: () => T, ca
 
     return target
 }
+
+/**
+ * 数组交叉合并
+ */
+export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
+    return Array.from({ length: a.length + b.length }, (_, index) => {
+        return (index % 2 ? b.shift() : a.shift()) || a.shift() || b.shift()
+    })
+}

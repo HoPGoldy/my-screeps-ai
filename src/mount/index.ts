@@ -5,7 +5,7 @@ import RoomPostionExtension from './roomPosition/extension'
 import mountGlobal from './global'
 import {
     ControllerExtension, StructuresExtension, SpawnExtension, TowerExtension, LinkExtension, LinkConsole, FactoryExtension,
-    TerminalExtension, ExtractorExtension, StorageExtension, StorageConsole, LabExtension,
+    TerminalExtension, ExtractorExtension, StorageExtension, LabExtension,
     NukerExtension, PowerSpawnExtension, PowerSpawnConsole, ObserverExtension, ObserverConsole, ContainerExtension
 } from './structures'
 import SourceExtension from './source/extension'
@@ -13,6 +13,7 @@ import { log } from '@/utils'
 import { setBornCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import FactoryConsole from '@/modulesRoom/factory/console'
 import TerminalConsole from '@/modulesRoom/terminal/console'
+import StorageConsole from '@/modulesRoom/storage/console'
 
 /**
  * 所有需要挂载的原型拓展
@@ -22,6 +23,7 @@ export const mountList: [ AnyClass, AnyClass ][] = [
     [ Room, RoomConsole ],
     [ Room, FactoryConsole ],
     [ Room, TerminalConsole ],
+    [ Room, StorageConsole ],
     [ RoomPosition, RoomPostionExtension ],
     [ Source, SourceExtension ],
     [ Creep, CreepExtension ],
@@ -36,7 +38,6 @@ export const mountList: [ AnyClass, AnyClass ][] = [
     [ StructureTerminal, TerminalExtension ],
     [ StructureExtractor, ExtractorExtension ],
     [ StructureStorage, StorageExtension ],
-    [ StructureStorage, StorageConsole ],
     [ StructureLab, LabExtension ],
     [ StructureNuker, NukerExtension ],
     [ StructurePowerSpawn, PowerSpawnExtension ],

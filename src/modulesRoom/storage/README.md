@@ -4,7 +4,7 @@ storage 的职责非常简单，检查 terminal 中的资源存量，并将其�
 
 ## 平衡规则
 
-一个平衡规则包括 **资源种类**和 **数量** 两个属性。在执行平衡时，storage 会努力将 terminal 里的资源维持在规则所期望的数量上。例如如下规则：
+一个平衡规则包括 **资源种类** 和 **数量** 两个属性。在执行平衡时，storage 会努力将 terminal 里的资源维持在规则所期望的数量上。例如如下规则：
 
 ```js
 { resourceType: RESOURCE_ENERGY, amount: 2000 }

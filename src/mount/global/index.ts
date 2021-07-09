@@ -6,7 +6,7 @@ import help from './help'
 import { nuker, cancelNuker as cancelnuker, confirmNuker as confirmnuker } from './nuker'
 import ps from './powerSpawn'
 import ob from './observer'
-import storage from './storage'
+import { showStorageAmountOverview } from '@/modulesRoom/storage/utils'
 import bypass from './bypass'
 import reive from './reive'
 import whitelist from './whiteList'
@@ -15,6 +15,7 @@ import { orderExtend, seeres, hail, base, give } from './common'
 
 import { getForm as getform } from '@/modulesGlobal/console/form/example'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
+import { showResourceSource } from '@/modulesRoom/share/utils'
 
 // 全局拓展操作
 const extensions =  {
@@ -60,9 +61,13 @@ const alias = {
     // 挂载 nuker 相关
     nuker, cancelnuker, confirmnuker,
     // 挂载全局建筑状态查看
-    ps, ob, storage,
+    ps, ob,
+    // 所有房间的存储容量查看
+    storage: showStorageAmountOverview,
     // 控制台表单示例
     getform,
+    // 资源共享注册房间
+    share: showResourceSource,
     /**
      * 把房间挂载到全局
      * 来方便控制台操作，在访问时会实时的获取房间对象

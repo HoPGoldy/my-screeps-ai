@@ -3,7 +3,7 @@ import { colorful } from "@/utils"
 /**
  * 统计当前所有房间的存储状态
  */
-export default function(): string {
+export const showStorageAmountOverview = function(): string {
     // 建筑容量在小于如下值时将会变色
     const colorLevel = {
         [STRUCTURE_TERMINAL]: { warning: 60000, danger: 30000 },
@@ -17,7 +17,7 @@ export default function(): string {
      * @param warningLimit 报警的颜色等级
      */
     const addColor = (capacity: number, structureType: STRUCTURE_TERMINAL | STRUCTURE_STORAGE): string => {
-        if (!capacity) return colorful('无法访问', 'red')
+        if (capacity === undefined) return colorful('无法访问', 'red')
         return capacity > colorLevel[structureType].warning ? colorful(capacity.toString(), 'green') : 
             capacity > colorLevel[structureType].danger ? colorful(capacity.toString(), 'yellow') : colorful(capacity.toString(), 'red')
     }

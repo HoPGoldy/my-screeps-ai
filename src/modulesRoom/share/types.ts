@@ -21,8 +21,8 @@ export interface RoomShareTask {
  * 资源来源表
  * 资源类型为键，房间名列表为值
  */
-export interface ResourceSourceMap {
-    [resourceType: string]: string[]
+export type ResourceSourceMap = {
+    [resourceType in ResourceConstant]?: string[]
 }
 
 declare global {
