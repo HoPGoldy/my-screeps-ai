@@ -9,6 +9,22 @@ import { removeCreep } from '@/modulesGlobal/creep/utils'
  * 采集元素矿，然后存到 terminal 中
  */
 const miner: CreepConfig<'miner'> = {
+    // 检查矿床里是不是还有矿
+    isNeed: room => {
+        // 房间中的矿床是否还有剩余产量
+        if (room.mineral.mineralAmount <= 0) {
+            addSpawnMinerTask(room.name, room.mineral.ticksToRegeneration)
+            return false
+        }
+
+        // 再检查下终端存储是否已经太多了, 如果太多了就休眠一段时间再出来看看
+        if (!room.terminal || room.terminal.store.getUsedCapacity() >= MINE_LIMIT) {
+            addSpawnMinerTask(room.name, 10000)
+            return false
+        }
+
+        return true
+    },
     source: creep => {
         if (creep.store.getFreeCapacity() === 0) return true
 
