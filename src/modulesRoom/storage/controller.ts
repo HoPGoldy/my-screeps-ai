@@ -1,7 +1,7 @@
 import { crossMerge } from '@/utils'
 import RoomAccessor from '../RoomAccessor'
-import { BALANCE_CONFIG, ENERGY_REQUEST_LIMIT, ENERGY_SHARE_LIMIT } from './constant'
-import { BalanceDirection, BalanceResult } from './types'
+import { BALANCE_CONFIG, DEFAULT_BALANCE_LIMIT, ENERGY_REQUEST_LIMIT, ENERGY_SHARE_LIMIT } from './constant'
+import { BalanceDirection, BalanceResult, ResourceAmount } from './types'
 
 /**
  * storage 控制器
@@ -118,18 +118,28 @@ export default class StorageController extends RoomAccessor<undefined> {
         toStorageTasks: BalanceResult<BalanceDirection.ToStorage>[],
         toTerminalTasks: BalanceResult<BalanceDirection.ToTerminal>[]
     ): void {
-        const configAmount = BALANCE_CONFIG[resourceType]
+        const configAmount = BALANCE_CONFIG[resourceType] || DEFAULT_BALANCE_LIMIT
 
-        if (terminalAmount > configAmount) toStorageTasks.push({
-            resourceType,
-            amount: configAmount - terminalAmount,
-            direction: BalanceDirection.ToStorage
-        })
-        else if (terminalAmount < configAmount) toTerminalTasks.push({
-            resourceType,
-            amount: terminalAmount - configAmount,
-            direction: BalanceDirection.ToTerminal
-        })
+        // 需要从 terminal 运到 storage
+        if (terminalAmount > configAmount) {
+            toStorageTasks.push({
+                resourceType,
+                amount: terminalAmount - configAmount,
+                direction: BalanceDirection.ToStorage
+            })
+        }
+        // 需要从 storage 运到 terminal
+        else if (terminalAmount < configAmount) {
+            const amount = Math.min(configAmount - terminalAmount, this.storage.store[resourceType])
+            // sotrage 里没有所需的资源，无法平衡
+            if (amount <= 0) return
+
+            toTerminalTasks.push({
+                resourceType,
+                amount,
+                direction: BalanceDirection.ToTerminal
+            })
+        }
     }
 
     /**
@@ -138,10 +148,14 @@ export default class StorageController extends RoomAccessor<undefined> {
      * 
      * @param resourceType 要查询的资源
      */
-    public getResource(res: ResourceConstant): number {
-        const storageAmount = this.storage ? this.storage.store[res] : 0
-        const terminalAmount = this.terminal ? this.terminal.store[res] : 0
+    public getResource(res: ResourceConstant): ResourceAmount {
+        const storageAmount = this.storage ? (this.storage.store[res] || 0) : 0
+        const terminalAmount = this.terminal ? (this.terminal.store[res] || 0) : 0
 
-        return (storageAmount || 0) + (terminalAmount || 0)
+        return {
+            total: storageAmount + terminalAmount,
+            storage: storageAmount,
+            terminal: terminalAmount
+        }
     }
 }

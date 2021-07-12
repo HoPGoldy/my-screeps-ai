@@ -86,10 +86,12 @@ export function createLink(content: string, url: string, newTab: boolean = true)
  * 给房间内添加跳转链接
  * 
  * @param roomName 添加调整链接的房间名
+ * @param padEnd 要在左侧添加对齐空格的长度
  * @returns 打印在控制台上后可以点击跳转的房间名
  */
-export function createRoomLink(roomName: string): string {
-    return createLink(roomName, `https://screeps.com/a/#!/room/${Game.shard.name}/${roomName}`, false)
+export function createRoomLink(roomName: string, padEnd: number = 0): string {
+    return createLink(roomName, `https://screeps.com/a/#!/room/${Game.shard.name}/${roomName}`, false) +
+        Array.from({ length: 6 - roomName.length + padEnd }, () => ' ').join('')
 }
 
 /**

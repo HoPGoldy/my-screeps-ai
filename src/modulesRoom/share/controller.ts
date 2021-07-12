@@ -213,7 +213,8 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
             }
 
             // 如果请求的资源已经没有的话就暂时跳过（因为无法确定之后是否永远无法提供该资源）
-            if ((room.myStorage.getResource(resourceType)) <= 0) return true
+            const { total: existAmount } = room.myStorage.getResource(resourceType)
+            if (existAmount <= 0) return true
 
             // 接受任务的房间就是你了！
             targetRoom = room
