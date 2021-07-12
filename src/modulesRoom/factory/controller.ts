@@ -43,7 +43,7 @@ export default class RoomFactoryController extends FactoryBase {
      */
     public runFactory(): void {
         // 没有启用或没有 factory 则跳过
-        if (!this.memory || this.room[STRUCTURE_FACTORY]) return
+        if (!this.memory || !this.room[STRUCTURE_FACTORY]) return
     
         const { state, sleep, pause } = this.memory
         // 暂停了，跳过
