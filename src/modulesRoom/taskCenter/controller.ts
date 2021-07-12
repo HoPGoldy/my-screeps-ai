@@ -1,4 +1,5 @@
 import RoomAccessor from "../RoomAccessor"
+import { CenterStructures, CenterTransportTask } from "./types"
 
 export default class RoomCenterTaskController extends RoomAccessor<CenterTransportTask[]> {
     constructor(roomName: string) {
@@ -21,6 +22,33 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
         else this.memory.splice(priority, 0, task)
 
         return this.memory.length - 1
+    }
+
+    /**
+     * addTask 的快捷方式
+     * 
+     * @param form 要从哪取资源
+     * @param to 资源存放到哪
+     * @param resourceType 要转移的资源
+     * @param amount 要转移的数量
+     * @param taskKey 唯一的任务 id，若该值和已存在的任务索引重复则不允许添加，默认为 to 参数的值
+     */
+    public send(
+        form: CenterStructures,
+        to: CenterStructures,
+        resourceType: ResourceConstant,
+        amount: number,
+        taskKey?: number | string
+    ): number {
+        const submit = taskKey ? taskKey : to
+
+        return this.addTask({
+            submit,
+            source: form,
+            target: to,
+            resourceType,
+            amount
+        })
     }
 
     /**

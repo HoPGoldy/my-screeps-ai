@@ -20,3 +20,21 @@ export const showResourceSource = function (): string {
         return `[${colorful(resourceType, 'yellow', true)}] 提供者 ${roomStats.join(' ')}`
     }).join('\n')
 }
+
+/**
+ * 共享任务的数量可能大于终端的当前可用容量
+ * 这个方法会获取到可以发送的资源容量
+ * 
+ * @param task 要执行的共享任务
+ */
+export const getSendAmount = function (
+    amount: number,
+    targetRoom: string,
+    res: ResourceConstant,
+    terminalFree: number
+): { amount: number, cost: number } {
+    const cost = Game.market.calcTransactionCost(amount, targetRoom, res)
+    if (amount + cost < terminalFree) return { amount, cost }
+
+    return getSendAmount(amount / 2, targetRoom, res, terminalFree)
+}

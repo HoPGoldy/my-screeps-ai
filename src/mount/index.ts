@@ -14,6 +14,7 @@ import { setBornCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import FactoryConsole from '@/modulesRoom/factory/console'
 import TerminalConsole from '@/modulesRoom/terminal/console'
 import StorageConsole from '@/modulesRoom/storage/console'
+import ShareConsole from '@/modulesRoom/share/console'
 
 /**
  * 所有需要挂载的原型拓展
@@ -24,6 +25,7 @@ export const mountList: [ AnyClass, AnyClass ][] = [
     [ Room, FactoryConsole ],
     [ Room, TerminalConsole ],
     [ Room, StorageConsole ],
+    [ Room, ShareConsole ],
     [ RoomPosition, RoomPostionExtension ],
     [ Source, SourceExtension ],
     [ Creep, CreepExtension ],

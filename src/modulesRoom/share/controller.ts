@@ -1,6 +1,7 @@
 import RoomAccessor from '../RoomAccessor'
 import { ENERGY_SHARE_LIMIT } from '../storage/constant'
 import { RoomShareTask, ResourceSourceMap } from './types'
+import { getSendAmount } from './utils'
 
 /**
  * 全局的资源来源表存放在 Memory 的哪个键上
@@ -115,74 +116,112 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
      * @param terminal 执行任务的终端
      */
     public execShareTask(terminal: StructureTerminal): void {
-        // 获取任务
-        const task = this.memory
-        if (!task) return
+        if (!this.memory) return
+        const { amount: taskAmount, resourceType, target } = this.memory
 
-        if (task.amount <= 0) {
-            this.log(`共享资源的数量不可为负 (${task.resourceType}/${task.amount})，任务已移除`, 'yellow')
+        if (taskAmount <= 0) {
+            this.log(`共享资源的数量不可为负 (${resourceType}/${taskAmount})，任务已移除`, 'yellow')
             this.memory = undefined
             return
         }
 
+        // 获取本次要发送的数量
+        const { total } = terminal.room.myStorage.getResource(resourceType)
+        const { amount: sendAmount, cost } = getSendAmount(
+            Math.min(taskAmount, total),
+            target,
+            resourceType,
+            terminal.store.getFreeCapacity()
+        )
+
         // 如果终端存储的资源数量已经足够了
-        if (terminal.store[task.resourceType] >= task.amount) {
-            const cost = Game.market.calcTransactionCost(task.amount, this.roomName, task.target)
-
-            // 如果要转移能量就需要对路费是否足够的判断条件进行下特殊处理
-            const costCondition = (task.resourceType === RESOURCE_ENERGY) ?
-                terminal.store[RESOURCE_ENERGY] - task.amount < cost :
-                terminal.store[RESOURCE_ENERGY] < cost
-
-            // 如果路费不够的话就继续等
-            if (costCondition) {
-                if (this.putEnergyToTerminal(cost) == -2) Game.notify(`[${this.roomName}] 终端中央物流添加失败 —— 等待路费, ${cost}`)
-                // this.getEnergy(cost)
-                return
-            }
-
-            // 路费够了就执行转移
-            const sendResult = terminal.send(
-                task.resourceType, task.amount, task.target,
-                `HaveFun! 来自 ${terminal.owner.username} 的资源共享 - ${this.roomName}`
-            )
-
-            if (sendResult == OK) this.memory = undefined
-            else if (sendResult == ERR_INVALID_ARGS) {
-                this.log(`共享任务参数异常，无法执行传送，已移除`, 'yellow')
-                this.memory = undefined
-            }
-            else this.log(`执行共享任务出错, 错误码：${sendResult}`, 'yellow')
+        if (terminal.store[resourceType] >= sendAmount) {
+            this.sendShareResource(resourceType, sendAmount, cost, target, terminal)
         }
-        // 如果不足
+        // 如果不足就尝试运过来
         else {
-            // 如果要共享能量，则从 storage 里拿
-            if (task.resourceType === RESOURCE_ENERGY) {
-                if (this.putEnergyToTerminal(task.amount - terminal.store[RESOURCE_ENERGY]) == -2) {
-                    this.log(`终端中央物流添加失败 —— 获取路费, ${task.amount - terminal.store[RESOURCE_ENERGY]}`, 'yellow', true)
-                }
-            }
-            // 资源不足就不予响应
-            else {
-                this.log(`由于 ${task.resourceType} 资源不足 ${terminal.store[task.resourceType] || 0}/${task.amount}，${task.target} 的共享任务已被移除`)
-                this.memory = undefined
-            }
+            this.getShareResource(resourceType, sendAmount, target, terminal)
         }
     }
 
     /**
-     * 从 storage 获取能量
-     * @param amount 需要能量的数量
+     * 执行资源发送
      */
-    public putEnergyToTerminal(amount: number): number {
-        // 添加时会自动判断有没有对应的建筑，不会重复添加
-        return this.room.centerTransport.addTask({
-            submit: 'share',
-            source: STRUCTURE_STORAGE,
-            target: STRUCTURE_TERMINAL,
-            resourceType: RESOURCE_ENERGY,
-            amount
-        })
+    private sendShareResource(
+        resourceType: ResourceConstant,
+        sendAmount: number,
+        cost: number,
+        target: string,
+        terminal: StructureTerminal
+    ) {
+        // 如果要转移能量就需要对路费进行针对检查
+        const costCondition = (resourceType === RESOURCE_ENERGY) ?
+            terminal.store[RESOURCE_ENERGY] - sendAmount < cost :
+            terminal.store[RESOURCE_ENERGY] < cost
+
+        // 如果路费不够的话就继续等
+        if (costCondition) {
+            terminal.room.centerTransport.send(
+                STRUCTURE_STORAGE, STRUCTURE_TERMINAL,
+                resourceType, cost, 'share'
+            )
+            return
+        }
+
+        // 路费够了就执行转移
+        const sendResult = terminal.send(
+            resourceType, sendAmount, target,
+            `HaveFun! 来自 ${terminal.owner.username} 的资源共享 - ${this.roomName}`
+        )
+
+        // 任务执行成功，更新共享任务
+        if (sendResult == OK) this.updateTaskAmount(sendAmount)
+        else if (sendResult == ERR_INVALID_ARGS) {
+            this.log(`共享任务参数异常，无法执行传送，已移除`, 'yellow')
+            this.memory = undefined
+        }
+        else this.log(`执行共享任务出错, 错误码：${sendResult}`, 'yellow')
+    }
+
+    /**
+     * terminal 里的资源不足，执行资源获取
+     */
+    private getShareResource(
+        resourceType: ResourceConstant,
+        sendAmount: number,
+        target: string,
+        terminal: StructureTerminal
+    ) {
+        const { total } = terminal.room.myStorage.getResource(resourceType)
+        if (total < sendAmount) {
+            this.log(
+                `由于 ${resourceType} 资源不足 ${terminal.store[resourceType] || 0}/${sendAmount}` +
+                `${target} 的共享任务已被移除`
+            )
+            this.memory = undefined
+            return
+        }
+
+        const getAmount = sendAmount - terminal.store[RESOURCE_ENERGY]
+
+        terminal.room.centerTransport.send(
+            STRUCTURE_STORAGE, STRUCTURE_TERMINAL,
+            resourceType, getAmount, 'share'
+        )
+    }
+
+    /**
+     * 更新共享任务资源数量
+     * 如果一次发不完的话，可以使用该方法更新资源数量
+     * 如果任务更新后数量为 0 的话就会移除任务
+     * 
+     * @param sendedAmount 已经发送的资源数量
+     * @returns 是否更新成功
+     */
+    private updateTaskAmount(sendedAmount: number): OK | ERR_NOT_FOUND {
+        if (!this.memory) return ERR_NOT_FOUND
+        this.memory.amount = this.memory.amount - sendedAmount
+        if (this.memory.amount <= 0) this.memory = undefined
     }
 
     /**

@@ -1,7 +1,7 @@
 /**
  * 房间中央物流 - 资源转移任务
  */
-interface CenterTransportTask {
+export interface CenterTransportTask {
     /**
      * 任务提交者类型
      * number 类型是为了运行玩家自己推送中央任务
@@ -25,14 +25,16 @@ interface CenterTransportTask {
     amount: number
 }
 
-interface RoomMemory {
-    /**
-     * 中央集群的资源转移任务队列
-     */
-    centerTasks: CenterTransportTask[]
-}
-
 /**
  * 核心建筑群包含的建筑
  */
-type CenterStructures = STRUCTURE_STORAGE | STRUCTURE_TERMINAL | STRUCTURE_FACTORY | 'centerLink'
+export type CenterStructures = STRUCTURE_STORAGE | STRUCTURE_TERMINAL | STRUCTURE_FACTORY | 'centerLink'
+
+declare global {
+    interface RoomMemory {
+        /**
+         * 中央集群的资源转移任务队列
+         */
+        centerTasks: CenterTransportTask[]
+    }
+}

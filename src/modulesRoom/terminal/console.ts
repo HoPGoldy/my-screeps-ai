@@ -78,6 +78,75 @@ export default class TerminalConsole extends Room {
         return `已重置，当前监听任务如下:\n${this.myTerminal.show()}`
     }
 
+    /**
+     * 创建订单并返回创建信息
+     * 
+     * @param type 订单类型
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param totalAmount 总量
+     */
+    private createOrder(type: ORDER_BUY | ORDER_SELL, resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        const orderConfig = {
+            type: type,
+            resourceType,
+            price,
+            totalAmount,
+            roomName: this.name
+        }
+        const createResult = Game.market.createOrder(orderConfig)
+
+        let returnString: string = ''
+        // 新创建的订单下个 tick 才能看到，所以这里只能让玩家自行查看
+        if (createResult === OK) returnString = `[${this.name}] ${type} 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
+        else if (createResult === ERR_NOT_ENOUGH_RESOURCES) returnString = `[${this.name}] 您没有足够的 credit 来缴纳费用，当前/需要 ${Game.market.credits}/${price * totalAmount * 0.05}`
+        else returnString = `[${this.name}] 创建失败，Game.market.createOrder 错误码: ${createResult}`
+
+        return returnString
+    }
+
+    /**
+     * 为该房间创建一个 ORDER_BUY 订单
+     * 
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param amount 总量
+     */
+    public buy(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        return this.createOrder(ORDER_BUY, resourceType, price, totalAmount)
+    }
+
+    /**
+     * 为该房间创建一个 ORDER_SELL 订单
+     * 
+     * @param resourceType 资源类型
+     * @param price 单价
+     * @param amount 总量
+     */
+    public sell(resourceType: ResourceConstant, price: number, totalAmount: number): string {
+        return this.createOrder(ORDER_SELL, resourceType, price, totalAmount)
+    }
+
+    /**
+     * 用户操作 - 成交订单
+     * 
+     * @param id 交易的订单 id
+     * @param amount 交易的数量，默认为最大值
+     */
+    public deal(id: string, amount: number): string {
+        if (!amount) {
+            const order = Game.market.getOrderById(id)
+            if (!order) return `[${this.name}] 订单 ${id} 不存在`
+
+            amount = order.amount
+        }
+
+        const actionResult = Game.market.deal(id, amount, this.name)
+
+        if (actionResult === OK) return `[${this.name}] 交易成功`
+        else return `[${this.name}] 交易异常，Game.market.deal 返回值 ${actionResult}`
+    }
+
     public thelp(): string {
         return createHelp({
             name: 'Terminal 控制台',

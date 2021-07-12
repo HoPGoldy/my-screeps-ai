@@ -25,13 +25,13 @@ export default class StagePutResource extends FactoryBase {
 
             // 资源不足，发布任务
             const target = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
-            this.room.centerTransport.addTask({
-                submit: STRUCTURE_FACTORY,
+            this.room.centerTransport.send(
+                STRUCTURE_FACTORY,
                 target,
-                source: STRUCTURE_FACTORY,
-                resourceType: resType as ResourceConstant,
-                amount: this.factory.store[resType]
-            })
+                resType as ResourceConstant,
+                this.factory.store[resType]
+            )
+
             return
         }
 

@@ -11,6 +11,7 @@ import { setBaseCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import RoomExtension from './extension'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
 import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
+import { CenterStructures } from '@/modulesRoom/taskCenter/types'
 
 export default class RoomConsole extends RoomExtension {
     /**
@@ -23,7 +24,7 @@ export default class RoomConsole extends RoomExtension {
      */
     public ctadd(target: CenterStructures, source: CenterStructures, resourceType: ResourceConstant, amount: number): string {
         const addResult = this.centerTransport.addTask({
-            submit: this.memory.centerTasks.length,
+            submit: this.memory.centerTasks.length + new Date().getTime(),
             target,
             source,
             resourceType,
@@ -68,50 +69,6 @@ export default class RoomConsole extends RoomExtension {
     }
 
     /**
-     * 用户操作：向指定房间发送能量
-     * 注意，该操作会自动从 storage 里取出能量
-     * 
-     * @param roomName 目标房间名
-     * @param amount 要发送的数量, 默认 100k
-     */
-    public givee(roomName: string, amount: number = 100000): string {
-        const logs = []
-        if (!this.terminal) return `[能量共享] 未发现 Terminal，共享终止`
-        // 如果在执行其他任务则将其覆盖，因为相对于用户操作来说，其他模块发布的资源共享任务优先级肯定要低
-        // 并且其他模块的共享任务就算被删除了，过一段时间之后它也会再次发布并重新添加
-        if (this.memory.shareTask) {
-            const task = this.memory.shareTask
-            logs.push(`┖─ 因此移除的共享任务为: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`)
-        }
-
-        // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
-        const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
-        if (amount + cost - this.terminal.store[RESOURCE_ENERGY] > this.terminal.store.getFreeCapacity()) {
-            return `[能量共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost} Terminal 剩余容量 ${this.terminal.store.getFreeCapacity()}`
-        }
-
-        this.memory.shareTask = {
-            target: roomName,
-            amount,
-            resourceType: RESOURCE_ENERGY
-        }
-
-        logs.unshift(`[能量共享] 任务已添加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
-
-        return logs.join('\n')
-    }
-
-    /**
-     * 用户操作 - 发送 power 到指定房间
-     * 
-     * @param RoomName 要发送到的房间名
-     * @param amount 发送的数量
-     */
-    public givep(RoomName: string, amount: number = 5000) {
-        return this.giver(RoomName, RESOURCE_POWER, amount)
-    }
-
-    /**
      * 移除房间
      * 第一次执行时将会弹出警告
      * 玩家需要在指定时间内重新执行该 api 才会真正执行移除
@@ -140,65 +97,6 @@ export default class RoomConsole extends RoomExtension {
     public cancelremove(): string {
         delete this.memory.removeTime
         return `移除操作已取消`
-    }
-
-    /**
-     * 用户操作 - 成交订单
-     * 
-     * @param id 交易的订单 id
-     * @param amount 交易的数量，默认为最大值
-     */
-    public deal(id: string, amount: number): string {
-        if (!amount) {
-            const order = Game.market.getOrderById(id)
-            if (!order) return `[${this.name}] 订单 ${id} 不存在`
-
-            amount = order.amount
-        }
-
-        const actionResult = Game.market.deal(id, amount, this.name)
-
-        if (actionResult === OK) return `[${this.name}] 交易成功`
-        else return `[${this.name}] 交易异常，Game.market.deal 返回值 ${actionResult}`
-    }
-
-    /**
-     * 用户操作：向指定房间发送资源
-     * 注意，请保证资源就在 Terminal 中
-     * 
-     * @param roomName 目标房间名
-     * @param resourceType 要共享的资源类型
-     * @param amount 要发送的数量, 默认 100k
-     */
-    public giver(roomName: string, resourceType: ResourceConstant, amount: number = 1000): string {
-        const logs = []
-        // 如果在执行其他任务则将其覆盖，因为相对于用户操作来说，其他模块发布的资源共享任务优先级肯定要低
-        // 并且其他模块的共享任务就算被删除了，过一段时间之后它也会再次发布并重新添加
-        if (this.memory.shareTask) {
-            const task = this.memory.shareTask
-            logs.push(`┖─ 因此移除的共享任务为: 目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`)
-        }
-
-        // 检查资源是否足够
-        if (!this.terminal) return `[资源共享] 该房间没有终端`
-        const resourceAmount = this.terminal.store[resourceType]
-        if (! resourceAmount || resourceAmount < amount) return `[资源共享] 数量不足 ${resourceType} 剩余 ${resourceAmount | 0}`
-
-        // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
-        const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
-        if (amount + cost > TERMINAL_CAPACITY) {
-            return `[资源共享] 添加共享任务失败，资源总量超出终端上限：发送数量(${amount}) + 路费(${cost}) = ${amount + cost}`
-        }
-
-        this.memory.shareTask = {
-            target: roomName,
-            amount,
-            resourceType
-        }
-
-        logs.unshift(`[资源共享] 任务已添加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
-
-        return logs.join('\n')
     }
 
     /**
@@ -387,55 +285,6 @@ export default class RoomConsole extends RoomExtension {
         this.claimRoom(targetRoomName, signText)
 
         return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。\n 你可以在目标房间中新建名为 ${getName.flagBaseCenter(targetRoomName)} 的旗帜来指定基地中心。否则 claimer 将运行自动规划。`
-    }
-
-    /**
-     * 创建订单并返回创建信息
-     * 
-     * @param type 订单类型
-     * @param resourceType 资源类型
-     * @param price 单价
-     * @param totalAmount 总量
-     */
-    private createOrder(type: ORDER_BUY | ORDER_SELL, resourceType: ResourceConstant, price: number, totalAmount: number): string {
-        const orderConfig = {
-            type: type,
-            resourceType,
-            price,
-            totalAmount,
-            roomName: this.name
-        }
-        const createResult = Game.market.createOrder(orderConfig)
-
-        let returnString: string = ''
-        // 新创建的订单下个 tick 才能看到，所以这里只能让玩家自行查看
-        if (createResult === OK) returnString = `[${this.name}] ${type} 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
-        else if (createResult === ERR_NOT_ENOUGH_RESOURCES) returnString = `[${this.name}] 您没有足够的 credit 来缴纳费用，当前/需要 ${Game.market.credits}/${price * totalAmount * 0.05}`
-        else returnString = `[${this.name}] 创建失败，Game.market.createOrder 错误码: ${createResult}`
-
-        return returnString
-    }
-
-    /**
-     * 为该房间创建一个 ORDER_BUY 订单
-     * 
-     * @param resourceType 资源类型
-     * @param price 单价
-     * @param amount 总量
-     */
-    public buy(resourceType: ResourceConstant, price: number, totalAmount: number): string {
-        return this.createOrder(ORDER_BUY, resourceType, price, totalAmount)
-    }
-
-    /**
-     * 为该房间创建一个 ORDER_SELL 订单
-     * 
-     * @param resourceType 资源类型
-     * @param price 单价
-     * @param amount 总量
-     */
-    public sell(resourceType: ResourceConstant, price: number, totalAmount: number): string {
-        return this.createOrder(ORDER_SELL, resourceType, price, totalAmount)
     }
     
     /**

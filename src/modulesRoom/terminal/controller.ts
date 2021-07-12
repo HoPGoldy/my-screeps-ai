@@ -126,13 +126,15 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
      * 如果 terminal 中能量过多会返还至 storage
      */
     public energyCheck(): void {
-        if (this.terminal.store[RESOURCE_ENERGY] >= 30000) this.room.centerTransport.addTask({
-            submit: STRUCTURE_TERMINAL,
-            source: STRUCTURE_TERMINAL,
-            target: STRUCTURE_STORAGE,
-            resourceType: RESOURCE_ENERGY,
-            amount: this.terminal.store[RESOURCE_ENERGY]
-        })
+        if (this.terminal.store[RESOURCE_ENERGY] >= 30000) {
+            this.room.centerTransport.send(
+                STRUCTURE_TERMINAL,
+                STRUCTURE_STORAGE,
+                RESOURCE_ENERGY,
+                this.terminal.store[RESOURCE_ENERGY],
+                STRUCTURE_TERMINAL
+            )
+        }
     }
 
     /**

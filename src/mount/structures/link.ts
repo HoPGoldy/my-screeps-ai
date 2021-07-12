@@ -122,14 +122,19 @@ export class LinkExtension extends StructureLink {
         // 实在找不到目标了，放弃治疗
         if (!source) return
 
+        // 自己和 centerLink 的容量中找最小值
+        const amount = Math.min(
+            this.store.getFreeCapacity(RESOURCE_ENERGY),
+            centerlink.store.getFreeCapacity(RESOURCE_ENERGY)
+        )
+
         // 以 centerLink 的名义发布中央物流任务
-        const result = this.room.centerTransport.addTask({
+        this.room.centerTransport.addTask({
             submit: 'centerLink',
             source: source.structureType,
             target: 'centerLink',
             resourceType: RESOURCE_ENERGY,
-            // 自己和 centerLink 的容量中找最小值
-            amount: Math.min(this.store.getFreeCapacity(RESOURCE_ENERGY), centerlink.store.getFreeCapacity(RESOURCE_ENERGY))
+            amount
         })
     }
 

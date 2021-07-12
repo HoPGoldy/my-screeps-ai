@@ -58,14 +58,8 @@ export default class StageGetResource extends FactoryBase {
         // 能量太少了就先不干
         else if (!this.hasEnoughEnergy()) return
 
-        // 发布中央物流任务
-        this.room.centerTransport.addTask({
-            submit: STRUCTURE_FACTORY,
-            target: STRUCTURE_FACTORY,
-            source,
-            resourceType: resType,
-            amount
-        })
+        // 请求资源
+        this.room.centerTransport.send(source, STRUCTURE_FACTORY, resType, amount)
     }
 
     /**

@@ -6,17 +6,12 @@ import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
  */
 export default class ControllerExtension extends StructureController {
     public onWork(): void {
-        // 解除这两行的注释以显示队列信息
-        this.room.work.draw(1, 3)
-        this.room.transport.draw(1, 13)
-
         this.drawEnergyHarvestInfo()
         if (Game.time % 20) return
 
         // 如果等级发生变化了就运行 creep 规划
         if (this.stateScanner())  this.onLevelChange(this.level)
 
-       
         if (!(Game.time % 500)) {
              // 调整运营 creep 数量
             this.room.strategy.operation.adjustBaseUnit()

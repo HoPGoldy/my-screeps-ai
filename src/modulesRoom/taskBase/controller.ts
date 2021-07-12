@@ -387,25 +387,23 @@ export default class TaskController<
     }
 
     /**
-     * 打印当前任务队列到控制台
+     * 输出当前任务队列信息
      */
     public show(): string {
-        const logs = this.tasks.map(task => JSON.stringify(task))
+        const logs = [
+            `已注册单位 ${Object.keys(this.creeps).join(', ')}`,
+            _.padRight('[类型]', 10) + _.padRight('[索引]', 10) + _.padRight('[需求数量]', 10) + _.padRight('[执行数量]', 10) + _.padRight('[优先级]', 10)
+        ]
+
+        logs.push(...this.tasks.map(task => (
+            _.padRight(task.type, 10) +
+            _.padRight(task.key.toString(), 10) +
+            _.padRight(task.need.toString(), 10) +
+            _.padRight(task.unit.toString(), 10) +
+            _.padRight(task.priority.toString(), 10)
+        )))
+
         return logs.join('\n')
-    }
-
-    /**
-     * 将队列信息绘制到房间上
-     * @param startX 绘制窗口左上角 X 坐标
-     * @param startY 绘制窗口左上角 Y 坐标
-     */
-    public draw(startX: number, startY: number): void {
-        const logs = [ `已注册单位 ${Object.keys(this.creeps).join(', ')}` ]
-        logs.push(...this.tasks.map(task => `[类型] ${task.type} [索引] ${task.key} [需求数量] ${task.need} [执行数量] ${task.unit} [优先级] ${task.priority}`))
-
-        const room = Game.rooms[this.roomName]
-        const style: TextStyle = { align: 'left', opacity: 0.5 }
-        logs.map((log, index) => room.visual.text(log, startX, startY + index, style))
     }
 }
 
