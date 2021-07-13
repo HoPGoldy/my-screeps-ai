@@ -1,10 +1,11 @@
 import { removeCreep } from '@/modulesGlobal/creep'
 import { BASE_ROLE_LIMIT } from './constant'
 import { DEFAULT_FLAG_NAME } from '@/setting'
-import { log } from '@/utils'
 import RoomSpawnController from './controller'
 import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
+import { SepicalBodyType } from '../taskWork/types'
+import { Color, log } from '@/modulesGlobal/console/utils'
 
 /**
  * creep 发布工具
@@ -221,7 +222,7 @@ export default class RoomCreepRelease {
     public remoteHelper(remoteRoomName: string): void {
         const room = Game.rooms[remoteRoomName]
         if (!room) {
-            log(`目标房间没有视野，无法发布支援单位`, [ this.spawner.room.name, 'CreepRelease' ], 'yellow')
+            log(`目标房间没有视野，无法发布支援单位`, [ this.spawner.room.name, 'CreepRelease' ], Color.Yellow)
             return
         }
 

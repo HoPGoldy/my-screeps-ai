@@ -1,5 +1,7 @@
+import { MyCreep } from '@/role/types/role'
 import TaskController from '../taskBase/controller'
 import { noTask, transportActions } from './actions'
+import { AllRoomTransportTask, TransportTasks, TransportTaskType } from './types'
 
 /**
  * 搬运工工作时长占比到调整期望的 map
@@ -19,7 +21,7 @@ const WORK_PROPORTION_TO_EXPECT = [
 /**
  * 物流搬运任务逻辑的生成函数
  */
-export type TransportActionGenerator<T extends AllTransportTaskType = AllTransportTaskType> = (
+export type TransportActionGenerator<T extends TransportTaskType = TransportTaskType> = (
    creep: MyCreep<'manager'>,
    task: TransportTasks[T],
    transportController: RoomTransport
@@ -33,7 +35,7 @@ export type TransportActionGenerator<T extends AllTransportTaskType = AllTranspo
  */
 const REGULATE_LIMIT = 500
 
-export default class RoomTransport extends TaskController<AllTransportTaskType, AllRoomTransportTask> {
+export default class RoomTransport extends TaskController<TransportTaskType, AllRoomTransportTask> {
     /**
      * 本房间的搬运工总生命时长
      */

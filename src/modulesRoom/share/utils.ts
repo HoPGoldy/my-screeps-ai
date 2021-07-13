@@ -1,4 +1,4 @@
-import { colorful } from "@/utils"
+import { Color, colorful } from "@/modulesGlobal"
 
 /**
  * 格式化输出当前的资源提供房间
@@ -12,12 +12,12 @@ export const showResourceSource = function (): string {
         // 格式化房间名和其中资源数量
         const roomStats = roomList.map(roomName => {
             const room = Game.rooms[roomName]
-            if (!room) return `[${roomName} ${colorful('无法访问', 'red')}]`
+            if (!room) return `[${roomName} ${colorful('无法访问', Color.Red)}]`
 
             const resourceAmount = room.myStorage.getResource(resourceType)
-            return `[${roomName} ${colorful(resourceAmount.toString(), 'blue')}]`
+            return `[${roomName} ${colorful(resourceAmount.toString(), Color.Blue)}]`
         })
-        return `[${colorful(resourceType, 'yellow', true)}] 提供者 ${roomStats.join(' ')}`
+        return `[${colorful(resourceType, Color.Yellow, true)}] 提供者 ${roomStats.join(' ')}`
     }).join('\n')
 }
 
@@ -30,11 +30,15 @@ export const showResourceSource = function (): string {
 export const getSendAmount = function (
     amount: number,
     targetRoom: string,
-    res: ResourceConstant,
+    sourceRoom: string,
     terminalFree: number
 ): { amount: number, cost: number } {
-    const cost = Game.market.calcTransactionCost(amount, targetRoom, res)
+    // 剩余空间不足，拒绝发送
+    if (terminalFree <= 100) return { amount: 0, cost: 0 }
+
+    const cost = Game.market.calcTransactionCost(amount, targetRoom, sourceRoom)
     if (amount + cost < terminalFree) return { amount, cost }
 
-    return getSendAmount(amount / 2, targetRoom, res, terminalFree)
+    // 二分之后递归尝试
+    return getSendAmount(Math.floor(amount / 2), targetRoom, sourceRoom, terminalFree)
 }

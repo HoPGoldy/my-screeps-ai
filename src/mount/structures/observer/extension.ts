@@ -1,6 +1,5 @@
 import { DEPOSIT_MAX_COOLDOWN, OBSERVER_POWERBANK_MAX, OBSERVER_DEPOSIT_MAX, observerInterval } from '@/setting'
-import { colorful, createRoomLink } from '@/utils'
-import { createHelp } from '@/modulesGlobal/console'
+import { Color, colorful, createHelp, createRoomLink } from '@/modulesGlobal/console'
 
 /**
  * Observer 拓展
@@ -50,7 +49,7 @@ export class ObserverExtension extends StructureObserver {
                 
                 // 确认完成，插旗
                 this.newHarvesteTask(deposit)
-                this.log(`${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`, 'green')
+                this.log(`${this.room.memory.observer.checkRoomName} 检测到新 deposit, 已插旗`, Color.Green)
             })
         }
 
@@ -67,7 +66,7 @@ export class ObserverExtension extends StructureObserver {
     
                 // 确认完成，插旗
                 this.newHarvesteTask(powerBank)
-                this.log(`${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`, 'green')  
+                this.log(`${this.room.memory.observer.checkRoomName} 检测到新 pb, 已插旗`, Color.Green)  
             })
         }
 
@@ -262,7 +261,7 @@ export class ObserverConsole extends ObserverExtension {
     public showList(): string {
         const result = this.room.memory.observer ? 
         `监听中的房间列表: ${this.room.memory.observer.watchRooms.map((room, index) => {
-            if (index === this.room.memory.observer.watchIndex) return colorful(room, 'green')
+            if (index === this.room.memory.observer.watchIndex) return colorful(room, Color.Green)
             else return room
         }).join(' ')}` :
         `未启用`

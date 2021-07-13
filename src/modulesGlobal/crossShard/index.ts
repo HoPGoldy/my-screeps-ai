@@ -5,7 +5,7 @@
  */
 
 import { ALL_SHARD_NAME } from '@/setting'
-import { log } from '@/utils'
+import { Color, log } from '../console'
 import requestHandleStrategies from './handleStrategies'
 
 // 其他 shard 的数据
@@ -103,7 +103,7 @@ const handleOtherMessage = function () {
                 const request: CrossShardRequest = otherShardData[shardName][msgName]
 
                 if (request.to === selfShardName) {
-                    if (!request.type || !requestHandleStrategies[request.type]) return log(`未知跨 shard 请求，不予执行 ${request.type}`, [ '跨 shard' ], 'yellow')
+                    if (!request.type || !requestHandleStrategies[request.type]) return log(`未知跨 shard 请求，不予执行 ${request.type}`, [ '跨 shard' ], Color.Yellow)
 
                     // 执行请求并作出回应
                     const result = requestHandleStrategies[request.type](request.data)

@@ -1,3 +1,4 @@
+import { WorkTaskType } from "../taskWork/types"
 import RoomStrategyController from "./controller"
 
 /**
@@ -29,7 +30,7 @@ export class DefenseStrategy {
         this.room.spawner.release.setBaseUnitLimit('worker', { MIN: 2, MAX: 3 })
 
         // 提高刷墙任务优先级并孵化额外工作单位
-        this.room.work.updateTask({ type: 'fillWall', priority: 9 })
+        this.room.work.updateTask({ type: WorkTaskType.FillWall, priority: 9 })
         this.room.spawner.release.changeBaseUnit('worker', newWorkerNumber)
     }
 }

@@ -1,3 +1,4 @@
+import { Color } from '@/modulesGlobal/console'
 import { getName } from '@/utils'
 
 /**
@@ -49,7 +50,7 @@ const claimer: CreepConfig<'claimer'> = {
         else if (claimResult === OK) {
             const { spawnRoom: spawnRoomName, data: { targetRoomName, signText } } = creep.memory
 
-            creep.log(`新房间 ${targetRoomName} 占领成功！已向源房间 ${spawnRoomName} 请求支援单位`, 'green')
+            creep.log(`新房间 ${targetRoomName} 占领成功！已向源房间 ${spawnRoomName} 请求支援单位`, Color.Green)
 
             // 占领成功，发布支援组
             const spawnRoom = Game.rooms[spawnRoomName]
@@ -62,19 +63,19 @@ const claimer: CreepConfig<'claimer'> = {
             // 用户已经指定了旗帜了
             if (flag) {
                 creep.room.setBaseCenter(flag.pos)
-                creep.log(`使用玩家提供的基地中心点，位置 [${flag.pos.x}, ${flag.pos.y}]`, 'green')
+                creep.log(`使用玩家提供的基地中心点，位置 [${flag.pos.x}, ${flag.pos.y}]`, Color.Green)
                 // 移除旗帜
                 flag.remove()
             }
             // 运行基地选址确认
             else {
                 if (creep.room.memory.centerCandidates.length <= 0) {
-                    creep.log(`房间中未找到有效的基地中心点，请放置旗帜并执行 Game.rooms.${creep.room.name}.setcenter('旗帜名')`, 'red')
+                    creep.log(`房间中未找到有效的基地中心点，请放置旗帜并执行 Game.rooms.${creep.room.name}.setcenter('旗帜名')`, Color.Red)
                 }
                 else {
                     const result = creep.room.confirmBaseCenter()
-                    if (result === ERR_NOT_FOUND) creep.log(`新的基地中心点确认失败，请手动指定`, 'yellow')
-                    else creep.log(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`, 'green')
+                    if (result === ERR_NOT_FOUND) creep.log(`新的基地中心点确认失败，请手动指定`, Color.Yellow)
+                    else creep.log(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`, Color.Green)
                 }
             }
 

@@ -1,5 +1,6 @@
 import baseTaskController from './controller'
 import { getMockCreep, getMockRoom, mockGetObjectById } from '@test/mock'
+import { SepicalBodyType } from '../taskWork/types'
 
 describe('房间任务核心测试', () => {
     // 获取指定优先级的任务

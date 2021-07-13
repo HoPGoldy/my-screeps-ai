@@ -1,5 +1,6 @@
 import { whiteListFilter } from '@/utils'
 import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
+import { Color } from '@/modulesGlobal'
 
 /**
  * Controller 拓展
@@ -56,7 +57,7 @@ export default class ControllerExtension extends StructureController {
         }
 
         // 从二级开始规划布局，因为一级没有可以造的东西
-        if (level !== 1) this.log(this.room.planLayout(), 'green')
+        if (level !== 1) this.log(this.room.planLayout(), Color.Green)
     }
 
     /**

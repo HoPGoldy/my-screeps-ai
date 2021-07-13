@@ -1,3 +1,4 @@
+import { Color } from '@/modulesGlobal/console'
 import { PB_HARVESTE_STATE } from '@/setting'
 import { calcBodyPart } from '@/utils'
 
@@ -63,7 +64,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
         // 获取资源运输目标房间并兜底
         const room = Game.rooms[spawnRoomName]
         if (!room || !room.terminal) {
-            creep.log(`找不到 terminal`, 'yellow')
+            creep.log(`找不到 terminal`, Color.Yellow)
             return false
         }
 

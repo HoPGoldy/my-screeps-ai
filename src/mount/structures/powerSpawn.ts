@@ -1,6 +1,6 @@
 import { powerSettings } from '@/setting'
-import { colorful, createRoomLink } from '@/utils'
-import { createHelp } from '@/modulesGlobal/console'
+import { Color, colorful, createHelp, createRoomLink } from '@/modulesGlobal/console'
+import { TransportTaskType } from '@/modulesRoom'
 
 /**
  * PowerSpawn 拓展
@@ -36,9 +36,12 @@ export class PowerSpawnExtension extends StructurePowerSpawn {
         if (this.store[resource] >= amount) return true
 
         // 检查来源是否符合规则，符合则发布资源转移任务
-        if (source && source.store.getUsedCapacity(resource) > sourceLimit && !this.room.transport.hasTask('fillPowerSpawn')) {
+        if (source &&
+            source.store.getUsedCapacity(resource) > sourceLimit &&
+            !this.room.transport.hasTask(TransportTaskType.FillPowerSpawn)
+        ) {
             this.room.transport.addTask({
-                type: 'fillPowerSpawn',
+                type: TransportTaskType.FillPowerSpawn,
                 id: this.id,
                 resourceType: resource
             })    
@@ -86,9 +89,9 @@ export class PowerSpawnConsole extends PowerSpawnExtension {
         // 生成状态
         const working = this.store[RESOURCE_POWER] > 1 && this.store[RESOURCE_ENERGY] > 50
         const prefix = [
-            colorful('●', working ? 'green' : 'yellow', true),
+            colorful('●', working ? Color.Green : Color.Yellow, true),
             createRoomLink(this.room.name),
-            colorful(working ? '工作中' : '等待资源中', working ? 'green' : 'yellow')
+            colorful(working ? '工作中' : '等待资源中', working ? Color.Green : Color.Yellow)
         ].join(' ')
 
         // 统计 powerSpawn、storage、terminal 的状态
@@ -105,7 +108,7 @@ export class PowerSpawnConsole extends PowerSpawnExtension {
     public help(): string {
         return createHelp({
             name: 'PowerSpawn 控制台',
-            describe: `ps 默认不启用，执行 ${colorful('.on', 'yellow')}() 方法会启用 ps。启用之后会进行 power 自动平衡。`,
+            describe: `ps 默认不启用，执行 ${colorful('.on', Color.Yellow)}() 方法会启用 ps。启用之后会进行 power 自动平衡。`,
             api: [
                 {
                     title: '启动/恢复处理 power',

@@ -1,3 +1,5 @@
+import { Color } from "@/modulesGlobal/console"
+
 /**
  * 移动测试单位
  * 
@@ -18,7 +20,7 @@ const moveTester: CreepConfig<'moveTester'> = {
 
         const targetFlag = Game.flags[sourceFlagName]
         if (!targetFlag) {
-            creep.log(`找不到 ${sourceFlagName} 旗帜`, 'yellow')
+            creep.log(`找不到 ${sourceFlagName} 旗帜`, Color.Yellow)
             creep.say('旗呢？')
             return false
         }

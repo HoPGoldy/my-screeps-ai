@@ -1,9 +1,4 @@
-/**
- * 任务模块核心实现
- * 包括任务的添加、排序、删除，以及工作 creep 的分配
- */
-
-import { log } from '@/utils'
+import { Color, log } from '@/modulesGlobal/console/utils'
 import RoomAccessor from '../RoomAccessor'
 
 export default class TaskController<
@@ -382,7 +377,7 @@ export default class TaskController<
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    protected log(content: string, color: Colors = undefined, notify: boolean = false): void {
+    protected log(content: string, color: Color = undefined, notify: boolean = false): void {
         log(content, ['taskController'], color, notify)
     }
 

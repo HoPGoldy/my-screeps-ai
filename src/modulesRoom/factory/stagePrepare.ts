@@ -1,3 +1,4 @@
+import { Color } from "@/modulesGlobal"
 import FactoryBase from "./base"
 import { FactoryState } from "./constant"
 
@@ -16,12 +17,12 @@ export default class StagePrepare extends FactoryBase {
         // 如果存在废弃进程，则移除所有配置
         if (this.memory.remove) {
             this.memory = undefined
-            return this.log(`工厂已废弃，重新初始化以开始生产`, 'green')
+            return this.log(`工厂已废弃，重新初始化以开始生产`, Color.Green)
         }
 
         if (!this.room.terminal) {
             this.gotoBed(10000, '未找到 terminal')
-            return this.log(`prepare 阶段未找到 terminal，已暂停`, 'red')
+            return this.log(`prepare 阶段未找到 terminal，已暂停`, Color.Red)
         }
 
         // 获取当前任务，没有任务就新增顶级合成任务

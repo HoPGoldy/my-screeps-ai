@@ -1,4 +1,5 @@
-import { log } from '@/utils'
+import { Color, log } from "@/modulesGlobal"
+
 
 /**
  * PowerCreep 原型拓展
@@ -20,7 +21,7 @@ export default class PowerCreepExtension extends PowerCreep {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content: string, color: Colors = undefined, notify: boolean = false): void {
+    log(content: string, color: Color = undefined, notify: boolean = false): void {
         // 因为 pc 可能未孵化，所以这里需要特别判断一下
         if (!this.room) log(content, [ this.name ], color, notify)
         else this.room.log(content, this.name, color, notify)
@@ -81,7 +82,7 @@ export default class PowerCreepExtension extends PowerCreep {
             return OK
         }
         else {
-            this.log(`孵化异常! 错误码: ${spawnResult}`, 'yellow')
+            this.log(`孵化异常! 错误码: ${spawnResult}`, Color.Yellow)
             return ERR_INVALID_ARGS
         }
     }

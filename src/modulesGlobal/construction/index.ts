@@ -1,5 +1,5 @@
 import { updateStructure } from '@/modulesRoom/shortcut'
-import { log } from '@/utils'
+import { Color, log } from '../console'
 
 /**
  * 该模块的数据保存在 Memory 哪个字段上
@@ -46,7 +46,7 @@ const saveWaiting = function () {
 export const initConstructionController = function () {
     waitingConstruction = JSON.parse(Memory[SAVE_KEY] || '[]').map(({ pos, type }) => {
         if (!pos || !type) {
-            log(`发现了异常的工地任务，请检查代码是否正确 pos：${pos} type：${type}`, ['建造控制器'], 'yellow')
+            log(`发现了异常的工地任务，请检查代码是否正确 pos：${pos} type：${type}`, ['建造控制器'], Color.Yellow)
             return
         }
 
@@ -83,12 +83,12 @@ const planSite = function () {
         const result = pos.createConstructionSite(type)
 
         if (result === ERR_INVALID_TARGET) {
-            // log(`工地 ${type} 重复放置，已放弃，位置 [${pos}]`, ['建造控制器'], 'yellow')
+            // log(`工地 ${type} 重复放置，已放弃，位置 [${pos}]`, ['建造控制器'], Color.Yellow)
             return false
         }
         // 放置失败，下次重试
         else if (result !== OK && result !== ERR_FULL && result !== ERR_RCL_NOT_ENOUGH) {
-            log(`工地 ${type} 无法放置，位置 [${pos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], 'yellow')
+            log(`工地 ${type} 无法放置，位置 [${pos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], Color.Yellow)
             return true
         }
 

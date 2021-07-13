@@ -20,7 +20,7 @@ jest.mock('@/utils', () => ({ log: () => {} }))
 
 import { getMockRoom } from '@test/mock'
 import { getMockSource } from '@test/mock/Source'
-import RoomSpawnController from './index'
+import RoomSpawnController from './controller'
 import RoomCreepRelease from './creepRelease'
 import { GetName } from './nameGetter'
 

@@ -1,3 +1,4 @@
+import { Color } from '@/modulesGlobal'
 import { PWR_ENABLE_ROOM } from './canstant'
 import RoomPowerController from './controller'
 
@@ -68,7 +69,7 @@ export const PowerTasks: PowerTaskConfigs = {
 
             // 如果搓不了，说明有可能房间没激活，添加激活任务
             if (actionResult === ERR_INVALID_ARGS) controller.addTask(PWR_ENABLE_ROOM, 0)
-            else if (actionResult !== OK) creep.log(`ops 生成异常, 错误码: ${actionResult}`, 'red')
+            else if (actionResult !== OK) creep.log(`ops 生成异常, 错误码: ${actionResult}`, Color.Red)
 
             // 数量够了就 target
             if (creep.store[RESOURCE_OPS] > 5) return OK
@@ -123,7 +124,7 @@ export const PowerTasks: PowerTaskConfigs = {
             if (actionResult === OK) return OK
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(sourceStructure.pos)
             else {
-                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`, 'red')
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_EXTENSION target 时出错，错误码 ${actionResult}`, Color.Red)
                 return OK
             }
         }
@@ -140,7 +141,7 @@ export const PowerTasks: PowerTaskConfigs = {
 
             // 如果自己的 power 等级和工厂等级对不上
             if (creep.powers[PWR_OPERATE_FACTORY].level !== creep.room.memory.factory.level) {
-                creep.log(`自身 PWR_OPERATE_FACTORY 等级(${creep.powers[PWR_OPERATE_FACTORY].level})与工厂设置等级(${creep.room.memory.factory.level})不符，拒绝强化，任务已移除`, 'yellow')
+                creep.log(`自身 PWR_OPERATE_FACTORY 等级(${creep.powers[PWR_OPERATE_FACTORY].level})与工厂设置等级(${creep.room.memory.factory.level})不符，拒绝强化，任务已移除`, Color.Yellow)
                 return OK
             }
 
@@ -149,7 +150,7 @@ export const PowerTasks: PowerTaskConfigs = {
             if (actionResult === OK) return OK
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
             else {
-                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`, 'red')
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`, Color.Red)
                 return OK
             }
         }
@@ -188,7 +189,7 @@ export const PowerTasks: PowerTaskConfigs = {
             }
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(target.pos)
             else {
-                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_REGEN_SOURCE target 时出错，错误码 ${actionResult}`, 'red')
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_REGEN_SOURCE target 时出错，错误码 ${actionResult}`, Color.Red)
                 return OK
             }
         }

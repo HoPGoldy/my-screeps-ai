@@ -1,7 +1,6 @@
-import { colorful } from '@/utils'
 import template from './template.html'
 import style from './style.html'
-import { replaceHtml, fixRetraction } from '../utils'
+import { replaceHtml, fixRetraction, colorful, Color } from '../utils'
 import { ModuleDescribe, FunctionDescribe } from './types'
 
 const [ moduleContainerTemplate, moduleTemplate, apiContainerTemplate, apiLineTemplate ] = template.split(';;')
@@ -27,8 +26,8 @@ export const createHelp = function (...modules: ModuleDescribe[]): string {
  */
 const createModule = function(module: ModuleDescribe): string {
     return replaceHtml(moduleTemplate, {
-        title: colorful(module.name, 'yellow'),
-        describe: colorful(module.describe, 'green'),
+        title: colorful(module.name, Color.Yellow),
+        describe: colorful(module.describe, Color.Green),
         functionList: module.api.map(createApiHelp).join('')
     })
 }
@@ -42,13 +41,13 @@ const createModule = function(module: ModuleDescribe): string {
 const createApiHelp = function(func: FunctionDescribe): string {
     const contents: string[] = []
     // 如果有 api 介绍
-    if (func.describe) contents.push(colorful(func.describe, 'green'))
+    if (func.describe) contents.push(colorful(func.describe, Color.Green))
 
     // 如果有参数介绍
     if (func.params) {
         // 把描述信息格式为字符串
         const describes = func.params.map(param => {
-            return `  - ${colorful(param.name, 'blue')}: ${colorful(param.desc, 'green')}`
+            return `  - ${colorful(param.name, Color.Blue)}: ${colorful(param.desc, Color.Green)}`
         })
 
         // 把字符串更新为 html 片段
@@ -58,9 +57,9 @@ const createApiHelp = function(func: FunctionDescribe): string {
     }
 
     // 函数示例中的参数
-    const paramInFunc = func.params ? func.params.map(param => colorful(param.name, 'blue')).join(', ') : ''
+    const paramInFunc = func.params ? func.params.map(param => colorful(param.name, Color.Blue)).join(', ') : ''
     // 如果启用了命令模式的话就忽略其参数
-    let funcCall = colorful(func.functionName, 'yellow') + (func.commandType ? '': `(${paramInFunc})`)
+    let funcCall = colorful(func.functionName, Color.Yellow) + (func.commandType ? '': `(${paramInFunc})`)
 
     // 函数示例
     contents.push(funcCall)
@@ -71,6 +70,6 @@ const createApiHelp = function(func: FunctionDescribe): string {
     // 将内容装载进 html
     return replaceHtml(apiContainerTemplate, {
         checkboxId, content,
-        title: `${func.title} ${colorful(func.functionName, 'yellow', true)}`
+        title: `${func.title} ${colorful(func.functionName, Color.Yellow, true)}`
     })
 }

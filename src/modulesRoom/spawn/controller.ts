@@ -4,6 +4,7 @@ import roles from '@/role'
 import RoomCreepRelease from './creepRelease'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
+import { TransportTaskType } from '../taskTransport/types'
 
 /**
  * 房间孵化管理模块
@@ -88,7 +89,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
              * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > **移除任务** > tick 末期开始孵化 > extension 扣除能量
              */
             if (spawn.spawning.needTime - spawn.spawning.remainingTime == 1) {
-                this.room.transport.updateTask({ type: 'fillExtension', priority: 10 }, { dispath: true })
+                this.room.transport.updateTask({ type: TransportTaskType.FillExtension, priority: 10 }, { dispath: true })
 
                 if (
                     // 非战争状态下直接发布 power 填 extension 任务
@@ -151,7 +152,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
             return OK
         }
         else {
-            // this.log(`生成失败, ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`, 'red')
+            // this.log(`生成失败, ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`, Color.Red)
             return spawnResult
         }
     }

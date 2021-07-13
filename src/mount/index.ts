@@ -9,12 +9,12 @@ import {
     NukerExtension, PowerSpawnExtension, PowerSpawnConsole, ObserverExtension, ObserverConsole, ContainerExtension
 } from './structures'
 import SourceExtension from './source/extension'
-import { log } from '@/utils'
 import { setBornCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import FactoryConsole from '@/modulesRoom/factory/console'
 import TerminalConsole from '@/modulesRoom/terminal/console'
 import StorageConsole from '@/modulesRoom/storage/console'
 import ShareConsole from '@/modulesRoom/share/console'
+import { Color, log } from '@/modulesGlobal'
 
 /**
  * 所有需要挂载的原型拓展
@@ -67,7 +67,7 @@ export const extensionAppPlugin: AppLifecycleCallbacks = {
         const spawns = Object.values(Game.spawns)
         if (spawns.length > 1) return
     
-        log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], 'green')
+        log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], Color.Green)
         // 设置中心点位并执行初始化配置
         setBornCenter(spawns[0])
         spawns[0].room.controller.onLevelChange(1)
@@ -75,7 +75,7 @@ export const extensionAppPlugin: AppLifecycleCallbacks = {
     },
 
     reset: () => {
-        log('重新挂载拓展', ['global'], 'green')
+        log('重新挂载拓展', ['global'], Color.Green)
 
         // 存储的兜底工作
         initStorage()

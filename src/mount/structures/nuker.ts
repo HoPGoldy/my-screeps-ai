@@ -1,4 +1,5 @@
 import { setRoomStats } from '@/modulesGlobal/stats'
+import { TransportTaskType } from '@/modulesRoom'
 
 // nuker 拓展
 export default class NukerExtension extends StructureNuker {
@@ -26,9 +27,12 @@ export default class NukerExtension extends StructureNuker {
         if (this.store[resource] >= amount) return true
 
         // 检查来源是否符合规则，符合则发布资源转移任务
-        if (source && source.store.getUsedCapacity(resource) > sourceLimit && !this.room.transport.hasTask('fillNuker')) {
+        if (source &&
+            source.store.getUsedCapacity(resource) > sourceLimit &&
+            !this.room.transport.hasTask(TransportTaskType.FillNuker)
+        ) {
             this.room.transport.addTask({
-                type: 'fillNuker',
+                type: TransportTaskType.FillNuker,
                 id: this.id,
                 resourceType: resource
             })

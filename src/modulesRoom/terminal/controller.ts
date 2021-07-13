@@ -3,8 +3,8 @@ import { setRoomStats } from '@/modulesGlobal/stats'
 import { TerminalListenTask, TerminalMemory } from './types'
 import { BASE_MINERAL } from '@/setting'
 import RoomAccessor from '../RoomAccessor'
-import { checkPrice, getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask, unstringifyTask } from './utils'
-import { colorful } from '@/utils'
+import { getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask, unstringifyTask } from './utils'
+import { Color, colorful } from '@/modulesGlobal'
 
 /**
  * Terminal 控制器
@@ -175,7 +175,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         if (dealResult === OK) {
             const crChange = (targetOrder.type == ORDER_BUY ? '+ ' : '- ') + (amount * targetOrder.price).toString() + ' Cr' 
             const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.resourceType} 单价: ${targetOrder.price}`
-            this.log(`交易成功! ${introduce} ${crChange}`, 'green')
+            this.log(`交易成功! ${introduce} ${crChange}`, Color.Green)
             delete this.memory?.orderId
 
             this.setNextIndex()
@@ -184,7 +184,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
             return false
         }
         else if (dealResult === ERR_INVALID_ARGS) delete this.memory?.orderId
-        else this.log(`${this.room.name} 处理订单异常 ${dealResult}`, 'yellow')
+        else this.log(`${this.room.name} 处理订单异常 ${dealResult}`, Color.Yellow)
     }
 
     /**
@@ -203,7 +203,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
             if (resourceAmount >= resource.amount) return this.setNextIndex()
         }
         else {
-            this.log(`未知监听类型 ${resource.mod}`, 'yellow')
+            this.log(`未知监听类型 ${resource.mod}`, Color.Yellow)
             return this.setNextIndex()
         }
 
@@ -240,7 +240,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
 
             // 找不到对应的渠道
             default:
-                this.log(`未知渠道 ${resource.channel}`, 'yellow')
+                this.log(`未知渠道 ${resource.channel}`, Color.Yellow)
                 return this.setNextIndex()
             break
         }
@@ -265,7 +265,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
                 const result = Game.market.changeOrderPrice(order.id, getOrderPrice(resourceType, type))
 
                 if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
+                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, Color.Yellow)
                     return this.setNextIndex()
                 }
             }
@@ -275,7 +275,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
                 const result = Game.market.extendOrder(order.id, amount - order.remainingAmount)
 
                 if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
+                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, Color.Yellow)
                 }
             }
         }
@@ -290,10 +290,10 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
             })
 
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, 'yellow')
+                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, Color.Yellow)
             }
             else if (result === ERR_FULL) {
-                this.log(`订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`, 'yellow')
+                this.log(`订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`, Color.Yellow)
             }
         }
 
@@ -456,7 +456,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         return tasks.map((taskStr, index) => {
             const task = unstringifyTask(taskStr)
             let logs = [
-                `[${index}] ${colorful(task.type, 'blue')}`,
+                `[${index}] ${colorful(task.type, Color.Blue)}`,
                 `[当前/期望] ${this.terminal.store[task.type]}/${task.amount}`,
                 `[类型] ${modeIntroduce[task.mod]}`,
                 `[渠道] ${channelIntroduce[task.channel]}`

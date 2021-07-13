@@ -4,6 +4,9 @@ import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
 import { useCache } from '@/utils'
 import { buildCompleteSite, getNearSite } from '@/modulesGlobal/construction'
+import { WorkTaskType } from '@/modulesRoom'
+import { Color } from '@/modulesGlobal'
+import { MyCreep } from '@/role/types/role'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -17,7 +20,7 @@ export default class CreepExtension extends Creep {
             const memory = getMemoryFromCrossShard(this.name)
             // console.log(`${this.name} 从暂存区获取了内存`, memory)
             if (!memory) {
-                this.log(`找不到对应内存`, 'yellow')
+                this.log(`找不到对应内存`, Color.Yellow)
                 this.say('我凉了！')
                 return
             }
@@ -68,7 +71,7 @@ export default class CreepExtension extends Creep {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content: string, color: Colors = undefined, notify: boolean = false): void {
+    log(content: string, color: Color = undefined, notify: boolean = false): void {
         this.room.log(content, this.name, color, notify)
     }
 
@@ -236,7 +239,7 @@ export default class CreepExtension extends Creep {
                 )) {
                     this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
                     // 同时发布刷墙任务
-                    this.room.work.updateTask({ type: 'fillWall' })
+                    this.room.work.updateTask({ type: WorkTaskType.FillWall })
                 }
 
                 delete this.memory.constructionSiteId

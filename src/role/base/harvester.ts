@@ -2,11 +2,14 @@ import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
 import { addConstructionSite } from '@/modulesGlobal/construction'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
+import { WorkTaskType } from '@/modulesRoom/taskWork/types'
+import { MyCreep } from '../types/role'
 
 /**
  * 能量采集单位的行为模式
  */
- enum HarvestMode {
+export enum HarvestMode {
     /**
      * 启动模式
      * 会采集能量然后运送会 spawn 和 extension
@@ -137,8 +140,8 @@ const actionStrategy: ActionStrategy = {
             if (posContinaer.length <= 0 && posContinaerSite.length <= 0) {
                 addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
                 // container 建造任务的优先级应该是最高的
-                creep.room.work.addTask({ type: 'buildStartContainer', sourceId: source.id, priority: 4 })
-                // creep.log(`发布 source ${source.id} 的 container 建造任务`, 'green')
+                creep.room.work.addTask({ type: WorkTaskType.BuildStartContainer, sourceId: source.id, priority: 4 })
+                // creep.log(`发布 source ${source.id} 的 container 建造任务`, Color.Green)
             }
 
             return true
@@ -204,7 +207,7 @@ const actionStrategy: ActionStrategy = {
                 const useRoom = Game.rooms[creep.memory.data.useRoom]
                 if (!useRoom) return false
                 // 修个小 container，派一个人来修就可以了
-                useRoom.work.updateTask({ type: 'repair', need: 1, priority: WORK_TASK_PRIOIRY.REPAIR }, { dispath: true })
+                useRoom.work.updateTask({ type: WorkTaskType.Repair, need: 1, priority: WORK_TASK_PRIOIRY.REPAIR }, { dispath: true })
             }
 
             return true
@@ -231,7 +234,7 @@ const actionStrategy: ActionStrategy = {
 
                     // 没有任务的话才会发布
                     !hasTransportTask && creep.room.transport.addTask({
-                        type: 'transport',
+                        type: TransportTaskType.Transport,
                         from: container.id,
                         to: creep.room.storage.id,
                         resourceType: RESOURCE_ENERGY,

@@ -1,5 +1,6 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
+import { Color } from '@/modulesGlobal/console'
 
 /**
  * 外矿采集者
@@ -151,7 +152,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
 
         const target = Game.getObjectById(targetId)
         if (!target) {
-            creep.log(`找不到存放建筑 ${targetId}`, 'yellow')
+            creep.log(`找不到存放建筑 ${targetId}`, Color.Yellow)
             return false
         }
 
@@ -161,7 +162,7 @@ const remoteHarvester: CreepConfig<'remoteHarvester'> = {
         if (result === ERR_NOT_ENOUGH_RESOURCES) return true
         else if (result === ERR_FULL) creep.say('满了啊')
         else if (result === ERR_NOT_IN_RANGE) creep.say('在路上啦')
-        else if (result !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${result}`, 'red')
+        else if (result !== OK) creep.log(`target 阶段 transfer 出现异常，错误码 ${result}`, Color.Red)
 
         return false
     },

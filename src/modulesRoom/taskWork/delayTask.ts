@@ -3,24 +3,26 @@
  */
 
 import { delayQueue } from '@/modulesGlobal/delayQueue'
+import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 import { WORK_TASK_PRIOIRY } from './constant'
+import { WorkTaskType } from './types'
 
 /**
  * 注册刷墙工的延迟孵化任务
  */
-delayQueue.addDelayCallback('spawnFiller', room => {
+delayQueue.addDelayCallback(DelayTaskType.SpawnFiller, room => {
     if (!room) return
 
     // cpu 还是不够的话就延迟发布
     if (Game.cpu.bucket < 700) return addSpawnRepairerTask(room.name)
 
-    room.work.updateTask({ type: 'fillWall' })
+    room.work.updateTask({ type: WorkTaskType.FillWall })
 })
 
 /**
  * 注册建筑任务发布
  */
-delayQueue.addDelayCallback('addBuildTask', (room, task) => {
+delayQueue.addDelayCallback(DelayTaskType.AddBuildTask, (room, task) => {
     // 如果没有工地的话就创建并再次发布建造任务
     if (!room) {
         addBuildTask(task.roomName)
@@ -28,7 +30,7 @@ delayQueue.addDelayCallback('addBuildTask', (room, task) => {
     }
 
     // 以指定工地为目标发布建筑
-    room.work.updateTask({ type: 'build', priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true })
+    room.work.updateTask({ type: WorkTaskType.Build, priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true })
 })
 
 /**
@@ -37,7 +39,7 @@ delayQueue.addDelayCallback('addBuildTask', (room, task) => {
  * @param roomName 添加到的房间名
  */
 export const addSpawnRepairerTask = function (roomName: string) {
-    delayQueue.addDelayTask('spawnFiller', { roomName }, 5000)
+    delayQueue.addDelayTask(DelayTaskType.SpawnFiller, { roomName }, 5000)
 }
 
 /**
@@ -48,7 +50,7 @@ export const addSpawnRepairerTask = function (roomName: string) {
  * @param handleRoomName 建筑任务要发布到那个房间，默认为 pos 所在房间
  */
 export const addBuildTask = function (handleRoomName: string) {
-    delayQueue.addDelayTask('addBuildTask', {
+    delayQueue.addDelayTask(DelayTaskType.AddBuildTask, {
         roomName: handleRoomName
     }, 2)
 }

@@ -1,5 +1,6 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
+import { Color } from '@/modulesGlobal/console'
 
 /**
  * 掠夺者
@@ -113,7 +114,7 @@ const reiver: CreepConfig<'reiver'> = {
         const { targetId, flagName } = creep.memory.data
         const targetStructure = Game.getObjectById(targetId)
         if (!targetStructure) {
-            creep.log(`找不到要存放资源的建筑 ${targetId}`, 'yellow')
+            creep.log(`找不到要存放资源的建筑 ${targetId}`, Color.Yellow)
             creep.say('搬到哪？')
             return false
         }

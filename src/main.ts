@@ -1,12 +1,14 @@
-import App from './modulesGlobal/framework'
-import { errorMapper } from './modulesGlobal/errorMapper'
+import {
+    App,
+    errorMapper,
+    stateScannerAppPlugin,
+    creepNumberControlAppPlugin,
+    crossShardAppPlugin,
+    delayQueueAppPlugin,
+    constructionAppPlugin,
+    mapLibraryAppPlugin
+} from './modulesGlobal'
 import { generatePixelAppPlugin } from './utils'
-import { stateScannerAppPlugin } from './modulesGlobal/stats'
-import { creepNumberControlAppPlugin } from './modulesGlobal/creep'
-import { crossShardAppPlugin } from './modulesGlobal/crossShard'
-import { delayQueueAppPlugin } from './modulesGlobal/delayQueue'
-import { constructionAppPlugin } from './modulesGlobal/construction'
-import { mapLibraryAppPlugin } from './modulesGlobal/mapLibrary'
 import { mountList, extensionAppPlugin } from './mount'
 
 // 挂载所有的原型拓展

@@ -2,6 +2,7 @@
  * 包含可复用的 creep 角色身体配置项
  */
 
+import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
 import { calcBodyPart } from '@/utils'
 
 /**

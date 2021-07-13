@@ -1,3 +1,4 @@
+import { Color } from "@/modulesGlobal"
 import FactoryBase from "./base"
 import { ENERGY_LIMIT, FactoryState } from "./constant"
 
@@ -47,11 +48,11 @@ export default class StageGetResource extends FactoryBase {
                 // 不在黑名单里就尝试自己合成
                 if (!this.inBlacklist(resType)) {
                     this.handleInsufficientResource(resType, amount)
-                    this.log(`发现底物不足，进行拆分：${resType} ${amount}`, 'yellow', true)
+                    this.log(`发现底物不足，进行拆分：${resType} ${amount}`, Color.Yellow, true)
                 }
                 // 缺少的是基础资源，等一等
                 else this.gotoBed(100, `缺少 ${resType}*${amount}`)
-                // this.log(`合成暂停，缺少 ${resType}*${needAmount}`, 'yellow')
+                // this.log(`合成暂停，缺少 ${resType}*${needAmount}`, Color.Yellow)
                 return
             }
         }

@@ -1,4 +1,5 @@
 import { errorMapper } from '@/modulesGlobal/errorMapper'
+import { DelayTask, DelayTaskCallback, DelayTaskDatas, DelayTaskType } from './types'
 
 /**
  * 延迟任务队列的数据保存在 Memory 下的哪个字段里
@@ -9,7 +10,7 @@ export const CreateDelayQueue = function () {
     /**
      * 所有的任务回调都会被存放到这里
      */
-    const taskCallbacks: { [taskName in AllDelayTaskName]?: DelayTaskCallback<AllDelayTaskName> } = {}
+    const taskCallbacks: { [taskName in DelayTaskType]?: DelayTaskCallback } = {}
 
     /**
      * 所有的延迟任务存放处
@@ -25,9 +26,9 @@ export const CreateDelayQueue = function () {
      * @param data 该任务调用时接受的数据
      * @param callTime 任务在多少 tick 后调用
      */
-    const addDelayTask = function <K extends AllDelayTaskName>(
+    const addDelayTask = function <K extends DelayTaskType>(
         name: K,
-        data: DelayTaskTypes[K],
+        data: DelayTaskDatas[K],
         call: number
     ): void {
         const callTick = Game.time + call
@@ -75,7 +76,7 @@ export const CreateDelayQueue = function () {
      * @param name 要分配回调的任务名
      * @param callback 任务触发时要执行的回调
      */
-    const addDelayCallback = function <K extends AllDelayTaskName>(
+    const addDelayCallback = function <K extends DelayTaskType>(
         name: K,
         callback: DelayTaskCallback<K>
     ): void {

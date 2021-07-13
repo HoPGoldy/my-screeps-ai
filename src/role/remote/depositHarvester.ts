@@ -1,6 +1,7 @@
 import { DEPOSIT_MAX_COOLDOWN } from '@/setting'
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
+import { Color } from '@/modulesGlobal/console'
 
 /**
  * deposit 采集者
@@ -84,7 +85,7 @@ const depositHarvester: CreepConfig<'depositHarvester'> = {
 
         const room = Game.rooms[spawnRoom]
         if (!room || !room.terminal) {
-            creep.log(`[${creep.name}] 找不到存放建筑`, 'yellow')
+            creep.log(`[${creep.name}] 找不到存放建筑`, Color.Yellow)
             return false
         }
 

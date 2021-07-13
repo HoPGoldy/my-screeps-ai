@@ -3,6 +3,7 @@ import { clearFlag } from '@/utils'
 import comm from './/commodity'
 import res from './resourcesHelp'
 import help from './help'
+import roomAlias from './roomAlias'
 import { nuker, cancelNuker as cancelnuker, confirmNuker as confirmnuker } from './nuker'
 import ps from './powerSpawn'
 import ob from './observer'
@@ -68,15 +69,8 @@ const alias = {
     getform,
     // 资源共享注册房间
     share: showResourceSource,
-    /**
-     * 把房间挂载到全局
-     * 来方便控制台操作，在访问时会实时的获取房间对象
-     * 注意：仅会挂载 Memory.rooms 里有的房间
-     */
-    ...Object.keys(Memory.rooms || {}).reduce((getters, roomName) => {
-        getters[roomName] = (() => Game.rooms[roomName])
-        return getters
-    }, {})
+    // 全局手操房间快捷访问
+    ...roomAlias
 }
 
 // 挂载全局拓展

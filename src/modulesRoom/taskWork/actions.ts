@@ -1,6 +1,9 @@
+import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
+import { MyCreep } from '@/role/types/role'
 import { useCache } from '@/utils'
 import { WorkActionGenerator } from './controller'
+import { WorkTaskType } from './types'
 
 /**
  * @warning 在任务完成时要及时清除该任务在 creep 内存中留下的缓存
@@ -22,12 +25,12 @@ export const noTask = creep => ({
  * 搬运工在执行各种类型的物流任务时的对应逻辑
  */
 export const transportActions: {
-    [TaskType in AllWorkTaskType]: WorkActionGenerator<TaskType>
+    [TaskType in WorkTaskType]: WorkActionGenerator<TaskType>
 } = {
     /**
      * 升级任务
      */
-    upgrade: creep => ({
+    [WorkTaskType.Upgrade]: creep => ({
         source: () => getEnergy(creep),
         target: () => {
             const { workRoom: workRoomName } = creep.memory.data
@@ -45,13 +48,13 @@ export const transportActions: {
      * 和下面建造任务最大的区别就是这个只会从对应 source 旁的能量获取任务
      * 防止跑 sourceA 取能量造 sourceB 的 conatiner，这会导致浪费很多时间在路上
      */
-    buildStartContainer: (creep, task, workController) => ({
+    [WorkTaskType.BuildStartContainer]: (creep, task, workController) => ({
         source: () => {
             if (creep.store[RESOURCE_ENERGY] >= 20) return true
 
             const source = Game.getObjectById(task.sourceId)
             if (!source || source.getContainer()) {
-                if (!source) creep.log(`找不到 source，container 建造任务移除`, 'yellow')
+                if (!source) creep.log(`找不到 source，container 建造任务移除`, Color.Yellow)
                 workController.removeTask(task.key)
                 return false
             }
@@ -77,7 +80,7 @@ export const transportActions: {
                 const source = Game.getObjectById(task.sourceId)
 
                 if (!source) {
-                    creep.log(`找不到 source，container 建造任务移除`, 'yellow')
+                    creep.log(`找不到 source，container 建造任务移除`, Color.Yellow)
                     workController.removeTask(task.key)
                     return
                 }
@@ -104,7 +107,7 @@ export const transportActions: {
     /**
      * 建造任务
      */
-    build: (creep, task, workController) => ({
+    [WorkTaskType.Build]: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
@@ -126,7 +129,7 @@ export const transportActions: {
     /**
      * 维修任务
      */
-    repair: (creep, task, workController) => ({
+    [WorkTaskType.Repair]: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
@@ -173,7 +176,7 @@ export const transportActions: {
     /**
      * 刷墙任务
      */
-    fillWall: (creep, task, workController) => ({
+    [WorkTaskType.FillWall]: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
             let importantWall = creep.room._importantWall

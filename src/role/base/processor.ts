@@ -1,5 +1,6 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
+import { Color } from '@/modulesGlobal/console'
 
 /**
  * 中心搬运者
@@ -29,8 +30,20 @@ const processor: CreepConfig<'processor'> = {
         if (!task) return false
 
         // 通过房间基础服务获取对应的建筑
-        const structure: AnyStructure = creep.room[task.source]
+        // 如果取用的是能量的话就优先使用 centerlink 里的
+        const structure = (
+            task.resourceType === RESOURCE_ENERGY &&
+            creep.room.centerLink.store[RESOURCE_ENERGY] > 0
+        ) ? creep.room.centerLink : creep.room[task.source]
+
         if (!structure) {
+            creep.room.centerTransport.deleteCurrentTask()
+            return false
+        }
+        // 目标建筑如果已经满了就直接放弃该任务
+        const targetStructure = creep.room[task.target]
+        if ((targetStructure.store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) <= 0) {
+            creep.log(`${task.target} 满了`)
             creep.room.centerTransport.deleteCurrentTask()
             return false
         }
@@ -47,7 +60,7 @@ const processor: CreepConfig<'processor'> = {
         else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos, { range: 1 })
         else if (result === ERR_FULL) return true
         else {
-            creep.log(`source 阶段取出异常，错误码 ${result}`, 'red')
+            creep.log(`source 阶段取出异常，错误码 ${result}`, Color.Red)
             creep.room.centerTransport.hangTask()
         }
 
@@ -60,15 +73,15 @@ const processor: CreepConfig<'processor'> = {
         if (!task) return true
 
         // 提前获取携带量
-        const amount: number = creep.store.getUsedCapacity(task.resourceType)
+        const amount = creep.store.getUsedCapacity(task.resourceType)
 
         // 通过房间基础服务获取对应的建筑
-        const structure: AnyStructure = creep.room[task.target]
+        const structure = creep.room[task.target]
         if (!structure) {
             creep.room.centerTransport.deleteCurrentTask()
             return false
         }
-        
+
         const result = creep.transferTo(structure, task.resourceType, { range: 1 })
         // 如果转移完成则增加任务进度
         if (result === OK) {

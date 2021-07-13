@@ -52,7 +52,7 @@ import { replaceHtml } from '@/modules/console'
 const func = function () {
     return replaceHtml(htmlTemplate, {
         content: '这是一段超级红的文本',
-        color: 'red'
+        color: Color.Red
     })
 }
 ```

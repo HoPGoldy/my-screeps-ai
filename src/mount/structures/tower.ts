@@ -1,3 +1,5 @@
+import { Color } from '@/modulesGlobal'
+import { TransportTaskType } from '@/modulesRoom'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { repairSetting } from '@/setting'
 import { whiteListFilter } from '@/utils'
@@ -122,8 +124,8 @@ export default class TowerExtension extends StructureTower {
             this.log('正在准备 boost 主动防御')
             const result = this.room.startWar('DEFENSE')
 
-            if (result === ERR_NOT_FOUND) this.log(`未找到名为 [${this.room.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`, 'yellow')
-            else if (result === ERR_INVALID_TARGET) this.log('旗帜周围的 lab 数量不足，请移动旗帜位置', 'yellow')
+            if (result === ERR_NOT_FOUND) this.log(`未找到名为 [${this.room.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`, Color.Yellow)
+            else if (result === ERR_INVALID_TARGET) this.log('旗帜周围的 lab 数量不足，请移动旗帜位置', Color.Yellow)
 
             return
         }
@@ -137,7 +139,7 @@ export default class TowerExtension extends StructureTower {
                     role: 'defender',
                     data: {}
                 })
-                this.log(`已发布主动防御单位，返回值：${result}`, 'green')
+                this.log(`已发布主动防御单位，返回值：${result}`, Color.Green)
             }
         }
         // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
@@ -329,8 +331,8 @@ export default class TowerExtension extends StructureTower {
      * @param lowerLimit 能量下限，当自己能量低于该值时将发起请求
      */
     private requireEnergy(lowerLimit: number = 900): void {
-        if (this.store[RESOURCE_ENERGY] <= lowerLimit && !this.room.transport.hasTask('fillTower')) {
-            this.room.transport.addTask({ type: 'fillTower', id: this.id })
+        if (this.store[RESOURCE_ENERGY] <= lowerLimit && !this.room.transport.hasTask(TransportTaskType.FillTower)) {
+            this.room.transport.addTask({ type: TransportTaskType.FillTower, id: this.id })
         }
     }
 }

@@ -1,28 +1,41 @@
-interface RoomMemory {
-    /**
-     * 房间物流任务内存
-     */
-    transport: RoomTaskMemory<AllRoomWorkTask>
+declare global {
+    interface RoomMemory {
+        /**
+         * 房间物流任务内存
+         */
+        transport: RoomTaskMemory<AllRoomTransportTask>
+    }
 }
 
 /**
  * 所有的物流任务类型
  */
-type AllTransportTaskType = keyof TransportTasks
+export enum TransportTaskType {
+    Transport = 'transport',
+    FillExtension = 'fillExtension',
+    FillTower = 'fillTower',
+    FillNuker = 'fillNuker',
+    FillPowerSpawn = 'fillPowerSpawn',
+    LabIn = 'labIn',
+    LabOut = 'labOut',
+    BoostGetResource = 'boostGetResource',
+    BoostGetEnergy = 'boostGetEnergy',
+    BoostClear = 'boostClear',
+}
 
 /**
  * 所有的房间物流任务
  */
-type AllRoomTransportTask = TransportTasks[AllTransportTaskType]
+export type AllRoomTransportTask = TransportTasks[TransportTaskType]
 
 /**
  * 所有的物流任务
  */
-interface TransportTasks {
+export interface TransportTasks {
     /**
      * 基础搬运任务
      */
-    transport: RoomTask<'transport'> & {
+    [TransportTaskType.Transport]: RoomTask<TransportTaskType.Transport> & {
         /**
          * 从哪里搬运，数字元组代表一个位置
          */
@@ -44,31 +57,31 @@ interface TransportTasks {
     /**
      * 填充 spawn 及 extension
      */
-    fillExtension: RoomTask<'fillExtension'>
+    [TransportTaskType.FillExtension]: RoomTask<TransportTaskType.FillExtension>
     /**
      * 填充 tower
      */
-    fillTower: RoomTask<'fillTower'> & {
+    [TransportTaskType.FillTower]: RoomTask<TransportTaskType.FillTower> & {
         id: Id<StructureTower>
     }
     /**
      * 填充 nuker
      */
-    fillNuker: RoomTask<'fillNuker'> & {
+    [TransportTaskType.FillNuker]: RoomTask<TransportTaskType.FillNuker> & {
         id: Id<StructureNuker>
         resourceType: ResourceConstant
     }
     /**
      * 填充 powerSpawn
      */
-    fillPowerSpawn: RoomTask<'fillPowerSpawn'> & {
+    [TransportTaskType.FillPowerSpawn]: RoomTask<TransportTaskType.FillPowerSpawn> & {
         id: Id<StructurePowerSpawn>
         resourceType: ResourceConstant
     }
     /**
      * lab 填充底物
      */
-    labIn: RoomTask<'labIn'> & {
+    [TransportTaskType.LabIn]: RoomTask<TransportTaskType.LabIn> & {
         resource: {
             id: Id<StructureLab>
             type: ResourceConstant
@@ -77,22 +90,22 @@ interface TransportTasks {
     /**
      * lab 移出产物
      */
-    labOut: RoomTask<'labOut'>
+    [TransportTaskType.LabOut]: RoomTask<TransportTaskType.LabOut>
     /**
      * boost 填充资源
      */
-    boostGetResource: RoomTask<'boostGetResource'>
+    [TransportTaskType.BoostGetResource]: RoomTask<TransportTaskType.BoostGetResource>
     /**
      * boost 填充能量
      */
-    boostGetEnergy: RoomTask<'boostGetEnergy'>
+    [TransportTaskType.BoostGetEnergy]: RoomTask<TransportTaskType.BoostGetEnergy>
     /**
      * boost 清理资源
      */
-    boostClear: RoomTask<'boostClear'>
+    [TransportTaskType.BoostClear]: RoomTask<TransportTaskType.BoostClear>
 }
 
 /**
  * 从内存 transport 字段解析出来的存储格式
  */
-type TransportData = TransportTasks[AllTransportTaskType][]
+export type TransportData = TransportTasks[TransportTaskType][]

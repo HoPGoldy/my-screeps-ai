@@ -8,9 +8,10 @@
 import { BOOST_RESOURCE } from '@/setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
-import { createRoomLink, log } from '@/utils'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { removeCreep } from '@/modulesGlobal/creep'
+import { TransportTaskType } from '@/modulesRoom'
+import { Color, createRoomLink, log } from '@/modulesGlobal'
 
 export default class RoomExtension extends Room {
     /**
@@ -21,7 +22,7 @@ export default class RoomExtension extends Room {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content:string, instanceName: string = '', color: Colors | undefined = undefined, notify: boolean = false): void {
+    log(content:string, instanceName: string = '', color: Color | undefined = undefined, notify: boolean = false): void {
         // 为房间名添加超链接
         const roomName = createRoomLink(this.name)
         // 生成前缀并打印日志
@@ -204,8 +205,8 @@ export default class RoomExtension extends Room {
             // 强化成功了就发布资源填充任务是因为
             // 在方法返回 OK 时，还没有进行 boost（将在 tick 末进行），所以这里检查资源并不会发现有资源减少
             // 为了提高存储量，这里直接发布任务，交给 manager 在处理任务时检查是否有资源不足的情况
-            this.transport.addTask({ type: 'boostGetResource' })
-            this.transport.addTask({ type: 'boostGetEnergy' })
+            this.transport.addTask({ type: TransportTaskType.BoostGetResource })
+            this.transport.addTask({ type: TransportTaskType.BoostGetEnergy })
         
             return OK
         }

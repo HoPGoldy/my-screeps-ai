@@ -1,5 +1,4 @@
-import { createHelp } from '@/modulesGlobal/console'
-import { colorful } from '@/utils'
+import { Color, colorful, createHelp } from '@/modulesGlobal/console'
 import { BalanceDirection } from './types'
 
 /**
@@ -25,7 +24,7 @@ export default class StorageConsole extends Room {
                 _.padRight('<= ' + amount.toString(), MAX_LENGTH - 2) :
                 _.padRight(amount.toString() + ' =>', MAX_LENGTH - 2)
 
-            const log = _.padRight(colorful(resourceType, 'yellow'), MAX_LENGTH) +
+            const log = _.padRight(colorful(resourceType, Color.Yellow), MAX_LENGTH) +
                 _.padRight(this.storage.store[resourceType].toString(), MAX_LENGTH) +
                 task +
                 _.padRight(this.terminal.store[resourceType].toString(), MAX_LENGTH)

@@ -1,7 +1,10 @@
+import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
+import { MyCreep } from '@/role/types/role'
 import { boostResourceReloadLimit } from '@/setting'
 import { useCache } from '@/utils'
 import RoomTransport, { TransportActionGenerator } from './controller'
+import { TransportTaskType } from './types'
 
 /**
  * 没有任务时的行为逻辑
@@ -18,13 +21,13 @@ export const noTask = creep => ({
  * 搬运工在执行各种类型的物流任务时的对应逻辑
  */
 export const transportActions: {
-    [TaskType in AllTransportTaskType]: TransportActionGenerator<TaskType>
+    [TaskType in TransportTaskType]: TransportActionGenerator<TaskType>
 } = {
     /**
      * 基础搬运任务
      * 从一个地方（建筑）搬运东西到另一个地方（建筑）
      */
-    transport: (creep, task, transport) => ({
+    [TransportTaskType.Transport]: (creep, task, transport) => ({
         source: () => {
             if (creep.store[task.resourceType] > 0) return true
 
@@ -104,7 +107,7 @@ export const transportActions: {
      * extension 填充任务
      * 维持正常孵化的任务
      */
-    fillExtension: (creep, task, transport) => ({
+    [TransportTaskType.FillExtension]: (creep, task, transport) => ({
         source: () => getEnergy(creep, transport),
         target: () => {
             transport.countWorkTime()
@@ -124,7 +127,7 @@ export const transportActions: {
      * tower 填充任务
      * 维持房间内所有 tower 的能量
      */
-    fillTower: (creep, task, transport) => ({
+    [TransportTaskType.FillTower]: (creep, task, transport) => ({
         source: () => getEnergy(creep, transport),
         target: () => {
             transport.countWorkTime()
@@ -173,7 +176,7 @@ export const transportActions: {
      * 由 nuker 在 Nuker.work 中发布
      * 任务的搬运量取决于 manager 的最大存储量，搬一次就算任务完成
      */
-    fillNuker: (creep, task, transport) => ({
+    [TransportTaskType.FillNuker]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             // 如果身上有对应资源的话就直接去填充
@@ -212,7 +215,7 @@ export const transportActions: {
             creep.goTo(sourceStructure.pos)
             const result = creep.withdraw(sourceStructure, task.resourceType, getAmount)
             if (result === OK) return true
-            else if (result != ERR_NOT_IN_RANGE) creep.log(`nuker 填充任务，withdraw ${result}`, 'red')
+            else if (result != ERR_NOT_IN_RANGE) creep.log(`nuker 填充任务，withdraw ${result}`, Color.Red)
         },
         target: () => {
             transport.countWorkTime()
@@ -239,7 +242,7 @@ export const transportActions: {
      * 在 inLab 中填充两种底物
      * 并不会填满，而是根据自己最大的存储量进行填充，保证在取出产物时可以一次搬完
      */
-    labIn: (creep, task, transport) => ({
+    [TransportTaskType.LabIn]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             // 获取 terminal
@@ -297,7 +300,7 @@ export const transportActions: {
      * lab 产物移出任务
      * 把 lab 中所有的资源都转移到 terminal 中
      */
-    labOut: (creep, task, transport) => ({
+    [TransportTaskType.LabOut]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             // 获取还有资源的 lab（mineralType 有值就代表其中还有资源）
@@ -353,7 +356,7 @@ export const transportActions: {
      * 由 powerSpawn 在 powerSpawn.work 中发布
      * 任务的搬运量取决于 manager 的最大存储量，搬一次就算任务完成
      */
-    fillPowerSpawn: (creep, task, transport) => ({
+    [TransportTaskType.FillPowerSpawn]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             // 如果身上有对应资源的话就直接去填充
@@ -393,7 +396,7 @@ export const transportActions: {
             creep.goTo(sourceStructure.pos)
             const result = creep.withdraw(sourceStructure, task.resourceType, getAmount)
             if (result === OK) return true
-            else if (result != ERR_NOT_IN_RANGE) creep.log(`powerSpawn 填充任务，withdraw ${result}`, 'red')
+            else if (result != ERR_NOT_IN_RANGE) creep.log(`powerSpawn 填充任务，withdraw ${result}`, Color.Red)
         },
         target: () => {
             transport.countWorkTime()
@@ -421,7 +424,7 @@ export const transportActions: {
      * 在 boost 任务的 getResource 阶段发布
      * 将任务中给定的 lab 装载资源
      */
-    boostGetResource: (creep, task, transport) => ({
+    [TransportTaskType.BoostGetResource]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             // 获取 terminal
@@ -494,7 +497,7 @@ export const transportActions: {
      * 在 boost 阶段发布
      * 将给指定的 lab 填满能量
      */
-    boostGetEnergy: (creep, task, transport) => ({
+    [TransportTaskType.BoostGetEnergy]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] > 0) return true
@@ -534,7 +537,7 @@ export const transportActions: {
      * boost 材料清理任务
      * 将 boost 强化没用完的材料再搬回 terminal
      */
-    boostClear: (creep, task, transport) => ({
+    [TransportTaskType.BoostClear]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             const boostLabs = Object.values(creep.room.memory.boost.lab)

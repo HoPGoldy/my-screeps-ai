@@ -1,4 +1,4 @@
-import { colorful, createRoomLink } from '@/utils'
+import { Color, colorful, createRoomLink } from '@/modulesGlobal'
 import { TOP_TARGET } from '@/modulesRoom/factory/constant'
 import { FactoryLevel } from '@/modulesRoom/factory/types'
 
@@ -50,8 +50,8 @@ export default function(): string {
     if (!memory) return prefix + `工厂未设置等级`
     if (!memory.depositTypes) return prefix + `工厂未设置生产线`
 
-    const workStats = memory.pause ? colorful('暂停中', 'yellow') :
-        memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, 'yellow') : colorful('工作中', 'green')
+    const workStats = memory.pause ? colorful('暂停中', Color.Yellow) :
+        memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, Color.Yellow) : colorful('工作中', Color.Green)
 
     // 基本信息
     let logs = [ 

@@ -64,5 +64,8 @@ declare global {
     interface RoomPosition {
         /** 本 tick 的周围空余开采位缓存 */
         _freeSpace: RoomPosition[]
+
+        directionToPos(direction: DirectionConstant): RoomPosition | undefined
+        getFreeSpace(): RoomPosition[]
     }
 }

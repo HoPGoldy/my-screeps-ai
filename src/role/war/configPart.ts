@@ -1,3 +1,6 @@
+import { Color } from "@/modulesGlobal/console"
+import { MyCreep } from "../types/role"
+
 /**
  * Boost Creep 准备阶段
  * 本方法抽象出了 boost Creep 通用的 isNeed 阶段和 prepare 阶段
@@ -27,7 +30,7 @@ export const boostPrepare = () => ({
                 return true
             }
             else {
-                creep.log(`强化失败 ${boostResult}`, 'red')
+                creep.log(`强化失败 ${boostResult}`, Color.Red)
                 return false
             }
         }
@@ -70,7 +73,7 @@ export const battleBase = <Role extends 'soldier' | 'dismantler' | 'boostDismant
         }
 
         if (creep.room.name == targetFlag.pos.roomName) {
-            creep.log(`抵达指定房间，切入作战模式`, 'green')
+            creep.log(`抵达指定房间，切入作战模式`, Color.Green)
             return true
         }
 

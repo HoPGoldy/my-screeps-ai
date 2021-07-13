@@ -1,3 +1,4 @@
+import { Color } from "@/modulesGlobal"
 import { DEAL_RATIO, TerminalChannel, TerminalMode } from "./constant"
 import { TerminalListenTask } from "./types"
 
@@ -49,7 +50,7 @@ export const getOrderPrice = function (resourceType: ResourceConstant, type: ORD
     // 卖单用市场均价
     if (type === ORDER_SELL) {
         const history = Game.market.getHistory(resourceType)
-        if (history.length <= 0) this.log(`无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`, 'yellow', true)
+        if (history.length <= 0) this.log(`无法为 ${resourceType} ${type} 创建订单，未找到历史交易记录`, Color.Yellow, true)
         else price = history[0].avgPrice
     }
     // 买单挂最高

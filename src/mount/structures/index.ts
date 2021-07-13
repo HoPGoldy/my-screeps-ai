@@ -1,5 +1,5 @@
 export { default as ControllerExtension } from './controller/extension'
-export { default as SpawnExtension } from './spawn/extension'
+export { default as SpawnExtension } from './spawn'
 export { default as TowerExtension } from './tower'
 export { LinkExtension, LinkConsole } from './link'
 export { default as ExtractorExtension } from './extractor'

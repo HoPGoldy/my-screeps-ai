@@ -1,3 +1,5 @@
+import { Color } from '@/modulesGlobal'
+import { TransportTaskType } from '@/modulesRoom'
 import { reactionSource, LAB_STATE, labTarget, BOOST_RESOURCE } from '@/setting'
 
 /**
@@ -105,12 +107,12 @@ export default class LabExtension extends StructureLab {
 
         // 都就位了就进入下一个阶段
         if (allResourceReady) {
-            this.log(`boost 材料准备完成，开始填充能量`, 'green')
+            this.log(`boost 材料准备完成，开始填充能量`, Color.Green)
             this.room.memory.boost.state = 'labGetEnergy'
         }
         // 否则就发布任务
-        else if (!this.room.transport.hasTask('boostGetResource')) {
-            this.room.transport.addTask({ type: 'boostGetResource' })
+        else if (!this.room.transport.hasTask(TransportTaskType.BoostGetResource)) {
+            this.room.transport.addTask({ type: TransportTaskType.BoostGetResource })
         }
     }
 
@@ -125,16 +127,16 @@ export default class LabExtension extends StructureLab {
             const lab = Game.getObjectById(boostTask.lab[resourceType])
 
             // 有 lab 能量不达标的话就发布能量填充任务
-            if (lab && lab.store[RESOURCE_ENERGY] < 1000 && !this.room.transport.hasTask('boostGetEnergy')) {
+            if (lab && lab.store[RESOURCE_ENERGY] < 1000 && !this.room.transport.hasTask(TransportTaskType.BoostGetEnergy)) {
                 // 有 lab 能量不满的话就发布任务
-                this.room.transport.addTask({ type: 'boostGetEnergy' })
+                this.room.transport.addTask({ type: TransportTaskType.BoostGetEnergy })
                 return
             }
         }
 
         // 能循环完说明能量都填好了
         this.room.memory.boost.state = 'waitBoost'
-        this.log(`能量填充完成，boost 准备就绪，等待强化，键入 ${this.room.name}.whelp() 来查看如何孵化战斗单位`, 'green')
+        this.log(`能量填充完成，boost 准备就绪，等待强化，键入 ${this.room.name}.whelp() 来查看如何孵化战斗单位`, Color.Green)
     }
 
     /**
@@ -149,9 +151,9 @@ export default class LabExtension extends StructureLab {
         for (const labId of boostLabs) {
             const lab = Game.getObjectById(labId)
             // mineralType 不为空就说明还有资源没拿出来
-            if (lab && lab.mineralType && !this.room.transport.hasTask('boostClear')) {
+            if (lab && lab.mineralType && !this.room.transport.hasTask(TransportTaskType.BoostClear)) {
                 // 发布任务
-                this.room.transport.addTask({ type: 'boostClear' })
+                this.room.transport.addTask({ type: TransportTaskType.BoostClear })
                 return
             }
         }
@@ -159,10 +161,10 @@ export default class LabExtension extends StructureLab {
         // 检查是否有 boostGetResource 任务存在
         // 这里检查它的目的是防止 manager 还在执行 BOOST_GET_RESOURCE 任务，如果过早的完成 boost 进程的话
         // 就会出现 lab 集群已经回到了 GET_TARGET 阶段但是 lab 里还有材料存在
-        if (this.room.transport.hasTask('boostGetResource')) return
+        if (this.room.transport.hasTask(TransportTaskType.BoostGetResource)) return
         // lab 净空并且 boost clear 物流任务完成，就算是彻底完成了 boost 进程
-        else if (!this.room.transport.hasTask('boostClear')) {
-            this.log(`材料回收完成`, 'green')
+        else if (!this.room.transport.hasTask(TransportTaskType.BoostClear)) {
+            this.log(`材料回收完成`, Color.Green)
             delete this.room.memory.boost
             if (this.room.memory.lab) this.room.memory.lab.state = LAB_STATE.GET_TARGET
         }
@@ -190,7 +192,7 @@ export default class LabExtension extends StructureLab {
         }
 
         // 检查目标资源数量是否已经足够
-        if (!this.room.terminal) return this.log(`错误! 找不到终端`, 'red')
+        if (!this.room.terminal) return this.log(`错误! 找不到终端`, Color.Red)
         if (this.room.terminal.store[resource.target] >= resource.number) {
             this.setNextIndex()
             return
@@ -207,7 +209,7 @@ export default class LabExtension extends StructureLab {
         }
         // 合成不了
         else {
-            // this.log(`无法合成 ${resource.target}`, 'yellow')
+            // this.log(`无法合成 ${resource.target}`, Color.Yellow)
             this.setNextIndex()
         }
     }
@@ -217,7 +219,7 @@ export default class LabExtension extends StructureLab {
      */
     private labGetResource(): void {
         // 检查是否有能量移入任务
-        if (this.room.transport.hasTask('labIn')) return
+        if (this.room.transport.hasTask(TransportTaskType.LabIn)) return
 
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
         const inLabs = this.room.memory.lab.inLab.map(labId => Game.getObjectById(labId))
@@ -229,7 +231,7 @@ export default class LabExtension extends StructureLab {
 
         // 获取终端
         const termial = this.room.terminal
-        if (!termial) return this.log(`错误! 找不到终端`, 'red')
+        if (!termial) return this.log(`错误! 找不到终端`, Color.Red)
 
         // 检查底物是否足够
         const targetResource = labTarget[this.room.memory.lab.targetIndex].target
@@ -241,7 +243,7 @@ export default class LabExtension extends StructureLab {
             this.setNextIndex()
         }
         // 没有就正常发布底物填充任务
-        else this.addTransferTask('labIn')
+        else this.addTransferTask(TransportTaskType.LabIn)
     }
 
     /**
@@ -280,7 +282,7 @@ export default class LabExtension extends StructureLab {
             }
             // 上面说的会遍历到 inLab 导致的问题就是返回 ERR_INVALID_TARGET，这里不显示
             else if (runResult !== OK && runResult !== ERR_INVALID_TARGET) {
-                this.log(`runReaction 异常，错误码 ${runResult}`, 'red')
+                this.log(`runReaction 异常，错误码 ${runResult}`, Color.Red)
             }
         }
     }
@@ -290,13 +292,13 @@ export default class LabExtension extends StructureLab {
      */
     private labPutResource(): void {
         // 检查是否已经有正在执行的移出任务嘛
-        if (this.room.transport.hasTask('labOut')) return
+        if (this.room.transport.hasTask(TransportTaskType.LabOut)) return
 
         // 检查资源有没有全部转移出去
         for (const lab of this.room[STRUCTURE_LAB]) {
             if (lab.mineralType) {
                 // 没有的话就发布移出任务
-                this.addTransferTask('labOut')
+                this.addTransferTask(TransportTaskType.LabOut)
                 return
             }
         }
@@ -330,7 +332,7 @@ export default class LabExtension extends StructureLab {
         // 获取资源及其数量, 并将数量从小到大排序
         const needResourcesName = reactionSource[resourceType]
         if (!needResourcesName) {
-            this.log(`reactionSource 中未定义 ${resourceType}`, 'yellow')
+            this.log(`reactionSource 中未定义 ${resourceType}`, Color.Yellow)
             return 0
         }
         const needResources = needResourcesName
@@ -349,12 +351,12 @@ export default class LabExtension extends StructureLab {
      * @param type 要添加的任务类型
      * @returns 是否成功添加了物流任务
      */
-    private addTransferTask(type: 'labIn' | 'labOut'): boolean {
+    private addTransferTask(type: TransportTaskType.LabIn | TransportTaskType.LabOut): boolean {
         if (this.room.transport.hasTask(type)) return true
 
         const labMemory = this.room.memory.lab
         // 底物移入任务
-        if (type == 'labIn') {
+        if (type == TransportTaskType.LabIn) {
             // 获取目标产物
             const targetResource = labTarget[labMemory.targetIndex].target
             // 获取底物及其数量
@@ -368,7 +370,7 @@ export default class LabExtension extends StructureLab {
             return true
         }
         // 产物移出任务
-        else if (type == 'labOut') {
+        else if (type == TransportTaskType.LabOut) {
             this.room.transport.addTask({ type })
             return true
         }

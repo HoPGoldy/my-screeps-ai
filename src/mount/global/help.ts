@@ -1,5 +1,4 @@
-import { createHelp } from '@/modulesGlobal/console'
-import { colorful, createLink } from '@/utils'
+import { Color, colorful, createHelp, createLink } from '@/modulesGlobal/console'
 
 /**
  * 帮助文档中的标题
@@ -14,9 +13,9 @@ import { colorful, createLink } from '@/utils'
 ]
 
 export default (): string => [
-    ...PROJECT_TITLE.map(line => colorful(line, 'blue', true)),
+    ...PROJECT_TITLE.map(line => colorful(line, Color.Blue, true)),
 
-    `\n半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息 (如：${colorful('Game.rooms.W1N1.help', 'yellow')}())。在 ${colorful('Link, Factory, Terminal, PowerSpawn, Observer', 'yellow')} 对象实例上也包含对应的 help 方法。\n`,
+    `\n半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息 (如：${colorful('Game.rooms.W1N1.help', Color.Yellow)}())。在 ${colorful('Link, Factory, Terminal, PowerSpawn, Observer', Color.Yellow)} 对象实例上也包含对应的 help 方法。\n`,
 
     createHelp(
         {

@@ -3,6 +3,7 @@ import { createBodyGetter } from '@/utils'
 import { delayQueue } from '@/modulesGlobal/delayQueue'
 import { MINE_LIMIT } from '@/setting'
 import { removeCreep } from '@/modulesGlobal/creep/utils'
+import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 
 /**
  * 元素矿采集单位
@@ -55,7 +56,7 @@ const miner: CreepConfig<'miner'> = {
 /**
  * 注册 miner 的延迟孵化任务
  */
-delayQueue.addDelayCallback('spawnMiner', room => {
+delayQueue.addDelayCallback(DelayTaskType.SpawnMiner, room => {
     // 房间或终端没了就不在孵化
     if (!room || !room.terminal) return
 
@@ -77,7 +78,7 @@ delayQueue.addDelayCallback('spawnMiner', room => {
  * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
  */
 const addSpawnMinerTask = function (roomName: string, delayTime: number) {
-    delayQueue.addDelayTask('spawnMiner', { roomName }, delayTime + 1)
+    delayQueue.addDelayTask(DelayTaskType.SpawnMiner, { roomName }, delayTime + 1)
 }
 
 export default miner

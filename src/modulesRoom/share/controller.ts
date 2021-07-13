@@ -1,3 +1,4 @@
+import { Color } from '@/modulesGlobal'
 import RoomAccessor from '../RoomAccessor'
 import { ENERGY_SHARE_LIMIT } from '../storage/constant'
 import { RoomShareTask, ResourceSourceMap } from './types'
@@ -120,7 +121,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         const { amount: taskAmount, resourceType, target } = this.memory
 
         if (taskAmount <= 0) {
-            this.log(`共享资源的数量不可为负 (${resourceType}/${taskAmount})，任务已移除`, 'yellow')
+            this.log(`共享资源的数量不可为负 (${resourceType}/${taskAmount})，任务已移除`, Color.Yellow)
             this.memory = undefined
             return
         }
@@ -130,9 +131,15 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         const { amount: sendAmount, cost } = getSendAmount(
             Math.min(taskAmount, total),
             target,
-            resourceType,
+            terminal.room.name,
             terminal.store.getFreeCapacity()
         )
+        console.log(this.roomName, '共享任务计算结果', target, resourceType, sendAmount, cost)
+        if (sendAmount <= 0) {
+            this.log(`${this.roomName} Terminal 剩余空间不足 (${resourceType}/${taskAmount})，任务已移除`, Color.Yellow)
+            this.memory = undefined
+            return
+        }
 
         // 如果终端存储的资源数量已经足够了
         if (terminal.store[resourceType] >= sendAmount) {
@@ -163,7 +170,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         if (costCondition) {
             terminal.room.centerTransport.send(
                 STRUCTURE_STORAGE, STRUCTURE_TERMINAL,
-                resourceType, cost, 'share'
+                RESOURCE_ENERGY, cost, 'share'
             )
             return
         }
@@ -177,10 +184,10 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         // 任务执行成功，更新共享任务
         if (sendResult == OK) this.updateTaskAmount(sendAmount)
         else if (sendResult == ERR_INVALID_ARGS) {
-            this.log(`共享任务参数异常，无法执行传送，已移除`, 'yellow')
+            this.log(`共享任务参数异常，无法执行传送，已移除`, Color.Yellow)
             this.memory = undefined
         }
-        else this.log(`执行共享任务出错, 错误码：${sendResult}`, 'yellow')
+        else this.log(`执行共享任务出错, 错误码：${sendResult}`, Color.Yellow)
     }
 
     /**

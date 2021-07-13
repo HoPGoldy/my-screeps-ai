@@ -1,4 +1,4 @@
-import { colorful } from "@/utils"
+import { Color, colorful } from "../console/utils"
 
 /**
  * creep 移除配置项
@@ -62,8 +62,8 @@ export const showCreep = function (): string {
         
         // 检查该单位的存活状态
         let liveStats: string = ''
-        if (spawning) liveStats = colorful('孵化中', 'yellow')
-        else liveStats = `${colorful('存活', 'green')} 剩余生命 ${ticksToLive}`
+        if (spawning) liveStats = colorful('孵化中', Color.Yellow)
+        else liveStats = `${colorful('存活', Color.Green)} 剩余生命 ${ticksToLive}`
 
         format[memory.spawnRoom].push(`  - [${name}] [角色] ${memory.role} [当前状态] ${liveStats}`)
     }

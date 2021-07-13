@@ -1,11 +1,12 @@
 import { CreateDelayQueue } from './index'
 import { getMockRoom } from '@test/mock'
+import { DelayTask, DelayTaskData, DelayTaskType } from './types'
 
 describe('延迟任务队列测试', () => {
     // 一个新增矿工的延迟任务
     const mockData: DelayTaskData = { roomName: 'W1N1' }
-    const mockTask: DelayTask<'spawnMiner'> = {
-        name: 'spawnMiner',
+    const mockTask: DelayTask<DelayTaskType.SpawnMiner> = {
+        name: DelayTaskType.SpawnMiner,
         data: mockData
     }
 
@@ -20,7 +21,7 @@ describe('延迟任务队列测试', () => {
 
         // 初始化模块并加载回调
         initDelayTasks()
-        addDelayCallback('spawnMiner', mockCallback)
+        addDelayCallback(DelayTaskType.SpawnMiner, mockCallback)
 
         // 执行模块
         manageDelayTask()
@@ -39,8 +40,8 @@ describe('延迟任务队列测试', () => {
         const mockCallback = jest.fn()
 
         // 添加任务并加载回调
-        addDelayTask('spawnMiner', mockData, 0)
-        addDelayCallback('spawnMiner', mockCallback)
+        addDelayTask(DelayTaskType.SpawnMiner, mockData, 0)
+        addDelayCallback(DelayTaskType.SpawnMiner, mockCallback)
 
         // 执行模块
         manageDelayTask()
@@ -58,7 +59,7 @@ describe('延迟任务队列测试', () => {
         const { saveDelayTasks, addDelayTask } = CreateDelayQueue()
 
         // 添加任务并保存
-        addDelayTask('spawnMiner', mockData, 1)
+        addDelayTask(DelayTaskType.SpawnMiner, mockData, 1)
         saveDelayTasks()
 
         expect(Memory).toHaveProperty('delayTasks')
@@ -70,8 +71,8 @@ describe('延迟任务队列测试', () => {
         const mockCallback = jest.fn()
 
         // 添加不在本 tick 的任务并加载回调
-        addDelayTask('spawnMiner', mockData, 1)
-        addDelayCallback('spawnMiner', mockCallback)
+        addDelayTask(DelayTaskType.SpawnMiner, mockData, 1)
+        addDelayCallback(DelayTaskType.SpawnMiner, mockCallback)
 
         // 执行模块
         Game.time = 1

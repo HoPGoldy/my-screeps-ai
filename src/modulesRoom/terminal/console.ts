@@ -1,8 +1,5 @@
-import TerminalExtension from "./controller"
-import { colorful } from '@/utils'
 import { createForm, createHelp } from '@/modulesGlobal/console'
 import { TerminalChannel, TerminalMode } from "./constant"
-import { unstringifyTask } from "./utils"
 
 /**
  * Terminal 上的用户控制接口

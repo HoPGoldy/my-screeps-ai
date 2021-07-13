@@ -4,9 +4,9 @@
  * 本文件包含了 Room 中用于控制台交互的方法
  */
 
-import { createHelp, createForm } from '@/modulesGlobal/console'
+import { createHelp, Color, colorful } from '@/modulesGlobal/console'
 import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE, ROOM_REMOVE_INTERVAL } from '@/setting'
-import { getName, colorful } from '@/utils'
+import { getName } from '@/utils'
 import { setBaseCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import RoomExtension from './extension'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
@@ -78,12 +78,12 @@ export default class RoomConsole extends RoomExtension {
         // 没有发起过移除或者移除过期了，都视为第一次发起移除
         if (!this.memory.removeTime || Game.time > this.memory.removeTime + ROOM_REMOVE_INTERVAL) {
             log = [
-                `${colorful('警告!', 'red', true)} 你正在试图移除房间 ${this.name}，这将会导致以下行为的发生：\n`,
+                `${colorful('警告!', Color.Red, true)} 你正在试图移除房间 ${this.name}，这将会导致以下行为的发生：\n`,
                 `- 移除所有建筑（不包括 wall、rempart、terminal 和 storage）`,
                 `- 移除所有相关 creep 及配置项（以 ${this.name} 作为名称前缀的 creep）`,
                 `- 移除所有相关 memory（工作内存及统计内存）`,
                 `- ${colorful('不会', undefined, true)}转移房间中存放的资源，需要提前手动转移`,
-                `\n在 ${ROOM_REMOVE_INTERVAL.toString()} tick 内重新执行 ${colorful(this.name + '.remove()', 'red')} 以确认移除，执行 ${colorful(this.name + '.cancelremove()', 'yellow')} 来取消操作`
+                `\n在 ${ROOM_REMOVE_INTERVAL.toString()} tick 内重新执行 ${colorful(this.name + '.remove()', Color.Red)} 以确认移除，执行 ${colorful(this.name + '.cancelremove()', Color.Yellow)} 来取消操作`
             ].join('\n')
             this.memory.removeTime = Game.time
         }
@@ -190,12 +190,12 @@ export default class RoomConsole extends RoomExtension {
         if (!memory) return `[${this.name}] 未启用 lab 集群`
         const logs = [ `[${this.name}]` ]
 
-        if (memory.pause) logs.push(colorful('暂停中', 'yellow'))
+        if (memory.pause) logs.push(colorful('暂停中', Color.Yellow))
         logs.push(`[状态] ${memory.state}`)
 
         // 获取当前目标产物以及 terminal 中的数量
         const res = labTarget[memory.targetIndex]
-        const currentAmount = this.terminal ? this.terminal.store[res.target] : colorful('无法访问 terminal', 'red')
+        const currentAmount = this.terminal ? this.terminal.store[res.target] : colorful('无法访问 terminal', Color.Red)
 
         // 在工作就显示工作状态
         if (memory.state === LAB_STATE.WORKING) {

@@ -1,3 +1,4 @@
+import { Color } from '@/modulesGlobal'
 import RoomAccessor from '../RoomAccessor'
 import { MAX_OPS, PWR_ENABLE_ROOM } from './canstant'
 import { PowerTasks } from './taskHandler'
@@ -130,7 +131,7 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
         const taskOptioon = PowerTasks[task]
         if (!taskOptioon && task !== PWR_GENERATE_OPS) {
             pc.say(`不认识任务 ${task}`)
-            this.log(`没有和任务 [${task}] 对应的处理逻辑，任务已移除`, 'yellow')
+            this.log(`没有和任务 [${task}] 对应的处理逻辑，任务已移除`, Color.Yellow)
             pc.memory.working = true
             return this.deleteCurrentTask()
         }
@@ -206,7 +207,7 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
             return ERR_BUSY
         }
         else {
-            this.log(`执行 getOps 时出错，错误码 ${actionResult}`, 'yellow')
+            this.log(`执行 getOps 时出错，错误码 ${actionResult}`, Color.Yellow)
             return ERR_BUSY
         }
     }
