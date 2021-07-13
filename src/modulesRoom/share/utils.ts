@@ -43,10 +43,7 @@ export const getSendAmount = function (
     const cost = Game.market.calcTransactionCost(amount, targetRoom, sourceRoom)
     // 需要从外边搬进来的资源数量
     const needTransferAmount = Math.max(amount - existResource, 0) + Math.max(cost - existEnergy, 0)
-    if (needTransferAmount <= terminalFree) {
-        console.log('getSendAmount 内部', needTransferAmount, terminalFree)
-        return { amount, cost }
-    }
+    if (needTransferAmount <= terminalFree) return { amount, cost }
 
     // 剩余空间不足，拒绝发送
     if (needTransferAmount > 0 && terminalFree <= 0) return { amount: 0, cost: 0 }

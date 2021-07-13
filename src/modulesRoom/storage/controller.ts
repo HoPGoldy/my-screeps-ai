@@ -103,18 +103,45 @@ export default class StorageController extends RoomAccessor<undefined> {
             })
         }
 
+        // 将两个任务数组交叉合并在一起
+        const mergedTasks = this.mergeTasks(toStorageTasks, toTerminalTasks)
+        // 并且发布物流任务
+        this.generateCenterTask(mergedTasks)
+
+        return mergedTasks
+    }
+
+    /**
+     * 合并任务数组
+     * @param toStorageTasks 要把资源运到 storage 的任务数组
+     * @param toTerminalTasks 要把资源运到终端的任务数组
+     */
+    private mergeTasks(
+        toStorageTasks: BalanceResult<BalanceDirection.ToStorage>[],
+        toTerminalTasks: BalanceResult<BalanceDirection.ToTerminal>[]
+    ) {
         // 把两组任务按照任务搬运量升序排序
         const sortedToStorageTasks = _.sortBy(toStorageTasks, ({ amount }) => amount)
         const sortedToTerminalTasks = _.sortBy(toTerminalTasks, ({ amount }) => amount)
 
         // storage 和 terminal 哪个剩的地方大就先往哪挪，两个方向的任务交叉执行
-        const mergedTasks = this.storage.store.getFreeCapacity() > this.terminal.store.getFreeCapacity() ?
+        return this.storage.store.getFreeCapacity() > this.terminal.store.getFreeCapacity() ?
             crossMerge<BalanceResult>(sortedToStorageTasks, sortedToTerminalTasks) :
             crossMerge<BalanceResult>(sortedToTerminalTasks, sortedToStorageTasks)
-        
-        return mergedTasks
     }
-    
+
+    /**
+     * 按照平衡策略生成对应的中央物流任务
+     */
+    private generateCenterTask(tasks: BalanceResult[]): number[] {
+        return tasks.map((task, index) => {
+            const { to, from } = task.direction === BalanceDirection.ToStorage ?
+                { to: STRUCTURE_STORAGE, from: STRUCTURE_TERMINAL } :
+                { to: STRUCTURE_TERMINAL, from: STRUCTURE_STORAGE }
+            return this.room.centerTransport.send(from, to, task.resourceType, task.amount, 'balanceTask' + index)
+        })
+    }
+
     /**
      * 检查一种 terminal 里有的资源是否需要平衡
      * 如果需要的话会把任务存放到第三个和第四个参数对应的数组里

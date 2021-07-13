@@ -34,7 +34,7 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
      * @param taskKey 唯一的任务 id，若该值和已存在的任务索引重复则不允许添加，默认为 to 参数的值
      */
     public send(
-        form: CenterStructures,
+        from: CenterStructures,
         to: CenterStructures,
         resourceType: ResourceConstant,
         amount: number,
@@ -44,7 +44,7 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
 
         return this.addTask({
             submit,
-            source: form,
+            source: from,
             target: to,
             resourceType,
             amount
