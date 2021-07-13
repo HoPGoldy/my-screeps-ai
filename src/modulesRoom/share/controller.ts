@@ -85,27 +85,17 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
      * @returns 是否成功添加
      */
     public handle(targetRoom: string, resourceType: ResourceConstant, amount: number): boolean {
-        const selfRoom = Game.rooms[this.roomName]
-        if (!selfRoom) return false
-
-        if (this.task || !selfRoom.terminal) return false
+        if (this.task || !this.room || !this.room.terminal) return false
 
         // 本房间内指定资源的存量
-        const terminalAmount = selfRoom.terminal.store[resourceType] || 0
-        const storageAmount = selfRoom.storage ? (selfRoom.storage.store[resourceType] || 0) : 0
-
-        // 终端能发送的最大数量（路费以最大发送量计算）
-        const freeSpace = selfRoom.terminal.store.getFreeCapacity()
-            + terminalAmount
-            - Game.market.calcTransactionCost(amount, this.roomName, targetRoom)
-
-        // 期望发送量、当前存量、能发送的最大数量中找最小的
-        const sendAmount = Math.min(amount, terminalAmount + storageAmount, freeSpace)
+        let { total } = this.room.myStorage.getResource(resourceType)
 
         this.memory = {
             target: targetRoom,
             resourceType,
-            amount: sendAmount
+            // 期望发送量、当前存量中找最小的
+            // 这里不会考虑终端的发送量，因为处理共享任务时可以分批多次发送
+            amount: Math.min(amount, total)
         }
 
         return true
@@ -126,14 +116,18 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
             return
         }
 
-        // 获取本次要发送的数量
         const { total } = terminal.room.myStorage.getResource(resourceType)
+        // 获取本次要发送的数量
         const { amount: sendAmount, cost } = getSendAmount(
             Math.min(taskAmount, total),
             target,
             terminal.room.name,
-            terminal.store.getFreeCapacity()
+            terminal.store.getFreeCapacity(),
+            terminal.store[resourceType],
+            terminal.store[RESOURCE_ENERGY]
         )
+
+        const result = `${sendAmount - terminal.store[resourceType] + cost - terminal.store[RESOURCE_ENERGY]}/${terminal.store.getFreeCapacity()}`
         console.log(this.roomName, '共享任务计算结果', target, resourceType, sendAmount, cost)
         if (sendAmount <= 0) {
             this.log(`${this.roomName} Terminal 剩余空间不足 (${resourceType}/${taskAmount})，任务已移除`, Color.Yellow)
@@ -249,7 +243,12 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
 
             if (!room || !room.terminal) return false
             // 该房间有任务或者就是自己，不能作为共享来源
-            if (room.memory.shareTask || room.name === this.roomName) return true
+            // 终端空余空间太少的话也会拒绝发送
+            if (
+                room.memory.shareTask ||
+                room.name === this.roomName ||
+                room.terminal.store.getFreeCapacity() < 1000
+            ) return true
 
             // 如果请求共享的是能量
             if (resourceType === RESOURCE_ENERGY) {
@@ -267,7 +266,6 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
             return true
         })
 
-        // 把上面筛选出来的空字符串元素去除
         return targetRoom
     }
 }

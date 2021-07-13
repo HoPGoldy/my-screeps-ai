@@ -18,24 +18,32 @@ export const orderExtend = function (orderId: string, amount: number) {
 }
 
 /**
+* 把房间挂载到全局
+* 来方便控制台操作，在访问时会实时的获取房间对象
+* 注意：仅会挂载 Memory.rooms 里有的房间
+*/
+export const roomAlias = Object.keys(Memory.rooms || {}).reduce((getters, roomName) => {
+    getters[roomName] = (() => Game.rooms[roomName])
+    return getters
+}, {})
+
+/**
  * 查询指定资源在各个房间中的数量
  * 
  * @param resourceName 要查询的资源名
  */
 export const seeres = function (resourceName: ResourceConstant): string {
-    // 根据资源不同选择不同的查询目标
-    const source = resourceName === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
     let total = 0
 
     let log = `${resourceName} 的分布如下：\n`
     // 遍历所有房间并检查对应的存储建筑
     log += Object.values(Game.rooms).map(room => {
         // 统计数量
-        const amount = room[source] ? (room[source].store[resourceName] || 0) : 0
+        const { total: amount } = room.myStorage.getResource(resourceName)
         total += amount
 
         // 如果有就列出显示
-        if (room[source] && amount > 0) return `${room.name} => ${amount}`
+        if (amount > 0) return `${room.name} => ${amount}`
         else return false
     }).filter(Boolean).join('\n')
 

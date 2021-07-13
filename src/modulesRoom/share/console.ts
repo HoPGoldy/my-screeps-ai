@@ -3,6 +3,33 @@
  */
 export default class ShareConsole extends Room {
     /**
+     * 显示共享任务详情
+     */
+    public shareshow(): string {
+        const { terminal, storage } = this
+        if (!terminal) return '该房间暂无 terminal，无法执行共享任务'
+        if (!this.share.task) return '暂无共享任务'
+        const { target, resourceType, amount } = this.share.task
+
+        const logs = [
+            '正在执行共享任务: ',
+            `[目标房间] ${target} [资源类型] ${resourceType} [共享数量] ${amount}`,
+            '当前终端状态：',
+            `[剩余空间] ${terminal.store.getFreeCapacity()} ` +
+            `[${resourceType} 数量] ${terminal.store[resourceType]} ` +
+            `[能量数量] ${terminal.store[RESOURCE_ENERGY]}`
+        ]
+
+        if (storage) logs.push(
+            '当前 Storage 状态：',
+            `[剩余空间] ${storage.store.getFreeCapacity()} ` + 
+            `[${resourceType} 数量] ${storage.store[resourceType]} ` +
+            `[能量数量] ${storage.store[RESOURCE_ENERGY]}`,
+        )
+
+        return logs.join('\n')
+    }
+    /**
      * 向指定房间发送资源
      * 
      * @param roomName 目标房间名

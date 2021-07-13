@@ -39,7 +39,7 @@ export default class StorageController extends RoomAccessor<undefined> {
         // 能量太少了，请求资源共享
         if (energyAmount < ENERGY_REQUEST_LIMIT && this.terminal) {
             const room = this.room.share.request(RESOURCE_ENERGY, ENERGY_REQUEST_LIMIT - energyAmount)
-            if (room) this.log(`能量过低（${energyAmount}），将接受 ${room.name} 的能量支援`)
+            if (room) this.log(`能量过低（剩余：${energyAmount}），将接受 ${room.name} 的能量支援（共享数量：${ENERGY_REQUEST_LIMIT - energyAmount}）`)
             else this.log(`能量过低（${energyAmount}），但未找到可以支援能量的房间`)
         }
     }
@@ -58,38 +58,50 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 在 terminal 和 storage 之间平衡资源
      */
-    public balanceResource(): BalanceResult[] | ERR_NOT_FOUND {
+    public balanceResource(targetResource?: ResourceConstant): BalanceResult[] | ERR_NOT_FOUND {
         if (!this.storage || !this.terminal) return ERR_NOT_FOUND
 
         // 要传递到 terminal 的任务和要传递到 storage 的任务分开放
         const toStorageTasks: BalanceResult<BalanceDirection.ToStorage>[] = []
         const toTerminalTasks: BalanceResult<BalanceDirection.ToTerminal>[] = []
 
-        const balanceTask = _.cloneDeep(BALANCE_CONFIG)
+        // 指定了目标，只调度这一种资源
+        if (targetResource) {
+            this.checkAndGenerateTask(
+                targetResource,
+                this.terminal.store[targetResource],
+                toStorageTasks,
+                toTerminalTasks
+            )
+        }
+        // 没有指定目标，调度所有存在的资源
+        else {
+            const balanceTask = _.cloneDeep(BALANCE_CONFIG)
 
-        // 检查终端资源是否需要平衡
-        Object.entries(this.terminal.store).map((
-            [resourceType, terminalAmount]: [ResourceConstant, number]
-        ) => {
-            this.checkAndGenerateTask(resourceType, terminalAmount, toStorageTasks, toTerminalTasks)
-            // 这条资源已经检查过了，移除
-            delete balanceTask[resourceType]
-        })
-
-        // 检查终端里没有，但是规则里提到的资源
-        // 上面只会检查终端里还有的资源，如果数量为空就不会检查了，这里会把这些资源检查补上
-        Object.entries(balanceTask).map((
-            [resourceType, amountLimit]: [ResourceConstant, number]
-        ) => {
-            const storageAmount = this.storage.store[resourceType] || 0
-            if (storageAmount <= 0) return
-            
-            toTerminalTasks.push({
-                resourceType,
-                amount: Math.min(amountLimit, storageAmount),
-                direction: BalanceDirection.ToTerminal
+            // 检查终端资源是否需要平衡
+            Object.entries(this.terminal.store).map((
+                [resourceType, terminalAmount]: [ResourceConstant, number]
+            ) => {
+                this.checkAndGenerateTask(resourceType, terminalAmount, toStorageTasks, toTerminalTasks)
+                // 这条资源已经检查过了，移除
+                delete balanceTask[resourceType]
             })
-        })
+
+            // 检查终端里没有，但是规则里提到的资源
+            // 上面只会检查终端里还有的资源，如果数量为空就不会检查了，这里会把这些资源检查补上
+            Object.entries(balanceTask).map((
+                [resourceType, amountLimit]: [ResourceConstant, number]
+            ) => {
+                const storageAmount = this.storage.store[resourceType] || 0
+                if (storageAmount <= 0) return
+                
+                toTerminalTasks.push({
+                    resourceType,
+                    amount: Math.min(amountLimit, storageAmount),
+                    direction: BalanceDirection.ToTerminal
+                })
+            })
+        }
 
         // 把两组任务按照任务搬运量升序排序
         const sortedToStorageTasks = _.sortBy(toStorageTasks, ({ amount }) => amount)

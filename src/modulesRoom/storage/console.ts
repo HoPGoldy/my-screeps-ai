@@ -35,6 +35,13 @@ export default class StorageConsole extends Room {
         return logs.join('\n')
     }
 
+    /**
+     * 手动请求能量
+     */
+    getenergy(): void {
+        this.myStorage.requestEnergyCheck()
+    }
+
     public shelp(): string {
         return createHelp({
             name: 'Storage 控制台',
@@ -43,6 +50,11 @@ export default class StorageConsole extends Room {
                 {
                     title: '执行资源平衡',
                     functionName: 'sb'
+                },
+                {
+                    title: '发起能量请求检查',
+                    describe: '如果能量不足的话可以调用这个命令手动请求其他房间进行共享',
+                    functionName: 'getenergy'
                 }
             ]
         })
