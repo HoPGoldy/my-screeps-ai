@@ -58,14 +58,6 @@ declare global {
     }
 
     /**
-     * creep 名字生成器集合
-     * 用于统一分配 creep 名字
-     */
-    type CreepNameGenerator = {
-        [role in CreepRoleConstant]?: (room: string, index?: number, ...args: any[]) => string
-    }
-
-    /**
      * creep 工作逻辑集合
      * 包含了每个角色应该做的工作
      */
@@ -83,7 +75,7 @@ declare global {
          * 每次死后都会进行判断，只有返回 true 时才会重新发布孵化任务
          * 该方法为空则默认持续孵化
          */
-        isNeed?: (room: Room, preMemory: MyCreepMemory<Role>) => boolean
+        isNeed?: (room: Room, preMemory: MyCreepMemory<Role>, creepName: string) => boolean
         /**
          * 准备阶段
          * 

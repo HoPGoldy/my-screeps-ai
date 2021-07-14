@@ -9,11 +9,17 @@ const TRANSFER_DEATH_LIMIT = 20
 /**
  * 搬运工，运营单位
  * 负责填充 extension、spawn、tower、lab 等资源运输任务
- * 任务处理逻辑定义在 modules/roomTask/transport/actions 中
  */
 const manager: CreepConfig<'manager'> = {
-    // 普通体型的话就一直孵化，特殊体型的话如果还有要做的任务就继续孵化
-    isNeed: (room, preMemory) => !preMemory.bodyType || !!preMemory.taskKey,
+    isNeed: (room, preMemory, creepName) => {
+        // 如果自己被炒鱿鱼了就不再孵化
+        if (room.transport.haveCreepBeenFired(creepName)) {
+            room.transport.removeCreep(creepName)
+            return false
+        }
+        // 普通体型的话就一直孵化，特殊体型的话如果还有要做的任务就继续孵化
+        return !preMemory.bodyType || !!preMemory.taskKey
+    },
     prepare: creep => {
         creep.memory.bodyType = creep.memory.data.bodyType
         return true

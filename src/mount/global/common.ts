@@ -23,7 +23,8 @@ export const orderExtend = function (orderId: string, amount: number) {
 * 注意：仅会挂载 Memory.rooms 里有的房间
 */
 export const roomAlias = Object.keys(Memory.rooms || {}).reduce((getters, roomName) => {
-    getters[roomName] = (() => Game.rooms[roomName])
+    // 大写房间名和小写房间名都挂一下
+    getters[roomName] = getters[roomName.toLowerCase()] = (() => Game.rooms[roomName])
     return getters
 }, {})
 

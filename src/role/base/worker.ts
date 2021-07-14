@@ -7,8 +7,15 @@ import { createBodyGetter } from '@/utils'
  * 任务处理逻辑定义在 modules/roomTask/work/actions 中
  */
 const worker: CreepConfig<'worker'> = {
-    // 普通体型的话就一直孵化，特殊体型的话如果还有要做的任务就继续孵化
-    isNeed: (room, preMemory) => !preMemory.bodyType || !!preMemory.taskKey,
+    isNeed: (room, preMemory, creepName) => {
+        // 如果自己被炒鱿鱼了就不再孵化
+        if (room.work.haveCreepBeenFired(creepName)) {
+            room.work.removeCreep(creepName)
+            return false
+        }
+        // 普通体型的话就一直孵化，特殊体型的话如果还有要做的任务就继续孵化
+        return !preMemory.bodyType || !!preMemory.taskKey
+    },
     prepare: creep => {
         creep.memory.bodyType = creep.memory.data.bodyType
         return true

@@ -24,20 +24,23 @@ export interface RemoveCreepOptions {
 export const removeCreep = function (creepNamePart: string, opts: Partial<RemoveCreepOptions> = {}) {
     const options: RemoveCreepOptions = _.defaults(opts, { batch: false, immediate: false })
 
-    const removeFunc = (creep: Creep) => {
-        if (!creep.name.includes(creepNamePart)) return false
+    const removeFunc = (creepName: string) => {
+        if (!creepName.includes(creepNamePart)) return false
 
         if (options.immediate) {
             // 要删除内存再杀掉，不然会重新孵化
-            delete Memory.creeps[creep.name]
-            creep.suicide()
+            delete Memory.creeps[creepName]
+            Game.creeps[creepName]!.suicide()
         }
-        else creep.memory.cantRespawn = true
+        else Memory.creeps[creepName].cantRespawn = true
 
         return true
     }
 
-    const creeps = Object.values(Game.creeps)
+    // 注意这里是从 memory 中去找
+    // 因为如果运行时 creep 正处在死了但还没有被 creep 数量控制模块发现的时候
+    // Game.creeps 里是找不到他的，就会出现删除了他但是几 tick 之后又重新孵化了的问题
+    const creeps = Object.keys(Memory.creeps || {})
 
     // 如果指定了批量的话就遍历所有 creep
     if (options.batch) creeps.forEach(removeFunc)

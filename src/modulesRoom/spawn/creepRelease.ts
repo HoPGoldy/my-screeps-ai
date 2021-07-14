@@ -42,7 +42,6 @@ export default class RoomCreepRelease {
 
     /**
      * 变更基地运维单位数量
-     * 包含数量保护，保证无论怎么减少都有一定的单位执行任务
      * 
      * @param type 要更新的单位类别，工人 / 搬运工
      * @param adjust 要增减的数量，为负代表减少
@@ -52,25 +51,22 @@ export default class RoomCreepRelease {
         const { room } = this.spawner
         // 单位对应在房间内存中保存的键
         const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
+        // 单位隶属的任务模块
+        const taskController = type === 'worker' ? room.work : room.transport
         // 获取对应的最大数量和最小数量
-        const { MIN, MAX } = (this.spawner.room.memory.baseUnitLimit || {})[type] || BASE_ROLE_LIMIT[type]
+        const { MIN, MAX } = (room.memory.baseUnitLimit || {})[type] || BASE_ROLE_LIMIT[type]
 
         const oldNumber = room.memory[memoryKey] || 0
-        // 计算真实的调整量，保证最少有 MIN 人，最多有 MAX 人
-        let realAdjust = 0
-
-        // 调整完的人数超过限制了，就增加到最大值
-        if (oldNumber + adjust > MAX) realAdjust = MAX - oldNumber
-        // 调整完了人数在正常区间，直接用
-        else if (oldNumber + adjust >= MIN) realAdjust = adjust
-        // 调整值导致人数不够了，根据最小值调整
-        else realAdjust = MIN - oldNumber
+        const realAdjust = this.clacRealAdjust(adjust, oldNumber, MIN, MAX)
 
         if (realAdjust >= 0) {
             // 添加新的单位
             for (let i = oldNumber; i < oldNumber + realAdjust; i++) {
                 const creepName = GetName[type](room.name, i)
-                if (creepName in Game.creeps) continue
+
+                // 如果他还活着，就说明之前可能被开除了，解除开除状态
+                if (creepName in Game.creeps) taskController.unfireCreep(creepName)
+                // 否则就发布新孵化任务
                 this.spawner.addTask({
                     name: creepName,
                     role: type,
@@ -81,7 +77,7 @@ export default class RoomCreepRelease {
         else {
             // 从末尾开始减少单位，减少个数为实际调整值
             for (let i = oldNumber - 1; i >= oldNumber + realAdjust; i--) {
-                removeCreep(GetName[type](room.name, i))
+                taskController.fireCreep(GetName[type](room.name, i))
             }
         }
 
@@ -90,6 +86,24 @@ export default class RoomCreepRelease {
 
         if (adjust !== 0) log(`调整 ${type} 单位数量 [修正] ${adjust} [上/下限] ${MAX}/${MIN} [修正后数量] ${room.memory[memoryKey]}`, [room.name])
         return OK
+    }
+
+    /**
+     * 获取实际调整数量
+     * 保证最少有 MIN 人，最多有 MAX 人
+     * 
+     * @param expect 期望的调整数量
+     * @param old 调整之前的数量
+     * @param min 最少数量
+     * @param max 最多数量
+     */
+    private clacRealAdjust(expect: number, old: number, min: number, max: number): number {
+        // 调整完的人数超过限制了，就增加到最大值
+        if (old + expect > max) return max - old
+        // 调整完了人数在正常区间，直接用
+        else if (old + expect >= min) return expect
+        // 调整值导致人数不够了，根据最小值调整
+        else return min - old
     }
 
     /**

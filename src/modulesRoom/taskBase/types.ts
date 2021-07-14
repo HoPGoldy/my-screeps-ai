@@ -61,6 +61,11 @@ interface TaskUnitInfo {
      * 没有任务时为空
      */
     doing?: number
+    /**
+     * 该 creep 是否被开除了
+     * 当该字段为 true 时，creep 可以正常工作，但是老死之后将不会重新孵化
+     */
+    fired?: boolean
 }
 
 /**

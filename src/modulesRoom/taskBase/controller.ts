@@ -164,7 +164,7 @@ export default class TaskController<
      */
     protected removeTaskUnit(task: CostomTask, unit?: Creep): void {
         if (unit) {
-            if (this.creeps[unit.name]) this.creeps[unit.name].doing = null
+            if (this.creeps[unit.name]) delete this.creeps[unit.name].doing
             delete unit.memory.taskKey
         }
 
@@ -212,7 +212,7 @@ export default class TaskController<
      * @returns 该 creep 分配到的任务
      */
     protected dispatchCreep(creep: Creep): CostomTask {
-        if (this.creeps[creep.name]) this.creeps[creep.name].doing = null
+        if (this.creeps[creep.name]) delete this.creeps[creep.name].doing
         delete creep.memory.taskKey
 
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
@@ -342,11 +342,8 @@ export default class TaskController<
         for (const creepName in this.creeps) {
             const creep = Game.creeps[creepName]
 
-            // 人没了，直接移除
-            if (!creep) {
-                this.removeCreep(creepName)
-                continue
-            }
+            // 人不在，有可能是在重新孵化，暂时跳过任务分配
+            if (!creep) continue
 
             // 如果指定了筛选条件并且筛选没通过则不返回
             if (filter && !filter(this.creeps[creepName], creep)) continue
@@ -359,8 +356,6 @@ export default class TaskController<
 
     /**
      * 移除一个工作单位
-     * 不调用的话也不影响模块运行（任务调度时会自行清理）
-     * 在对应工作单位去世时主动调用可以获得更准确的任务分派
      * 
      * @param creepName 要移除的 creep 名称
      */
@@ -368,6 +363,28 @@ export default class TaskController<
         const creepInfo = this.creeps[creepName]
         if (creepInfo) this.removeTaskUnit(this.getTask(creepInfo.doing))
         delete this.creeps[creepName]
+    }
+
+    /**
+     * 检查 creep 是否被炒鱿鱼了
+     */
+    public haveCreepBeenFired(creepName: string): boolean {
+        const unitInfo = this.creeps[creepName]
+        return !unitInfo || unitInfo.fired
+    }
+
+    /**
+     * 开除某个 creep
+     */
+    public fireCreep(creepName: string): void {
+        if (creepName in this.creeps) this.creeps[creepName].fired = true
+    }
+
+    /**
+     * 放弃开除某个 creep
+     */
+    public unfireCreep(creepName: string): void {
+        if (creepName in this.creeps) delete this.creeps[creepName].fired
     }
 
     /**

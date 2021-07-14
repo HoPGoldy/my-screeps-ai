@@ -48,14 +48,16 @@ const processor: CreepConfig<'processor'> = {
             return false
         }
 
-        // 获取取出数量
-        let withdrawAmount = creep.store.getFreeCapacity()
-        if (withdrawAmount > task.amount) withdrawAmount = task.amount
-        // 尝试取出资源
+        // 取出资源
+        const withdrawAmount = Math.min(creep.store.getFreeCapacity(), task.amount)
         const result = creep.withdraw(structure, task.resourceType, withdrawAmount)
+
         if (result === OK) return true
         // 资源不足就移除任务
-        else if (result === ERR_NOT_ENOUGH_RESOURCES) creep.room.centerTransport.deleteCurrentTask()
+        else if (result === ERR_NOT_ENOUGH_RESOURCES) {
+            creep.log(`${task.resourceType} 资源不足，中央任务已移除`)
+            creep.room.centerTransport.deleteCurrentTask()
+        }
         // 够不到就移动过去
         else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos, { range: 1 })
         else if (result === ERR_FULL) return true
