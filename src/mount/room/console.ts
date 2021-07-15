@@ -12,8 +12,28 @@ import RoomExtension from './extension'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
 import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
 import { CenterStructures } from '@/modulesRoom/taskCenter/types'
+import { WorkTaskType } from '@/modulesRoom'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 
 export default class RoomConsole extends RoomExtension {
+    /**
+     * 有手动摆放工地时可以调用这个方法进行建造
+     */
+    public build(): string {
+        this.work.updateTask({
+            type: WorkTaskType.Build,
+            priority: WORK_TASK_PRIOIRY.BUILD
+        }, { dispath: true })
+        let log = '已发布建筑任务'
+
+        if (Object.keys(this.work.creeps).length <= 0) {
+            this.spawner.release.changeBaseUnit('worker', 1)
+            log += '并添加工作单位'
+        }
+
+        return log
+    }
+
     /**
      * 用户操作：addCenterTask - 添加中央运输任务
      * 

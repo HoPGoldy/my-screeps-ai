@@ -412,7 +412,7 @@ export default class TaskController<
             _.padRight(task.key.toString(), 10) +
             _.padRight(task.need.toString(), 10) +
             _.padRight(task.unit.toString(), 10) +
-            _.padRight(task.priority.toString(), 10)
+            _.padRight(task.priority?.toString(), 10)
         )))
 
         return logs.join('\n')
