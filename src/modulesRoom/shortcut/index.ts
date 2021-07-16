@@ -119,6 +119,8 @@ export const updateStructure = function (roomName: string, type: string, id: Id<
     if (!structureIdCache[roomName][type]) structureIdCache[roomName][type] = []
 
     structureIdCache[roomName][type].push(id)
+    // 移除房间上的建筑对象缓存
+    if (Game.rooms[roomName]) delete Game.rooms[roomName][getPrivateKey(type)]
 }
 
 /**
