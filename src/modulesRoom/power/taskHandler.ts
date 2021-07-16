@@ -107,17 +107,12 @@ export const PowerTasks: PowerTaskConfigs = {
             if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_EXTENSION].ops) return ERR_NOT_ENOUGH_RESOURCES
 
             // 获取能量来源
-            let sourceStructure = undefined
-            // 只有 storage 的话就用 storage
-            if (creep.room.storage && !creep.room.terminal) sourceStructure = creep.room.storage
-            // 两个都存在的话就比较那个能量多
-            else if (creep.room.storage && creep.room.terminal) {
-                sourceStructure = (creep.room.storage.store[RESOURCE_ENERGY] > creep.room.terminal.store[RESOURCE_ENERGY]) ? creep.room.storage : creep.room.terminal
+            const sourceStructure = Game.rooms[creep.memory.workRoom]?.myStorage.getResourcePlace(RESOURCE_ENERGY, 100)
+            // 没有来源则直接完成任务
+            if (!sourceStructure) {
+                creep.log('没有找到包含足够能量的存储，移除 extension 填充任务')
+                return OK
             }
-            // 只有 terminal 的话就用 terminal
-            else if (!creep.room.storage && creep.room.terminal) sourceStructure = creep.room.terminal
-            // 两个都不存在则直接完成任务
-            else return OK
 
             const actionResult = creep.usePower(PWR_OPERATE_EXTENSION, sourceStructure)
 
@@ -151,6 +146,26 @@ export const PowerTasks: PowerTaskConfigs = {
             else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
             else {
                 creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`, Color.Red)
+                return OK
+            }
+        }
+    },
+
+    /**
+     * 提高 storage 容量
+     */
+    [PWR_OPERATE_STORAGE]: {
+        source: (creep, controller) => controller.giveOps(creep, POWER_INFO[PWR_OPERATE_STORAGE].ops),
+        target: creep => {
+            // 资源不足直接执行 source
+            if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_STORAGE].ops) return ERR_NOT_ENOUGH_RESOURCES
+
+            const actionResult = creep.usePower(PWR_OPERATE_STORAGE, creep.room.storage)
+
+            if (actionResult === OK) return OK
+            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.storage.pos)
+            else {
+                creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_STORAGE target 时出错，错误码 ${actionResult}`, Color.Red)
                 return OK
             }
         }

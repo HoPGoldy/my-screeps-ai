@@ -3,7 +3,7 @@
  */
 export default class FactoryExtension extends StructureFactory {
     public onWork(): void {
-        this.room.myTerminal.runTerminal()
+        this.room.myTerminal.run()
     }
 
     /**

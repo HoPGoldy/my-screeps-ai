@@ -22,10 +22,15 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         return this.room.terminal
     }
 
-    public runTerminal(): void {
+    public run(): void {
         if (!this.room.controller.owner || !this.memory || !this.terminal) return
         // 没有冷却好就跳过，或者每 10t 执行一次
         if (this.terminal.cooldown || Game.time % 10) return
+
+        if (!(Game.time % 100) && this.terminal.store.getFreeCapacity() < 50000) {
+            this.room.myStorage.balanceResource()
+            this.log('剩余空间不足，执行资源平衡')
+        } 
 
         // 资源统计
         this.stateScanner()

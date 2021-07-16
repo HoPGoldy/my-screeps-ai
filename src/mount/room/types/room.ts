@@ -86,16 +86,6 @@ declare global {
          */
         pausePS?: boolean
         /**
-         * storage 要在其他建筑里维持的能量
-         * 目前只支持 terminal
-         */
-        energyKeepInfo?: {
-            terminal?: {
-                amount: number
-                limit: number
-            }
-        }
-        /**
          * 当前房间物流单位的数量
          */
         transporterNumber?: number

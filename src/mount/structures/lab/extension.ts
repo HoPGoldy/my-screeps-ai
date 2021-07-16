@@ -235,7 +235,10 @@ export default class LabExtension extends StructureLab {
 
         // 检查底物是否足够
         const targetResource = labTarget[this.room.memory.lab.targetIndex].target
-        const hasInsufficientResource = reactionSource[targetResource].find(res => termial.store[res] < this.room.memory.lab.targetAmount)
+        const hasInsufficientResource = reactionSource[targetResource].find(res => {
+            const { total } = this.room.myStorage.getResource(res as ResourceConstant)
+            return total < this.room.memory.lab.targetAmount
+        })
 
         // 有不足的底物, 重新查找目标
         if (hasInsufficientResource) {

@@ -11,11 +11,11 @@ export default class StorageController extends RoomAccessor<undefined> {
         super('storage', roomName, 'storage', undefined)
     }
 
-    get storage() {
+    private get storage() {
         return this.room.storage
     }
 
-    get terminal() {
+    private get terminal() {
         return this.room.terminal
     }
 
@@ -23,8 +23,9 @@ export default class StorageController extends RoomAccessor<undefined> {
      * storage 主要入口
      */
     public run(): void {
-        if (Game.time % 3000) return
+        if (Game.time % 1000) return
         this.requestEnergyCheck()
+        this.requestPower()
 
         if (Game.time % 10000) return
         this.shareEnergyCheck()
@@ -42,6 +43,19 @@ export default class StorageController extends RoomAccessor<undefined> {
             if (room) this.log(`能量过低（剩余：${energyAmount}），将接受 ${room.name} 的能量支援（共享数量：${ENERGY_REQUEST_LIMIT - energyAmount}）`)
             else this.log(`能量过低（${energyAmount}），但未找到可以支援能量的房间`)
         }
+    }
+
+    /**
+     * 检查是否需要 power 强化
+     */
+    private requestPower() {
+        // 存储还够或者房间没有开启 power 就不发布强化任务
+        if (
+            this.storage.store.getFreeCapacity() > 50000 ||
+            !this.room.controller.isPowerEnabled
+        ) return
+
+        this.room.power.addTask(PWR_OPERATE_STORAGE)
     }
 
     /**
@@ -188,13 +202,32 @@ export default class StorageController extends RoomAccessor<undefined> {
      * @param resourceType 要查询的资源
      */
     public getResource(res: ResourceConstant): ResourceAmount {
-        const storageAmount = this.storage ? (this.storage.store[res] || 0) : 0
-        const terminalAmount = this.terminal ? (this.terminal.store[res] || 0) : 0
+        const storageAmount = this.storage?.store[res] || 0
+        const terminalAmount = this.terminal?.store[res] || 0
 
         return {
             total: storageAmount + terminalAmount,
             storage: storageAmount,
             terminal: terminalAmount
         }
+    }
+
+    /**
+     * 获取资源的存放处
+     * 向这个方法传入资源和数量，会返回应该去 storage 还是 terminal 里取
+     * 
+     * @param res 要获取的资源
+     * @param amount 资源类型
+     */
+    public getResourcePlace(res: ResourceConstant, amount: number = 1): StructureTerminal | StructureStorage | undefined {
+        // 优先取用 storage 里的
+        const storageAmount = this.storage?.store[res] || 0
+        if (storageAmount >= amount) return this.room.storage
+
+        const terminalAmount = this.terminal?.store[res] || 0
+        if (terminalAmount === 0 && storageAmount === 0) return undefined
+
+        // storage 里的资源不足的话就挑哪个的资源多
+        return terminalAmount > storageAmount ? this.room.terminal : this.room.storage
     }
 }

@@ -123,18 +123,16 @@ const needContinueUpgrade = function (room: Room): boolean {
     // 快掉级了，必须升
     if (room.controller.ticksToDowngrade <= 12000) return true
 
+    const { total } = room.myStorage.getResource(RESOURCE_ENERGY)
     // cpu 不够或者能量不够了就不升级了
-    return !(
-        Game.cpu.bucket < 700 ||
-        room.storage.store[RESOURCE_ENERGY] < UPGRADER_WITH_ENERGY_LEVEL_8
-    )
+    return !(Game.cpu.bucket < 700 || total < UPGRADER_WITH_ENERGY_LEVEL_8)
 }
 
 /**
  * 注册升级工的延迟孵化任务
  */
 delayQueue.addDelayCallback(DelayTaskType.SpawnUpgrader, room => {
-    // 房间或终端没了就不在孵化
+    // 房间或存储没了就不在孵化
     if (!room || !room.storage) return
 
     // 满足以下条件时就延迟发布

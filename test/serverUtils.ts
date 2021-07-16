@@ -74,7 +74,6 @@ export const stopServer = async function () {
     global.console.error = (...arg) => !arg[0].match(/Storage connection lost/i) && error.apply(this, arg)
 
     await server.stop()
-
 }
 
 /**

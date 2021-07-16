@@ -250,15 +250,16 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
                 room.terminal.store.getFreeCapacity() < 1000
             ) return true
 
+            const { total: existAmount } = room.myStorage.getResource(resourceType)
+
             // 如果请求共享的是能量
             if (resourceType === RESOURCE_ENERGY) {
                 if (!room.storage) return false
-                // 该房间 storage 中能量低于要求的话，就从资源提供列表中移除该房间
-                if (room.storage.store[RESOURCE_ENERGY] < ENERGY_SHARE_LIMIT) return false
+                // 该房间的能量低于要求的话，就从资源提供列表中移除该房间
+                if (existAmount < ENERGY_SHARE_LIMIT) return false
             }
 
             // 如果请求的资源已经没有的话就暂时跳过（因为无法确定之后是否永远无法提供该资源）
-            const { total: existAmount } = room.myStorage.getResource(resourceType)
             if (existAmount <= 0) return true
 
             // 接受任务的房间就是你了！
