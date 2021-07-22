@@ -11,7 +11,7 @@ import { setBaseCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import RoomExtension from './extension'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
 import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
-import { CenterStructures } from '@/modulesRoom/taskCenter/types'
+import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 
@@ -42,7 +42,7 @@ export default class RoomConsole extends RoomExtension {
      * @param resourceType 要转移的资源类型
      * @param amount 资源数量
      */
-    public ctadd(target: CenterStructures, source: CenterStructures, resourceType: ResourceConstant, amount: number): string {
+    public ctadd(target: CenterStructure, source: CenterStructure, resourceType: ResourceConstant, amount: number): string {
         const addResult = this.centerTransport.addTask({
             submit: this.memory.centerTasks.length + new Date().getTime(),
             target,
@@ -61,8 +61,8 @@ export default class RoomConsole extends RoomExtension {
     public pute(amount: number = 100000): string {
         const addResult = this.centerTransport.addTask({
             submit: this.centerTransport.tasks.length,
-            target: STRUCTURE_TERMINAL,
-            source: STRUCTURE_STORAGE,
+            target: CenterStructure.Terminal,
+            source: CenterStructure.Storage,
             resourceType: RESOURCE_ENERGY,
             amount
         })
@@ -80,8 +80,8 @@ export default class RoomConsole extends RoomExtension {
         
         const addResult = this.centerTransport.addTask({
             submit: this.centerTransport.tasks.length,
-            target: STRUCTURE_STORAGE,
-            source: STRUCTURE_TERMINAL,
+            target: CenterStructure.Storage,
+            source: CenterStructure.Terminal,
             resourceType: RESOURCE_ENERGY,
             amount
         })

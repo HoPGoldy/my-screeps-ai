@@ -1,6 +1,7 @@
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
 import { Color } from '@/modulesGlobal/console'
+import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 
 /**
  * 中心搬运者
@@ -49,7 +50,7 @@ const processor: CreepConfig<'processor'> = {
         }
 
         // 取出资源
-        const withdrawAmount = Math.min(creep.store.getFreeCapacity(), task.amount)
+        const withdrawAmount = Math.min(creep.store.getFreeCapacity(), task.amount, structure.store[task.resourceType])
         const result = creep.withdraw(structure, task.resourceType, withdrawAmount)
 
         if (result === OK) return true
@@ -77,14 +78,24 @@ const processor: CreepConfig<'processor'> = {
         // 提前获取携带量
         const amount = creep.store.getUsedCapacity(task.resourceType)
 
-        // 通过房间基础服务获取对应的建筑
-        const structure = creep.room[task.target]
-        if (!structure) {
-            creep.room.centerTransport.deleteCurrentTask()
-            return false
-        }
+        let result
 
-        const result = creep.transferTo(structure, task.resourceType, { range: 1 })
+        // drop 任务会丢地上
+        if (task.target === CenterStructure.Drop) {
+            result = creep.drop(task.resourceType, amount)
+        }
+        // 其他任务正常转移
+        else {
+            // 通过房间基础服务获取对应的建筑
+            const structure = creep.room[task.target]
+            if (!structure) {
+                creep.room.centerTransport.deleteCurrentTask()
+                return false
+            }
+
+            result = creep.transferTo(structure, task.resourceType, { range: 1 })
+        }
+        
         // 如果转移完成则增加任务进度
         if (result === OK) {
             creep.room.centerTransport.handleTask(amount)

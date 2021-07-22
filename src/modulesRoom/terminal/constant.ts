@@ -38,3 +38,17 @@ export enum TerminalChannel {
     /** 共享 */
     Share
 }
+
+/**
+ * 当 terminal 决定扔掉一些资源时，会从下面这些资源里挑一个储量最高的
+ */
+export const DROP_TARGET = [
+    RESOURCE_ENERGY, RESOURCE_HYDROGEN, RESOURCE_OXYGEN,
+    RESOURCE_UTRIUM, RESOURCE_ZYNTHIUM, RESOURCE_KEANIUM, RESOURCE_LEMERGIUM,
+    RESOURCE_CATALYST
+]
+
+/**
+ * 资源的最大丢弃数量
+ */
+export const MAX_DROP_AMOUNT = 5000

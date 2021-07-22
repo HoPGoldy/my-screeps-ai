@@ -1,5 +1,6 @@
 import { crossMerge } from '@/utils'
 import RoomAccessor from '../RoomAccessor'
+import { CenterStructure } from '../taskCenter/types'
 import { BALANCE_CONFIG, DEFAULT_BALANCE_LIMIT, ENERGY_REQUEST_LIMIT, ENERGY_SHARE_LIMIT } from './constant'
 import { BalanceDirection, BalanceResult, ResourceAmount } from './types'
 
@@ -150,8 +151,8 @@ export default class StorageController extends RoomAccessor<undefined> {
     private generateCenterTask(tasks: BalanceResult[]): number[] {
         return tasks.map((task, index) => {
             const { to, from } = task.direction === BalanceDirection.ToStorage ?
-                { to: STRUCTURE_STORAGE, from: STRUCTURE_TERMINAL } :
-                { to: STRUCTURE_TERMINAL, from: STRUCTURE_STORAGE }
+                { to: CenterStructure.Storage, from: CenterStructure.Terminal } :
+                { to: CenterStructure.Terminal, from: CenterStructure.Storage }
             return this.room.centerTransport.send(from, to, task.resourceType, task.amount, 'balanceTask' + index)
         })
     }

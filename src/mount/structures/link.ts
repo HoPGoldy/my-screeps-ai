@@ -1,4 +1,5 @@
 import { createHelp } from '@/modulesGlobal/console'
+import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 
 // Link 原型拓展
 export class LinkExtension extends StructureLink {
@@ -114,13 +115,17 @@ export class LinkExtension extends StructureLink {
          */
         if (this.room.controller.level < 7) this.destroy()
 
-        let source: StructureTerminal | StructureStorage
+        let sourceType: CenterStructure
         // 优先用 terminal 里的能量
-        if (this.room.terminal?.store[RESOURCE_ENERGY] > LINK_CAPACITY) source = this.room.terminal
+        if (this.room.terminal?.store[RESOURCE_ENERGY] > LINK_CAPACITY) {
+            sourceType = CenterStructure.Terminal
+        }
         // terminal 不能作为能量来源的话就用 storage 里的能量
-        if (!source && this.room.storage?.store[RESOURCE_ENERGY] > LINK_CAPACITY) source = this.room.storage
+        if (!sourceType && this.room.storage?.store[RESOURCE_ENERGY] > LINK_CAPACITY) {
+            sourceType = CenterStructure.Storage
+        }
         // 实在找不到目标了，放弃治疗
-        if (!source) return
+        if (!sourceType) return
 
         // 自己和 centerLink 的容量中找最小值
         const amount = Math.min(
@@ -130,9 +135,9 @@ export class LinkExtension extends StructureLink {
 
         // 以 centerLink 的名义发布中央物流任务
         this.room.centerTransport.addTask({
-            submit: 'centerLink',
-            source: source.structureType,
-            target: 'centerLink',
+            submit: CenterStructure.Link,
+            source: sourceType,
+            target: CenterStructure.Link,
             resourceType: RESOURCE_ENERGY,
             amount
         })
@@ -154,9 +159,9 @@ export class LinkExtension extends StructureLink {
         if (this.room.centerTransport.hasTask('centerLink') || !this.room.storage) return 
 
         this.room.centerTransport.addTask({
-            submit: 'centerLink',
-            source: 'centerLink',
-            target: STRUCTURE_STORAGE,
+            submit: CenterStructure.Link,
+            source: CenterStructure.Link,
+            target: CenterStructure.Storage,
             resourceType: RESOURCE_ENERGY,
             amount: this.store[RESOURCE_ENERGY]
         })

@@ -1,4 +1,5 @@
 import { setRoomStats } from "@/modulesGlobal/stats"
+import { CenterStructure } from "../taskCenter/types"
 import FactoryBase from "./base"
 import { FactoryState } from "./constant"
 
@@ -24,9 +25,9 @@ export default class StagePutResource extends FactoryBase {
             if (resType === task.target) this.updateStats(resType as ResourceConstant)
 
             // 资源不足，发布任务
-            const target = resType === RESOURCE_ENERGY ? STRUCTURE_STORAGE : STRUCTURE_TERMINAL
+            const target = resType === RESOURCE_ENERGY ? CenterStructure.Storage : CenterStructure.Terminal
             this.room.centerTransport.send(
-                STRUCTURE_FACTORY,
+                CenterStructure.Factory,
                 target,
                 resType as ResourceConstant,
                 this.factory.store[resType]

@@ -1,6 +1,7 @@
 import { Color } from '@/modulesGlobal'
 import RoomAccessor from '../RoomAccessor'
 import { ENERGY_SHARE_LIMIT } from '../storage/constant'
+import { CenterStructure } from '../taskCenter/types'
 import { RoomShareTask, ResourceSourceMap } from './types'
 import { getSendAmount } from './utils'
 
@@ -163,7 +164,8 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         // 如果路费不够的话就继续等
         if (costCondition) {
             terminal.room.centerTransport.send(
-                STRUCTURE_STORAGE, STRUCTURE_TERMINAL,
+                CenterStructure.Storage,
+                CenterStructure.Terminal,
                 RESOURCE_ENERGY, cost, 'share'
             )
             return
@@ -206,7 +208,8 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         const getAmount = sendAmount - terminal.store[RESOURCE_ENERGY]
 
         terminal.room.centerTransport.send(
-            STRUCTURE_STORAGE, STRUCTURE_TERMINAL,
+            CenterStructure.Storage,
+            CenterStructure.Terminal,
             resourceType, getAmount, 'share'
         )
     }

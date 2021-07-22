@@ -1,4 +1,5 @@
 import { Color } from "@/modulesGlobal"
+import { CenterStructure } from "../taskCenter/types"
 import FactoryBase from "./base"
 import { ENERGY_LIMIT, FactoryState } from "./constant"
 
@@ -60,7 +61,11 @@ export default class StageGetResource extends FactoryBase {
         else if (!this.hasEnoughEnergy()) return
 
         // 请求资源
-        this.room.centerTransport.send(source.structureType, STRUCTURE_FACTORY, resType, amount)
+        this.room.centerTransport.send(
+            source.structureType as CenterStructure,
+            CenterStructure.Factory,
+            resType, amount
+        )
     }
 
     /**

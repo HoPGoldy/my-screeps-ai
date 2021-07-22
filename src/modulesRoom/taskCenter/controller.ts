@@ -1,5 +1,5 @@
 import RoomAccessor from "../RoomAccessor"
-import { CenterStructures, CenterTransportTask } from "./types"
+import { CenterStructure, CenterTransportTask } from "./types"
 
 export default class RoomCenterTaskController extends RoomAccessor<CenterTransportTask[]> {
     constructor(roomName: string) {
@@ -34,8 +34,8 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
      * @param taskKey 唯一的任务 id，若该值和已存在的任务索引重复则不允许添加，默认为 to 参数的值
      */
     public send(
-        from: CenterStructures,
-        to: CenterStructures,
+        from: CenterStructure,
+        to: CenterStructure,
         resourceType: ResourceConstant,
         amount: number,
         taskKey?: number | string
@@ -64,7 +64,7 @@ export default class RoomCenterTaskController extends RoomAccessor<CenterTranspo
      * @param submit 提交者的身份
      * @returns 是否有该任务
      */
-    public hasTask(submit: CenterStructures | number | string): boolean {
+    public hasTask(submit: CenterStructure | number | string): boolean {
         const task = this.memory.find(task => task.submit === submit)
         return task ? true : false
     }

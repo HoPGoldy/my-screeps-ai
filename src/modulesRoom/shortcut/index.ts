@@ -172,7 +172,11 @@ const getStructureWithCache = function <TargetStructure extends RoomObject>(room
  * @param memoryKey 建筑 id 在房间内存中对应的字段名
  * @returns 对应的建筑
  */
-const getStructureWithMemory = function <TargetStructure extends RoomObject>(room: Room, privateKey: string, memoryKey: string): TargetStructure {
+const getStructureWithMemory = function <TargetStructure extends RoomObject>(
+    room: Room,
+    privateKey: string,
+    memoryKey: string
+): TargetStructure {
     if (room[privateKey]) return room[privateKey]
 
     // 内存中没有 id 就说明没有该建筑

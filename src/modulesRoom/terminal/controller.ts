@@ -1,10 +1,11 @@
-import { TerminalChannel, TerminalMode } from './constant'
+import { DROP_TARGET, MAX_DROP_AMOUNT, TerminalChannel, TerminalMode } from './constant'
 import { setRoomStats } from '@/modulesGlobal/stats'
 import { TerminalListenTask, TerminalMemory } from './types'
 import { BASE_MINERAL } from '@/setting'
 import RoomAccessor from '../RoomAccessor'
 import { getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask, unstringifyTask } from './utils'
 import { Color, colorful } from '@/modulesGlobal'
+import { CenterStructure } from '../taskCenter/types'
 
 /**
  * Terminal 控制器
@@ -28,8 +29,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         if (this.terminal.cooldown || Game.time % 10) return
 
         if (!(Game.time % 100) && this.terminal.store.getFreeCapacity() < 50000) {
-            this.room.myStorage.balanceResource()
-            this.log('剩余空间不足，执行资源平衡')
+            this.balanceResource()
         } 
 
         // 资源统计
@@ -50,6 +50,34 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
 
         // 没有待处理订单，继续监听任务
         this.resourceListener(task)
+    }
+
+    /**
+     * 自己剩余空间不足时会尝试腾出来一些空间
+     */
+    private balanceResource() {
+        if (this.room.storage.store.getFreeCapacity() <= 0) {
+            this.room.myStorage.balanceResource()
+            this.log('剩余空间不足，执行资源平衡')
+            return
+        }
+
+        const { store } = this.terminal
+
+        // storage 也没地方放了，开始丢资源，先找到要丢哪个
+        const targetRes = DROP_TARGET.reduce((pre, cur) => {
+            return store.getCapacity(pre) > store.getCapacity(cur) ? pre : cur
+        })
+
+        const targetAmount = Math.min(store[targetRes], MAX_DROP_AMOUNT)
+
+        this.log(`剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
+        this.room.centerTransport.send(
+            CenterStructure.Terminal,
+            CenterStructure.Drop,
+            targetRes, targetAmount,
+            CenterStructure.Drop
+        )
     }
 
     /**
@@ -136,11 +164,11 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
     public energyCheck(): void {
         if (this.terminal.store[RESOURCE_ENERGY] >= 30000) {
             this.room.centerTransport.send(
-                STRUCTURE_TERMINAL,
-                STRUCTURE_STORAGE,
+                CenterStructure.Terminal,
+                CenterStructure.Storage,
                 RESOURCE_ENERGY,
                 this.terminal.store[RESOURCE_ENERGY],
-                STRUCTURE_TERMINAL
+                CenterStructure.Terminal
             )
         }
     }
@@ -370,9 +398,9 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
     public getEnergy(amount: number): number {
         // 添加时会自动判断有没有对应的建筑，不会重复添加
         return this.room.centerTransport.addTask({
-            submit: STRUCTURE_TERMINAL,
-            source: STRUCTURE_STORAGE,
-            target: STRUCTURE_TERMINAL,
+            submit: CenterStructure.Terminal,
+            source: CenterStructure.Storage,
+            target: CenterStructure.Terminal,
             resourceType: RESOURCE_ENERGY,
             amount
         })
