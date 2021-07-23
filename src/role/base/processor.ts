@@ -43,7 +43,10 @@ const processor: CreepConfig<'processor'> = {
         }
         // 目标建筑如果已经满了就直接放弃该任务
         const targetStructure = creep.room[task.target]
-        if ((targetStructure.store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) <= 0) {
+        if (
+            targetStructure &&
+            (targetStructure.store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) <= 0
+        ) {
             creep.log(`${task.target} 满了`)
             creep.room.centerTransport.deleteCurrentTask()
             return false
