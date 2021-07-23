@@ -120,17 +120,6 @@ export const labTarget = [
 ]
 
 /**
- * deposit 最大的采集冷却时长
- * 超过该时长则不会再进行挖掘
- */
-export const DEPOSIT_MAX_COOLDOWN = 100
-
-/**
- * observer 房间扫描间隔
- */
-export const observerInterval = 10
-
-/**
  * powerProcess 的设置 
  */
 export const powerSettings = {
@@ -173,18 +162,6 @@ export const BOOST_RESOURCE: BoostResourceConfig = {
 export const boostResourceReloadLimit = 900
 
 /**
- * powerbank 的采集阶段
- * @property {} ATTACK 正在拆除
- * @property {} PREPARE 快拆完了，carrier 准备过来
- * @property {} TRANSFE 拆除完成，正在搬运
- */
-export const PB_HARVESTE_STATE = {
-    ATTACK: 'attack',
-    PREPARE: 'prepare',
-    TRANSFER: 'transfer'
-}
-
-/**
  * 默认的旗帜名称
  */
 export const DEFAULT_FLAG_NAME = {
@@ -224,10 +201,6 @@ export const ALL_SHARD_NAME: ShardName[] = [ 'shard0', 'shard1', 'shard2', 'shar
 
 // 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
 export const ROOM_REMOVE_INTERVAL: number = 30
-
-// 每个 observer 同时允许采集的 pb 和 depo 的最大数量
-export const OBSERVER_POWERBANK_MAX = 1
-export const OBSERVER_DEPOSIT_MAX = 2
 
 /**
  * RCL 分别在几级时放置外墙

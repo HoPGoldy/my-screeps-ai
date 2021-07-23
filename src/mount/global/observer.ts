@@ -16,7 +16,7 @@ export default function(): string {
         if (memory.pause) return `${colorful('●', Color.Yellow, true)} ${obName} 暂停中`
 
         // 更新旗帜列表，保证显示最新数据
-        room.observer.updateFlagList()
+        room.myObserver.updateFlagList()
 
         // 正在采集的两种资源数量
         const pbNumber = memory.pbList.length

@@ -13,7 +13,8 @@ import {
     RoomStrategyController,
     FactoryController,
     TerminalController,
-    StorageController
+    StorageController,
+    ObserverController
 } from '@/modulesRoom'
 
 /**
@@ -51,7 +52,8 @@ export default () => {
         [ 'strategy', RoomStrategyController ],
         [ 'myFactory', FactoryController ],
         [ 'myTerminal', TerminalController ],
-        [ 'myStorage', StorageController ]
+        [ 'myStorage', StorageController ],
+        [ 'myObserver', ObserverController ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -117,5 +119,9 @@ declare global {
          * storage 管理模块
          */
         myStorage: StorageController
+        /**
+         * observer 管理模块
+         */
+        myObserver: ObserverController
     }
 }

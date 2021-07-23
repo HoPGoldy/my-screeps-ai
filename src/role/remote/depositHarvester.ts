@@ -1,7 +1,7 @@
-import { DEPOSIT_MAX_COOLDOWN } from '@/setting'
 import { bodyConfigs } from '../bodyConfigs'
 import { createBodyGetter } from '@/utils'
 import { Color } from '@/modulesGlobal/console'
+import { DEPOSIT_MAX_COOLDOWN } from '@/modulesRoom/observer/constant'
 
 /**
  * deposit 采集者

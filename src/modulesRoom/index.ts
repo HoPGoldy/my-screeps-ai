@@ -8,6 +8,7 @@ export { default as RoomStrategyController } from './strategy/controller'
 export { default as FactoryController } from './factory/controller'
 export { default as TerminalController } from './terminal/controller'
 export { default as StorageController } from './storage/controller'
+export { default as ObserverController } from './observer/controller'
 export { default as mountShortcut } from './shortcut'
 
 export { TransportTaskType } from './taskTransport/types'

@@ -1,6 +1,6 @@
 import { Color } from '@/modulesGlobal/console'
-import { PB_HARVESTE_STATE } from '@/setting'
 import { calcBodyPart } from '@/utils'
+import { PbHarvestState } from '../types/role'
 
 /**
  * PowerBank 运输单位
@@ -31,7 +31,7 @@ const pbCarrier: CreepConfig<'pbCarrier'> = {
             return false
         }
         // 没到搬运的时候就先待命
-        if (targetFlag.memory.state !== PB_HARVESTE_STATE.TRANSFER) return false
+        if (targetFlag.memory.state !== PbHarvestState.Transfer) return false
         // 到行动阶段了就过去
         creep.goTo(targetFlag.pos, { checkTarget: false })
 

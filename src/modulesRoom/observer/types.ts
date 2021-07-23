@@ -1,4 +1,4 @@
-interface ObserverMemory {
+export interface ObserverMemory {
     /**
      * 上个 tick 已经 ob 过的房间名
      */
@@ -12,9 +12,12 @@ interface ObserverMemory {
      */
     watchRooms: string[]
     /**
-     * 当前已经找到的 powerBank 和 deposit 旗帜名数组，会自动进行检查来移除消失的旗帜信息
+     * 当前正在采集的 powerBank 旗帜名数组
      */
     pbList: string[]
+    /**
+     * 当前正在采集的 depo 旗帜名数组
+     */
     depoList: string[]
     /**
      * 是否暂停，为 true 时暂停
@@ -22,6 +25,12 @@ interface ObserverMemory {
     pause?: boolean
 }
 
-interface StructureObserver {
-    updateFlagList(): OK | ERR_NOT_FOUND
+
+declare global {
+    interface RoomMemory {
+        /**
+         * 终端内存
+         */
+        observer?: ObserverMemory
+    }
 }

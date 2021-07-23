@@ -8,6 +8,24 @@ export class MyCreep<Role extends CreepRoleConstant = CreepRoleConstant> extends
     memory: MyCreepMemory<Role>
 }
 
+/**
+ * powerbank 的采集阶段
+ */
+export enum PbHarvestState {
+    /**
+     * 正在拆除
+     */
+    Attack = 1,
+    /**
+     * 快拆完了，carrier 准备过来
+     */
+    Prepare,
+    /**
+     * 拆除完成，正在搬运
+     */
+    Transfer
+}
+
 declare global {
     /**
      * 所有的 creep 角色
