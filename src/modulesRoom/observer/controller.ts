@@ -35,8 +35,12 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
         const { watchRooms, pause, pbList, depoList, checkRoomName } = this.memory
         if (watchRooms.length === 0) return
         if (pause) return
+
         // 都找到上限就不继续工作了
         if ((pbList.length >= OBSERVER_POWERBANK_MAX) && (depoList.length >= OBSERVER_DEPOSIT_MAX)) return
+
+        // 绘制搜索范围
+        this.drawMap()
 
         // 如果房间没有视野就获取视野，否则就执行搜索
         if (checkRoomName) this.searchRoom()
@@ -44,6 +48,20 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
 
         // 每隔一段时间检查下是否有 flag 需要清理
         if (!(Game.time % 100)) this.updateFlagList()
+    }
+
+    /**
+     * 绘制 ob 检查范围
+     */
+    private drawMap() {
+        const { watchRooms, checkRoomName } = this.memory
+        watchRooms.map(roomName => {
+            const style: MapPolyStyle = { stroke: '#49a64d', strokeWidth: 1 }
+            // 高亮显示当前正在检查的房间
+            if (roomName === checkRoomName) style.stroke = '#fffa00'
+
+            Game.map.visual.rect(new RoomPosition(2, 2, roomName), 3, 3, style)
+        })
     }
 
     /**
