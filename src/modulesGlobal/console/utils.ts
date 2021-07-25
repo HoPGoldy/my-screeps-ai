@@ -57,7 +57,7 @@ export function colorful(content: string, colorName: Color = null, bold: boolean
     const colorStyle = colorName ? `color: ${COLOR_VALUE[colorName]};` : ''
     const boldStyle = bold ? 'font-weight: bold;' : ''
 
-    return `<span style="${[ colorStyle, boldStyle ].join(' ')}">${content}</span>`
+    return `<text style="${[ colorStyle, boldStyle ].join(' ')}">${content}</text>`
 }
 
 /**
