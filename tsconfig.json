@@ -16,9 +16,7 @@
         "node_modules"
     ],
     "include": [
-        "src/**/*.ts",
-        "types/**/*.d.ts",
-        "screeps.d.ts",
-        "test/**/*.ts"
+        "./src/",
+        "./test/"
     ]
 }

@@ -27,10 +27,6 @@ declare global {
          */
         constructionSiteId: Id<ConstructionSite>
         /**
-         * observer 内存
-         */
-        observer?: ObserverMemory
-        /**
          * lab 内存
          */
         lab?: LabMemory
