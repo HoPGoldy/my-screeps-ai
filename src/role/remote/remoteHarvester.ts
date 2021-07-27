@@ -1,12 +1,12 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { Color } from '@/modulesGlobal/console'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 外矿采集者
  * 从指定矿中挖矿 > 将矿转移到建筑中
  */
-const remoteHarvester: CreepConfig<'remoteHarvester'> = {
+const remoteHarvester: CreepConfig<CreepRole.RemoteHarvester> = {
     // 如果外矿目前有入侵者就不生成
     isNeed: (room, preMemory) => {
         const { sourceFlagName } = preMemory.data

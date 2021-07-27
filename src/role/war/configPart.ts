@@ -1,5 +1,5 @@
 import { Color } from "@/modulesGlobal/console"
-import { MyCreep } from "../types/role"
+import { CreepRole, RoleCreep, RoleCreepMemory } from "../types/role"
 
 /**
  * Boost Creep 准备阶段
@@ -40,20 +40,22 @@ export const boostPrepare = () => ({
     }
 })
 
+type BattleRole = CreepRole.Soldier | CreepRole.Dismantler | CreepRole.BoostDismantler | CreepRole.Apocalypse
+
 /**
  * 战斗 creep 基础阶段
  * 本方法抽象出了战斗 Creep 通用的 source 阶段和 switch 阶段
  * 
  * @param flagName 目标旗帜名称
  */
-export const battleBase = <Role extends 'soldier' | 'dismantler' | 'boostDismantler' | 'apocalypse'>() => ({
+export const battleBase = <Role extends BattleRole>() => ({
     // 根据玩家配置决定是否持续生成
-    isNeed: (room, preMemory: MyCreepMemory<Role>) => preMemory.data.keepSpawn,
+    isNeed: (room, preMemory: RoleCreepMemory<Role>) => preMemory.data.keepSpawn,
     /**
      * 获取旗帜，然后向指定房间移动
      * 同时保证自己的健康状态
      */
-    source: (creep: MyCreep<Role>) => {
+    source: (creep: RoleCreep<Role>) => {
         const { targetFlagName } = creep.memory.data
 
         const targetFlag = creep.getFlag(targetFlagName)

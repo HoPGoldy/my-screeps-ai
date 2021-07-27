@@ -12,7 +12,7 @@ interface Memory {
      * 因为有可能出现内存到了但是 creep 还没到的情况，这时候 creepController 就会以为这个 creep 死掉了从而直接把内存回收掉
      */
     crossShardCreeps: {
-        [creepName: string]: MyCreepMemory
+        [creepName: string]: CreepMemory | PowerCreepMemory
     }
 }
 
@@ -56,7 +56,7 @@ interface CrossShardDatas {
         /**
          * 要发送 creep 的内存
          */
-        memory: MyCreepMemory
+        memory: CreepMemory | PowerCreepMemory
     }
     /**
      * 跨 shard 请求 - 提交重新孵化任务
@@ -69,7 +69,7 @@ interface CrossShardDatas {
         /**
          * 要重新孵化的 creep 的内存
          */
-        memory: MyCreepMemory
+        memory: CreepMemory | PowerCreepMemory
     }
 }
 

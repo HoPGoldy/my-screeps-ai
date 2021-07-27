@@ -1,4 +1,5 @@
-import { calcBodyPart } from '@/utils'
+import { calcBodyPart } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * PowerBank 治疗单位
@@ -8,7 +9,7 @@ import { calcBodyPart } from '@/utils'
  * 
  * @property {} creepName 要治疗的 pbAttacker 的名字
  */
-const pbHealer: CreepConfig<'pbHealer'> = {
+const pbHealer: CreepConfig<CreepRole.PbHealer> = {
     target: creep => {
         const targetCreep = Game.creeps[creep.memory.data.creepName]
         // 对象没了就殉情

@@ -1,3 +1,6 @@
+import { CreepRole } from "@/role/types/role"
+import { AllowCrossRuleFunc, CrossRules } from "./types"
+
 /**
  * 默认的对穿规则
  * 
@@ -27,19 +30,19 @@ const crossRules: CrossRules = {
     default: defaultRule,
 
     // 填充单位无论什么时候都会允许对穿，因为其不会长时间停在一个位置上工作
-    manager: () => true,
+    [CreepRole.Manager]: () => true,
 
     // 采集单位在采集能量时不允许对穿
     // （采集能量都在 source 阶段，也就是 ↓ working 为 false 的时候）
-    harvester: (creep) => creep.memory.working,
+    [CreepRole.Harvester]: (creep) => creep.memory.working,
 
     // 中央处理单位在携带有资源时不允许对穿
-    processor: creep => !creep.memory.working,
+    [CreepRole.Processor]: creep => !creep.memory.working,
 
     // 工作单位在工作时不允许任何 creep 对穿
     // 其实对应的判断规则要复杂一点，例如执行 upgrade 任务时允许正在建造的工作对穿，但是不允许其他执行升级任务的单位对穿
     // 但是为了节省性能，这里直接一把梭，如果真有需求可以再添上
-    worker: noCrossWithWork
+    [CreepRole.Worker]: noCrossWithWork
 }
 
 export default crossRules

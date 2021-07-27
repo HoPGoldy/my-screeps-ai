@@ -6,6 +6,7 @@ import RoomStrategyController from "./controller"
 import { BASE_ROLE_LIMIT } from "../spawn/constant"
 import { DelayTaskType } from "@/modulesGlobal/delayQueue/types"
 import { WorkTaskType } from "../taskWork/types"
+import { CreepRole } from "@/role/types/role"
 
 /**
  * 运维策略
@@ -31,8 +32,8 @@ export class OperationStrategy {
      */
     initRoomUnit() {
         this.room.spawner.release.harvester()
-        this.room.spawner.release.changeBaseUnit('manager', 1)
-        this.room.spawner.release.changeBaseUnit('worker', 2)
+        this.room.spawner.release.changeBaseUnit(CreepRole.Manager, 1)
+        this.room.spawner.release.changeBaseUnit(CreepRole.Worker, 2)
     }
 
     /**
@@ -40,13 +41,13 @@ export class OperationStrategy {
      * 定期执行即可，推荐 500 tick 一次
      */
     adjustBaseUnit() {
-        this.room.spawner.release.changeBaseUnit('manager', this.room.transport.getExpect())
+        this.room.spawner.release.changeBaseUnit(CreepRole.Manager, this.room.transport.getExpect())
 
         // 先更新房间能量使用情况，然后根据情况调整期望
         const { energyGetRate, totalEnergy } = countEnergyChangeRatio(this.room, true)
         const workerChange = this.room.work.getExpect(totalEnergy, energyGetRate)
 
-        this.room.spawner.release.changeBaseUnit('worker', workerChange)
+        this.room.spawner.release.changeBaseUnit(CreepRole.Worker, workerChange)
     }
 
     /**
@@ -93,13 +94,13 @@ export class OperationStrategy {
                 this.room.controller.level >= 8
             ) ? 1 : 20;
             // 允许没有 worker
-            this.room.spawner.release.setBaseUnitLimit('worker', { MIN: 0, MAX });
-            this.room.spawner.release.setBaseUnitLimit('manager', BASE_ROLE_LIMIT.manager);
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 0, MAX });
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, BASE_ROLE_LIMIT.manager);
         }
         else {
             // 没到 8 级前不需要特殊限制
-            this.room.spawner.release.setBaseUnitLimit('worker');
-            this.room.spawner.release.setBaseUnitLimit('manager');
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker);
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager);
         }
     }
 
@@ -108,7 +109,7 @@ export class OperationStrategy {
      */
     changeForStartContainer() {
         // 每个 container 发布四个 worker
-        this.room.spawner.release.changeBaseUnit('worker', 4)
+        this.room.spawner.release.changeBaseUnit(CreepRole.Worker, 4)
         this.room.work.updateTask({ type: WorkTaskType.Upgrade, priority: WORK_TASK_PRIOIRY.UPGRADE })
     }
 }
@@ -141,5 +142,5 @@ delayQueue.addDelayCallback(DelayTaskType.SpawnUpgrader, room => {
     }
 
     room.work.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
-    room.spawner.release.changeBaseUnit('worker', 1)
+    room.spawner.release.changeBaseUnit(CreepRole.Worker, 1)
 })

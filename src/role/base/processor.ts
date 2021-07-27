@@ -1,7 +1,7 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { Color } from '@/modulesGlobal/console'
 import { CenterStructure } from '@/modulesRoom/taskCenter/types'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 中心搬运者
@@ -11,7 +11,7 @@ import { CenterStructure } from '@/modulesRoom/taskCenter/types'
  * @param y 要移动到的 y 坐标
  * @param centerLinkId 中央 link 的 id
  */
-const processor: CreepConfig<'processor'> = {
+const processor: CreepConfig<CreepRole.Processor> = {
     // 移动到指定位置
     prepare: creep => {
         const { x, y } = creep.memory.data

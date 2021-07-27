@@ -1,6 +1,7 @@
 import { Color } from '@/modulesGlobal'
 import { TransportTaskType } from '@/modulesRoom'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
+import { CreepRole } from '@/role/types/role'
 import { repairSetting } from '@/setting'
 import { whiteListFilter } from '@/utils'
 
@@ -136,7 +137,7 @@ export default class TowerExtension extends StructureTower {
             if (this.room.memory.boost.state === 'waitBoost' && !(defenderName in Game.creeps)) {
                 const result = this.room.spawner.addTask({
                     name: defenderName,
-                    role: 'defender',
+                    role: CreepRole.Defender,
                     data: {}
                 })
                 this.log(`已发布主动防御单位，返回值：${result}`, Color.Green)

@@ -1,6 +1,6 @@
 import { Color } from '@/modulesGlobal/console'
-import { calcBodyPart } from '@/utils'
-import { PbHarvestState } from '../types/role'
+import { calcBodyPart } from '../bodyUtils'
+import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
 
 /**
  * PowerBank 运输单位
@@ -9,7 +9,7 @@ import { PbHarvestState } from '../types/role'
  * 
  * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
  */
-const pbCarrier: CreepConfig<'pbCarrier'> = {
+const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
     // carrier 并不会重复生成
     isNeed: () => false,
     // 移动到目标三格之内就算准备完成

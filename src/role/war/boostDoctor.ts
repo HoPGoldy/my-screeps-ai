@@ -1,4 +1,5 @@
-import { calcBodyPart } from '@/utils'
+import { calcBodyPart } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 import { boostPrepare } from './configPart'
 
 /**
@@ -8,7 +9,7 @@ import { boostPrepare } from './configPart'
  * 
  * @param creepsName 要治疗的 creep 名称
  */
-const boostDoctor: CreepConfig<'boostDoctor'> = {
+const boostDoctor: CreepConfig<CreepRole.BoostDoctor> = {
     isNeed: (room, preMemory) => preMemory.data.keepSpawn,
     prepare: creep => {
         // 治疗单位不允许发起对穿

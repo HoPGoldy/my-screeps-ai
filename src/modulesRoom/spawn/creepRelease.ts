@@ -6,6 +6,7 @@ import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 import { SepicalBodyType } from '../taskWork/types'
 import { Color, log } from '@/modulesGlobal/console/utils'
+import { CreepRole, RoleCreep } from '@/role/types/role'
 
 /**
  * creep 发布工具
@@ -28,7 +29,7 @@ export default class RoomCreepRelease {
         (source || []).map((source, index) => {
             this.spawner.addTask({
                 name: GetName.harvester(roomName, index),
-                role: 'harvester',
+                role: CreepRole.Harvester,
                 data: {
                     useRoom: roomName,
                     harvestRoom: roomName,
@@ -50,9 +51,9 @@ export default class RoomCreepRelease {
     public changeBaseUnit(type: BaseUnits, adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
         const { room } = this.spawner
         // 单位对应在房间内存中保存的键
-        const memoryKey = type === 'worker' ? 'workerNumber' : 'transporterNumber'
+        const memoryKey = type === CreepRole.Worker ? 'workerNumber' : 'transporterNumber'
         // 单位隶属的任务模块
-        const taskController = type === 'worker' ? room.work : room.transport
+        const taskController = type === CreepRole.Worker ? room.work : room.transport
         // 获取对应的最大数量和最小数量
         const { MIN, MAX } = (room.memory.baseUnitLimit || {})[type] || BASE_ROLE_LIMIT[type]
 
@@ -114,7 +115,7 @@ export default class RoomCreepRelease {
 
         this.spawner.addTask({
             name: GetName.miner(roomName),
-            role: 'miner',
+            role: CreepRole.Miner,
             data: { workRoom: roomName }
         })
     }
@@ -149,7 +150,7 @@ export default class RoomCreepRelease {
         const [ x, y ] = room.memory.center 
         this.spawner.addTask({
             name: GetName.processor(room.name),
-            role: 'processor',
+            role: CreepRole.Processor,
             data: { x, y }
         })
 
@@ -171,7 +172,7 @@ export default class RoomCreepRelease {
 
             this.spawner.addTask({
                 name: GetName.remoteHarvester(remoteRoomName, index),
-                role: 'remoteHarvester',
+                role: CreepRole.RemoteHarvester,
                 data: {
                     sourceFlagName: flagName,
                     targetId: room.memory.remote[remoteRoomName].targetId
@@ -193,7 +194,7 @@ export default class RoomCreepRelease {
     public remoteReserver(targetRoomName: string): void {
         this.spawner.addTask({
             name: GetName.reserver(targetRoomName),
-            role: 'reserver',
+            role: CreepRole.Reserver,
             data: { targetRoomName }
         })
     }
@@ -209,16 +210,16 @@ export default class RoomCreepRelease {
         const creepName = GetName.signer(room.name)
         const creep = Game.creeps[creepName]
 
-        // 如果有显存的签名单位就直接签名
-        if (creep) {
-            (creep.memory.data as RemoteDeclarerData).signText = content
+        // 如果有活着的签名单位就直接签名
+        if (assertSigner(creep)) {
+            creep.memory.data.signText = content
             return `已将 ${creepName} 的签名内容修改为：${content}`
         }
 
         // 否则就发布一个
         this.spawner.addTask({
             name: creepName,
-            role: 'signer',
+            role: CreepRole.Signer,
             data: {
                 targetRoomName: targetRoomName || room.name,
                 signText: content
@@ -243,7 +244,7 @@ export default class RoomCreepRelease {
         // 发布 upgrader 和 builder
         this.spawner.addTask({
             name: GetName.remoteUpgrader(remoteRoomName),
-            role: 'remoteUpgrader',
+            role: CreepRole.RemoteUpgrader,
             data: {
                 targetRoomName: remoteRoomName,
                 sourceId: room.source[0].id
@@ -251,7 +252,7 @@ export default class RoomCreepRelease {
         })
         this.spawner.addTask({
             name: GetName.remoteBuilder(remoteRoomName),
-            role: 'remoteBuilder',
+            role: CreepRole.RemoteBuilder,
             data: {
                 targetRoomName: remoteRoomName,
                 sourceId: room.source.length >= 2 ? room.source[1].id : room.source[0].id
@@ -273,7 +274,7 @@ export default class RoomCreepRelease {
         for (let i = 0; i < number; i++) {
             this.spawner.addTask({
                 name: GetName.pbCarrier(sourceFlagName, i),
-                role: 'pbCarrier',
+                role: CreepRole.PbCarrier,
                 data: { sourceFlagName }
             })
         }
@@ -294,7 +295,7 @@ export default class RoomCreepRelease {
             // 添加采集小组
             this.spawner.addTask({
                 name: attackerName,
-                role: 'pbAttacker',
+                role: CreepRole.PbAttacker,
                 data: {
                     sourceFlagName: targetFlagName,
                     healerCreepName: healerName
@@ -302,7 +303,7 @@ export default class RoomCreepRelease {
             })
             this.spawner.addTask({
                 name: healerName,
-                role: 'pbHealer',
+                role: CreepRole.PbHealer,
                 data: {
                     creepName: attackerName
                 }
@@ -319,7 +320,7 @@ export default class RoomCreepRelease {
         // 发布采集者，他会自行完成剩下的工作
         this.spawner.addTask({
             name: GetName.depositHarvester(targetFlagName),
-            role: 'depositHarvester',
+            role: CreepRole.DepositHarvester,
             data: {
                 sourceFlagName: targetFlagName,
                 spawnRoom: this.spawner.room.name
@@ -344,7 +345,7 @@ export default class RoomCreepRelease {
 
         this.spawner.addTask({
             name: creepName,
-            role: 'apocalypse',
+            role: CreepRole.Apocalypse,
             data: {
                 targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
                 bearTowerNum,
@@ -372,7 +373,7 @@ export default class RoomCreepRelease {
 
         this.spawner.addTask({
             name: dismantlerName,
-            role: 'boostDismantler',
+            role: CreepRole.BoostDismantler,
             data: {
                 targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
                 healerName,
@@ -381,7 +382,7 @@ export default class RoomCreepRelease {
         })
         this.spawner.addTask({
             name: healerName,
-            role: 'boostDoctor',
+            role: CreepRole.BoostDoctor,
             data: {
                 creepName: dismantlerName,
                 keepSpawn
@@ -403,7 +404,7 @@ export default class RoomCreepRelease {
         for (let i = 0; i < num; i++) {
             this.spawner.addTask({
                 name: GetName.soldier(this.spawner.room.name, i),
-                role: 'soldier',
+                role: CreepRole.Soldier,
                 data: {
                     targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
                     keepSpawn: false
@@ -428,7 +429,7 @@ export default class RoomCreepRelease {
         for (let i = 0; i < num; i++) {
             this.spawner.addTask({
                 name: GetName.dismantler(this.spawner.room.name, i),
-                role: 'dismantler',
+                role: CreepRole.Dismantler,
                 data: {
                     targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
                     keepSpawn
@@ -453,7 +454,7 @@ export default class RoomCreepRelease {
 
         this.spawner.addTask({
             name: reiverName,
-            role: 'reiver',
+            role: CreepRole.Reiver,
             data: {
                 flagName: sourceFlagName || DEFAULT_FLAG_NAME.REIVER,
                 targetId: targetStructureId || room.terminal.id
@@ -462,4 +463,11 @@ export default class RoomCreepRelease {
 
         return `[${room.name}] 掠夺者 ${reiverName} 已发布, 目标旗帜名称 ${sourceFlagName || DEFAULT_FLAG_NAME.REIVER}, 将搬运至 ${targetStructureId ? targetStructureId : room.name + ' Terminal'}`
     }
+}
+
+/***
+ * 断言一个 creep 是否为签名单位
+ */
+const assertSigner = function (creep: Creep): creep is RoleCreep<CreepRole.Signer> {
+    return creep.memory.role === CreepRole.Signer
 }

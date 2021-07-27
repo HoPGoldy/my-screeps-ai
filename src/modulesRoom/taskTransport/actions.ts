@@ -1,6 +1,6 @@
 import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
-import { MyCreep } from '@/role/types/role'
+import { CreepRole, RoleCreep } from '@/role/types/role'
 import { boostResourceReloadLimit } from '@/setting'
 import { useCache } from '@/utils'
 import RoomTransport, { TransportActionGenerator } from './controller'
@@ -603,7 +603,7 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  * @param creep 要获取能量的 creep
  * @returns 身上是否已经有足够的能量了
  */
-const getEnergy = function (creep: MyCreep<'manager'>, transport: RoomTransport): boolean {
+const getEnergy = function (creep: RoleCreep<CreepRole.Manager>, transport: RoomTransport): boolean {
     if (creep.store[RESOURCE_ENERGY] > 40) return true
 
     // 从工作房间查询并缓存能量来源

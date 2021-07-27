@@ -1,4 +1,6 @@
-import { calcBodyPart } from '@/utils'
+import { calcBodyPart } from '../bodyUtils'
+import { BodySet } from '../types/body'
+import { CreepConfig, CreepRole } from '../types/role'
 import { battleBase, boostPrepare } from './configPart'
 
 /**
@@ -9,7 +11,7 @@ import { battleBase, boostPrepare } from './configPart'
  * @param bearTowerNum 可以承受多少 tower 的最大伤害，该数值越少，攻击能力越强，默认为 6 (0~6)
  * @param flagName 要攻击的旗帜名称
  */
-const apocalypse: CreepConfig<'apocalypse'> = {
+const apocalypse: CreepConfig<CreepRole.Apocalypse> = {
     ...battleBase(),
     ...boostPrepare(),
     target: creep => {

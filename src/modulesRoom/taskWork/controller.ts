@@ -1,7 +1,7 @@
 import { noTask, transportActions } from './actions'
 import TaskController from '../taskBase/controller'
 import { AllRoomWorkTask, WorkTasks, WorkTaskType } from './types'
-import { MyCreep } from '@/role/types/role'
+import { CreepRole, RoleCreep } from '@/role/types/role'
 
 /**
  * 能量获取速率到调整期望的 map
@@ -24,7 +24,7 @@ const WORK_PROPORTION_TO_EXPECT = [
  * 工作任务逻辑的生成函数
  */
 export type WorkActionGenerator<T extends WorkTaskType = WorkTaskType> = (
-    creep: MyCreep<'worker'>,
+    creep: RoleCreep<CreepRole.Worker>,
     task: WorkTasks[T],
     workController: RoomWork
 ) => RoomTaskAction
@@ -43,7 +43,7 @@ export default class RoomWork extends TaskController<WorkTaskType, AllRoomWorkTa
      * 获取应该执行的任务逻辑
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
-    public getWork(creep: MyCreep<'worker'>): RoomTaskAction {
+    public getWork(creep: RoleCreep<CreepRole.Worker>): RoomTaskAction {
         const task = this.getUnitTask(creep)
         if (!task) return noTask(creep)
         const actionGenerator: WorkActionGenerator = transportActions[task.type]

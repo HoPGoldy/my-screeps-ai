@@ -1,7 +1,9 @@
+import { CreepRole } from "@/role/types/role"
+
 /**
  * 自定义移动的选项
  */
-interface MoveOpt {
+export interface MoveOpt {
     /**
      * 重用距离，等同于 moveTo 的 reusePath
      */
@@ -44,7 +46,7 @@ interface MoveOpt {
 /**
  * 移动的内存数据
  */
-interface MoveInfo {
+export interface MoveInfo {
     /**
      * 序列化之后的路径信息
      */
@@ -79,7 +81,7 @@ interface MoveInfo {
  * @param requireCreep 发起对穿的 creep
  * @return 为 true 时允许对穿
  */
-type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep | PowerCreep) => boolean
+export type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep | PowerCreep) => boolean
 
 /**
  * 对穿请求的规则集合
@@ -88,6 +90,6 @@ type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep | Powe
  * 该方法用于判断有其他 creep 向该 creep 发起对穿时是否同意对穿，在寻路时也会使用该方法确定是否要绕过一个 creep
  * 该方法为空则使用默认规则（键为 default）
  */
-type CrossRules = {
-    [role in CreepRoleConstant | 'default']?: AllowCrossRuleFunc
+export type CrossRules = {
+    [role in CreepRole | 'default']?: AllowCrossRuleFunc
 }

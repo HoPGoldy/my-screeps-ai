@@ -1,4 +1,5 @@
-import { calcBodyPart } from '@/utils'
+import { calcBodyPart } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 import { battleBase, boostPrepare } from './configPart'
 
 /**
@@ -9,7 +10,7 @@ import { battleBase, boostPrepare } from './configPart'
  * @param flagName 要攻击的旗帜名称
  * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到该旗帜被移除
  */
-const boostDismantler: CreepConfig<'boostDismantler'> = {
+const boostDismantler: CreepConfig<CreepRole.BoostDismantler> = {
     ...battleBase(),
     ...boostPrepare(),
     target: creep => {

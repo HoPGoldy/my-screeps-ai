@@ -69,4 +69,7 @@ export type WorkTaskData = WorkTasks[WorkTaskType][]
 /**
  * 特殊身体类型
  */
-export type SepicalBodyType = 'upgrade7' | 'upgrade8'
+export enum SepicalBodyType {
+    Upgrade7 = 'upgrade7',
+    Upgrade8 = 'upgrade8'
+}

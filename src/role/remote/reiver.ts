@@ -1,6 +1,6 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { Color } from '@/modulesGlobal/console'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 掠夺者
@@ -12,7 +12,7 @@ import { Color } from '@/modulesGlobal/console'
  * @param flagName 目标建筑上的旗帜名称
  * @param targetStructureId 要搬运到的建筑 id
  */
-const reiver: CreepConfig<'reiver'> = {
+const reiver: CreepConfig<CreepRole.Reiver> = {
     // 要搬运资源的目标旗帜消失了就不再生成
     isNeed: (room, preMemory) => preMemory.data.flagName in Game.flags, 
     // 如果已经统计了移动

@@ -6,7 +6,7 @@
 
 import { ALL_SHARD_NAME } from '@/setting'
 import { Color, log } from '../console'
-import requestHandleStrategies from './handleStrategies'
+import requestHandleStrategies, { assertCreepMemory } from './handleStrategies'
 
 // 其他 shard 的数据
 const otherShardData: { [shard in ShardName]?: InterShardData } = {}
@@ -224,7 +224,7 @@ export const addCrossShardRequest = function <K extends CrossShardRequestType>(
  * 
  * @param creepName 要取出内存的 creep 名字
  */
-export const getMemoryFromCrossShard = function (creepName: string): MyCreepMemory {
+export const getMemoryFromCrossShard = function (creepName: string): CreepMemory {
     if (!Memory.crossShardCreeps) return undefined
 
     // 取出并清空暂存区
@@ -233,7 +233,9 @@ export const getMemoryFromCrossShard = function (creepName: string): MyCreepMemo
 
     // 返回并设置到 Memory.creeps
     if (!Memory.creeps) Memory.creeps = {}
-    return Memory.creeps[creepName] = creepMemory
+    if (assertCreepMemory(creepMemory)) {
+        return Memory.creeps[creepName] = creepMemory
+    }
 }
 
 /**

@@ -1,6 +1,6 @@
 import { removeCreep } from '@/modulesGlobal/creep/utils'
-import { calcBodyPart } from '@/utils'
-import { PbHarvestState } from '../types/role'
+import { calcBodyPart } from '../bodyUtils'
+import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
 
 /**
  * PowerBank 攻击单位
@@ -9,7 +9,7 @@ import { PbHarvestState } from '../types/role'
  * 
  * @property {} sourceFlagName 旗帜名，要插在 powerBank 上
  */
-const pbAttacker: CreepConfig<'pbAttacker'> = {
+const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
     prepare: creep => {
         const { spawnRoom, data: { sourceFlagName, healerCreepName } } = creep.memory
 

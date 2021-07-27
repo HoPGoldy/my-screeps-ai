@@ -14,6 +14,7 @@ import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
 import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+import { CreepRole } from '@/role/types/role'
 
 export default class RoomConsole extends RoomExtension {
     /**
@@ -27,7 +28,7 @@ export default class RoomConsole extends RoomExtension {
         let log = '已发布建筑任务'
 
         if (Object.keys(this.work.creeps).length <= 0) {
-            this.spawner.release.changeBaseUnit('worker', 1)
+            this.spawner.release.changeBaseUnit(CreepRole.Worker, 1)
             log += '并添加工作单位'
         }
 

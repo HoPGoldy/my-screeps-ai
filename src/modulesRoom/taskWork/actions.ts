@@ -1,6 +1,6 @@
 import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
-import { MyCreep } from '@/role/types/role'
+import { CreepRole, RoleCreep } from '@/role/types/role'
 import { useCache } from '@/utils'
 import { WorkActionGenerator } from './controller'
 import { WorkTaskType } from './types'
@@ -206,7 +206,7 @@ export const transportActions: {
  * @param creep 要获取能量的 creep
  * @returns 身上是否已经有足够的能量了
  */
-const getEnergy = function (creep: MyCreep<'worker'>): boolean {
+const getEnergy = function (creep: RoleCreep<CreepRole.Worker>): boolean {
     // 因为只会从建筑里拿，所以只要拿到了就去升级
     // 切换至 target 阶段时会移除缓存，保证下一次获取能量时重新搜索，避免出现一堆人都去挤一个的情况发生
     if (creep.store[RESOURCE_ENERGY] > 10) {

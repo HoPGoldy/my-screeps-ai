@@ -3,7 +3,49 @@
  */
 
 import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
-import { calcBodyPart } from '@/utils'
+import { BodyConfig, BodyConfigs, BodyPartGenerator, BodySet } from './types/body'
+import { CreepRole } from './types/role'
+
+/**
+ * 根据身体配置生成完成的身体数组
+ * cpu 消耗: 0.028 左右
+ * 
+ * @param bodySet 身体部件配置对象
+ */
+export function calcBodyPart(bodySet: BodySet): BodyPartConstant[] {
+    // 把身体配置项拓展成如下形式的二维数组
+    // [ [ TOUGH ], [ WORK, WORK ], [ MOVE, MOVE, MOVE ] ]
+    const bodys = Object.keys(bodySet).map(type => Array(bodySet[type]).fill(type))
+    // 把二维数组展平
+    return [].concat(...bodys)
+}
+
+/**
+ * 生成通用身体部件获取函数
+ * 
+ * @param bodyConfig 该 creep 对应的身体配置项
+ */
+export function createBodyGetter(bodyConfig: BodyConfig): BodyPartGenerator {
+    /**
+     * 获取身体部件数组
+     * 根据房间中现存的能量选择给定好的体型
+     */
+    return function(room: Room, spawn: StructureSpawn): BodyPartConstant[] {
+        const targetLevel = Object.keys(bodyConfig).reverse().find(level => {
+            // 先通过等级粗略判断，再加上 dryRun 精确验证
+            const availableEnergyCheck = (Number(level) <= room.energyAvailable)
+            const dryCheck = (spawn.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
+
+            return availableEnergyCheck && dryCheck
+        })
+        if (!targetLevel) return [ ]
+
+        // 获取身体部件
+        const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
+
+        return bodys
+    }
+}
 
 /**
  * 快速生成 creep 身体部件配置项
@@ -98,7 +140,7 @@ export const bodyConfigs: BodyConfigs = {
      * 基础攻击单位
      * 使用 attack 身体部件的攻击单位
      */
-    attacker: getBodyConfig(
+    [CreepRole.Soldier]: getBodyConfig(
         { [MOVE]: 2, [ATTACK]: 2 },
         { [MOVE]: 3, [ATTACK]: 3 },
         { [MOVE]: 4, [ATTACK]: 4 },
@@ -112,7 +154,7 @@ export const bodyConfigs: BodyConfigs = {
     /**
      * 基础治疗单位
      */
-    healer: getBodyConfig(
+    [CreepRole.Doctor]: getBodyConfig(
         { [MOVE]: 1, [HEAL]: 1 },
         { [MOVE]: 1, [HEAL]: 1 },
         { [MOVE]: 2, [HEAL]: 2 },

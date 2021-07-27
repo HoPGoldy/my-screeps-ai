@@ -1,4 +1,5 @@
 import { Color, log } from "@/modulesGlobal"
+import { MoveOpt } from "@/modulesGlobal/move/types"
 
 
 /**

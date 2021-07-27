@@ -1,3 +1,5 @@
+import { CreepConfig, CreepRole } from "../types/role"
+
 /**
  * 签名者
  * 会先抵达指定房间, 然后执行签名
@@ -5,7 +7,7 @@
  * @param targetRoomName 要签名的目标房间名
  * @param signText 要签名的内容
  */
-const signer: CreepConfig<'signer'> = {
+const signer: CreepConfig<CreepRole.Signer> = {
     isNeed: () => false,
     target: creep => {
         const { targetRoomName, signText } = creep.memory.data

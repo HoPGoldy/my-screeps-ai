@@ -1,4 +1,4 @@
-import { MyCreep } from '@/role/types/role'
+import { CreepRole, RoleCreep } from '@/role/types/role'
 import TaskController from '../taskBase/controller'
 import { noTask, transportActions } from './actions'
 import { AllRoomTransportTask, TransportTasks, TransportTaskType } from './types'
@@ -22,7 +22,7 @@ const WORK_PROPORTION_TO_EXPECT = [
  * 物流搬运任务逻辑的生成函数
  */
 export type TransportActionGenerator<T extends TransportTaskType = TransportTaskType> = (
-   creep: MyCreep<'manager'>,
+   creep: RoleCreep<CreepRole.Manager>,
    task: TransportTasks[T],
    transportController: RoomTransport
 ) => RoomTaskAction
@@ -60,7 +60,7 @@ export default class RoomTransport extends TaskController<TransportTaskType, All
      * 获取后请在本 tick 直接执行，不要进行存储
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
-    public getWork(creep: MyCreep<'manager'>): RoomTaskAction {
+    public getWork(creep: RoleCreep<CreepRole.Manager>): RoomTaskAction {
         this.totalLifeTime += 1
 
         const task = this.getUnitTask(creep)

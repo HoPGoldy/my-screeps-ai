@@ -1,4 +1,5 @@
-import { calcBodyPart } from '@/utils'
+import { calcBodyPart } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 import { boostPrepare } from './configPart'
 
 /**
@@ -6,7 +7,7 @@ import { boostPrepare } from './configPart'
  * 会自动攻击房间内的敌对单位
  * 注意身体部件不会自动适配，也就是说低等级房间无法造出来这个单位。原因在于低等级房间就算能造出来小 creep 也等于送人头。
  */
-const defender: CreepConfig<'defender'> = {
+const defender: CreepConfig<CreepRole.Defender> = {
     // 委托 controller 判断房间内是否有威胁
     isNeed: room => {
         const needSpawn = room.controller.checkEnemyThreat()

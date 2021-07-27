@@ -1,6 +1,8 @@
 import { Color } from "@/modulesGlobal";
+import { MoveInfo, MoveOpt } from "@/modulesGlobal/move/types";
 import { SepicalBodyType } from "@/modulesRoom/taskWork/types";
 import { HarvestMode } from "@/role/base/harvester";
+import { CreepRole, RoleDatas } from "@/role/types/role";
 
 declare global {
     /**
@@ -28,7 +30,7 @@ declare global {
         /**
          * creep 的角色
          */
-        role: CreepRoleConstant
+        role: CreepRole
         /**
          * 该 creep 的特殊体型
          */
@@ -40,7 +42,7 @@ declare global {
         /**
          * creep 在工作时需要的自定义配置，在孵化时由 spawn 复制
          */
-        data?: RoleDatas[CreepRoleConstant]
+        data: RoleDatas[CreepRole]
         /**
          * 能量采集单位特有，当前的采集模式
          */

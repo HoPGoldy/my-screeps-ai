@@ -4,6 +4,7 @@ import RoomTransportTaskController from '@/modulesRoom/taskTransport/controller'
 import { creepDefaultMemory } from './constant'
 import RoomSpawnController from './controller'
 import { SpawnTask } from './types'
+import { CreepRole } from '@/role/types/role'
 
 jest.mock('@/role', () => {
     return {
@@ -32,11 +33,9 @@ jest.mock('./creepRelease', () => ({
  */
 const getSpawnTask = (
     name: string = 'creepA',
-    role: string = 'harvester',
+    role: CreepRole = CreepRole.Harvester,
     data: AnyObject = { flag: 'mock' }
-): SpawnTask => ({
-    name, data, role: role as CreepRoleConstant
-})
+): SpawnTask => ({ name, data, role })
 
 it('可以正常增减任务', () => {
     const room = getMockRoom({ name: 'W1N1' })
@@ -134,8 +133,8 @@ it('能量不足时会挂起非重要孵化任务', () => {
     Game.rooms.W1N1 = room
 
     const spawnTaskA = getSpawnTask()
-    const spawnTaskB = getSpawnTask('creepB', 'signer')
-    const spawnTaskC = getSpawnTask('creepC', 'reiver')
+    const spawnTaskB = getSpawnTask('creepB', CreepRole.Signer)
+    const spawnTaskC = getSpawnTask('creepC', CreepRole.Reiver)
 
     const spawnCreep = jest.fn().mockReturnValue(ERR_NOT_ENOUGH_ENERGY)
     const spawn = getMockSpawn({ spawnCreep })

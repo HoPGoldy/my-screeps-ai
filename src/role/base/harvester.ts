@@ -1,10 +1,9 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { addConstructionSite } from '@/modulesGlobal/construction'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
-import { MyCreep } from '../types/role'
+import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
 
 /**
  * 能量采集单位的行为模式
@@ -31,7 +30,7 @@ export enum HarvestMode {
  * 采集者
  * 从指定 source 中获取能量 > 将能量存放到身下的 container 中
  */
-const harvester: CreepConfig<'harvester'> = {
+const harvester: CreepConfig<CreepRole.Harvester> = {
     prepare: creep => {
         const { harvestRoom, sourceId } = creep.memory.data
         if (creep.room.name !== harvestRoom) {
@@ -102,9 +101,9 @@ const setHarvestMode = function (creep: Creep, source: Source): void {
 
 type ActionStrategy = {
     [key in HarvestMode]: {
-        prepare: (creep: MyCreep<'harvester'>, source: Source) => boolean,
-        source: (creep: MyCreep<'harvester'>, source: Source) => boolean,
-        target: (creep: MyCreep<'harvester'>) => boolean,
+        prepare: (creep: RoleCreep<CreepRole.Harvester>, source: Source) => boolean,
+        source: (creep: RoleCreep<CreepRole.Harvester>, source: Source) => boolean,
+        target: (creep: RoleCreep<CreepRole.Harvester>) => boolean,
     }
 }
 
@@ -336,7 +335,7 @@ const actionStrategy: ActionStrategy = {
  * 移动到 source 旁丢弃能量的位置
  * @param creep 执行移动的单位
  */
-const goToDropPos = function (creep: MyCreep<'harvester'>, source: Source): {
+const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Source): {
     // 本次移动的返回值
     result: ScreepsReturnCode
     // 移动的目的地（之前没有丢弃位置的话目标就为 source，否则为对应的能量丢弃位置）

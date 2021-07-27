@@ -1,5 +1,5 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 预定者
@@ -8,7 +8,7 @@ import { createBodyGetter } from '@/utils'
  * 准备阶段：向指定房间控制器移动
  * 阶段A：预定控制器
  */
-const reserver: CreepConfig<'reserver'> = {
+const reserver: CreepConfig<CreepRole.Reserver> = {
     // 该 creep 死了就不会再次孵化
     isNeed: () => false,
     // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野

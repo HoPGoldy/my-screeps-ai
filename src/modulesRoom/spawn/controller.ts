@@ -5,6 +5,7 @@ import RoomCreepRelease from './creepRelease'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
 import { TransportTaskType } from '../taskTransport/types'
+import { CreepConfig, CreepRole } from '@/role/types/role'
 
 /**
  * 房间孵化管理模块
@@ -129,11 +130,11 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      */
     private spawnCreep(spawn: StructureSpawn, { name, role, data }: SpawnTask): MySpawnReturnCode {
         // 找不到他的工作逻辑的话直接移除任务
-        const creepWork: CreepConfig<CreepRoleConstant> = roles[role]
+        const creepWork: CreepConfig<CreepRole> = roles[role]
         if (!creepWork) return OK
 
         // 设置 creep 内存
-        let memory: CreepMemory = { ...creepDefaultMemory, spawnRoom: this.room.name, role, data }
+        const memory: CreepMemory = { ...creepDefaultMemory, spawnRoom: this.room.name, role, data }
 
         // 获取身体部件
         const bodys = creepWork.bodys(this.room, spawn, data)

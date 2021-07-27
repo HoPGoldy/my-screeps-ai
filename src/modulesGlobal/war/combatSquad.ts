@@ -1,3 +1,5 @@
+import { SquadMember, SquadMemory, SquadStrategy, SquadTacticalActions, SquadTypes } from "./squad"
+
 /**
  * 战斗小队模块
  * 实现了两人以上 creep 组成小组后的战斗逻辑，详见 doc/战斗小队设计案.md

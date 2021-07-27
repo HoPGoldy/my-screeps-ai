@@ -1,6 +1,7 @@
 import { getOppositeDirection } from '@/utils'
 import crossRules from './crossRules'
 import { addCrossShardRequest } from '@/modulesGlobal/crossShard'
+import { MoveOpt } from './types'
 
 /**
  * 房间移动成本缓存
@@ -157,7 +158,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
                 `sendCreep${creep.name}${Game.time}`,
                 portal.destination.shard as ShardName,
                 'sendCreep',
-                { name, memory: memory as MyCreepMemory }
+                { name, memory }
             )
 
             // 主动释放掉自己的内存，从而避免 creepController 认为自己去世了而直接重新孵化

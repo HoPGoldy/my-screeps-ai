@@ -24,6 +24,15 @@ import defender from './war/defender'
 import dismantler from './war/dismantler'
 import doctor from './war/doctor'
 import soldier from './war/soldier'
+import { CreepConfig, CreepRole } from './types/role'
+
+/**
+ * creep 工作逻辑集合
+ * 包含了每个角色应该做的工作
+ */
+type CreepWork = {
+    [Role in CreepRole]: CreepConfig<Role>
+}
 
 const creepWork: CreepWork = {
     /**

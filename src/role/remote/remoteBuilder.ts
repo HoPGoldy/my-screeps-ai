@@ -1,14 +1,14 @@
 import { remoteHelperIsNeed } from './utils'
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 支援者
  * 拓展型建造者, 会先抵达指定房间, 然后执行建造者逻辑
  * 如果都造好的话就升级控制器
  */
-const remoteBuilder: CreepConfig<'remoteBuilder'> = {
+const remoteBuilder: CreepConfig<CreepRole.RemoteBuilder> = {
     isNeed: (room, preMemory) => {
         const target = Game.rooms[preMemory.data.targetRoomName]
         // 如果房间造好了 terminal，自己的使命就完成了

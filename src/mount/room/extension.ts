@@ -12,6 +12,7 @@ import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { removeCreep } from '@/modulesGlobal/creep'
 import { TransportTaskType } from '@/modulesRoom'
 import { Color, createRoomLink, log } from '@/modulesGlobal'
+import { CreepRole } from '@/role/types/role'
 
 export default class RoomExtension extends Room {
     /**
@@ -290,7 +291,7 @@ export default class RoomExtension extends Room {
     public claimRoom(targetRoomName: string, signText: string = ''): OK {
         this.spawner.addTask({
             name: GetName.claimer(targetRoomName),
-            role: 'claimer',
+            role: CreepRole.Claimer,
             data: { targetRoomName, signText }
         })
 

@@ -1,15 +1,15 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { delayQueue } from '@/modulesGlobal/delayQueue'
 import { MINE_LIMIT } from '@/setting'
 import { removeCreep } from '@/modulesGlobal/creep/utils'
 import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 元素矿采集单位
  * 采集元素矿，然后存到 terminal 中
  */
-const miner: CreepConfig<'miner'> = {
+const miner: CreepConfig<CreepRole.Miner> = {
     // 检查矿床里是不是还有矿
     isNeed: room => {
         // 房间中的矿床是否还有剩余产量

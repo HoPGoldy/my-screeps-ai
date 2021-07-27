@@ -1,13 +1,13 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { battleBase } from './configPart'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 士兵
  * 会一直向旗帜发起进攻,
  * 优先攻击旗帜 3*3 范围内的 creep, 没有的话会攻击旗帜所在位置的建筑
  */
-const soldier: CreepConfig<'soldier'> = {
+const soldier: CreepConfig<CreepRole.Soldier> = {
     ...battleBase(),
     target: creep => {
         const { targetFlagName } = creep.memory.data
@@ -25,7 +25,7 @@ const soldier: CreepConfig<'soldier'> = {
         }
         return false
     },
-    bodys: createBodyGetter(bodyConfigs.attacker)
+    bodys: createBodyGetter(bodyConfigs.soldier)
 }
 
 export default soldier

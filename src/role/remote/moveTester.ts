@@ -1,4 +1,5 @@
 import { Color } from "@/modulesGlobal/console"
+import { CreepConfig, CreepRole } from "../types/role"
 
 /**
  * 移动测试单位
@@ -9,7 +10,7 @@ import { Color } from "@/modulesGlobal/console"
  * 
  * @param flagName 目标旗帜名称
  */
-const moveTester: CreepConfig<'moveTester'> = {
+const moveTester: CreepConfig<CreepRole.MoveTester> = {
     prepare: creep => {
         // creep.setWayPoint(data.sourceFlagName)
         // creep.memory.fromShard = Game.shard.name as ShardName

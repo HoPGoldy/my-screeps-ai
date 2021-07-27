@@ -1,7 +1,7 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { Color } from '@/modulesGlobal/console'
 import { DEPOSIT_MAX_COOLDOWN } from '@/modulesRoom/observer/constant'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * deposit 采集者
@@ -9,7 +9,7 @@ import { DEPOSIT_MAX_COOLDOWN } from '@/modulesRoom/observer/constant'
  * 
  * @property {} sourceFlagName 旗帜名，要插在 deposit 上
  */
-const depositHarvester: CreepConfig<'depositHarvester'> = {
+const depositHarvester: CreepConfig<CreepRole.DepositHarvester> = {
     isNeed: (room, preMemory) => {
         // 旗帜效验, 没有旗帜则不生成
         const targetFlag = Game.flags[preMemory.data.sourceFlagName]

@@ -1,3 +1,4 @@
+import { CreepData } from "@/role/types/role"
 import { Color, colorful } from "../console/utils"
 
 /**

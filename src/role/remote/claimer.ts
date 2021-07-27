@@ -1,5 +1,6 @@
 import { Color } from '@/modulesGlobal/console'
 import { getName } from '@/utils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 新房占领单位
@@ -8,7 +9,7 @@ import { getName } from '@/utils'
  * data:
  * @param targetRoomName 要占领的目标房间
  */ 
-const claimer: CreepConfig<'claimer'> = {
+const claimer: CreepConfig<CreepRole.Claimer> = {
     // 该 creep 死了不会再次孵化
     isNeed: () => false,
     // 向指定房间移动，这里移动是为了避免 target 阶段里 controller 所在的房间没有视野

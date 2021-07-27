@@ -1,5 +1,5 @@
-import { bodyConfigs } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, createBodyGetter } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 医生
@@ -8,7 +8,7 @@ import { createBodyGetter } from '@/utils'
  * @param creepsName 要治疗的 creep 名称
  * @param standByFlagName 待命旗帜名称，本角色会优先抵达该旗帜, 直到目标 creep 出现
  */
-const doctor: CreepConfig<'doctor'> = {
+const doctor: CreepConfig<CreepRole.Doctor> = {
     isNeed: (room, preMemory) => preMemory.data.keepSpawn,
     prepare: creep => {
         // 治疗单位不允许发起对穿
@@ -24,7 +24,7 @@ const doctor: CreepConfig<'doctor'> = {
         creep.healTo(target)
         return false
     },
-    bodys: createBodyGetter(bodyConfigs.healer)
+    bodys: createBodyGetter(bodyConfigs.doctor)
 }
 
 export default doctor

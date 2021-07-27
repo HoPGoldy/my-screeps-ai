@@ -1,3 +1,5 @@
+import { CreepRole } from "@/role/types/role"
+
 /**
  * 战斗小队的基础信息
  */
@@ -27,7 +29,7 @@ interface SquadBase<IN_MEMORY extends boolean> {
 /**
  * 小队内存
  */
-type SquadMemory = SquadBase<true>
+export type SquadMemory = SquadBase<true>
 
 /**
  * 小队中允许执行的战术动作
@@ -36,25 +38,27 @@ type SquadMemory = SquadBase<true>
  * @type right 右转（顺时针）
  * @type cross 对穿（左上到右下，右上到左下） 
  */
-type SquadTacticalActions = 'back' | 'left' | 'right' | 'cross'
+export enum SquadTacticalActions {
+    Back = 1,
+    Left,
+    Right,
+    Corss
+}
 
 /**
  * 小队类型，要新增其他种类小队就在后面追加类型
  */
-type SquadTypes = Apocalypse4 /** | ... */
-
-/**
- * 四个一体机
- */
-type Apocalypse4 = 'apocalypse4'
+export enum SquadTypes {
+    Apocalypse4 = 'apocalypse4',
+}
 
 /**
  * 小队的具体配置
  */
-interface SquadStrategy {
+export interface SquadStrategy {
     /* 小队的组成，键为角色，值为需要的数量 */
     member: {
-        [role in CreepRoleConstant]?: number
+        [role in CreepRole]?: number
     }
     /***
      * 小队指令 - 治疗
@@ -81,6 +85,6 @@ interface SquadStrategy {
 /**
  * 小队成员对象，键为小队成员在小队内存中的键，值为其本人，常用作参数
  */
-interface SquadMember {
+export interface SquadMember {
     [memberName: string]: Creep
 }

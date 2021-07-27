@@ -1,5 +1,5 @@
-import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, specialBodyConfig, createBodyGetter } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * manager 触发后事处理的最小生命
@@ -10,7 +10,7 @@ const TRANSFER_DEATH_LIMIT = 20
  * 搬运工，运营单位
  * 负责填充 extension、spawn、tower、lab 等资源运输任务
  */
-const manager: CreepConfig<'manager'> = {
+const manager: CreepConfig<CreepRole.Manager> = {
     isNeed: (room, preMemory, creepName) => {
         // 如果自己被炒鱿鱼了就不再孵化
         if (room.transport.haveCreepBeenFired(creepName)) {

@@ -1,12 +1,12 @@
-import { bodyConfigs, specialBodyConfig } from '../bodyConfigs'
-import { createBodyGetter } from '@/utils'
+import { bodyConfigs, specialBodyConfig, createBodyGetter } from '../bodyUtils'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 工人，运营单位
  * 负责采集能量、升级、维修、建造等消耗能量的工作
  * 任务处理逻辑定义在 modules/roomTask/work/actions 中
  */
-const worker: CreepConfig<'worker'> = {
+const worker: CreepConfig<CreepRole.Worker> = {
     isNeed: (room, preMemory, creepName) => {
         // 如果自己被炒鱿鱼了就不再孵化
         if (room.work.haveCreepBeenFired(creepName)) {

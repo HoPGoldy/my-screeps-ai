@@ -1,3 +1,5 @@
+import { CreepRole, RoleDatas } from "@/role/types/role"
+
 declare global {
     interface RoomMemory {
         /**
@@ -15,7 +17,7 @@ declare global {
 /**
  * 孵化任务
  */
-export interface SpawnTask<Role extends CreepRoleConstant = CreepRoleConstant> {
+export interface SpawnTask<Role extends CreepRole = CreepRole> {
     /**
      * 要孵化的 creep 名称
      */
@@ -43,7 +45,7 @@ export type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 /**
  * 房间运维基础单位
  */
-export type BaseUnits = 'worker' | 'manager'
+export type BaseUnits = CreepRole.Worker | CreepRole.Manager
 
 /**
  * 房间基础运维单位的动态调整上下限
