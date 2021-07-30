@@ -39,24 +39,6 @@ declare global {
          */
         upgradeLinkId?: Id<StructureLink>
         /**
-         * 外矿专用内存字段
-         */
-        remote: {
-            /**
-             * 外矿房间名
-             */
-            [roomName: string]: {
-                /**
-                 * 该外矿什么时候可以恢复采集，在被入侵时触发
-                 */
-                disableTill?: number
-                /**
-                 * 该外矿要把能量运到哪个建筑里，保存下来是为了后面方便自动恢复外矿采集
-                 */
-                targetId: Id<StructureWithStore>
-            }
-        }
-        /**
          * 当前被 repairer 或 tower 关注的墙
          */
         focusWall: {
@@ -135,12 +117,6 @@ declare global {
         _hasRunLab: boolean
 
         /**
-         * pos 处理 api
-         */
-        serializePos(pos: RoomPosition): string
-        unserializePos(posStr: string): RoomPosition | undefined
-
-        /**
          * 资源共享 api
          */
         giver(roomName: string, resourceType: ResourceConstant, amount?: number): string
@@ -164,8 +140,5 @@ declare global {
         confirmBaseCenter(targetPos?: RoomPosition[]): RoomPosition | ERR_NOT_FOUND
         setBaseCenter(pos: RoomPosition): OK | ERR_INVALID_ARGS
         planLayout(): string
-        addRemote(remoteRoomName: string, targetId: string): OK | ERR_INVALID_TARGET | ERR_NOT_FOUND
-        removeRemote(remoteRoomName: string, removeFlag?: boolean): OK | ERR_NOT_FOUND
-        claimRoom(targetRoomName: string, signText?: string): OK
     }
 }

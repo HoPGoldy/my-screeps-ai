@@ -135,11 +135,7 @@ export default class TowerExtension extends StructureTower {
         if (this.room.memory.boost.type === 'DEFENSE') {
             // 强化准备完成，发布防御单位
             if (this.room.memory.boost.state === 'waitBoost' && !(defenderName in Game.creeps)) {
-                const result = this.room.spawner.addTask({
-                    name: defenderName,
-                    role: CreepRole.Defender,
-                    data: {}
-                })
+                const result = this.room.spawner.addTask(defenderName, CreepRole.Defender, {})
                 this.log(`已发布主动防御单位，返回值：${result}`, Color.Green)
             }
         }

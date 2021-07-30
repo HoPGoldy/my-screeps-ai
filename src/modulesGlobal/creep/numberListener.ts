@@ -88,7 +88,7 @@ const handleNotExistCreep = function (creepName: string, creepMemory: CreepMemor
     }
 
     // 加入生成，加入成功的话删除过期内存
-    const result = spawnRoom.spawner.addTask({ name: creepName, role, data })
+    const result = spawnRoom.spawner.addTask(creepName, role, data)
 
     if (result === ERR_NAME_EXISTS) log(`死亡 ${creepName} 孵化任务已存在`, [ 'creepController' ])
     delete Memory.creeps[creepName]

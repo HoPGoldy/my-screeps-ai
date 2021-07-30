@@ -255,37 +255,6 @@ export default class RoomConsole extends RoomExtension {
     }
 
     /**
-     * 用户操作 - 拓展新外矿
-     * 
-     * @param 同上 addRemote()
-     */
-    public radd(remoteRoomName: string, targetId: Id<StructureWithStore>): string {
-        let stats = `[${this.name} 外矿] `
-
-        const actionResult = this.addRemote(remoteRoomName, targetId)
-        if (actionResult === OK) stats += '拓展完成，已发布 remoteHarvester 及 reserver'
-        else if (actionResult === ERR_INVALID_TARGET) stats += '拓展失败，无效的 targetId'
-        else if (actionResult === ERR_NOT_FOUND) stats += `拓展失败，未找到 source 旗帜，请在外矿房间的 source 上放置名为 [${remoteRoomName} source0] 的旗帜（有多个 source 请依次增加旗帜名最后一位的编号）`
-        
-        return stats
-    }
-
-    /**
-     * 用户操作 - 移除外矿
-     * 
-     * @param 同上 removeRemote()
-     */
-    public rremove(remoteRoomName: string, removeFlag: boolean = false): string {
-        let stats = `[${this.name} 外矿] `
-
-        const actionResult = this.removeRemote(remoteRoomName, removeFlag)
-        if (actionResult === OK) stats += '外矿及对应角色组已移除，' + (removeFlag ? 'source 旗帜也被移除' : 'source 旗帜未移除')
-        else if (actionResult === ERR_NOT_FOUND) stats += '未找到对应外矿'
-        
-        return stats
-    }
-
-    /**
      * 移除所有不属于自己的墙壁
      */
     public clearwall(): string {
@@ -295,18 +264,6 @@ export default class RoomConsole extends RoomExtension {
 
         wall.forEach(w => w.destroy())
         return `[${this.name}] 墙壁清理完成`
-    }
-
-    /**
-     * 用户操作 - 占领新房间
-     * 
-     * @param 同上 claimRoom()
-     */
-    public claim(targetRoomName: string, signText: string = ''): string {
-        this.claimRoom(targetRoomName, signText)
-
-        return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。` +
-        `你可以在目标房间中新建名为 ${getName.flagBaseCenter(targetRoomName)} 的旗帜来指定基地中心。否则 claimer 将运行自动规划。`
     }
     
     /**
@@ -431,36 +388,6 @@ export default class RoomConsole extends RoomExtension {
                     {
                         title: '显示 lab 集群状态',
                         functionName: 'lshow'
-                    }
-                ]
-            },
-            {
-                name: '房间拓展 API',
-                describe: '用于执行本房间的对外扩张计划',
-                api: [
-                    {
-                        title: '拓展新外矿',
-                        params: [
-                            { name: 'remoteRoomName', desc: '要拓展的外矿房间名' },
-                            { name: 'targetId', desc: '能量应搬运到哪个建筑的 id' }
-                        ],
-                        functionName: 'radd'
-                    },
-                    {
-                        title: '移除外矿',
-                        params: [
-                            { name: 'remoteRoomName', desc: '要移除的外矿房间名' },
-                            { name: 'removeFlag', desc: '是否顺便把外矿 source 上的旗帜也移除了' }
-                        ],
-                        functionName: 'rremove'
-                    },
-                    {
-                        title: '占领新房间',
-                        params: [
-                            { name: 'targetRoomName', desc: '要占领的房间名' },
-                            { name: 'signText', desc: '[可选] 新房间的签名，默认为空' },
-                        ],
-                        functionName: 'claim'
                     }
                 ]
             },

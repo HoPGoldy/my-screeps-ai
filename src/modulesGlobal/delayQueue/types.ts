@@ -29,40 +29,54 @@ export interface DelayTaskData {
  * 所有延迟任务的名称和数据的对应 map
  */
 export interface DelayTaskDatas {
+    [DelayTaskType.SpawnFiller]: DelayTaskData
+    [DelayTaskType.SpawnMiner]: DelayTaskData
+    [DelayTaskType.SpawnUpgrader]: DelayTaskData
+    [DelayTaskType.AddBuildTask]: DelayTaskData
+    [DelayTaskType.MapLibraryInit]: DelayTaskData
+    [DelayTaskType.MapLibrarySave]: DelayTaskData
+    [DelayTaskType.RemoteHarvest]: DelayTaskData & {
+        /**
+         * 外矿所在房间名
+         */
+        remoteRoomName: string
+        /**
+         * 外矿对应的 source id
+         */
+        sourceId: Id<Source>
+    }
+}
+
+export enum DelayTaskType {
     /**
      * 刷墙工延迟孵化任务
      */
-    [DelayTaskType.SpawnFiller]: DelayTaskData
+    SpawnFiller = 'spawnFiller',
     /**
      * 挖矿工延迟孵化任务
      */
-    [DelayTaskType.SpawnMiner]: DelayTaskData
+    SpawnMiner = 'spawnMiner',
     /**
      * 升级工延迟孵化任务
      */
-    [DelayTaskType.SpawnUpgrader]: DelayTaskData
+    SpawnUpgrader = 'spawnUpgrader',
     /**
      * 建造任务发布
      * 因为工地必须在下个 tick 才能获取到
      */
-    [DelayTaskType.AddBuildTask]: DelayTaskData
+    AddBuildTask = 'addBuildTask',
     /**
      * map 库初始化任务
      */
-    [DelayTaskType.MapLibraryInit]: DelayTaskData
+    MapLibraryInit = 'mapLibraryInit',
     /**
      * map 库保存任务
      */
-    [DelayTaskType.MapLibrarySave]: DelayTaskData
-}
-
-export enum DelayTaskType {
-    SpawnFiller = 'spawnFiller',
-    SpawnMiner = 'spawnMiner',
-    SpawnUpgrader = 'spawnUpgrader',
-    AddBuildTask = 'addBuildTask',
-    MapLibraryInit = 'mapLibraryInit',
-    MapLibrarySave = 'mapLibrarySave'
+    MapLibrarySave = 'mapLibrarySave',
+    /**
+     * 外矿被禁用后的恢复采集任务
+     */
+    RemoteHarvest = 'remoteHarvest'
 }
 
 /**

@@ -20,11 +20,11 @@ export const CreateDelayQueue = function () {
 
     /**
      * 添加新的延迟任务
-     * 当 Game.time 大于 callTime 时将触发通过 addDelayCallback 方法绑定的回调
+     * call tick 后将触发通过 addDelayCallback 方法绑定的回调
      * 
      * @param name 要添加的任务名
      * @param data 该任务调用时接受的数据
-     * @param callTime 任务在多少 tick 后调用
+     * @param call 任务在多少 tick 后调用
      */
     const addDelayTask = function <K extends DelayTaskType>(
         name: K,

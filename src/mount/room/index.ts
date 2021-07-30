@@ -14,7 +14,8 @@ import {
     FactoryController,
     TerminalController,
     StorageController,
-    ObserverController
+    ObserverController,
+    RemoteChontroller
 } from '@/modulesRoom'
 
 /**
@@ -53,7 +54,8 @@ export default () => {
         [ 'myFactory', FactoryController ],
         [ 'myTerminal', TerminalController ],
         [ 'myStorage', StorageController ],
-        [ 'myObserver', ObserverController ]
+        [ 'myObserver', ObserverController ],
+        [ 'remote', RemoteChontroller ]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -123,5 +125,10 @@ declare global {
          * observer 管理模块
          */
         myObserver: ObserverController
+        /**
+         * 扩张管理模块
+         * 包括外矿和新房扩张
+         */
+        remote: RemoteChontroller
     }
 }

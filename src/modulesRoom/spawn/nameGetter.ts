@@ -13,7 +13,7 @@ export class GetName {
     static signer = (roomName: string) => `${roomName} signer`
     static remoteBuilder = (remoteRoomName: string) => `${remoteRoomName} RemoteBuilder`
     static remoteUpgrader = (remoteRoomName: string) => `${remoteRoomName} RemoteUpgrader`
-    static remoteHarvester = (remoteRoomName: string, index: number) => `${remoteRoomName} remoteHarvester${index}`
+    static remoteHarvester = (remoteRoomName: string, sourceId: Id<Source>) => `${remoteRoomName} remoteHarvester${sourceId}`
     static depositHarvester = (flagName: string) => `${flagName} depoHarvester`
     static pbAttacker = (flagName: string, index: number) => `${flagName} attacker${index}`
     static pbHealer = (flagName: string, index: number) => `${flagName} healer${index}`

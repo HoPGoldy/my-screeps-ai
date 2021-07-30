@@ -5,7 +5,7 @@ import RoomCreepRelease from './creepRelease'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
 import { TransportTaskType } from '../taskTransport/types'
-import { CreepConfig, CreepRole } from '@/role/types/role'
+import { CreepConfig, CreepRole, RoleDatas } from '@/role/types/role'
 
 /**
  * 房间孵化管理模块
@@ -29,14 +29,16 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
     /**
      * 向生产队列里推送一个生产任务
      * 
-     * @param task 新的孵化任务
+     * @param name 要孵化的 creep 名字
+     * @param role 该 creep 的角色
+     * @param data 该 creep 的自定义数据
      * @returns 当前任务在队列中的排名
      */
-    public addTask(task: SpawnTask): number | ERR_NAME_EXISTS {
+    public addTask<T extends CreepRole>(name: string, role: T, data: RoleDatas[T]): number | ERR_NAME_EXISTS {
         // 先检查下任务是不是已经在队列里了
-        if (!this.hasTask(task.name)) {
+        if (!this.hasTask(name)) {
             // 任务加入队列
-            this.memory.push(task)
+            this.memory.push({ name, role, data })
 
             return this.memory.length - 1
         }

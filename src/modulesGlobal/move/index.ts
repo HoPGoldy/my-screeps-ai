@@ -1,4 +1,4 @@
-import { getOppositeDirection } from '@/utils'
+import { getOppositeDirection, serializePos } from '@/utils'
 import crossRules from './crossRules'
 import { addCrossShardRequest } from '@/modulesGlobal/crossShard'
 import { MoveOpt } from './types'
@@ -52,7 +52,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
 
     // 确认目标有没有变化, 变化了则重新规划路线
     if (options.checkTarget) {
-        const targetPosTag = creep.room.serializePos(target)
+        const targetPosTag = serializePos(target)
 
         if (targetPosTag !== moveMemory.targetPos) {
             moveMemory.targetPos = targetPosTag
@@ -355,7 +355,7 @@ const requireCross = function (creep: Creep | PowerCreep, direction: DirectionCo
  */
 const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, moveOpt: MoveOpt = {}): string | undefined {
     // 先查询下缓存里有没有值
-    const routeKey = `${creep.room.serializePos(creep.pos)} ${creep.room.serializePos(target)}`
+    const routeKey = `${serializePos(creep.pos)} ${serializePos(target)}`
 
     if (!moveOpt.disableRouteCache) {
         const route = routeCache[routeKey]

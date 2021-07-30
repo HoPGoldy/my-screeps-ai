@@ -88,12 +88,12 @@ export interface RoleDatas {
     [CreepRole.Signer]: RemoteDeclarerData
     [CreepRole.RemoteBuilder]: RemoteHelperData
     [CreepRole.RemoteUpgrader]: RemoteHelperData
-    [CreepRole.RemoteHarvester]: RemoteHarvesterData
-    [CreepRole.DepositHarvester]: RemoteHarvesterData
+    [CreepRole.RemoteHarvester]: RemoteEnergyHarvesterData
+    [CreepRole.DepositHarvester]: RemoteResourceHarvesterData
     [CreepRole.PbAttacker]: pbAttackerData
     [CreepRole.PbHealer]: HealUnitData
-    [CreepRole.PbCarrier]: RemoteHarvesterData
-    [CreepRole.MoveTester]: RemoteHarvesterData
+    [CreepRole.PbCarrier]: RemoteResourceHarvesterData
+    [CreepRole.MoveTester]: RemoteResourceHarvesterData
     [CreepRole.Reiver]: ReiverData
 
     /**
@@ -263,10 +263,23 @@ interface RemoteDeclarerData {
 }
 
 /**
- * 远程采集单位的 data
- * 包括外矿采集和公路房资源采集单位
+ * 外矿采集单位的 data
  */
-interface RemoteHarvesterData {
+ interface RemoteEnergyHarvesterData {
+    /**
+     * 外矿所在房间名
+     */
+    roomName: string
+    /**
+     * 要采集的source名称
+     */
+    sourceId: Id<Source>
+}
+
+/**
+ * 公路房资源采集单位的 data
+ */
+interface RemoteResourceHarvesterData {
     /**
      * 要采集的资源旗帜名称
      */

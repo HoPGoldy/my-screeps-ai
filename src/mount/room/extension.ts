@@ -8,11 +8,9 @@
 import { BOOST_RESOURCE } from '@/setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
-import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { removeCreep } from '@/modulesGlobal/creep'
 import { TransportTaskType } from '@/modulesRoom'
 import { Color, createRoomLink, log } from '@/modulesGlobal'
-import { CreepRole } from '@/role/types/role'
 
 export default class RoomExtension extends Room {
     /**
@@ -29,29 +27,6 @@ export default class RoomExtension extends Room {
         // 生成前缀并打印日志
         const prefixes = instanceName ? [ roomName, instanceName ] : [ roomName ]
         log(content, prefixes, color, notify)
-    }
-
-    /**
-     * 将指定位置序列化为字符串
-     * 形如: 12/32/E1N2
-     * 
-     * @param pos 要进行压缩的位置
-     */
-    public serializePos(pos: RoomPosition): string {
-        return `${pos.x}/${pos.y}/${pos.roomName}`
-    }
-
-    /**
-     * 将位置序列化字符串转换为位置
-     * 位置序列化字符串形如: 12/32/E1N2
-     * 
-     * @param posStr 要进行转换的字符串
-     */
-    public unserializePos(posStr: string): RoomPosition | undefined {
-        // 形如 ["12", "32", "E1N2"]
-        const infos = posStr.split('/')
-
-        return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
     }
 
     /**
@@ -224,76 +199,6 @@ export default class RoomExtension extends Room {
         // 将 boost 状态置为 clear，labExtension 会自动发布清理任务并移除 boostTask
         if (this.memory.boost) this.memory.boost.state = 'boostClear'
         delete this.memory.war
-
-        return OK
-    }
-
-    /**
-     * 拓展新的外矿
-     * 
-     * @param remoteRoomName 要拓展的外矿房间名
-     * @param targetId 能量搬到哪个建筑里
-     * @returns ERR_INVALID_TARGET targetId 找不到对应的建筑
-     * @returns ERR_NOT_FOUND 没有找到足够的 source 旗帜
-     */
-    public addRemote(remoteRoomName: string, targetId: Id<StructureWithStore>): OK | ERR_INVALID_TARGET | ERR_NOT_FOUND {
-        // target 建筑一定要有
-        if (!Game.getObjectById(targetId)) return ERR_INVALID_TARGET
-        // 目标 source 也至少要有一个
-        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
-        if (!(sourceFlagsName[0] in Game.flags)) return ERR_NOT_FOUND
-        // 兜底
-        if (!this.memory.remote) this.memory.remote = {}
-
-        // 添加对应的键值对
-        this.memory.remote[remoteRoomName] = { targetId }
-
-        this.spawner.release.remoteCreepGroup(remoteRoomName)
-        return OK
-    }
-
-    /**
-     * 移除外矿
-     * 
-     * @param remoteRoomName 要移除的外矿
-     * @param removeFlag 是否移除外矿的 source 旗帜
-     */
-    public removeRemote(remoteRoomName: string, removeFlag: boolean = false): OK | ERR_NOT_FOUND {
-        // 兜底
-        if (!this.memory.remote) return ERR_NOT_FOUND
-        if (!(remoteRoomName in this.memory.remote)) return ERR_NOT_FOUND
-        
-        delete this.memory.remote[remoteRoomName]
-        if (Object.keys(this.memory.remote).length <= 0) delete this.memory.remote
-
-        const sourceFlagsName = [ `${remoteRoomName} source0`, `${remoteRoomName} source1` ]
-        // 移除对应的旗帜和外矿采集单位
-        sourceFlagsName.forEach((flagName, index) => {
-            if (!(flagName in Game.flags)) return
-
-            if (removeFlag) Game.flags[flagName].remove()
-            removeCreep(GetName.remoteHarvester(remoteRoomName, index))
-        })
-
-        // 移除预定者
-        removeCreep(GetName.reserver(remoteRoomName))
-
-        return OK
-    }
-
-    /**
-     * 占领新房间
-     * 本方法只会发布占领单位，等到占领成功后 claimer 会自己发布支援单位
-     * 
-     * @param targetRoomName 要占领的目标房间
-     * @param signText 新房间的签名
-     */
-    public claimRoom(targetRoomName: string, signText: string = ''): OK {
-        this.spawner.addTask({
-            name: GetName.claimer(targetRoomName),
-            role: CreepRole.Claimer,
-            data: { targetRoomName, signText }
-        })
 
         return OK
     }

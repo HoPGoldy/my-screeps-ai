@@ -3,7 +3,8 @@ import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 预定者
- * 这个角色并不会想太多，出生了就去预定，一辈子走完了就不再出生，外矿采集单位采集的时候会检查预定剩余时间，如果不够了会自己发布该角色
+ * 这个角色并不会想太多，出生了就去预定，一辈子走完了就不再出生
+ * 外矿采集单位采集的时候会检查预定剩余时间，如果不够了会自己发布该角色
  * 
  * 准备阶段：向指定房间控制器移动
  * 阶段A：预定控制器
@@ -29,13 +30,18 @@ const reserver: CreepConfig<CreepRole.Reserver> = {
         const controller = targetRoom.controller
         if (!controller) return false
 
+        let result: CreepActionReturnCode
         // 如果房间的预订者不是自己, 就攻击控制器
         if (controller.reservation && controller.reservation.username !== creep.owner.username) {
-            if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.goTo(controller.pos, { range: 1, checkTarget: false })
+            result = creep.attackController(controller)
         }
         // 房间没有预定满, 就继续预定
-        if (!controller.reservation || controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
-            if (creep.reserveController(controller) == ERR_NOT_IN_RANGE) creep.goTo(controller.pos, { range: 1, checkTarget: false })
+        else if (!controller.reservation || controller.reservation.ticksToEnd < CONTROLLER_RESERVE_MAX) {
+            result = creep.reserveController(controller)
+        }
+
+        if (result && result === ERR_NOT_IN_RANGE) {
+            creep.goTo(controller.pos, { range: 1, checkTarget: false })
         }
         return false
     },

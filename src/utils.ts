@@ -3,14 +3,37 @@
 * 
 * @param direction 目标方向
 */
-export function getOppositeDirection(direction: DirectionConstant): DirectionConstant {
+export const getOppositeDirection = function (direction: DirectionConstant): DirectionConstant {
    return <DirectionConstant>((direction + 3) % 8 + 1)
+}
+
+/**
+ * 将指定位置序列化为字符串
+ * 形如: 12/32/E1N2
+ * 
+ * @param pos 要进行压缩的位置
+ */
+export const serializePos = function (pos: RoomPosition): string {
+    return `${pos.x}/${pos.y}/${pos.roomName}`
+}
+
+/**
+ * 将位置序列化字符串转换为位置
+ * 位置序列化字符串形如: 12/32/E1N2
+ * 
+ * @param posStr 要进行转换的字符串
+ */
+export const unserializePos = function (posStr: string): RoomPosition | undefined {
+    // 形如 ["12", "32", "E1N2"]
+    const infos = posStr.split('/')
+
+    return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
 }
 
 /**
  * 全局喊话
  */
-export function globalSay(words: string[]) {
+export const globalSay = function (words: string[]) {
     if (!Memory.sayIndex) Memory.sayIndex = 0
 
     Object.values(Game.creeps).forEach(creep => creep.say(words[Memory.sayIndex], true))
@@ -29,7 +52,7 @@ declare global {
 /**
  * 移除过期的 flag 内存
  */
-export function clearFlag(): string {
+export const clearFlag = function (): string {
     let logs = [ '已清理过期旗帜:' ]
     for (const flagName in Memory.flags) {
         if (!Game.flags[flagName]) {
@@ -47,7 +70,7 @@ export function clearFlag(): string {
  * @param creep 要检查的 creep
  * @returns 是否为白名单玩家
  */
-export function whiteListFilter(creep) {
+export const whiteListFilter = function (creep) {
     if (!Memory.whiteList) return true
     // 加入白名单的玩家单位不会被攻击，但是会被记录
     if (creep.owner.username in Memory.whiteList) {
