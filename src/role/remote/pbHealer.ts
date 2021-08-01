@@ -5,7 +5,6 @@ import { CreepConfig, CreepRole } from '../types/role'
  * PowerBank 治疗单位
  * 移动并治疗 pbAttacker, 请在 8 级时生成
  * @see doc "../doc/PB 采集小组设计案"
- * @todo 治疗的时候应该禁止对穿的，现在没禁止有可能出现两个 healer 选在一个位置疯狂对穿。但是机率不大，不写了。
  * 
  * @property {} creepName 要治疗的 pbAttacker 的名字
  */

@@ -7,8 +7,6 @@ import { CreepRole, RoleCreep } from '@/role/types/role'
  * 能量获取速率到调整期望的 map
  * 能量获取速率越高，工人数量就越多
  * 
- * @todo 下面的速率到期望的值还需要实测确定
- * 
  * @property {} rate 能量获取速率
  * @property {} expect 对应的期望
  */

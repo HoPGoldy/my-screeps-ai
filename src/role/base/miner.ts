@@ -18,13 +18,12 @@ const miner: CreepConfig<CreepRole.Miner> = {
             return false
         }
 
-        // 再检查下终端存储是否已经太多了, 如果太多了就休眠一段时间再出来看看
-        if (!room.terminal || room.terminal.store.getUsedCapacity() >= MINE_LIMIT) {
-            addSpawnMinerTask(room.name, 10000)
-            return false
-        }
+        const { total } = room.myStorage.getResource(room.mineral.mineralType)
+        if (total < MINE_LIMIT) return true
 
-        return true
+        // 资源已经采集的足够多了，之后再采集
+        addSpawnMinerTask(room.name, 50000)
+        return false
     },
     source: creep => {
         if (creep.store.getFreeCapacity() === 0) return true

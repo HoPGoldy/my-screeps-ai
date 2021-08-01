@@ -110,7 +110,8 @@ const depositHarvester: CreepConfig<CreepRole.DepositHarvester> = {
             return true
         }
         else if (result === ERR_INVALID_ARGS) return true
-        else creep.say(`转移 ${result}`)
+        // 移动的情况在 transferTo 里处理了，所以这里无视掉
+        else if (result !== ERR_NOT_IN_RANGE) creep.say(`转移 ${result}`)
     },
     bodys: createBodyGetter(bodyConfigs.remoteHarvester)
 }

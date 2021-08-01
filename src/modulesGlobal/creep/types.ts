@@ -8,3 +8,13 @@ interface CreepMemory {
      */
     spawnRoom: string
 }
+
+interface Memory {
+    /**
+     * 所有等待孵化的 creep
+     * 键为 creep 名称，值为执行孵化的房间名
+     */
+    waitSpawnCreeps: {
+        [creepName: string]: string
+    }
+}

@@ -15,6 +15,7 @@ import TerminalConsole from '@/modulesRoom/terminal/console'
 import StorageConsole from '@/modulesRoom/storage/console'
 import ShareConsole from '@/modulesRoom/share/console'
 import ObserverConsole from '@/modulesRoom/observer/console'
+import RemoteConsole from '@/modulesRoom/remote/console'
 import { Color, log } from '@/modulesGlobal'
 
 /**
@@ -29,6 +30,7 @@ export const mountList: [ AnyClass, AnyClass ][] = [
     [ Room, StorageConsole ],
     [ Room, ShareConsole ],
     [ Room, ObserverConsole ],
+    [ Room, RemoteConsole ],
     // 业务模块拓展挂载
     [ RoomPosition, RoomPostionExtension ],
     [ Source, SourceExtension ],
@@ -60,6 +62,7 @@ function initStorage() {
     else delete Memory.rooms.undefined
 
     if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
+    if (!Memory.waitSpawnCreeps) Memory.waitSpawnCreeps = {}
 }
 
 /**

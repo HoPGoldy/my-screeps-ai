@@ -34,6 +34,7 @@ const processor: CreepConfig<CreepRole.Processor> = {
         // 如果取用的是能量的话就优先使用 centerlink 里的
         const structure = (
             task.resourceType === RESOURCE_ENERGY &&
+            task.target !== CenterStructure.Link &&
             creep.room.centerLink.store[RESOURCE_ENERGY] > 0
         ) ? creep.room.centerLink : creep.room[task.source]
 
@@ -59,7 +60,8 @@ const processor: CreepConfig<CreepRole.Processor> = {
         if (result === OK) return true
         // 资源不足就移除任务
         else if (result === ERR_NOT_ENOUGH_RESOURCES) {
-            creep.log(`${task.resourceType} 资源不足，中央任务已移除`)
+            creep.log(`资源不足，中央任务已移除, ${JSON.stringify(task)}`)
+            if (task.source == 'centerLink') creep.log(`centerLink 剩余资源`, creep.room.centerLink.store.getUsedCapacity(task.resourceType))
             creep.room.centerTransport.deleteCurrentTask()
         }
         // 够不到就移动过去

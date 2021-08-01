@@ -13,11 +13,16 @@ const defaultRule: AllowCrossRuleFunc = (creep, requireCreep) => !(creep.memory.
 
 
 /**
- * 简单对穿规则：工作时不允许对穿
- * 
+ * 站定时不允许对穿
  * @param creep 被对穿的 creep
  */
-const noCrossWithWork: AllowCrossRuleFunc = creep => !creep.memory.stand
+const noCrossWithStanding: AllowCrossRuleFunc = creep => !creep.memory.stand
+
+/**
+ * 站定时不允许对穿
+ * @param creep 被对穿的 creep
+ */
+const noCrossWithWorking: AllowCrossRuleFunc = creep => !creep.memory.working
 
 
 /**
@@ -34,15 +39,20 @@ const crossRules: CrossRules = {
 
     // 采集单位在采集能量时不允许对穿
     // （采集能量都在 source 阶段，也就是 ↓ working 为 false 的时候）
-    [CreepRole.Harvester]: (creep) => creep.memory.working,
+    [CreepRole.Harvester]: noCrossWithWorking,
 
     // 中央处理单位在携带有资源时不允许对穿
-    [CreepRole.Processor]: creep => !creep.memory.working,
+    [CreepRole.Processor]: noCrossWithWorking,
+
+    // pb 治疗单位正在治疗时不允许其他治疗单位对穿
+    [CreepRole.PbHealer]: (creep, requireCreep) => {
+        return creep.memory.working !== requireCreep.memory.working
+    },
 
     // 工作单位在工作时不允许任何 creep 对穿
     // 其实对应的判断规则要复杂一点，例如执行 upgrade 任务时允许正在建造的工作对穿，但是不允许其他执行升级任务的单位对穿
     // 但是为了节省性能，这里直接一把梭，如果真有需求可以再添上
-    [CreepRole.Worker]: noCrossWithWork
+    [CreepRole.Worker]: noCrossWithStanding
 }
 
 export default crossRules

@@ -91,3 +91,10 @@ export default class ControllerExtension extends StructureController {
         return bodyNum > MAX_CREEP_SIZE
     }
 }
+
+declare global {
+    interface StructureController {
+        onLevelChange(level: number): void
+        stateScanner(): boolean
+    }
+}

@@ -177,9 +177,9 @@ export const DEFAULT_FLAG_NAME = {
 
 /**
  * miner 的矿物采集上限
- * 当 terminal 中的资源多余这个值时，miner 将不再继续采矿
+ * 当房间中的对应矿物资源多于这个值时，miner 将不再继续采矿
  */
-export const MINE_LIMIT = 200000
+export const MINE_LIMIT = 100000
 
 // 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
 export const minWallHits = 8000

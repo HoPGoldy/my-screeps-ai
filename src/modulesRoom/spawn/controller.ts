@@ -5,7 +5,7 @@ import RoomCreepRelease from './creepRelease'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
 import { TransportTaskType } from '../taskTransport/types'
-import { CreepConfig, CreepRole, RoleDatas } from '@/role/types/role'
+import { CreepConfig, CreepData, CreepRole, RoleDatas } from '@/role/types/role'
 
 /**
  * 房间孵化管理模块
@@ -39,6 +39,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         if (!this.hasTask(name)) {
             // 任务加入队列
             this.memory.push({ name, role, data })
+            Memory.waitSpawnCreeps[name] = this.roomName
 
             return this.memory.length - 1
         }
@@ -76,8 +77,27 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 移除第一个孵化任务
      */
     public removeCurrentTask(): void {
+        const removeCreepNmae = this.memory[0]?.name
+        // 从全局待孵化队列中移除
+        if (removeCreepNmae && removeCreepNmae in Memory.waitSpawnCreeps) {
+            delete Memory.waitSpawnCreeps[removeCreepNmae]
+        }
+        // 从孵化任务队列中移除
         if (this.memory.length > 1) this.memory.shift()
         else this.memory = undefined
+    }
+
+    /**
+     * 更新指定孵化任务的数据
+     * 
+     * @param creepName 要更新的孵化 creep 名称
+     * @param taskData 新的孵化 data
+     */
+    public updateSpawnTaskData(creepName: string, taskData: CreepData): void {
+        this.memory.find(task => {
+            if (task.name !== creepName) return false
+            task.data === taskData
+        })
     }
 
     public runSpawn(spawn: StructureSpawn): void {
@@ -108,6 +128,12 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         if (spawn.spawning || this.memory.length == 0) return 
 
         const task = this.memory[0]
+        // 这个任务被其他模块移除了，不再孵化
+        if (!(task.name in Memory.waitSpawnCreeps)) {
+            this.removeCurrentTask()
+            this.log(`${task.name} 已被移除，禁止孵化`)
+            return
+        }
         // 进行生成
         const spawnResult: MySpawnReturnCode = this.spawnCreep(spawn, task)
 

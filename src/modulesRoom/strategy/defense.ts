@@ -28,7 +28,7 @@ export class DefenseStrategy {
         const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
         
         this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 1, MAX: newWorkerNumber })
-        this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 2, MAX: 3 })
+        this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, { MIN: 2, MAX: 3 })
 
         // 提高刷墙任务优先级并孵化额外工作单位
         this.room.work.updateTask({ type: WorkTaskType.FillWall, priority: 9 })

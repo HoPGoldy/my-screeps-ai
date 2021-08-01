@@ -39,7 +39,7 @@ const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
         if (creep.room.name !== targetFlag.pos.roomName) return false
 
         // 获取 powerBank 的废墟
-        const powerbankRuin: Ruin = targetFlag.pos.lookFor(LOOK_RUINS)[0]
+        const powerbankRuin = targetFlag.pos.lookFor(LOOK_RUINS)[0]
 
         // 如果 pb 废墟还存在
         if (powerbankRuin) {

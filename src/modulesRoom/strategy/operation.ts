@@ -3,7 +3,6 @@ import { delayQueue } from "@/modulesGlobal/delayQueue"
 import { countEnergyChangeRatio } from "@/modulesGlobal/energyUtils"
 import { WORK_TASK_PRIOIRY } from "@/modulesRoom/taskWork/constant"
 import RoomStrategyController from "./controller"
-import { BASE_ROLE_LIMIT } from "../spawn/constant"
 import { DelayTaskType } from "@/modulesGlobal/delayQueue/types"
 import { WorkTaskType } from "../taskWork/types"
 import { CreepRole } from "@/role/types/role"
@@ -95,7 +94,7 @@ export class OperationStrategy {
             ) ? 1 : 20;
             // 允许没有 worker
             this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 0, MAX });
-            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, BASE_ROLE_LIMIT.manager);
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, { MIN: 1, MAX: 2 });
         }
         else {
             // 没到 8 级前不需要特殊限制

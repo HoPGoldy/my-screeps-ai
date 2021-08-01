@@ -31,7 +31,19 @@ export const transportActions: {
      * 升级任务
      */
     [WorkTaskType.Upgrade]: creep => ({
-        source: () => getEnergy(creep),
+        source: () => {
+            if (creep.store[RESOURCE_ENERGY] > 10) return true
+
+            // 优先使用 upgrade Link 的能量
+            const { workRoom: workRoomName } = creep.memory.data
+            const upgradeLink = Game.rooms[workRoomName]?.upgradeLink
+            if (upgradeLink && upgradeLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
+                creep.getEngryFrom(upgradeLink)
+                return false
+            }
+
+            return getEnergy(creep)
+        },
         target: () => {
             const { workRoom: workRoomName } = creep.memory.data
 

@@ -121,6 +121,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         // 获取本次要发送的数量
         const { amount: sendAmount, cost } = getSendAmount(
             Math.min(taskAmount, total),
+            resourceType,
             target,
             terminal.room.name,
             terminal.store.getFreeCapacity(),
@@ -128,8 +129,9 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
             terminal.store[RESOURCE_ENERGY]
         )
 
-        const result = `${sendAmount - terminal.store[resourceType] + cost - terminal.store[RESOURCE_ENERGY]}/${terminal.store.getFreeCapacity()}`
-        console.log(this.roomName, '共享任务计算结果', target, resourceType, sendAmount, cost)
+        // const result = `${sendAmount - terminal.store[resourceType] + cost - terminal.store[RESOURCE_ENERGY]}/${terminal.store.getFreeCapacity()}`
+        // console.log(this.roomName, '共享任务计算结果', target, resourceType, sendAmount, cost)
+
         if (sendAmount <= 0) {
             this.log(`${this.roomName} Terminal 剩余空间不足 (${resourceType}/${taskAmount})，任务已移除`, Color.Yellow)
             this.memory = undefined

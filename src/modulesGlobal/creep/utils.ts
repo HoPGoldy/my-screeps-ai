@@ -47,6 +47,12 @@ export const removeCreep = function (creepNamePart: string, opts: Partial<Remove
     if (options.batch) creeps.forEach(removeFunc)
     // 否则只移除匹配到的第一个
     else creeps.find(removeFunc)
+
+    // 在处理下待孵化的 creep
+    for (const waitSpawnCreepName in Memory.waitSpawnCreeps) {
+        if (!waitSpawnCreepName.includes(creepNamePart)) continue
+        delete Memory.waitSpawnCreeps[waitSpawnCreepName]
+    }
 }
 
 /**
@@ -72,6 +78,12 @@ export const showCreep = function (): string {
         format[memory.spawnRoom].push(`  - [${name}] [角色] ${memory.role} [当前状态] ${liveStats}`)
     }
 
+    // 显示所有还没有孵化的 creep
+    Object.entries(Memory.waitSpawnCreeps).map(([creepName, spawnRoomName]) => {
+        if (!(spawnRoomName in format)) format[spawnRoomName] = [ `${spawnRoomName} 下属 creep：` ]
+        format[spawnRoomName].push(`  - [${creepName}] [当前状态] ${colorful('待孵化', Color.Red)}}`)
+    })
+
     let logs = []
     Object.values(format).forEach(roomCreeps => logs.push(...roomCreeps))
     logs.unshift(`当前共有 creep  ${allCreeps.length} 只`)
@@ -84,7 +96,7 @@ export const showCreep = function (): string {
  * @param creepName 要检查是否存在的 creep 名称
  */
 export const hasCreep = function (creepName: string): boolean {
-    return creepName in Game.creeps
+    return (creepName in Game.creeps) || (creepName in Memory.waitSpawnCreeps)
 }
 
 /**
@@ -95,6 +107,19 @@ export const hasCreep = function (creepName: string): boolean {
  * @param newData 新的 data
  */
 export const updateCreepData = function (creepName: string, newData: CreepData): OK | ERR_NOT_FOUND {
-    if (!(creepName in Game.creeps)) return ERR_NOT_FOUND
-    Game.creeps[creepName].memory.data = newData
+    if (creepName in Game.creeps) {
+        Game.creeps[creepName].memory.data = newData
+        return OK
+    }
+
+    if (!(creepName in Memory.waitSpawnCreeps)) return ERR_NOT_FOUND
+
+    // 如果这个 creep 还没有孵化的时候，就去对应房间更新其孵化任务的数据
+    const spawnRoom = Game.rooms[Memory.waitSpawnCreeps[creepName]]
+    if (!spawnRoom) {
+        delete Memory.waitSpawnCreeps[creepName]
+        return ERR_NOT_FOUND
+    }
+
+    spawnRoom.spawner.updateSpawnTaskData(creepName, newData)
 }

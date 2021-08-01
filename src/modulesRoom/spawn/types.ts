@@ -5,7 +5,7 @@ declare global {
         /**
          * 该房间的孵化队列数据
          */
-        spawnList: string
+        spawnList: SpawnTask[]
         /**
          * 该房间的基础运维单位上下限
          * 不存在时将使用 ./constant.ts 中的 BASE_ROLE_LIMIT

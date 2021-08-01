@@ -1,4 +1,5 @@
 import { createGetter } from '@/utils'
+import { AllRoomShortcut, StructureIdCache } from './types'
 
 /**
  * 挂载房间快捷访问
@@ -15,6 +16,7 @@ const mountShortcut = function () {
 
     // 挂载特殊快捷方式
     createGetter(Room, 'centerLink', centerLinkGetter)
+    createGetter(Room, 'upgradeLink', upgradeLinkGetter)
 }
 
 export default mountShortcut
@@ -203,6 +205,12 @@ const centerLinkGetter = function(): StructureLink {
     return getStructureWithMemory<StructureLink>(this, '_centerLink', 'centerLinkId')
 }
 
+/**
+ * 中央 link 访问器
+ */
+const upgradeLinkGetter = function(): StructureLink {
+    return getStructureWithMemory<StructureLink>(this, '_upgradeLink', 'upgradeLinkId')
+}
 
 /**
  * 设置建筑快捷方式

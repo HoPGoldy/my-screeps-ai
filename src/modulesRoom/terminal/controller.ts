@@ -56,7 +56,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
      * 自己剩余空间不足时会尝试腾出来一些空间
      */
     private balanceResource() {
-        if (this.room.storage.store.getFreeCapacity() <= 0) {
+        if (this.room.storage.store.getFreeCapacity() > 0) {
             this.room.myStorage.balanceResource()
             this.log('剩余空间不足，执行资源平衡')
             return
@@ -66,7 +66,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
 
         // storage 也没地方放了，开始丢资源，先找到要丢哪个
         const targetRes = DROP_TARGET.reduce((pre, cur) => {
-            return store.getCapacity(pre) > store.getCapacity(cur) ? pre : cur
+            return (store.getUsedCapacity(pre) || 0) > (store.getUsedCapacity(cur) || 0) ? pre : cur
         })
 
         const targetAmount = Math.min(store[targetRes], MAX_DROP_AMOUNT)

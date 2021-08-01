@@ -34,6 +34,7 @@ export const showResourceSource = function (): string {
  */
 export const getSendAmount = function (
     amount: number,
+    resourceType: ResourceConstant,
     targetRoom: string,
     sourceRoom: string,
     terminalFree: number,
@@ -41,13 +42,16 @@ export const getSendAmount = function (
     existEnergy: number
 ): { amount: number, cost: number } {
     const cost = Game.market.calcTransactionCost(amount, targetRoom, sourceRoom)
-    // 需要从外边搬进来的资源数量
-    const needTransferAmount = Math.max(amount - existResource, 0) + Math.max(cost - existEnergy, 0)
-    if (needTransferAmount <= terminalFree) return { amount, cost }
 
+    // 需要从外边搬进来的资源数量，是能量的话要区别计算一下
+    const needTransferAmount = resourceType === RESOURCE_ENERGY ?
+        Math.max(amount + cost - existEnergy, 0) :
+        Math.max(amount - existResource, 0) + Math.max(cost - existEnergy, 0)
+
+    if (needTransferAmount <= terminalFree) return { amount, cost }
     // 剩余空间不足，拒绝发送
     if (needTransferAmount > 0 && terminalFree <= 0) return { amount: 0, cost: 0 }
 
     // 二分之后递归尝试
-    return getSendAmount(Math.floor(amount / 2), targetRoom, sourceRoom, terminalFree, existResource, existEnergy)
+    return getSendAmount(Math.floor(amount / 2), resourceType,targetRoom, sourceRoom, terminalFree, existResource, existEnergy)
 }
