@@ -4,6 +4,7 @@ import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
+import { Color } from '@/modulesGlobal'
 
 /**
  * 能量采集单位的行为模式
@@ -14,12 +15,12 @@ export enum HarvestMode {
      * 会采集能量然后运送会 spawn 和 extension
      */
     Start = 1,
-     /**
+    /**
      * 简单模式
      * 会无脑采集能量，配合 container 使用
      */
     Simple,
-     /**
+    /**
      * 转移模式
      * 会采集能量然后存放到指定建筑，配合 link 使用
      */
@@ -72,11 +73,19 @@ const harvester: CreepConfig<CreepRole.Harvester> = {
  * 
  * @param room 要获取工作状态的房间
  */
-const setHarvestMode = function (creep: Creep, source: Source): void {
-    // 外矿就采集了运到家
-    if (!source.room.controller || source.room.controller.level <= 0) {
-        creep.memory.harvestMode = HarvestMode.Start
-        return
+const setHarvestMode = function (creep: RoleCreep<CreepRole.Harvester>, source: Source): void {
+    // // 有玩家手动指定的能量存放建筑，直接使用
+    const { targetId: staticId } = creep.memory.data
+    if (staticId) {
+        if (Game.getObjectById(staticId)) {
+            creep.memory.harvestMode = HarvestMode.Transport
+            creep.memory.targetId = staticId
+            return
+        }
+        else {
+            creep.log(`未找到配置的能量存放位置 ${staticId}，已移除该配置`, Color.Red)
+            delete creep.memory.data.targetId
+        }
     }
 
     // 有 link 就往里运
@@ -256,16 +265,14 @@ const actionStrategy: ActionStrategy = {
      * 转移模式
      * 
      * 在 link 不存在时切换为启动模式
-     * 采集能量 > 存放到指定建筑
+     * 采集能量 > 存放到指定建筑（在 memory.data.targetId 未指定是为 link）
      */
     [HarvestMode.Transport]: {
         prepare: (creep, source) => {
-            const link = Game.getObjectById(creep.memory.targetId as Id<StructureLink>)
-
-            creep.memory.data.standPos
+            const targetStructure = Game.getObjectById(creep.memory.targetId)
 
             // 目标没了，变更为启动模式
-            if (!link) {
+            if (!targetStructure) {
                 delete creep.memory.targetId
                 creep.memory.harvestMode = HarvestMode.Start
                 return false
@@ -278,7 +285,7 @@ const actionStrategy: ActionStrategy = {
             }
             else {
                 // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
-                targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(link.pos))
+                targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(targetStructure.pos))
 
                 if (targetPos) {
                     const { x, y, roomName } = targetPos
@@ -288,7 +295,7 @@ const actionStrategy: ActionStrategy = {
 
             creep.goTo(targetPos || source.pos, { range: 0 })
 
-            // 如果没有找到又挨着 source 又挨着 link 的位置，走到 source 附近就算完成，找到了的话要走到位置上才算完成
+            // 如果没有找到又挨着 source 又挨着目标建筑的位置，走到 source 附近就算完成，找到了的话要走到位置上才算完成
             return targetPos ? creep.pos.isEqualTo(targetPos) : creep.pos.isNearTo(source.pos)
         },
         source: (creep, source) => {

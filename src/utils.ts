@@ -1,4 +1,11 @@
 /**
+ * 判断一个位置是否在房间入口处（是否骑墙）
+ */
+export const onEnter = function (pos: RoomPosition): boolean {
+    return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49
+}
+
+/**
 * 获取指定方向的相反方向
 * 
 * @param direction 目标方向

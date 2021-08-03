@@ -131,8 +131,6 @@ declare global {
         log(content:string, color?: Color, notify?: boolean): void
         onWork(): void
         checkEnemy(): boolean
-        standBy(): void
-        defense(): void
         goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
         setWayPoint(target: string[] | string): ScreepsReturnCode
         upgradeRoom(roomName: string): ScreepsReturnCode

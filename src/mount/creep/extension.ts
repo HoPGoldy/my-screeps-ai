@@ -2,11 +2,11 @@ import { repairSetting, minWallHits } from '@/setting'
 import roles from '@/role'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
-import { useCache } from '@/utils'
+import { onEnter, useCache } from '@/utils'
 import { buildCompleteSite, getNearSite } from '@/modulesGlobal/construction'
 import { WorkTaskType } from '@/modulesRoom'
 import { Color } from '@/modulesGlobal'
-import { CreepConfig, CreepRole } from '@/role/types/role'
+import { CreepConfig, CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 
 // creep 原型拓展
@@ -110,50 +110,6 @@ export default class CreepExtension extends Creep {
             return true
         }
         else return false
-    }
-
-    /**
-     * 待命
-     * 移动到 [房间名 StandBy] 旗帜的位置
-     */
-    public standBy(): void {
-        // 如果已经在待命位置则原地不动
-        if (this.memory.isStanBy) return
-        // 获取旗帜
-        let standByFlag = this.getFlag(`${this.name} StandBy`)
-        if (!standByFlag) {
-            this.say('去哪待命?')
-            return
-        }
-        // 如果没到 就向旗帜移动
-        if (!this.pos.isEqualTo(standByFlag.pos)) this.goTo(standByFlag.pos, { range: 0 })
-        else this.memory.isStanBy = true
-    }
-
-    /**
-     * 防御
-     * 向本房间内的敌方单位发起进攻
-     */
-    public defense(): void {
-        // 没有缓存则新建缓存
-        if (!this.room._enemys) {
-            this.room._enemys = this.room.find(FIND_HOSTILE_CREEPS)
-        }
-        // 没有敌人就啥也不干
-        if (this.room._enemys.length <= 0) return
-
-        // 从缓存中获取敌人
-        const enemy = this.pos.findClosestByRange(this.room._enemys)
-        this.say(`正在消灭 ${enemy.name}`)
-        this.moveTo(enemy.pos)
-
-        if (this.getActiveBodyparts(RANGED_ATTACK) > 0) this.rangedAttack(enemy)
-        else this.attack(enemy)
-
-        // 如果有可用 HEAL 身体并且掉血了则自我治疗
-        if (this.getActiveBodyparts(HEAL) > 0 && this.hits < this.hitsMax) {
-            this.heal(this)
-        }
     }
 
     /**
@@ -509,7 +465,7 @@ export default class CreepExtension extends Creep {
         else this.goTo(creep.pos)
         
         // 检查自己是不是在骑墙
-        if (this.onEnter()) {
+        if (onEnter(this.pos)) {
             const safePosFinder = i => i !== 0 && i !== 49
             // 遍历找到目标 creep 身边的不骑墙位置
             const x = [creep.pos.x - 1, creep.pos.x + 1].find(safePosFinder)
@@ -518,13 +474,6 @@ export default class CreepExtension extends Creep {
             // 移动到不骑墙位置
             this.moveTo(new RoomPosition(x, y, creep.pos.roomName))
         }
-    }
-
-    /**
-     * 判断当前是否在入口处（是否骑墙）
-     */
-    private onEnter(): boolean {
-        return this.pos.x === 0 || this.pos.x === 49 || this.pos.y === 0 || this.pos.y === 49
     }
 
     /**
@@ -541,5 +490,24 @@ export default class CreepExtension extends Creep {
             return null
         }
         else return flag
+    }
+
+    /**
+     * 手操 - 给 harvester 设置存放建筑
+     * 将会在下次孵化后生效
+     * 
+     * @param targetId 要存放的建筑 id
+     */
+    public storeTo(targetId: Id<StructureWithStore>): string {
+        const isHarvester = (creep: Creep): creep is RoleCreep<CreepRole.Harvester> => {
+            return creep.memory.role == CreepRole.Harvester
+        }
+
+        const target = Game.getObjectById(targetId)
+        if (!target) return `${targetId} 找不到对应的建筑`
+        if (!isHarvester(this)) return '该 creep 不是 harvester，无法设置存放建筑'
+
+        this.memory.data.targetId = targetId
+        return `设置完成，将会把采集到的能量存放至 ${target}`
     }
 }

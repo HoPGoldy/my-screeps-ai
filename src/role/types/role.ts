@@ -74,7 +74,13 @@ export interface RoleDatas {
     /**
      * 房间运营
      */
-    [CreepRole.Harvester]: HarvesterData
+    [CreepRole.Harvester]: HarvesterData & {
+        /**
+         * 将采集到的能量运到哪个建筑
+         * 如果指定了这个字段的话，harvester 将不会动态切换采集模式，直到对应的建筑无法访问
+         */
+        targetId?: Id<StructureWithStore>
+    }
     [CreepRole.Worker]: WorkerData
     [CreepRole.Manager]: transporterData
     [CreepRole.Processor]: ProcessorData
