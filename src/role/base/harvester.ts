@@ -5,6 +5,7 @@ import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
 import { Color } from '@/modulesGlobal'
+import { serializePos, unserializePos } from '@/utils'
 
 /**
  * 能量采集单位的行为模式
@@ -137,8 +138,7 @@ const actionStrategy: ActionStrategy = {
             source.setDroppedPos(creep.pos)
 
             // 把该位置存缓存到自己内存
-            const { roomName, x, y } = creep.pos
-            creep.memory.data.standPos = `${roomName},${x},${y}`
+            creep.memory.data.standPos = serializePos(creep.pos)
 
             // 如果脚下没有 container 及工地的话就放工地并发布建造任务
             const getContainerFilter = s => s.structureType === STRUCTURE_CONTAINER
@@ -280,17 +280,13 @@ const actionStrategy: ActionStrategy = {
 
             let targetPos: RoomPosition
             if (creep.memory.data.standPos) {
-                const [x, y, roomName] = creep.memory.data.standPos.split(',')
-                targetPos = new RoomPosition(Number(x), Number(y), roomName)
+                targetPos = unserializePos(creep.memory.data.standPos)
             }
             else {
                 // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
                 targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(targetStructure.pos))
-
-                if (targetPos) {
-                    const { x, y, roomName } = targetPos
-                    creep.memory.data.standPos = `${x},${y},${roomName}`
-                }
+                // 缓存起来供以后使用
+                if (targetPos) creep.memory.data.standPos = serializePos(targetPos)
             }
 
             creep.goTo(targetPos || source.pos, { range: 0 })
@@ -355,17 +351,11 @@ const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Sou
 
     // 尝试从缓存里读位置
     const { standPos } = creep.memory.data
-    if (standPos) {
-        const [ roomName, x, y ] = creep.memory.data.standPos.split(',')
-        targetPos = new RoomPosition(Number(x), Number(y), roomName)
-    }
+    if (standPos) targetPos = unserializePos(standPos)
     else {
         const { pos: droppedPos } = source.getDroppedInfo()
         // 之前就已经有点位了，自己保存一份
-        if (droppedPos) {
-            const { roomName, x, y } = droppedPos
-            creep.memory.data.standPos = `${roomName},${x},${y}`
-        }
+        if (droppedPos) creep.memory.data.standPos = serializePos(droppedPos)
         // 没有点位的话就要移动到 source，调整移动范围
         else range = 1
 
