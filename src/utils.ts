@@ -32,9 +32,10 @@ export const serializePos = function (pos: RoomPosition): string {
  */
 export const unserializePos = function (posStr: string): RoomPosition | undefined {
     // 形如 ["12", "32", "E1N2"]
-    const infos = posStr.split('/')
+    const [x, y, roomName] = posStr.split('/')
 
-    return infos.length === 3 ? new RoomPosition(Number(infos[0]), Number(infos[1]), infos[2]) : undefined
+    if (!roomName) return undefined
+    return new RoomPosition(Number(x), Number(y), roomName)
 }
 
 /**

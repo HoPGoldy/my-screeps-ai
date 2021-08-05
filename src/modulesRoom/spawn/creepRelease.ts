@@ -7,6 +7,7 @@ import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 import { SepicalBodyType } from '../taskWork/types'
 import { Color, log } from '@/modulesGlobal/console/utils'
 import { CreepRole, RoleCreep } from '@/role/types/role'
+import { removeCreepCantRespawn } from '@/modulesGlobal/creep/utils'
 
 /**
  * creep 发布工具
@@ -62,7 +63,10 @@ export default class RoomCreepRelease {
                 const creepName = GetName[type](room.name, i)
 
                 // 如果他还活着，就说明之前可能被开除了，解除开除状态
-                if (creepName in Game.creeps) taskController.unfireCreep(creepName)
+                if (creepName in Game.creeps) {
+                    taskController.unfireCreep(creepName)
+                    removeCreepCantRespawn(Game.creeps[creepName])
+                }
                 // 否则就发布新孵化任务
                 this.spawner.addTask(creepName, type, { workRoom: room.name, bodyType })
             }
@@ -70,7 +74,9 @@ export default class RoomCreepRelease {
         else {
             // 从末尾开始减少单位，减少个数为实际调整值
             for (let i = oldNumber - 1; i >= oldNumber + realAdjust; i--) {
-                taskController.fireCreep(GetName[type](room.name, i))
+                const creepName = GetName[type](room.name, i)
+                taskController.fireCreep(creepName)
+                removeCreep(creepName)
             }
         }
 

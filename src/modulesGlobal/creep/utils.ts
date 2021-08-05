@@ -100,6 +100,15 @@ export const hasCreep = function (creepName: string): boolean {
 }
 
 /**
+ * 解除一个 creep 的禁止重生限制
+ */
+export const removeCreepCantRespawn = function (creep: Creep): OK | ERR_NOT_FOUND {
+    if (!creep) return ERR_NOT_FOUND
+    delete creep.memory.cantRespawn
+    return OK
+}
+
+/**
  * 更新 creep data
  * 由于下一代 creep 的初始 data 数据继承自上一代 creep，所以在需要更新 data 时可以使用这个方法
  * 
