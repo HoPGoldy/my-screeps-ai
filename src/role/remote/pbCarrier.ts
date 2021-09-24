@@ -11,7 +11,12 @@ import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
  */
 const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
     // carrier 并不会重复生成
-    isNeed: () => false,
+    isNeed: (room, preMemory) => {
+        const targetFlag = Game.flags[preMemory.data.sourceFlagName]
+        targetFlag?.remove()
+
+        return false
+    },
     // 移动到目标三格之内就算准备完成
     prepare: creep => {
         const targetFlag = Game.flags[creep.memory.data.sourceFlagName]
@@ -48,18 +53,11 @@ const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
         // 如果废墟没了就从地上捡
         else {
             const power = targetFlag.pos.lookFor(LOOK_RESOURCES)[0]
-            if (power) {
-                if (creep.pickup(power) === OK) return true
-            }
-            // 地上也没了那就上天堂
-            else {
-                creep.suicide()
-                targetFlag.remove()
-            }
+            return power && creep.pickup(power) === OK
         }
     },
     target: creep => {
-        const { spawnRoom: spawnRoomName, data: { sourceFlagName } } = creep.memory
+        const { spawnRoom: spawnRoomName } = creep.memory
 
         // 获取资源运输目标房间并兜底
         const room = Game.rooms[spawnRoomName]
@@ -73,11 +71,6 @@ const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
         // 存好了就直接自杀并移除旗帜
         if (result === OK) {
             creep.suicide()
-
-            const targetFlag = Game.flags[sourceFlagName]
-            if (!targetFlag) return false
-
-            targetFlag.remove()
             // 通知 terminal 进行 power 平衡
             room.myTerminal.balancePower()
 

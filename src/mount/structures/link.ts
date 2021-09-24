@@ -1,6 +1,11 @@
 import { createHelp } from '@/modulesGlobal/console'
 import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 
+/**
+ * 中央 link 中能量大于该值时才会发送给 upgrade link
+ */
+const UPGRADE_ENERGY_SEND_LIMIT = 600
+
 // Link 原型拓展
 export class LinkExtension extends StructureLink {
     /**
@@ -105,6 +110,8 @@ export class LinkExtension extends StructureLink {
         const centerlink = this.room.centerLink
         // 中央 link 没冷却好，待机
         if (!centerlink || centerlink.cooldown > 0) return
+        // 中央 link 里已经有了足够的能量，等着就行，一会就发过来了
+        if (centerlink.store[RESOURCE_ENERGY] >= UPGRADE_ENERGY_SEND_LIMIT) return
 
         /**
          * 当 RCL 小于 7 时，房间只支持 3 个 link，这时存在 upgradeLink 的话就导致房间内存在 4 个 Link（1 个 center、2 个 source）
@@ -133,14 +140,8 @@ export class LinkExtension extends StructureLink {
             centerlink.store.getFreeCapacity(RESOURCE_ENERGY)
         )
 
-        // 以 centerLink 的名义发布中央物流任务
-        this.room.centerTransport.addTask({
-            submit: CenterStructure.Link,
-            source: sourceType,
-            target: CenterStructure.Link,
-            resourceType: RESOURCE_ENERGY,
-            amount
-        })
+        // 给 centerLink 填能量
+        this.room.centerTransport.send(sourceType, CenterStructure.Link, RESOURCE_ENERGY, amount, 'upgradeLink')
     }
 
     /**
@@ -150,21 +151,19 @@ export class LinkExtension extends StructureLink {
      */
     private centerWork(): void {
         // 能量不足则待机
-        if (this.store[RESOURCE_ENERGY] < 600) return
+        if (this.store[RESOURCE_ENERGY] < UPGRADE_ENERGY_SEND_LIMIT) return
 
         // 优先响应 upgrade
         if (this.supportUpgradeLink()) return
 
         // 之前发的转移任务没有处理好的话就先挂机
-        if (this.room.centerTransport.hasTask('centerLink') || !this.room.storage) return 
+        if (!this.room.storage) return
 
-        this.room.centerTransport.addTask({
-            submit: CenterStructure.Link,
-            source: CenterStructure.Link,
-            target: CenterStructure.Storage,
-            resourceType: RESOURCE_ENERGY,
-            amount: this.store[RESOURCE_ENERGY]
-        })
+        this.room.centerTransport.send(
+            CenterStructure.Link, CenterStructure.Storage,
+            RESOURCE_ENERGY, this.store[RESOURCE_ENERGY],
+            CenterStructure.Link
+        )
     }
 
     /**
@@ -176,7 +175,7 @@ export class LinkExtension extends StructureLink {
      */
     private sourceWork(): void {
         // 能量填满再发送
-        if (<number>this.store.getUsedCapacity(RESOURCE_ENERGY) < 700) return
+        if (this.store.getUsedCapacity(RESOURCE_ENERGY) < 700) return
         
         // 优先响应 upgrade，在 8 级后这个检查用处不大，暂时注释了
         // if (this.supportUpgradeLink()) return

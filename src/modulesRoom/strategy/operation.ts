@@ -51,17 +51,17 @@ export class OperationStrategy {
 
     /**
      * 八级之后的任务调整策略
-     * 定期执行即可，推荐 500 - 100 tick 一次
+     * 定期执行即可，推荐 500 - 1000 tick 一次
      */
     adjustTaskWhenRCL8() {
-        const fillWallTask = this.room.work.tasks.find(({ type }) => type === 'fillWall')
-        const upgradeTask = this.room.work.tasks.find(({ type }) => type === 'upgrade')
-        if (!fillWallTask || !upgradeTask) return
+        const controller = this.room.work
 
-        // 如果两个任务同时存在就交换两者的优先级，防止只有一个 worker 时因为一个工作耽误另一个工作
-        const { priority } = upgradeTask
-        upgradeTask.priority = fillWallTask.priority
-        fillWallTask.priority = priority
+        // 控制器掉到一半了再开始刷级，否则就刷墙
+        const [upgradePriority, fillWallPriority] = this.room.controller.ticksToDowngrade < 100000 ?
+            [WORK_TASK_PRIOIRY.UPGRADE, undefined] : [undefined, WORK_TASK_PRIOIRY.UPGRADE]
+
+        controller.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: upgradePriority })
+        controller.updateTask({ type: WorkTaskType.FillWall, priority: fillWallPriority })
 
         this.room.work.dispatchTask()
     }

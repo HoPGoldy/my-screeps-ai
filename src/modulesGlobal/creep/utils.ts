@@ -96,7 +96,7 @@ export const showCreep = function (): string {
  * @param creepName 要检查是否存在的 creep 名称
  */
 export const hasCreep = function (creepName: string): boolean {
-    return (creepName in Game.creeps) || (creepName in Memory.waitSpawnCreeps)
+    return (creepName in Memory.creeps) || (creepName in Memory.waitSpawnCreeps)
 }
 
 /**

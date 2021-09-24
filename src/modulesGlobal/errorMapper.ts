@@ -43,7 +43,7 @@ const sourceMappedStackTrace = function (error: Error | string): string {
     while ((match = re.exec(stack))) {
         // 解析完成
         if (match[2] !== "main") break
-        
+
         // 获取追踪定位
         const pos = getConsumer().originalPositionFor({
             column: parseInt(match[4], 10),
@@ -52,7 +52,7 @@ const sourceMappedStackTrace = function (error: Error | string): string {
 
         // 无法定位
         if (!pos.line) break
-        
+
         // 解析追踪栈
         if (pos.name) outStack += `\n    at ${pos.name} (${pos.source}:${pos.line}:${pos.column})`
         else {

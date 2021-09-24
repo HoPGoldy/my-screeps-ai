@@ -162,12 +162,8 @@ export default class CreepExtension extends Creep {
 
         // 建设
         const buildResult = this.build(target)
-        if (buildResult == OK) {
-            // 如果修好的是 rempart 的话就移除墙壁缓存
-            // 让维修单位可以快速发现新 rempart
-            if (target.structureType == STRUCTURE_RAMPART) delete this.room.memory.focusWall
-        }
-        else if (buildResult == ERR_NOT_IN_RANGE) this.goTo(target.pos)
+
+        if (buildResult == ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 3 })
         return buildResult
     }
 
@@ -188,6 +184,7 @@ export default class CreepExtension extends Creep {
             // 本地内存里保存的 id 找不到工地了，检查下是不是造好了
             else {
                 const structure = buildCompleteSite[this.memory.constructionSiteId]
+                console.log('structure', structure)
 
                 // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点）
                 if (structure && (
@@ -197,6 +194,8 @@ export default class CreepExtension extends Creep {
                     this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
                     // 同时发布刷墙任务
                     this.room.work.updateTask({ type: WorkTaskType.FillWall })
+                    // 移除墙壁缓存，让刷墙单位可以快速发现新 rempart
+                    delete this.room.memory.focusWall
                 }
 
                 delete this.memory.constructionSiteId
@@ -229,7 +228,7 @@ export default class CreepExtension extends Creep {
 
         if (wall.hits < minWallHits) {
             const result = this.repair(wall)
-            if (result == ERR_NOT_IN_RANGE) this.goTo(wall.pos)
+            if (result == ERR_NOT_IN_RANGE) this.goTo(wall.pos, { range: 3 })
         }
         else delete this.memory.fillWallId
 
@@ -273,7 +272,7 @@ export default class CreepExtension extends Creep {
 
         // 填充墙壁
         const result = this.repair(targetWall)
-        if (result == ERR_NOT_IN_RANGE) this.goTo(targetWall.pos)
+        if (result == ERR_NOT_IN_RANGE) this.goTo(targetWall.pos, { range: 3 })
         return true
     }
 

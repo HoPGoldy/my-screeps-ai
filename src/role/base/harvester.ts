@@ -4,7 +4,7 @@ import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
-import { Color } from '@/modulesGlobal'
+import { Color } from '@/modulesGlobal/console/utils'
 import { serializePos, unserializePos } from '@/utils'
 
 /**

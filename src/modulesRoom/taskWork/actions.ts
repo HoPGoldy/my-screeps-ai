@@ -191,16 +191,8 @@ export const transportActions: {
     [WorkTaskType.FillWall]: (creep, task, workController) => ({
         source: () => getEnergy(creep),
         target: () => {
-            let importantWall = creep.room._importantWall
-            // 先尝试获取焦点墙，有最新的就更新缓存，没有就用缓存中的墙
-            if (importantWall) creep.memory.fillWallId = importantWall.id
-            else if (creep.memory.fillWallId) importantWall = Game.getObjectById(creep.memory.fillWallId)
-
             // 有焦点墙就优先刷
-            if (importantWall) {
-                const actionResult = creep.repair(creep.room._importantWall)
-                if (actionResult == ERR_NOT_IN_RANGE) creep.goTo(creep.room._importantWall.pos)
-            }
+            if (creep.memory.fillWallId) creep.steadyWall()
             // 否则就按原计划维修
             else {
                 const filling = creep.fillDefenseStructure()

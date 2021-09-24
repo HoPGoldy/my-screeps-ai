@@ -81,8 +81,8 @@ const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
 
         // 找不到 pb 了
         if (!powerbank) {
-            // 发现废墟，pb 成功摧毁，进入下个阶段
-            if (targetFlag.pos.lookFor(LOOK_RUINS).length > 0) {
+            // 如果搬运小队已经在路上了，就进入搬运阶段
+            if (targetFlag.memory.state === PbHarvestState.Prepare) {
                 targetFlag.memory.state = PbHarvestState.Transfer
             }
             // 未能成功在 pb 消失前将其摧毁，任务失败，移除旗帜

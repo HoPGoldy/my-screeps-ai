@@ -453,7 +453,7 @@ const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, move
     if (!result.incomplete) routeCache[routeKey] = route
 
     // 根据玩家指定的重用距离返回缓存
-    return moveOpt.reusePath ? route : route.slice(0, moveOpt.reusePath)
+    return moveOpt.reusePath ? route.slice(0, moveOpt.reusePath) : route
 }
 
 

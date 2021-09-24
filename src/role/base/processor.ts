@@ -61,7 +61,6 @@ const processor: CreepConfig<CreepRole.Processor> = {
         // 资源不足就移除任务
         else if (result === ERR_NOT_ENOUGH_RESOURCES) {
             creep.log(`资源不足，中央任务已移除, ${JSON.stringify(task)}`)
-            if (task.source == 'centerLink') creep.log(`centerLink 剩余资源`, creep.room.centerLink.store.getUsedCapacity(task.resourceType))
             creep.room.centerTransport.deleteCurrentTask()
         }
         // 够不到就移动过去
@@ -100,15 +99,14 @@ const processor: CreepConfig<CreepRole.Processor> = {
 
             result = creep.transferTo(structure, task.resourceType, { range: 1 })
         }
-        
+
         // 如果转移完成则增加任务进度
         if (result === OK) {
             creep.room.centerTransport.handleTask(amount)
             return true
         }
         else if (result === ERR_FULL) {
-            creep.log(`${task.target} 满了`)
-            if (task.target === STRUCTURE_TERMINAL) Game.notify(`[${creep.room.name}] ${task.target} 满了，请尽快处理`)
+            // creep.log(`target ${task.target} 满了`)
             creep.room.centerTransport.hangTask()
         }
         // 资源不足就返回 source 阶段

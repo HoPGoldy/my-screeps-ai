@@ -1,3 +1,5 @@
+import { Color } from '@/modulesGlobal/console/utils'
+import { hasCreep, removeCreep } from '@/modulesGlobal/creep/utils'
 import { calcBodyPart } from '../bodyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
 
@@ -11,9 +13,13 @@ import { CreepConfig, CreepRole } from '../types/role'
 const pbHealer: CreepConfig<CreepRole.PbHealer> = {
     target: creep => {
         const targetCreep = Game.creeps[creep.memory.data.creepName]
-        // 对象没了就殉情
         if (!targetCreep) {
-            creep.suicide()
+            // 对象没了就殉情
+            if (!hasCreep(creep.memory.data.creepName)) {
+                creep.log(`找不到目标 ${creep.memory.data.creepName}，已自杀`, Color.Yellow)
+                removeCreep(creep.name, { immediate: true })
+            }
+            else creep.say('等等我对象')
             return false
         }
 

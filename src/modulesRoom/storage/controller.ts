@@ -28,7 +28,7 @@ export default class StorageController extends RoomAccessor<undefined> {
         this.requestEnergyCheck()
         this.requestPower()
 
-        if (Game.time % 10000) return
+        if (Game.time % 9000) return
         this.shareEnergyCheck()
     }
 

@@ -107,7 +107,8 @@ declare global {
          */
         _hasEnemy: boolean
         /**
-         * 焦点墙，维修单位总是倾向于优先修复该墙体
+         * 该房间是否已经执行过 lab 集群作业了
+         * 在 Lab.work 中调用，一个房间只会执行一次
          */
         _importantWall: StructureWall | StructureRampart
         /**

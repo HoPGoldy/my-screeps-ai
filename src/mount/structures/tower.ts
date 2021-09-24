@@ -172,8 +172,11 @@ export default class TowerExtension extends StructureTower {
                 if (!target) continue
 
                 if (target instanceof StructureRampart || target instanceof StructureWall) {
-                    // 设为焦点墙体
-                    this.room._importantWall = target
+                    // 将其缓存在内存里
+                    this.room.memory.focusWall = {
+                        id: target.id,
+                        endTime: Game.time + repairSetting.focusTime
+                    }
                 }
             }
         }

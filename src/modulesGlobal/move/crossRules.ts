@@ -46,6 +46,7 @@ const crossRules: CrossRules = {
 
     // pb 治疗单位正在治疗时不允许其他治疗单位对穿
     [CreepRole.PbHealer]: (creep, requireCreep) => {
+        if (creep.memory.role !== requireCreep.memory.role) return true
         return creep.memory.working !== requireCreep.memory.working
     },
 

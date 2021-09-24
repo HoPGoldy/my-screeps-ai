@@ -38,7 +38,7 @@ export const getMax: EnergyTargetFinder = targets => _.max(targets, getEnergyAmo
  * @param pos 目标位置
  */
 export const getClosestTo: (pos: RoomPosition) => EnergyTargetFinder = pos => {
-    return targets => pos.findClosestByPath(targets)
+    return targets => pos.findClosestByPath(targets, { ignoreCreeps: true })
 }
 
 /**

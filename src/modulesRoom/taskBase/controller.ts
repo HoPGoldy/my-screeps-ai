@@ -323,7 +323,10 @@ export default class TaskController<
         // 还未分配过任务，或者任务已经完成了
         if (!doingTask) {
             doingTask = this.dispatchCreep(creep)
-            this.creeps[creep.name] = doingTask ? { doing: doingTask.key } : {}
+
+            const workInfo = this.creeps[creep.name] || {}
+            workInfo.doing = doingTask?.key
+            this.creeps[creep.name] = workInfo
         }
 
         return doingTask
@@ -331,7 +334,6 @@ export default class TaskController<
 
     /**
      * 获取可用的单位
-     * 如果单位死掉了的话将直接移除
      * 
      * @param filter 筛选器，接受 creep 数据与 creep 本身，返回是否选择
      */

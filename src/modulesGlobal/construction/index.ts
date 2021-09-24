@@ -107,28 +107,28 @@ const handleCompleteSite = function () {
     try {
         const lastSiteIds = Object.keys(lastGameConstruction)
         const nowSiteIds = Object.keys(Game.constructionSites)
-        // 工地数量不一致了，说明有工地被踩掉或者造好了
-        if (lastSiteIds.length !== nowSiteIds.length) {
-            const disappearedSiteIds = lastSiteIds.filter(id => !(id in Game.constructionSites))
+        // 工地数量一致，说明没有刚造好的工地
+        if (lastSiteIds.length === nowSiteIds.length) return
+        
+        const disappearedSiteIds = lastSiteIds.filter(id => !(id in Game.constructionSites))
 
-            disappearedSiteIds.map(siteId => {
-                const lastSite = lastGameConstruction[siteId]
-                const structure = getSiteStructure(lastSite)
+        disappearedSiteIds.map(siteId => {
+            const lastSite = lastGameConstruction[siteId]
+            const structure = getSiteStructure(lastSite)
 
-                // 建造完成
-                if (structure) {
-                    updateStructure(structure.room.name, structure.structureType, structure.id)
-                    // 如果有的话就执行回调
-                    if (structure.onBuildComplete) structure.onBuildComplete()
-                    buildCompleteSite[siteId] = structure
-                }
-                // 建造失败，回存到等待队列
-                else {
-                    waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
-                    Game._needSaveConstructionData = true
-                }
-            })
-        }
+            // 建造完成
+            if (structure) {
+                updateStructure(structure.room.name, structure.structureType, structure.id)
+                // 如果有的话就执行回调
+                if (structure.onBuildComplete) structure.onBuildComplete()
+                buildCompleteSite[siteId] = structure
+            }
+            // 建造失败，回存到等待队列
+            else {
+                waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
+                Game._needSaveConstructionData = true
+            }
+        })
     }
     catch (e) {
         throw e
@@ -162,17 +162,26 @@ export const getNearSite = function (pos: RoomPosition): ConstructionSite {
 
     const groupedSite = _.groupBy(sites, site => site.structureType)
 
+    let targetSites: ConstructionSite[] = sites
     // 先查找优先建造的工地
     for (const type of BUILD_PRIORITY) {
         const matchedSite = groupedSite[type]
         if (!matchedSite) continue
 
         if (matchedSite.length === 1) return matchedSite[0]
-        return pos.findClosestByPath(matchedSite)
+        targetSites = matchedSite
     }
 
-    // 没有优先建造的工地，直接找最近的
-    return pos.findClosestByPath(sites)
+    // 在目标里找最近的
+    // 这里比较离谱，findClosestByPath 会必须能走到目标旁边的才会算，哪怕配置了 range 为 3 也没用
+    // 如果有一个工地没办法抵达附近，但是能到其三格以内，findClosestByPath 也会认为这个工地到不了（但是实际上是可以到的）
+    // 这里的解决方法是有目标但是又到不了附近，就往那边走着（因为寻路是可以正常找到路径的）
+    const result = pos.findClosestByPath(targetSites)
+    if (!result) {
+        log(`发现了无法抵达的工地：${targetSites.map(site => site.pos)}，出发位置 ${pos}，工地已移除`, ['建造控制器'], Color.Yellow)
+        return targetSites[0]
+    }
+    return result
 }
 
 /**
