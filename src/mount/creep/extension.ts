@@ -3,8 +3,7 @@ import roles from '@/role'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
 import { onEnter, useCache } from '@/utils'
-import { buildCompleteSite, getNearSite } from '@/modulesGlobal/construction'
-import { WorkTaskType } from '@/modulesRoom'
+import { getNearSite } from '@/modulesGlobal/construction'
 import { Color } from '@/modulesGlobal'
 import { CreepConfig, CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
@@ -181,25 +180,8 @@ export default class CreepExtension extends Creep {
         else {
             const selfKeepTarget = Game.getObjectById(this.memory.constructionSiteId)
             if (selfKeepTarget) return selfKeepTarget
-            // 本地内存里保存的 id 找不到工地了，检查下是不是造好了
-            else {
-                const structure = buildCompleteSite[this.memory.constructionSiteId]
-                console.log('structure', structure)
-
-                // 如果刚修好的是墙的话就记住该墙的 id，然后把血量刷高一点）
-                if (structure && (
-                    structure.structureType === STRUCTURE_WALL ||
-                    structure.structureType === STRUCTURE_RAMPART
-                )) {
-                    this.memory.fillWallId = structure.id as Id<StructureWall | StructureRampart>
-                    // 同时发布刷墙任务
-                    this.room.work.updateTask({ type: WorkTaskType.FillWall })
-                    // 移除墙壁缓存，让刷墙单位可以快速发现新 rempart
-                    delete this.room.memory.focusWall
-                }
-
-                delete this.memory.constructionSiteId
-            }
+            // 移除缓存，下面会重新查找
+            else delete this.memory.constructionSiteId
         }
 
         // 自己内存里没找到，去房间内存里查之前缓存的

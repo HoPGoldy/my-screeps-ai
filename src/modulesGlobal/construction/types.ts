@@ -1,24 +1,59 @@
+import { log } from '../console'
+import { updateStructure } from '@/modulesRoom/shortcut'
+
 /**
  * 要建造工地的位置
  */
-interface ConstructionPos<StructureType extends BuildableStructureConstant = BuildableStructureConstant> {
+export interface ConstructInfo<StructureType extends BuildableStructureConstant = BuildableStructureConstant> {
     /**
-     * 要建造到的位置
+     * 要建造到的房间名
      */
-    pos: RoomPosition
+    roomName: string
+    /**
+     * 要建造位置的 x 坐标
+     */
+    x: number
+    /**
+     * 要建造位置的 y 坐标
+     */
+    y: number
     /**
      * 要建造的建筑类型
      */
     type: StructureType
-    /**
-     * 工地的 id，会在查找后自动填入
-     */
-    id?: Id<ConstructionSite<StructureType>>
 }
 
-interface Game {
+/**
+ * 工地管理模块所需副作用
+ */
+export interface CreateOptions {
+    log: typeof log
+    updateStructure: typeof updateStructure
     /**
-     * 本 tick 是否需要保存建造管理模块的数据
+     * 获取当前存在的工地
      */
-    _needSaveConstructionData?: boolean
+    getGameSites: () => { [siteId: string]: ConstructionSite }
+    /**
+     * 获取等待放置的工地队列
+     */
+    getWaitingSites: () => ConstructInfo[]
+    /**
+     * 设置等待放置的工地队列
+     */
+    setWaitingSites: (newList: ConstructInfo[]) => void
+    /**
+     * 获取正在建造的工地 hash
+     */
+    getBuildSites: () => { [siteId: string]: ConstructInfo }
+    /**
+     * 设置正在建造的工地 hash
+     */
+    setBuildingSites: (newList: { [siteId: string]: ConstructInfo }) => void
+}
+
+declare global {
+    interface Memory {
+        waitingSites: ConstructInfo[]
+        buildingSites: { [siteId: string]: ConstructInfo }
+    }
 }

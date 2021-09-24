@@ -4,6 +4,7 @@ import planRoad from './planRoad'
 import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from '@/setting'
 import { addConstructionSite } from '@/modulesGlobal/construction'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
+import { ConstructInfo } from '../construction/types'
 
 let planningCaches: StructurePlanningCache = {}
 
@@ -93,7 +94,9 @@ export const manageStructure = function (room: Room): OK | ERR_NOT_OWNER | ERR_N
             }
 
             // 遍历该建筑下的所有预放置点位，推送给建造管理模块
-            const sitePosList: ConstructionPos[] = currentLevelLayout[structureType].map(pos => ({ pos, type: structureType}))
+            const sitePosList: ConstructInfo[] = currentLevelLayout[structureType].map(({ x, y, roomName }) => {
+                return { x, y, roomName, type: structureType }
+            })
             // 放置工地并发布建造任务
             addConstructionSite(sitePosList)
             addBuildTask(room.name)
@@ -119,10 +122,12 @@ export const stringifyBuildPos = function (pos: RoomPosition, structureType: Bui
  * @param posStr 工地位置字符串
  * @param roomName 工地要放置到的房间名
  */
-export const unstringifyBuildPos = function (posStr: string, roomName: string): ConstructionPos {
+export const unstringifyBuildPos = function (posStr: string, roomName: string): ConstructInfo {
     const [ x, y, structureType ] = posStr.split(' ')
     return {
-        pos: new RoomPosition(Number(x), Number(y), roomName),
+        x: Number(x),
+        y: Number(y),
+        roomName,
         type: structureType as BuildableStructureConstant
     }
 }

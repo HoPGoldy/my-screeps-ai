@@ -5,7 +5,7 @@ import RoomPostionExtension from './roomPosition/extension'
 import mountGlobal from './global'
 import {
     ControllerExtension, StructuresExtension, SpawnExtension, TowerExtension, LinkExtension, LinkConsole, FactoryExtension,
-    TerminalExtension, ExtractorExtension, StorageExtension, LabExtension,
+    TerminalExtension, ExtractorExtension, StorageExtension, LabExtension, WallExtension, RampartExtension,
     NukerExtension, PowerSpawnExtension, PowerSpawnConsole, ObserverExtension, ContainerExtension
 } from './structures'
 import SourceExtension from './source/extension'
@@ -51,6 +51,8 @@ export const mountList: [ AnyClass, AnyClass ][] = [
     [ StructurePowerSpawn, PowerSpawnExtension ],
     [ StructurePowerSpawn, PowerSpawnConsole ],
     [ StructureObserver, ObserverExtension ],
+    [ StructureWall, WallExtension ],
+    [ StructureRampart, RampartExtension ],
     [ StructureContainer, ContainerExtension ]
 ]
 

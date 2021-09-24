@@ -1,10 +1,7 @@
 import { updateStructure } from '@/modulesRoom/shortcut'
+import { CreateOptions } from './types'
 import { Color, log } from '../console'
-
-/**
- * 该模块的数据保存在 Memory 哪个字段上
- */
-const SAVE_KEY = 'waitingConstruction'
+import { createConstructionManager } from './constructionManager'
 
 /**
  * 建造的优先级
@@ -12,140 +9,17 @@ const SAVE_KEY = 'waitingConstruction'
  */
 const BUILD_PRIORITY = [ STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK ]
 
-/**
- * 待放置的工地点位
- * 因为最多只能放置 100 个工地，所以超出的部分会先存放到这里
- */
-let waitingConstruction: ConstructionPos[] = []
-
-/**
- * 上个 tick 的 Game.constructionSites
- * 用于和本 tick 进行比对，找到是否有工地建造完成
- */
-let lastGameConstruction: { [constructionSiteId: string]: ConstructionSite } = {}
-
-/**
- * 建造完成的建筑，键为工地 id，值为对应建造完成的建筑
- * 会存放在这里供其他模块搜索，全局重置时将被清空
- */
-export const buildCompleteSite: { [constructionSiteId: string]: Structure } = {}
-
-/**
- * 保存待建造队列 
- */
-const saveWaiting = function () {
-    if (!Game._needSaveConstructionData) return
-    if (waitingConstruction.length <= 0) delete Memory[SAVE_KEY]
-    else Memory[SAVE_KEY] = JSON.stringify(waitingConstruction)
+const effects: CreateOptions = {
+    getGameSites: () => Game.constructionSites,
+    getWaitingSites: () => (Memory.waitingSites || []),
+    setWaitingSites: (newList) => Memory.waitingSites = newList,
+    getBuildSites: () => (Memory.buildingSites || {}),
+    setBuildingSites: (newList) => Memory.buildingSites = newList,
+    log,
+    updateStructure
 }
 
-/**
- * 初始化控制器
- * 在全局重置时调用
- */
-export const initConstructionController = function () {
-    waitingConstruction = JSON.parse(Memory[SAVE_KEY] || '[]').map(({ pos, type }) => {
-        if (!pos || !type) {
-            log(`发现了异常的工地任务，请检查代码是否正确 pos：${pos} type：${type}`, ['建造控制器'], Color.Yellow)
-            return
-        }
-
-        // 这里把位置重建出来
-        const { x, y, roomName } = pos
-        return { pos: new RoomPosition(x, y, roomName), type }
-    })
-}
-
-/**
- * 管理建筑工地
- * 将放置挂起队列里的工地
- */
-export const manageConstruction = function () {
-    planSite()
-    handleCompleteSite()
-}
-
-/**
- * 放置队列中的工地
- */
-const planSite = function () {
-    // 没有需要放置的、或者工地已经放满了，直接退出
-    if (waitingConstruction.length <= 0) return
-    const buildingSiteLength = Object.keys(Game.constructionSites).length
-    if (buildingSiteLength >= MAX_CONSTRUCTION_SITES) return
-
-    // 取出本 tick 的最大允许放置数量
-    const preparePlaceSites = waitingConstruction.splice(0, MAX_CONSTRUCTION_SITES - buildingSiteLength)
-
-    const cantPlaceSites = preparePlaceSites.filter(({ pos, type }) => {
-        if (!pos || !type) return
-
-        const result = pos.createConstructionSite(type)
-
-        if (result === ERR_INVALID_TARGET) {
-            // log(`工地 ${type} 重复放置，已放弃，位置 [${pos}]`, ['建造控制器'], Color.Yellow)
-            return false
-        }
-        // 放置失败，下次重试
-        else if (result !== OK && result !== ERR_FULL && result !== ERR_RCL_NOT_ENOUGH) {
-            log(`工地 ${type} 无法放置，位置 [${pos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], Color.Yellow)
-            return true
-        }
-
-        return false
-    })
-
-    // 把放置失败的工地放到队首下次再次尝试放置
-    if (cantPlaceSites.length > 0) waitingConstruction.unshift(...cantPlaceSites)
-    Game._needSaveConstructionData = true
-}
-
-/**
- * 找到建造完成的工地并触发对应的回调
- */
-const handleCompleteSite = function () {
-    try {
-        const lastSiteIds = Object.keys(lastGameConstruction)
-        const nowSiteIds = Object.keys(Game.constructionSites)
-        // 工地数量一致，说明没有刚造好的工地
-        if (lastSiteIds.length === nowSiteIds.length) return
-        
-        const disappearedSiteIds = lastSiteIds.filter(id => !(id in Game.constructionSites))
-
-        disappearedSiteIds.map(siteId => {
-            const lastSite = lastGameConstruction[siteId]
-            const structure = getSiteStructure(lastSite)
-
-            // 建造完成
-            if (structure) {
-                updateStructure(structure.room.name, structure.structureType, structure.id)
-                // 如果有的话就执行回调
-                if (structure.onBuildComplete) structure.onBuildComplete()
-                buildCompleteSite[siteId] = structure
-            }
-            // 建造失败，回存到等待队列
-            else {
-                waitingConstruction.push({ pos: lastSite.pos, type: lastSite.structureType })
-                Game._needSaveConstructionData = true
-            }
-        })
-    }
-    catch (e) {
-        throw e
-    }
-    finally {
-        // 更新缓存
-        lastGameConstruction = Game.constructionSites
-    }
-}
-
-/**
- * 向队列里新增建造任务
- */
-export const addConstructionSite = function (sites: ConstructionPos[]) {
-    waitingConstruction.push(...sites)
-    Game._needSaveConstructionData = true
-}
+const { addConstructionSite, planSite, handleCompleteSite } = createConstructionManager(effects);
 
 /**
  * 获取最近的待建造工地
@@ -153,7 +27,7 @@ export const addConstructionSite = function (sites: ConstructionPos[]) {
  * 
  * @param pos 获取本房间内距离该位置最近且优先级最高的工地
  */
-export const getNearSite = function (pos: RoomPosition): ConstructionSite {
+const getNearSite = function (pos: RoomPosition): ConstructionSite {
     const room = Game.rooms[pos.roomName]
     if (!room) return undefined
 
@@ -185,23 +59,11 @@ export const getNearSite = function (pos: RoomPosition): ConstructionSite {
 }
 
 /**
- * 检查一个建筑工地是否建造完成
- * 
- * @param site 建筑工地
- * @returns 若建造完成则返回对应的建筑
- */
-export const getSiteStructure = function (site: ConstructionSite): Structure {
-    // 检查上面是否有已经造好的同类型建筑
-    return site.pos.lookFor(LOOK_STRUCTURES).find(({ structureType }) => {
-        return structureType === site.structureType
-    })
-}
-
-/**
  * 建造管理模块注册插件
  */
-export const constructionAppPlugin: AppLifecycleCallbacks = {
-    reset: initConstructionController,
-    tickStart: manageConstruction,
-    tickEnd: saveWaiting
+const constructionAppPlugin: AppLifecycleCallbacks = {
+    tickStart: handleCompleteSite,
+    tickEnd: planSite
 }
+
+export { addConstructionSite, getNearSite, constructionAppPlugin }

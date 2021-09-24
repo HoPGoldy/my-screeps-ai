@@ -146,7 +146,8 @@ const actionStrategy: ActionStrategy = {
             const posContinaerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(getContainerFilter)
 
             if (posContinaer.length <= 0 && posContinaerSite.length <= 0) {
-                addConstructionSite([{ pos: creep.pos, type: STRUCTURE_CONTAINER }])
+                const { x, y, roomName } = creep.pos
+                addConstructionSite([{ x, y, roomName, type: STRUCTURE_CONTAINER }])
                 // container 建造任务的优先级应该是最高的
                 creep.room.work.addTask({ type: WorkTaskType.BuildStartContainer, sourceId: source.id, priority: 4 })
                 // creep.log(`发布 source ${source.id} 的 container 建造任务`, Color.Green)
