@@ -1,4 +1,5 @@
 import { Color, log } from '@/modulesGlobal/console/utils'
+import { getUniqueKey } from '@/utils'
 import RoomAccessor from '../RoomAccessor'
 
 export default class TaskController<
@@ -68,7 +69,7 @@ export default class TaskController<
      */
     private refineNewTask(task: CostomTask): CostomTask {
         // 设置新索引
-        task.key = new Date().getTime() + (this.tasks.length * 0.1)
+        task.key = getUniqueKey()
         task.unit = 0
         // 是特殊任务的话就包含特殊任务处理者数量
         if (!task.require) task.requireUnit = 0

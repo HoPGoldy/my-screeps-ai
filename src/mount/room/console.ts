@@ -5,7 +5,7 @@
  */
 
 import { createHelp, Color, colorful } from '@/modulesGlobal/console'
-import { DEFAULT_FLAG_NAME, labTarget, LAB_STATE, ROOM_REMOVE_INTERVAL } from '@/setting'
+import { DEFAULT_FLAG_NAME, ROOM_REMOVE_INTERVAL } from '@/setting'
 import { getName } from '@/utils'
 import { setBaseCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import RoomExtension from './extension'
@@ -142,116 +142,6 @@ export default class RoomConsole extends RoomExtension {
         // 设置好了之后自动运行布局规划
         manageStructure(this)
         return `[${this.name}] 已将 ${flagName} 设置为中心点，controller 升级时自动执行布局规划`
-    }
-
-    /**
-     * 用户操作：初始化 lab 集群
-     * 要提前放好名字为 lab1 和 lab2 的两个旗帜（放在集群中间的两个 lab 上）
-     */
-    public linit(): string {
-         /**
-         * 获取旗帜及兜底
-         * @danger 这里包含魔法常量，若有需要应改写成数组形式
-         */
-        const lab1Flag = Game.flags['lab1']
-        const lab2Flag = Game.flags['lab2']
-        if (!lab1Flag || !lab2Flag) return `[lab 集群] 初始化失败，请在底物存放 Lab 上新建名为 [lab1] 和 [lab2] 的旗帜`
-        if (lab1Flag.pos.roomName != this.name || lab2Flag.pos.roomName != this.name) return `[lab 集群] 初始化失败，旗帜不在本房间内，请进行检查`
-
-        // 初始化内存, 之前有就刷新 id 缓存，没有就新建
-        if (this.memory.lab) {
-            this.memory.lab.inLab = []
-        }
-        else {
-            this.memory.lab = {
-                state: 'getTarget',
-                targetIndex: 1,
-                inLab: [],
-                pause: false
-            }
-        }
-
-        // 获取并分配 lab
-        const labs = this.find<StructureLab>(FIND_MY_STRUCTURES, {
-            filter: s => s.structureType == STRUCTURE_LAB
-        })
-        labs.forEach(lab => {
-            if (lab.pos.isEqualTo(lab1Flag.pos) || lab.pos.isEqualTo(lab2Flag.pos)) this.memory.lab.inLab.push(lab.id)
-        })
-
-        lab1Flag.remove()
-        lab2Flag.remove()
-
-        return `[${this.name} lab] 初始化成功，稍后将自动运行生产规划`
-    }
-
-    /**
-     * 用户操作：暂停 lab 集群
-     */
-    public loff(): string {
-        if (!this.memory.lab) return `[${this.name} lab] 集群尚未初始化`
-        this.memory.lab.pause = true
-        return `[${this.name} lab] 已暂停工作`
-    }
-
-    /**
-     * 用户操作：重启 lab 集群
-     */
-    public lon(): string {
-        if (!this.memory.lab) return `[${this.name} lab] 集群尚未初始化`
-        this.memory.lab.pause = false
-        return `[${this.name} lab] 已恢复工作`
-    }
-
-    /**
-     * 用户操作：显示当前 lab 状态
-     */
-    public lshow(): string {
-        const memory = this.memory.lab
-        if (!memory) return `[${this.name}] 未启用 lab 集群`
-        const logs = [ `[${this.name}]` ]
-
-        if (memory.pause) logs.push(colorful('暂停中', Color.Yellow))
-        logs.push(`[状态] ${memory.state}`)
-
-        // 获取当前目标产物以及 terminal 中的数量
-        const res = labTarget[memory.targetIndex]
-        const currentAmount = this.terminal ? this.terminal.store[res.target] : colorful('无法访问 terminal', Color.Red)
-
-        // 在工作就显示工作状态
-        if (memory.state === LAB_STATE.WORKING) {
-            logs.push(`[工作进程] 目标 ${res.target} 剩余生产/当前存量/目标存量 ${memory.targetAmount}/${currentAmount}/${res.number}`)
-        }
-
-        return logs.join(' ')
-    }
-
-    /**
-     * 用户操作 - 启动战争状态
-     */
-    public war(): string {
-        let stats = `[${this.name}] `
-        const result = this.startWar('WAR')
-
-        if (result === OK) stats += `已启动战争状态，正在准备 boost 材料，请在准备完成后再发布角色组`
-        else if (result === ERR_NAME_EXISTS) stats += '已处于战争状态'
-        else if (result === ERR_NOT_FOUND) stats += `未找到名为 [${this.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`
-        else if (result === ERR_INVALID_TARGET) stats += '旗帜周围的 lab 数量不足，请移动旗帜位置'
-
-        return stats
-    }
-
-    /**
-     * 用户操作 - 取消战争状态
-     */
-    public nowar(): string {
-        let stats = `[${this.name}] `
-        const result = this.stopWar()
-
-        if (result === OK) stats += `已解除战争状态，boost 强化材料会依次运回 Terminal`
-        else if (result === ERR_NOT_FOUND) stats += `未启动战争状态`
-
-        return stats
     }
 
     /**

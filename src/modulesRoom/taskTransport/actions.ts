@@ -238,7 +238,6 @@ export const transportActions: {
      * lab 资源移入任务
      * 在 lab 集群的 getResource 阶段发布
      * 在 inLab 中填充两种底物
-     * 并不会填满，而是根据自己最大的存储量进行填充，保证在取出产物时可以一次搬完
      */
     [TransportTaskType.LabIn]: (creep, task, transport) => ({
         source: () => {
@@ -246,27 +245,46 @@ export const transportActions: {
             if (!clearCarryingEnergy(creep)) return false
 
             // 找到第一个需要从转移的底物
-            const targetResource = task.resource.find(res => !Game.getObjectById(res.id)?.mineralType)
+            const moveResource = task.resource.find(res => res.amount > 0)
 
             // 找不到了就说明都成功转移了
-            if (!targetResource) {
+            if (!moveResource) {
                 transport.removeTask(task.key)
                 return false
             }
 
-            const resourceStore = creep.room.myStorage.getResourcePlace(targetResource.type)
+            const storeStructure = creep.room.myStorage.getResourcePlace(moveResource.type)
 
-            creep.goTo(resourceStore.pos)
-            const result = creep.withdraw(resourceStore, targetResource.type)
-            if (result === OK) return true
+            creep.goTo(storeStructure.pos)
+            const withdrawAmount = Math.min(
+                moveResource.amount,
+                creep.store.getFreeCapacity(moveResource.type),
+                storeStructure.store[moveResource.type]
+            )
+            const result = creep.withdraw(storeStructure, moveResource.type, withdrawAmount)
+
+            // 拿到资源了就看下有没有拿满，满了就开始往回运
+            if (result === OK) {
+                // 注意这里直接减去了任务存量，如果搬运工在半路上被击杀了就会损失掉这部分资源导致最终送到地方的资源变少
+                moveResource.amount -= withdrawAmount
+                // 此时 withdraw 还没有执行，所以需要手动减去对应的搬运量
+                if (creep.store.getFreeCapacity() - withdrawAmount === 0) return true
+            }
+            // 拿不下了就运过去
+            else if (result === ERR_FULL) return true
             else if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 transport.removeTask(task.key)
+                creep.log(`执行 labIn 任务时出现资源不足问题： ${JSON.stringify(moveResource)}`)
             }
             else if (result != ERR_NOT_IN_RANGE) creep.say(`labInA ${result}`)
         },
         target: () => {
             transport.countWorkTime()
-            const targetResource = task.resource.find(res => !Game.getObjectById(res.id)?.mineralType)
+            if (creep.store.getCapacity() <= 0) return true
+
+            const targetResource = task.resource.find(res => {
+                return creep.store[res.type] > 0 && Game.getObjectById(res.id)
+            })
             // 找不到了就说明都成功转移了
             if (!targetResource) {
                 transport.removeTask(task.key)
@@ -274,44 +292,45 @@ export const transportActions: {
             }
 
             const targetLab = Game.getObjectById(targetResource.id)
-            // 找不到目标 lab，说明有可能被拆掉了，放弃该任务
-            if (!targetLab) {
-                transport.removeTask(task.key)
-                return true
-            }
 
             // 转移资源
             const result = creep.transferTo(targetLab, targetResource.type)
-            // 正常转移资源则更新任务
-            if (result === OK) return true
-            else if (result != ERR_NOT_IN_RANGE) creep.say(`labInB ${result}`)
+            // 正常转移资源
+            if (result == ERR_NOT_ENOUGH_RESOURCES) return true
+            else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`labInB ${result}`)
         }
     }),
 
     /**
-     * lab 产物移出任务
+     * lab 资源移出任务
      * 把 lab 中所有的资源都转移到 terminal 中
      */
     [TransportTaskType.LabOut]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
+            if (!clearCarryingEnergy(creep)) return false
+
             // 获取还有资源的 lab（mineralType 有值就代表其中还有资源）
-            let targetLab = creep.room[STRUCTURE_LAB].find(lab => lab.mineralType)
+            const targetLabId = task.labId.find(labId => {
+                const lab = Game.getObjectById(labId)
+                return lab && lab.mineralType
+            })
+            const targetLab = Game.getObjectById(targetLabId)
 
             // 还找不到或者目标里没有化合物了，说明已经搬空，执行 target
             if (!targetLab || !targetLab.mineralType) return true
 
-            if (!clearCarryingEnergy(creep)) return false
-
             // 转移资源
             creep.goTo(targetLab.pos)
-            const result = creep.withdraw(targetLab, targetLab.mineralType)
+            const withdrawAmount = Math.min(targetLab.store[targetLab.mineralType], creep.store.getFreeCapacity())
+            const result = creep.withdraw(targetLab, targetLab.mineralType, withdrawAmount)
 
             // 拿到资源了就看下有没有拿满，满了就开始往回运
             if (result === OK) {
-                if (creep.store.getFreeCapacity() === 0) return true
+                // 此时 withdraw 还没有执行，所以需要手动减去对应的搬运量
+                if (creep.store.getFreeCapacity() - withdrawAmount === 0) return true
             }
-            // 满了也先去转移资源
+            // 拿不下了也往回运
             else if (result === ERR_FULL) return true
             else if (result != ERR_NOT_IN_RANGE) creep.say(`draw ${result}`)
         },
@@ -330,9 +349,12 @@ export const transportActions: {
             const resourceType = Object.keys(creep.store)[0] as ResourceConstant
             // 没值了就说明自己身上已经空了，检查下还有没有没搬空的 lab，没有的话就完成任务
             if (!resourceType) {
-                if (creep.room[STRUCTURE_LAB].find(lab => lab.mineralType) === undefined) {
-                    transport.removeTask(task.key)
-                }
+                const hasLabNotClear = task.labId.find(labId => {
+                    const lab = Game.getObjectById(labId)
+                    return lab && lab.mineralType
+                })
+
+                if (!hasLabNotClear) transport.removeTask(task.key)
                 return true
             }
 
@@ -409,84 +431,11 @@ export const transportActions: {
     }),
 
     /**
-     * boost 资源移入任务
-     * 在 boost 任务的 getResource 阶段发布
-     * 将任务中给定的 lab 装载资源
-     */
-    [TransportTaskType.BoostGetResource]: (creep, task, transport) => ({
-        source: () => {
-            transport.countWorkTime()
-            // 获取 terminal
-            const terminal = creep.room.terminal
-            if (!terminal) {
-                transport.removeTask(task.key)
-                creep.log(`boostGetResource, 未找到 terminal，任务已移除`)
-                return false
-            }
-
-            if (!clearCarryingEnergy(creep)) return false
-
-            const boostConfig = creep.room.memory.boost
-
-            // 从缓存中读取要拿取的资源
-            let resource = creep.memory.taskResource
-            // 没有缓存的话就找到第一个需要的强化材料，然后从终端拿出
-            if (!resource) {
-                resource = Object.keys(boostConfig.lab).find((res, index) => {
-                    // 如果这个材料已经用完了就检查下一个
-                    if (!terminal.store[res] || terminal.store[res] == 0) return false
-                    const lab = Game.getObjectById(boostConfig.lab[res])
-                    // lab 里的资源不达标就进行运输
-                    if (lab && lab.store[res] < boostResourceReloadLimit) return true
-    
-                    return false
-                }) as ResourceConstant
-
-                if (resource) creep.memory.taskResource = resource
-                // 找不到了就说明都成功转移了
-                else {
-                    transport.removeTask(task.key)
-                    return false
-                }
-            }
-
-            // 获取转移数量
-            let getAmount = Math.min(creep.store.getFreeCapacity(resource), terminal.store[resource])
-
-            // 拿出来
-            creep.goTo(terminal.pos)
-            const result = creep.withdraw(terminal, resource as ResourceConstant, getAmount) 
-
-            if (result === OK || result === ERR_FULL) return true
-            else if (result != ERR_NOT_IN_RANGE) creep.say(`boostIn ${result}`)
-        },
-        target: () => {
-            transport.countWorkTime()
-            // 找到要转移的资源以及目标 lab
-            const targetResource = creep.memory.taskResource
-            const targetLab = Game.getObjectById(creep.room.memory.boost.lab[targetResource])
-
-            // 转移资源
-            creep.goTo(targetLab.pos)
-            const result = creep.transfer(targetLab, targetResource)
-            // 正常转移资源则更新任务
-            if (result === OK) {
-                // 移除缓存，在 source 阶段重新查找
-                delete creep.memory.taskResource
-                return true
-            }
-            // resource 有问题的话就再返回 source 阶段处理
-            else if (result === ERR_INVALID_ARGS) return true
-            else if (result != ERR_NOT_IN_RANGE) creep.say(`boostTarget 错误! ${result}`)
-        }
-    }),
-
-    /**
      * lab 能量填充任务
      * 在 boost 阶段发布
      * 将给指定的 lab 填满能量
      */
-    [TransportTaskType.BoostGetEnergy]: (creep, task, transport) => ({
+    [TransportTaskType.LabGetEnergy]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] > 0) return true
@@ -495,12 +444,11 @@ export const transportActions: {
         },
         target: () => {
             transport.countWorkTime()
-            const boostLabs = Object.values(creep.room.memory.boost.lab)
-            
+            const boostLabs = creep.room.myLab.boostLabs
+
             // 获取能量为空的 lab
             let targetLab: StructureLab
-            for (const labId of boostLabs) {
-                const lab = Game.getObjectById(labId)
+            for (const lab of boostLabs) {
                 if (lab && lab.store[RESOURCE_ENERGY] != LAB_ENERGY_CAPACITY) {
                     targetLab = lab
                     break
@@ -519,59 +467,6 @@ export const transportActions: {
             if (result === OK) return true
             // 正常转移资源则更新任务
             else if (result != ERR_NOT_IN_RANGE) creep.say(`强化能量 ${result}`)
-        }
-    }),
-
-    /**
-     * boost 材料清理任务
-     * 将 boost 强化没用完的材料再搬回 terminal
-     */
-    [TransportTaskType.BoostClear]: (creep, task, transport) => ({
-        source: () => {
-            transport.countWorkTime()
-            const boostLabs = Object.values(creep.room.memory.boost.lab)
-            
-            // 获取能量为空的 lab
-            let targetLab: StructureLab
-            for (const labId of boostLabs) {
-                const lab = Game.getObjectById(labId)
-                if (lab && lab.mineralType) {
-                    targetLab = lab
-                    break
-                }
-            }
-
-            // 找不到就说明任务完成
-            if (!targetLab) {
-                transport.removeTask(task.key)
-                return false
-            }
-
-            if (!clearCarryingEnergy(creep)) return false
-
-            // 转移资源
-            creep.goTo(targetLab.pos)
-            const result = creep.withdraw(targetLab, targetLab.mineralType)
-            if (result === OK) return true
-            // 正常转移资源则更新任务
-            else if (result != ERR_NOT_IN_RANGE) creep.say(`强化清理 ${result}`)
-        },
-        target: () => {
-            transport.countWorkTime()
-            const targetStructure = creep.room.terminal || creep.room.storage
-
-            if (!targetStructure) {
-                transport.removeTask(task.key)
-                creep.log(`boostClear, 未找到 terminal / storage，任务已移除`)
-                return true
-            }
-            
-            // 转移资源
-            // 这里直接使用了 [0] 的原因是如果 store 里没有资源的话 creep 就会去执行 source 阶段，并不会触发这段代码
-            const result = creep.transferTo(targetStructure, <ResourceConstant>Object.keys(creep.store)[0])
-            if (result === OK) return true
-            // 正常转移资源则更新任务
-            else if (result != ERR_NOT_IN_RANGE) creep.say(`强化清理 ${result}`)
         }
     })
 }

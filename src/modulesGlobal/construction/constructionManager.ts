@@ -49,7 +49,7 @@ export const createConstructionManager = function (effects: CreateOptions) {
             const result = sitePos.createConstructionSite(type)
 
             if (result === ERR_INVALID_TARGET) {
-                effects.log(`工地 ${type} 重复放置或放置在了无效的位置 [${sitePos}]，已放弃继续放置`, ['建造控制器'], Color.Yellow)
+                // effects.log(`工地 ${type} 重复放置或放置在了无效的位置 ${sitePos}，已放弃继续放置`, ['建造控制器'], Color.Yellow)
                 return false
             }
             // 放置失败，下次重试

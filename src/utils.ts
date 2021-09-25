@@ -58,6 +58,22 @@ declare global {
 }
 
 /**
+ * 获取全局唯一索引
+ */
+export const getUniqueKey = function (): number {
+    return Game._uniqueKey = Game._uniqueKey ? Game._uniqueKey + 0.1 : Game.time
+}
+
+declare global {
+    interface Game {
+        /**
+         * 本 tick 使用过的唯一索引
+         */
+        _uniqueKey?: number
+    }
+}
+
+/**
  * 移除过期的 flag 内存
  */
 export const clearFlag = function (): string {

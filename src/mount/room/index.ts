@@ -15,7 +15,8 @@ import {
     TerminalController,
     StorageController,
     ObserverController,
-    RemoteChontroller
+    RemoteChontroller,
+    LabChontroller
 } from '@/modulesRoom'
 
 /**
@@ -55,6 +56,7 @@ export default () => {
         [ 'myTerminal', TerminalController ],
         [ 'myStorage', StorageController ],
         [ 'myObserver', ObserverController ],
+        [ 'myLab', LabChontroller],
         [ 'remote', RemoteChontroller ]
     ]
 
@@ -125,6 +127,10 @@ declare global {
          * observer 管理模块
          */
         myObserver: ObserverController
+        /**
+         * lab 管理模块
+         */
+        myLab: LabChontroller
         /**
          * 扩张管理模块
          * 包括外矿和新房扩张

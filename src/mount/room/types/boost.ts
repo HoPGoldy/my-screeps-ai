@@ -32,28 +32,3 @@ type BoostType = 'WAR' | 'DEFENSE'
 type BoostResourceConfig = {
     [type in BoostType]: ResourceConstant[]
 }
-
-/**
- * 强化任务
- * 存放了房间进行 boost 所需的数据
- */
-interface BoostTask {
-    /**
-     * 当前任务的所处状态
-     */
-    state: BoostStats
-    /**
-     * 进行 boost 强化的位置
-     */
-    pos: number[]
-    /**
-     * 要进行强化的材料以及执行强化的 lab
-     */
-    lab: {
-        [resourceType: string]: Id<StructureLab>
-    }
-    /**
-     * 本次强化任务所用的类型
-     */
-    type: BoostType
-}

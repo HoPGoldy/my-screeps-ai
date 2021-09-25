@@ -5,11 +5,9 @@
  * 这些方法主要是用于和其他模块代码进行交互
  */
 
-import { BOOST_RESOURCE } from '@/setting'
 import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
 import { manageStructure } from '@/modulesGlobal/autoPlanning'
 import { removeCreep } from '@/modulesGlobal/creep'
-import { TransportTaskType } from '@/modulesRoom'
 import { Color, createRoomLink, log } from '@/modulesGlobal'
 
 export default class RoomExtension extends Room {
@@ -108,98 +106,5 @@ export default class RoomExtension extends Room {
         if (result === OK) return `自动规划完成`
         else if (result === ERR_NOT_OWNER) return `自动规划失败，房间没有控制权限`
         else return `未找到基地中心点位，请执行 Game.rooms.${this.name}.setcenter() 以启用自动规划`
-    }
-
-    /**
-     * 切换为战争状态
-     * 需要提前插好名为 [房间名 + Boost] 的旗帜，并保证其周围有足够数量的 lab
-     * 
-     * @param boostType 以什么形式启动战争状态
-     * @returns ERR_NAME_EXISTS 已经处于战争状态
-     * @returns ERR_NOT_FOUND 未找到强化旗帜
-     * @returns ERR_INVALID_TARGET 强化旗帜附近的lab数量不足
-     */
-    public startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET {
-        if (this.memory.war) return ERR_NAME_EXISTS
-
-        // 获取 boost 旗帜
-        const boostFlagName = this.name + 'Boost'
-        const boostFlag = Game.flags[boostFlagName]
-        if (!boostFlag) return ERR_NOT_FOUND
-
-        // 获取执行强化的 lab
-        const labs = boostFlag.pos.findInRange<StructureLab>(FIND_STRUCTURES, 1, {
-            filter: s => s.structureType == STRUCTURE_LAB
-        })
-        // 如果 lab 数量不够
-        if (labs.length < BOOST_RESOURCE[boostType].length) return ERR_INVALID_TARGET
-
-        // 初始化 boost 任务
-        let boostTask: BoostTask = {
-            state: 'boostGet',
-            pos: [ boostFlag.pos.x, boostFlag.pos.y ],
-            type: boostType,
-            lab: {}
-        }
-
-        // 统计需要执行强化工作的 lab 并保存到内存
-        BOOST_RESOURCE[boostType].forEach(res => boostTask.lab[res] = labs.pop().id)
-
-        // 发布 boost 任务
-        this.memory.boost = boostTask
-        this.memory.war = {}
-        return OK
-    }
-
-    /**
-     * 强化指定 creep
-     * 
-     * @param creep 要进行强化的 creep，该 creep 应站在指定好的强化位置上
-     * @returns ERR_NOT_FOUND 未找到boost任务
-     * @returns ERR_BUSY boost尚未准备完成
-     * @returns ERR_NOT_IN_RANGE creep不在强化位置上
-     */
-    public boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE {
-        if (!this.memory.boost) return ERR_NOT_FOUND
-
-        // 检查是否准备好了
-        if (this.memory.boost.state != 'waitBoost') return ERR_BUSY
-
-        // 获取全部 lab
-        let executiveLab: StructureLab[] = []
-        for (const resourceType in this.memory.boost.lab) {
-            const lab = Game.getObjectById(this.memory.boost.lab[resourceType])
-            // 这里没有直接终止进程是为了避免 lab 集群已经部分被摧毁而导致整个 boost 进程无法执行
-            if (lab) executiveLab.push(lab)
-        }
-
-        // 执行强化
-        const boostResults = executiveLab.map(lab => lab.boostCreep(creep))
-        
-        // 有一个强化成功了就算强化成功
-        if (boostResults.includes(OK)) {
-            // 强化成功了就发布资源填充任务是因为
-            // 在方法返回 OK 时，还没有进行 boost（将在 tick 末进行），所以这里检查资源并不会发现有资源减少
-            // 为了提高存储量，这里直接发布任务，交给 manager 在处理任务时检查是否有资源不足的情况
-            this.transport.addTask({ type: TransportTaskType.BoostGetResource })
-            this.transport.addTask({ type: TransportTaskType.BoostGetEnergy })
-        
-            return OK
-        }
-        else return ERR_NOT_IN_RANGE
-    }
-
-    /**
-     * 解除战争状态
-     * 会同步取消 boost 进程
-     */
-    public stopWar(): OK | ERR_NOT_FOUND {
-        if (!this.memory.war) return ERR_NOT_FOUND
-
-        // 将 boost 状态置为 clear，labExtension 会自动发布清理任务并移除 boostTask
-        if (this.memory.boost) this.memory.boost.state = 'boostClear'
-        delete this.memory.war
-
-        return OK
     }
 }

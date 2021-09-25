@@ -18,9 +18,7 @@ export enum TransportTaskType {
     FillPowerSpawn = 'fillPowerSpawn',
     LabIn = 'labIn',
     LabOut = 'labOut',
-    BoostGetResource = 'boostGetResource',
-    BoostGetEnergy = 'boostGetEnergy',
-    BoostClear = 'boostClear',
+    LabGetEnergy = 'labGetEnergy',
 }
 
 /**
@@ -85,24 +83,22 @@ export interface TransportTasks {
         resource: {
             id: Id<StructureLab>
             type: ResourceConstant
+            amount: number
         }[]
     }
     /**
      * lab 移出产物
      */
-    [TransportTaskType.LabOut]: RoomTask<TransportTaskType.LabOut>
+    [TransportTaskType.LabOut]: RoomTask<TransportTaskType.LabOut> & {
+        /**
+         * 需要净空的 lab id
+         */
+        labId: Id<StructureLab>[]
+    }
     /**
      * boost 填充资源
      */
-    [TransportTaskType.BoostGetResource]: RoomTask<TransportTaskType.BoostGetResource>
-    /**
-     * boost 填充能量
-     */
-    [TransportTaskType.BoostGetEnergy]: RoomTask<TransportTaskType.BoostGetEnergy>
-    /**
-     * boost 清理资源
-     */
-    [TransportTaskType.BoostClear]: RoomTask<TransportTaskType.BoostClear>
+    [TransportTaskType.LabGetEnergy]: RoomTask<TransportTaskType.LabGetEnergy>
 }
 
 /**

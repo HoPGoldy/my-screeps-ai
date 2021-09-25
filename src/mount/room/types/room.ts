@@ -27,10 +27,6 @@ declare global {
          */
         constructionSiteId: Id<ConstructionSite>
         /**
-         * lab 内存
-         */
-        lab?: LabMemory
-        /**
          * 中央 link 的 id
          */
         centerLinkId?: Id<StructureLink>
@@ -111,11 +107,6 @@ declare global {
          * 在 Lab.work 中调用，一个房间只会执行一次
          */
         _importantWall: StructureWall | StructureRampart
-        /**
-         * 该房间是否已经执行过 lab 集群作业了
-         * 在 Lab.work 中调用，一个房间只会执行一次
-         */
-        _hasRunLab: boolean
 
         /**
          * 资源共享 api
