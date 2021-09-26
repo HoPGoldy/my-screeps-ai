@@ -47,7 +47,16 @@ export default class LabConsole extends Room {
             describe: `lab 将会自动监听房间中的强化化合物数量并进行合成，需要先执行 linit 进行初始化`,
             api: [
                 {
-                    title: '显示工厂详情',
+                    title: '初始化底物 lab',
+                    describe: '初始化方法，设置完该方法后才可以运行自动合成',
+                    params: [
+                        { name: 'labAId', desc: '第一个底物 lab 的 id' },
+                        { name: 'labBId', desc: '第二个底物 lab 的 id'}
+                    ],
+                    functionName: 'linit'
+                },
+                {
+                    title: '显示 lab 详情',
                     functionName: 'lshow'
                 },
                 {
@@ -56,7 +65,6 @@ export default class LabConsole extends Room {
                 },
                 {
                     title: '重启化合物反应',
-                    describe: '会将工厂从休眠中唤醒',
                     functionName: 'lon'
                 }
             ]

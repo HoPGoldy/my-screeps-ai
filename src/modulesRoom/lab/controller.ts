@@ -568,9 +568,27 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
         const res = LAB_TARGETS[this.memory.reactionIndex]
         const currentAmount = this.room.myStorage.getResource(res.target)
 
+        logs.push(reactionLogs.join(' '))
+
         // 在工作就显示工作状态
         if (this.memory.reactionState === LabState.Working) {
-            logs.push(`[工作进展] 目标 ${res.target} 剩余生产/当前存量/目标存量 ${this.memory.reactionAmount}/${currentAmount}/${res.number}`)
+            logs.push(
+                `[工作进展] 目标 ${res.target} 剩余生产/当前存量/目标存量 ` +
+                `${this.memory.reactionAmount}/${currentAmount}/${res.number}`
+            )
+        }
+
+        logs.push('[强化任务]')
+
+        if (Object.keys(this.memory.boostTasks).length == 0) logs.push('- 暂无任务')
+        else {
+            const taskLogs = Object.values(this.memory.boostTasks).map(task => {
+                const info = `- [${task.id}] [当前阶段] ${task.state} `
+                const resLog = task.res.map(res => `[${res.resource}] ${res.amount}`).join(' ')
+                return info + resLog
+            })
+
+            logs.push(...taskLogs)
         }
 
         return logs.join(' ')
