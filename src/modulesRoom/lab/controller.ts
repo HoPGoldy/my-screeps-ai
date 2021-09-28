@@ -8,7 +8,7 @@ import { BoostState, LabMemory, LabState, BoostTask, BoostResourceConfig, LabTyp
 /**
  * lab 集群拓展
  */
-export default class ObservserController extends RoomAccessor<LabMemory> {
+export default class LabController extends RoomAccessor<LabMemory> {
     constructor(roomName: string) {
         super('lab', roomName, 'lab', {
             boostTasks: {},
@@ -110,7 +110,7 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
                 this.labPutResource()
             break
             default:
-                if (Game.time % 10) return
+                if (Game.time % 10 || this.inLabs.length < 2) return
                 this.labGetTarget()
         }
     }
@@ -380,7 +380,7 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
         if (canReactionAmount > 0) {
             this.memory.reactionState = LabState.GetResource
             // 单次作业数量不能超过 lab 容量上限
-            this.memory.reactionAmount = Math.min(LAB_MINERAL_CAPACITY, canReactionAmount)
+            this.memory.reactionAmount = Math.min(LAB_MINERAL_CAPACITY, canReactionAmount, resource.number)
             this.log(`指定合成目标：${resource.target}`)
         }
         // 合成不了
@@ -398,7 +398,7 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
         if (this.room.transport.hasTask(TransportTaskType.LabIn)) return
 
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
-        if (this.inLabs.every(lab => lab.mineralType)) {
+        if (this.inLabs.every(lab => lab.store[lab.mineralType] >= this.memory.reactionAmount)) {
             this.memory.reactionState = LabState.Working
             return
         }
@@ -463,17 +463,15 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
         // 检查是否已经有正在执行的移出任务
         if (this.room.transport.hasTask(TransportTaskType.LabOut)) return
 
-        const outLabs = this.reactionLabs
-        // 检查资源有没有全部转移出去
-        for (const lab of outLabs) {
-            // 还有没净空的就发布移出任务
-            if (lab.mineralType) {
-                this.room.transport.addTask({
-                    type: TransportTaskType.LabOut,
-                    labId: outLabs.map(({ id }) => id)
-                })
-                return
-            }
+        const workLabs = [...this.reactionLabs, ...this.inLabs]
+        const needCleanLabs = workLabs.filter(lab => lab.mineralType)
+        // 还有没净空的就发布移出任务
+        if (needCleanLabs.length > 0) {
+            this.room.transport.addTask({
+                type: TransportTaskType.LabOut,
+                labId: needCleanLabs.map(lab => lab.id)
+            })
+            return
         }
 
         // 都移出去的话就可以开始新的轮回了
@@ -558,11 +556,11 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
     }
 
     public stats(): string {
-        const logs = [ `[化合物合成进程]` ]
+        const logs = [ `[化合物合成]` ]
         const reactionLogs = []
-        if (this.memory.inLab.length < 2) reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
+        if (this.inLabs.length < 2) reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
         if (this.memory.pause) reactionLogs.push(colorful('暂停中', Color.Yellow))
-        reactionLogs.push(`[状态] ${this.memory.reactionState}`)
+        reactionLogs.push(`- [状态] ${this.memory.reactionState}`)
 
         // 获取当前目标产物以及 terminal 中的数量
         const res = LAB_TARGETS[this.memory.reactionIndex]
@@ -573,8 +571,8 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
         // 在工作就显示工作状态
         if (this.memory.reactionState === LabState.Working) {
             logs.push(
-                `[工作进展] 目标 ${res.target} 剩余生产/当前存量/目标存量 ` +
-                `${this.memory.reactionAmount}/${currentAmount}/${res.number}`
+                `[工作进展] 目标 ${res.target} 本次生产/当前存量/目标存量 ` +
+                `${this.memory.reactionAmount}/${currentAmount.total}/${res.number}`
             )
         }
 
@@ -591,6 +589,6 @@ export default class ObservserController extends RoomAccessor<LabMemory> {
             logs.push(...taskLogs)
         }
 
-        return logs.join(' ')
+        return logs.join('\n')
     }
 }

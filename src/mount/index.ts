@@ -16,6 +16,7 @@ import StorageConsole from '@/modulesRoom/storage/console'
 import ShareConsole from '@/modulesRoom/share/console'
 import ObserverConsole from '@/modulesRoom/observer/console'
 import RemoteConsole from '@/modulesRoom/remote/console'
+import LabConsole from '@/modulesRoom/lab/console'
 import { Color, log } from '@/modulesGlobal'
 
 /**
@@ -31,6 +32,7 @@ export const mountList: [ AnyClass, AnyClass ][] = [
     [ Room, ShareConsole ],
     [ Room, ObserverConsole ],
     [ Room, RemoteConsole ],
+    [ Room, LabConsole ],
     // 业务模块拓展挂载
     [ RoomPosition, RoomPostionExtension ],
     [ Source, SourceExtension ],

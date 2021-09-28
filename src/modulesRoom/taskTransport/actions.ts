@@ -261,6 +261,7 @@ export const transportActions: {
                 creep.store.getFreeCapacity(moveResource.type),
                 storeStructure.store[moveResource.type]
             )
+
             const result = creep.withdraw(storeStructure, moveResource.type, withdrawAmount)
 
             // 拿到资源了就看下有没有拿满，满了就开始往回运
@@ -285,18 +286,16 @@ export const transportActions: {
             const targetResource = task.resource.find(res => {
                 return creep.store[res.type] > 0 && Game.getObjectById(res.id)
             })
-            // 找不到了就说明都成功转移了
-            if (!targetResource) {
-                transport.removeTask(task.key)
-                return true
-            }
+
+            // 找不到了就说明身上搬空了
+            if (!targetResource) return true
 
             const targetLab = Game.getObjectById(targetResource.id)
 
             // 转移资源
             const result = creep.transferTo(targetLab, targetResource.type)
             // 正常转移资源
-            if (result == ERR_NOT_ENOUGH_RESOURCES) return true
+            if (result === ERR_NOT_ENOUGH_RESOURCES || result === ERR_FULL) return true
             else if (result != OK && result != ERR_NOT_IN_RANGE) creep.say(`labInB ${result}`)
         }
     }),
@@ -330,7 +329,7 @@ export const transportActions: {
                 // 此时 withdraw 还没有执行，所以需要手动减去对应的搬运量
                 if (creep.store.getFreeCapacity() - withdrawAmount === 0) return true
             }
-            // 拿不下了也往回运
+            // 拿不下了就往回运
             else if (result === ERR_FULL) return true
             else if (result != ERR_NOT_IN_RANGE) creep.say(`draw ${result}`)
         },
