@@ -379,8 +379,17 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 可以合成
         if (canReactionAmount > 0) {
             this.memory.reactionState = LabState.GetResource
-            // 单次作业数量不能超过 lab 容量上限
-            this.memory.reactionAmount = Math.min(LAB_MINERAL_CAPACITY, canReactionAmount, resource.number)
+
+            // 最小的就是目标合成数量
+            this.memory.reactionAmount = Math.min(
+                // 单次 lab 能合成的最大值
+                LAB_MINERAL_CAPACITY,
+                // 家里素材能合成的最大值
+                canReactionAmount,
+                // 当前距离期望值差了多少
+                resource.number - this.room.myStorage.getResource(resource.target).total
+            )
+
             this.log(`指定合成目标：${resource.target}`)
         }
         // 合成不了
@@ -486,9 +495,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @returns 当前的目标索引
      */
     private setNextIndex(): number {
-        if (!this.memory.reactionIndex) return this.memory.reactionIndex = 0
-
-        this.memory.reactionIndex = LAB_TARGETS.length % this.memory.reactionIndex + 1
+        this.memory.reactionIndex = ((this.memory.reactionIndex || 0) + 1) % LAB_TARGETS.length
         return this.memory.reactionIndex
     }
 
@@ -556,31 +563,39 @@ export default class LabController extends RoomAccessor<LabMemory> {
     }
 
     public stats(): string {
+        const { reactionState, reactionIndex, pause, reactionAmount, boostTasks } = this.memory
         const logs = [ `[化合物合成]` ]
+
         const reactionLogs = []
         if (this.inLabs.length < 2) reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
-        if (this.memory.pause) reactionLogs.push(colorful('暂停中', Color.Yellow))
-        reactionLogs.push(`- [状态] ${this.memory.reactionState}`)
-
-        // 获取当前目标产物以及 terminal 中的数量
-        const res = LAB_TARGETS[this.memory.reactionIndex]
-        const currentAmount = this.room.myStorage.getResource(res.target)
-
+        if (pause) reactionLogs.push(colorful('暂停中', Color.Yellow))
+        reactionLogs.push(`- [状态] ${reactionState}`)
         logs.push(reactionLogs.join(' '))
 
         // 在工作就显示工作状态
-        if (this.memory.reactionState === LabState.Working) {
+        if (reactionState === LabState.Working) {
+            // 获取当前目标产物以及 terminal 中的数量
+            const res = LAB_TARGETS[reactionIndex]
+            const currentAmount = this.room.myStorage.getResource(res.target)
             logs.push(
-                `[工作进展] 目标 ${res.target} 本次生产/当前存量/目标存量 ` +
-                `${this.memory.reactionAmount}/${currentAmount.total}/${res.number}`
+                `- [工作进展] 目标 ${res.target} 本次生产/当前存量/目标存量 ` +
+                `${reactionAmount}/${currentAmount.total}/${res.number}`
             )
+        }
+        else if (reactionState === LabState.GetTarget) {
+            const targetLogs = LAB_TARGETS.map(({ target, number }, index) => {
+                let log = `- [待选目标] ${colorful(target, Color.Blue)} [目标数量] ${colorful(number.toString(), Color.Blue)}`
+                if (reactionIndex === index) log += ' <= 正在检查'
+                return log
+            })
+            logs.push(targetLogs.join('\n'))
         }
 
         logs.push('[强化任务]')
 
-        if (Object.keys(this.memory.boostTasks).length == 0) logs.push('- 暂无任务')
+        if (Object.keys(boostTasks).length == 0) logs.push('- 暂无任务')
         else {
-            const taskLogs = Object.values(this.memory.boostTasks).map(task => {
+            const taskLogs = Object.values(boostTasks).map(task => {
                 const info = `- [${task.id}] [当前阶段] ${task.state} `
                 const resLog = task.res.map(res => `[${res.resource}] ${res.amount}`).join(' ')
                 return info + resLog
