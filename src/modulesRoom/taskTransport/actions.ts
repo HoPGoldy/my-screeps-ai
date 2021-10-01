@@ -247,11 +247,8 @@ export const transportActions: {
             // 找到第一个需要从转移的底物
             const moveResource = task.resource.find(res => res.amount > 0)
 
-            // 找不到了就说明都成功转移了
-            if (!moveResource) {
-                transport.removeTask(task.key)
-                return false
-            }
+            // 找不到了就说明都已经取到身上了
+            if (!moveResource) return true
 
             const storeStructure = creep.room.myStorage.getResourcePlace(moveResource.type)
 
@@ -269,7 +266,7 @@ export const transportActions: {
                 // 注意这里直接减去了任务存量，如果搬运工在半路上被击杀了就会损失掉这部分资源导致最终送到地方的资源变少
                 moveResource.amount -= withdrawAmount
                 // 此时 withdraw 还没有执行，所以需要手动减去对应的搬运量
-                if (creep.store.getFreeCapacity() - withdrawAmount === 0) return true
+                if (creep.store.getFreeCapacity() - withdrawAmount <= 0) return true
             }
             // 拿不下了就运过去
             else if (result === ERR_FULL) return true
@@ -288,7 +285,12 @@ export const transportActions: {
             })
 
             // 找不到了就说明身上搬空了
-            if (!targetResource) return true
+            if (!targetResource) {
+                const needTranserRes = task.resource.find(res => res.amount > 0)
+                // 如果这时候任务里的所有资源待搬运量都是0的话说明任务完成
+                if (!needTranserRes) transport.removeTask(task.key)
+                return true
+            }
 
             const targetLab = Game.getObjectById(targetResource.id)
 

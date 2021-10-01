@@ -572,8 +572,20 @@ export default class LabController extends RoomAccessor<LabMemory> {
         reactionLogs.push(`- [状态] ${reactionState}`)
         logs.push(reactionLogs.join(' '))
 
+        if (reactionState === LabState.GetTarget) {
+            const targetLogs = LAB_TARGETS.map(({ target, number }, index) => {
+                let log = `- [待选目标] ${colorful(target, Color.Blue)} [目标数量] ${colorful(number.toString(), Color.Blue)}`
+                if (reactionIndex === index) log += ' <= 正在检查'
+                return log
+            })
+            logs.push(targetLogs.join('\n'))
+        }
+        else if (reactionState === LabState.GetResource) {
+            const res = LAB_TARGETS[reactionIndex]
+            logs.push(`- [正在获取资源] ${colorful(res.target, Color.Blue)} 目标合成数量 ${reactionAmount}`) 
+        }
         // 在工作就显示工作状态
-        if (reactionState === LabState.Working) {
+        else if (reactionState === LabState.Working) {
             // 获取当前目标产物以及 terminal 中的数量
             const res = LAB_TARGETS[reactionIndex]
             const currentAmount = this.room.myStorage.getResource(res.target)
@@ -582,13 +594,9 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 `${reactionAmount}/${currentAmount.total}/${res.number}`
             )
         }
-        else if (reactionState === LabState.GetTarget) {
-            const targetLogs = LAB_TARGETS.map(({ target, number }, index) => {
-                let log = `- [待选目标] ${colorful(target, Color.Blue)} [目标数量] ${colorful(number.toString(), Color.Blue)}`
-                if (reactionIndex === index) log += ' <= 正在检查'
-                return log
-            })
-            logs.push(targetLogs.join('\n'))
+        else if (reactionState === LabState.PutResource) {
+            const res = LAB_TARGETS[reactionIndex]
+            logs.push(`- [正在移出资源] ${colorful(res.target, Color.Blue)}`) 
         }
 
         logs.push('[强化任务]')
