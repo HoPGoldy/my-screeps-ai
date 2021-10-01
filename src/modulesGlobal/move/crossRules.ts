@@ -48,12 +48,7 @@ const crossRules: CrossRules = {
     [CreepRole.PbHealer]: (creep, requireCreep) => {
         if (creep.memory.role !== requireCreep.memory.role) return true
         return creep.memory.working !== requireCreep.memory.working
-    },
-
-    // 工作单位在工作时不允许任何 creep 对穿
-    // 其实对应的判断规则要复杂一点，例如执行 upgrade 任务时允许正在建造的工作对穿，但是不允许其他执行升级任务的单位对穿
-    // 但是为了节省性能，这里直接一把梭，如果真有需求可以再添上
-    [CreepRole.Worker]: noCrossWithStanding
+    }
 }
 
 export default crossRules

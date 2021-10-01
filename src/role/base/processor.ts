@@ -48,7 +48,7 @@ const processor: CreepConfig<CreepRole.Processor> = {
             targetStructure &&
             (targetStructure.store as StoreDefinitionUnlimited).getFreeCapacity(task.resourceType) <= 0
         ) {
-            creep.log(`${task.target} 满了`)
+            // creep.log(`${task.target} 满了`)
             creep.room.centerTransport.deleteCurrentTask()
             return false
         }

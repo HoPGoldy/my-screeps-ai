@@ -85,6 +85,8 @@ export default class RoomTransport extends TaskController<TransportTaskType, All
             return (this.totalWorkTime / this.totalLifeTime) >= opt.proportion
         })
 
+        // 计算完成后移除之前的数据，不然会随着基数的增大，变化率会越来越小
+        this.totalLifeTime = this.totalWorkTime = 0
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
     }
 

@@ -26,17 +26,14 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 底物存放 lab
      */
     get inLabs(): StructureLab[] {
-        if (!this.memory.inLab) return []
-        return this.memory.inLab.map(id => Game.getObjectById(id))
+        return this.getLabByType(LabType.Base)
     }
 
     /**
      * 正在执行强化任务的 lab
      */
     get boostLabs(): StructureLab[] {
-        return Object.entries(this.labInfos)
-            .filter(([id, { type }]) => type === LabType.Boost)
-            .map(([id]) => Game.getObjectById(id))
+        return this.getLabByType(LabType.Boost)
     }
 
     /**
@@ -44,8 +41,12 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 注意！这些 lab 中不包含 inLab
      */
     get reactionLabs(): StructureLab[] {
+        return this.getLabByType(LabType.Reaction)
+    }
+
+    private getLabByType(labType: LabType): StructureLab[] {
         return Object.entries(this.labInfos)
-            .filter(([id, { type }]) => type === LabType.Reaction)
+            .filter(([id, { type }]) => type === labType)
             .map(([id]) => Game.getObjectById(id))
     }
 
@@ -262,12 +263,14 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * boost 阶段：获取能量
      */
     private boostGetEnergy(task: BoostTask): void {
+        if (this.room.transport.hasTask(TransportTaskType.LabGetEnergy)) return
+
         // 遍历所有执行强化的 lab
         for (const res of task.res) {
             const lab = Game.getObjectById(res.lab)
 
             // 有 lab 能量不达标的话就发布能量填充任务
-            if (lab && lab.store[RESOURCE_ENERGY] < 1000 && !this.room.transport.hasTask(TransportTaskType.LabGetEnergy)) {
+            if (lab && lab.store[RESOURCE_ENERGY] < 1000) {
                 this.room.transport.addTask({ type: TransportTaskType.LabGetEnergy })
                 return
             }
@@ -338,7 +341,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         const allClear = task.res.every(res => {
             const lab = Game.getObjectById(res.lab)
             // lab 没了或者资源清空了
-            return !lab || !!lab.mineralType
+            return !lab || !lab.mineralType
         })
 
         // 没有全部净空，添加回收任务
@@ -403,6 +406,10 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * lab 阶段：获取底物
      */
     private labGetResource(): void {
+        if (this.inLabs.length < 2) {
+            this.memory.reactionState = LabState.PutResource
+            return
+        }
         // 检查是否有资源移入任务
         if (this.room.transport.hasTask(TransportTaskType.LabIn)) return
 
@@ -563,41 +570,46 @@ export default class LabController extends RoomAccessor<LabMemory> {
     }
 
     public stats(): string {
-        const { reactionState, reactionIndex, pause, reactionAmount, boostTasks } = this.memory
+        const { reactionState, reactionIndex, pause, reactionAmount, boostTasks, inLab: inLabIds } = this.memory
         const logs = [ `[化合物合成]` ]
 
         const reactionLogs = []
-        if (this.inLabs.length < 2) reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
-        if (pause) reactionLogs.push(colorful('暂停中', Color.Yellow))
-        reactionLogs.push(`- [状态] ${reactionState}`)
-        logs.push(reactionLogs.join(' '))
+        if (this.inLabs.length < 2) {
+            if (inLabIds.length >= 2) reactionLogs.push(colorful('底物 lab 被 boost 任务借用，暂停反应', Color.Yellow))
+            else reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
+        }
+        else {
+            if (pause) reactionLogs.push(colorful('暂停中', Color.Yellow))
+            reactionLogs.push(`- [状态] ${reactionState}`)
 
-        if (reactionState === LabState.GetTarget) {
-            const targetLogs = LAB_TARGETS.map(({ target, number }, index) => {
-                let log = `- [待选目标] ${colorful(target, Color.Blue)} [目标数量] ${colorful(number.toString(), Color.Blue)}`
-                if (reactionIndex === index) log += ' <= 正在检查'
-                return log
-            })
-            logs.push(targetLogs.join('\n'))
+            if (reactionState === LabState.GetTarget) {
+                const targetLogs = LAB_TARGETS.map(({ target, number }, index) => {
+                    let log = `- [待选目标] ${colorful(target, Color.Blue)} [目标数量] ${colorful(number.toString(), Color.Blue)}`
+                    if (reactionIndex === index) log += ' <= 正在检查'
+                    return log
+                })
+                logs.push(targetLogs.join('\n'))
+            }
+            else if (reactionState === LabState.GetResource) {
+                const res = LAB_TARGETS[reactionIndex]
+                logs.push(`- [正在获取资源] ${colorful(res.target, Color.Blue)} 目标合成数量 ${reactionAmount}`) 
+            }
+            // 在工作就显示工作状态
+            else if (reactionState === LabState.Working) {
+                // 获取当前目标产物以及 terminal 中的数量
+                const res = LAB_TARGETS[reactionIndex]
+                const currentAmount = this.room.myStorage.getResource(res.target)
+                logs.push(
+                    `- [工作进展] 目标 ${res.target} 本次生产/当前存量/目标存量 ` +
+                    `${reactionAmount}/${currentAmount.total}/${res.number}`
+                )
+            }
+            else if (reactionState === LabState.PutResource) {
+                const res = LAB_TARGETS[reactionIndex]
+                logs.push(`- [正在移出资源] ${colorful(res.target, Color.Blue)}`) 
+            }
         }
-        else if (reactionState === LabState.GetResource) {
-            const res = LAB_TARGETS[reactionIndex]
-            logs.push(`- [正在获取资源] ${colorful(res.target, Color.Blue)} 目标合成数量 ${reactionAmount}`) 
-        }
-        // 在工作就显示工作状态
-        else if (reactionState === LabState.Working) {
-            // 获取当前目标产物以及 terminal 中的数量
-            const res = LAB_TARGETS[reactionIndex]
-            const currentAmount = this.room.myStorage.getResource(res.target)
-            logs.push(
-                `- [工作进展] 目标 ${res.target} 本次生产/当前存量/目标存量 ` +
-                `${reactionAmount}/${currentAmount.total}/${res.number}`
-            )
-        }
-        else if (reactionState === LabState.PutResource) {
-            const res = LAB_TARGETS[reactionIndex]
-            logs.push(`- [正在移出资源] ${colorful(res.target, Color.Blue)}`) 
-        }
+        logs.push(reactionLogs.join(' '))
 
         logs.push('[强化任务]')
 

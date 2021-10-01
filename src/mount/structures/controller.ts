@@ -13,7 +13,8 @@ export default class ControllerExtension extends StructureController {
         // 如果等级发生变化了就运行 creep 规划
         if (this.stateScanner())  this.onLevelChange(this.level)
 
-        if (!(Game.time % 500)) {
+        // 二级之后再开始调整，不然有可能会影响固定开局
+        if (this.level >= 2 && !(Game.time % 500)) {
              // 调整运营 creep 数量
             this.room.strategy.operation.adjustBaseUnit()
             // 并在日常事情执行任务调整（防御时期任务由 tower 接管）
