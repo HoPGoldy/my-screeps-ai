@@ -332,7 +332,7 @@ export default class TowerExtension extends StructureTower {
      */
     private requireEnergy(lowerLimit: number = 900): void {
         if (this.store[RESOURCE_ENERGY] <= lowerLimit && !this.room.transport.hasTask(TransportTaskType.FillTower)) {
-            this.room.transport.addTask({ type: TransportTaskType.FillTower, id: this.id })
+            this.room.transport.addTask({ type: TransportTaskType.FillTower, id: this.id, priority: 9 })
         }
     }
 }

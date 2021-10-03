@@ -60,7 +60,8 @@ const processor: CreepConfig<CreepRole.Processor> = {
         if (result === OK) return true
         // 资源不足就移除任务
         else if (result === ERR_NOT_ENOUGH_RESOURCES) {
-            creep.log(`资源不足，中央任务已移除, ${JSON.stringify(task)}`)
+            // 因为中央 link 的能量有可能会直接发送给 upgrader link，所以可能出现资源不足的问题，这里不予提示
+            if (task.source !== CenterStructure.Link) creep.log(`资源不足，中央任务已移除, ${JSON.stringify(task)}`)
             creep.room.centerTransport.deleteCurrentTask()
         }
         // 够不到就移动过去

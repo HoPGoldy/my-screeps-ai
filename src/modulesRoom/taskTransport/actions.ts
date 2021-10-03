@@ -1,7 +1,6 @@
 import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
 import { CreepRole, RoleCreep } from '@/role/types/role'
-import { boostResourceReloadLimit } from '@/setting'
 import { useCache } from '@/utils'
 import RoomTransport, { TransportActionGenerator } from './controller'
 import { TransportTaskType } from './types'

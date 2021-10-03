@@ -42,6 +42,8 @@ export default class RoomWork extends TaskController<WorkTaskType, AllRoomWorkTa
      * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
      */
     public getWork(creep: RoleCreep<CreepRole.Worker>): RoomTaskAction {
+        this.totalLifeTime += 1
+
         const task = this.getUnitTask(creep)
         if (!task) return noTask(creep)
         const actionGenerator: WorkActionGenerator = transportActions[task.type]

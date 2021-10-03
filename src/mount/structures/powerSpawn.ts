@@ -1,4 +1,4 @@
-import { powerSettings } from '@/setting'
+import { POWER_PROCESS_ENERGY_LIMIT } from '@/setting'
 import { Color, colorful, createHelp, createRoomLink } from '@/modulesGlobal/console'
 import { TransportTaskType } from '@/modulesRoom'
 
@@ -20,7 +20,7 @@ export class PowerSpawnExtension extends StructurePowerSpawn {
         // 剩余 power 不足且 terminal 内 power 充足
         if (!this.keepResource(RESOURCE_POWER, 10, this.room.terminal, 0)) return
         // 剩余energy 不足且 storage 内 energy 充足
-        if (!this.keepResource(RESOURCE_ENERGY, 1000, this.room.storage, powerSettings.processEnergyLimit)) return
+        if (!this.keepResource(RESOURCE_ENERGY, 1000, this.room.storage, POWER_PROCESS_ENERGY_LIMIT)) return
     }
 
     /**

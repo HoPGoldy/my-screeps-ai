@@ -45,46 +45,74 @@ export default class RoomCreepRelease {
      * @param adjust 要增减的数量，为负代表减少
      * @param bodyType 在新增时要设置的特殊体型，减少数量时无效
      */
-    public changeBaseUnit(type: BaseUnits, adjust: number, bodyType?: SepicalBodyType): OK | ERR_NOT_FOUND | ERR_INVALID_TARGET {
+    public changeBaseUnit(type: BaseUnits, adjust: number, bodyType?: SepicalBodyType): void {
         const { room } = this.spawner
-        // 单位对应在房间内存中保存的键
-        const memoryKey = type === CreepRole.Worker ? 'workerNumber' : 'transporterNumber'
         // 单位隶属的任务模块
         const taskController = type === CreepRole.Worker ? room.work : room.transport
         // 获取对应的最大数量和最小数量
         const { MIN, MAX } = (room.memory.baseUnitLimit || {})[type] || BASE_ROLE_LIMIT[type]
 
-        const oldNumber = room.memory[memoryKey] || 0
-        const realAdjust = this.clacRealAdjust(adjust, oldNumber, MIN, MAX)
+        // 按照数量上限找到所有本房间的单位，注意，这里的 allUnits 有空子项存在
+        const allUnits = Array.from({ length: MAX }).map((_, index) => {
+            return Game.creeps[GetName[type](room.name, index)]
+        })
+        // 找到所有活着的、没有被炒鱿鱼的单位
+        const aliveUnit = allUnits.filter(Boolean)
 
+        // 计算真实的调整数量
+        const realAdjust = this.clacRealAdjust(adjust, aliveUnit.length, MIN, MAX)
+
+        const removeWhenDiedCreep: string[] = []
+        const keepWhenDiedCreep: string[] = []
+        const newSpawnCreep: string[] = []
+
+        // 要增加单位
         if (realAdjust >= 0) {
-            // 添加新的单位
-            for (let i = oldNumber; i < oldNumber + realAdjust; i++) {
-                const creepName = GetName[type](room.name, i)
+            let remainingAdjust = realAdjust
 
-                // 如果他还活着，就说明之前可能被开除了，解除开除状态
-                if (creepName in Game.creeps) {
-                    taskController.unfireCreep(creepName)
-                    removeCreepCantRespawn(Game.creeps[creepName])
-                }
-                // 否则就发布新孵化任务
+            // 首先遍历所有活着的单位，如果被炒鱿鱼了就解除炒鱿鱼
+            for (const creep of allUnits) {
+                if (remainingAdjust <= 0) break
+                if (!creep || !taskController.haveCreepBeenFired(creep.name)) continue
+
+                taskController.unfireCreep(creep.name)
+                removeCreepCantRespawn(creep)
+                keepWhenDiedCreep.push(creep.name)
+                remainingAdjust -= 1
+            }
+
+            // 在遍历所有不存在的单位，然后用对应的名字发布 creep
+            for (const index in allUnits) {
+                if (remainingAdjust <= 0) break
+                if (allUnits[index]) continue
+
+                const creepName = GetName[type](room.name, index)
                 this.spawner.addTask(creepName, type, { workRoom: room.name, bodyType })
+                newSpawnCreep.push(creepName)
+                remainingAdjust -= 1
             }
         }
         else {
-            // 从末尾开始减少单位，减少个数为实际调整值
-            for (let i = oldNumber - 1; i >= oldNumber + realAdjust; i--) {
-                const creepName = GetName[type](room.name, i)
-                taskController.fireCreep(creepName)
-                removeCreep(creepName)
-            }
+            // 从末尾开始炒鱿鱼，注意这里的 realAdjust 是负数，所以应该用 +
+            // 注意这里没有事先剔除掉被炒鱿鱼的单位，因为此时被炒鱿鱼的单位还在工作
+            // 所以工作模块给出的期望实际上是包括这些单位在内的，如果此时将其剔除掉之后再进行炒鱿鱼的话，就会炒掉过多的人
+            aliveUnit.slice(aliveUnit.length + realAdjust).map(creep => {
+                taskController.fireCreep(creep.name)
+                removeCreep(creep.name)
+                removeWhenDiedCreep.push(creep.name)
+            })
         }
 
-        // 更新数量到内存
-        room.memory[memoryKey] = oldNumber + realAdjust
+        if (realAdjust !== 0) {
+            let logContent = `${type} 数量自适应 [调整] ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
+                `[上/下限] ${MAX}/${MIN} [当前数量] ${aliveUnit.length} `
 
-        if (adjust !== 0) log(`调整 ${type} 单位数量 [修正] ${adjust} [上/下限] ${MAX}/${MIN} [修正后数量] ${room.memory[memoryKey]}`, [room.name])
-        return OK
+            if (removeWhenDiedCreep.length > 0) logContent += `[将在死亡后移除] ${removeWhenDiedCreep.join(',')}`
+            if (keepWhenDiedCreep.length > 0) logContent += `[将在死亡后继续孵化] ${keepWhenDiedCreep.join(',')}`
+            if (newSpawnCreep.length > 0) logContent += `[新孵化] ${newSpawnCreep.join(',')}`
+            
+            log(logContent, [room.name])
+        }
     }
 
     /**

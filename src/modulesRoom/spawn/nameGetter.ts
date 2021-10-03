@@ -5,8 +5,8 @@
 export class GetName {
     static harvester = (roomName: string, index: number) => `${roomName} harvester${index}`
     static miner = (roomName: string) => `${roomName} miner`
-    static worker = (roomName: string, index: number) => `${roomName} worker${index}`
-    static manager = (roomName: string, index: number) => `${roomName} manager${index}`
+    static worker = (roomName: string, index: number | string) => `${roomName} worker${index}`
+    static manager = (roomName: string, index: number | string) => `${roomName} manager${index}`
     static processor = (roomName: string) => `${roomName} processor`
     static claimer = (targetRoomName: string) => `${targetRoomName} claimer`
     static reserver = (targetRoomName: string) => `${targetRoomName} reserver${Game.time}`

@@ -28,9 +28,9 @@ export default class ControllerExtension extends StructureController {
      * 临时 - 显示能量获取速率
      */
     private drawEnergyHarvestInfo() {
-        const { totalEnergy, energyGetRate } = getRoomStats(this.room.name)
+        const { energyGetRate } = getRoomStats(this.room.name)
         const { x, y } = this.pos
-        this.room.visual.text(`可用能量 ${totalEnergy || 0} 获取速率 ${energyGetRate || 0}`, x + 1, y + 0.25, { align: 'left', opacity: 0.5 })
+        this.room.visual.text(`能量获取速率 ${energyGetRate || 0}`, x + 1, y + 0.25, { align: 'left', opacity: 0.5 })
     }
 
     /**

@@ -63,12 +63,12 @@ const handleNotExistCreep = function (creepName: string, creepMemory: CreepMemor
 
     // 禁止孵化的 creep 直接移除
     if (cantRespawn) {
-        log(`死亡 ${creepName} 被禁止孵化, 已删除`, [ 'creepController' ])
+        // log(`死亡 ${creepName} 被禁止孵化，已删除`, [ 'creepController' ])
         delete Memory.creeps[creepName]
         return
     }
 
-    // 检查指定的 room 中有没有它的生成任务
+    // 没有找到目标孵化房间
     const spawnRoom = Game.rooms[spawnRoomName]
     if (!spawnRoom) {
         log(`死亡 ${creepName} 未找到 ${spawnRoomName}, 已删除`, [ 'creepController' ])

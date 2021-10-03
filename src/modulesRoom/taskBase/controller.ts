@@ -33,6 +33,16 @@ export default class TaskController<
     }
 
     /**
+     * 本模块的工人总生命时长
+     */
+    protected totalLifeTime: number = 0
+
+     /**
+      * 本模块的工人总工作时长
+      */
+    protected totalWorkTime: number = 0
+
+    /**
      * 发布新任务
      * 
      * @param task 要发布的新任务
@@ -378,6 +388,7 @@ export default class TaskController<
 
     /**
      * 开除某个 creep
+     * 被开除的 creep 将会继续工作，直到死掉后将不再继续孵化
      */
     public fireCreep(creepName: string): void {
         if (creepName in this.creeps) this.creeps[creepName].fired = true
@@ -388,6 +399,13 @@ export default class TaskController<
      */
     public unfireCreep(creepName: string): void {
         if (creepName in this.creeps) delete this.creeps[creepName].fired
+    }
+
+    /**
+     * 用于 actions 中 creep 统计工作时长
+     */
+    public countWorkTime(): void {
+        this.totalWorkTime += 1
     }
 
     /**

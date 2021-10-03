@@ -29,23 +29,9 @@ export const BASE_MINERAL = [
 ]
 
 /**
- * lab 集群的工作状态常量
+ * 当前房间 storage 内存量低于该值时将停止 process
  */
-export const LAB_STATE = {
-    GET_TARGET: 'getTarget',
-    GET_RESOURCE: 'getResource',
-    WORKING: 'working',
-    PUT_RESOURCE: 'putResource',
-    BOOST: 'boost'
-}
-
-/**
- * powerProcess 的设置 
- */
-export const powerSettings = {
-    // 当前房间 storage 内存量低于limit时自动停止 process
-    processEnergyLimit: 500000
-}
+export const POWER_PROCESS_ENERGY_LIMIT = 500000
 
 /**
  * 战争 boost 需要的所有强化材料，在启动战争状态后，manager 会依次将下列资源填充至 lab
@@ -77,11 +63,6 @@ export const BOOST_RESOURCE: BoostResourceConfig = {
 }
 
 /**
- * 当 lab 强化过 creep 之后会检查资源的剩余容量，如果低于下面这个值就会重新装填
- */
-export const boostResourceReloadLimit = 900
-
-/**
  * 默认的旗帜名称
  */
 export const DEFAULT_FLAG_NAME = {
@@ -102,10 +83,7 @@ export const DEFAULT_FLAG_NAME = {
 export const MINE_LIMIT = 100000
 
 // 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
-export const minWallHits = 8000
-
-// pc 空闲时会搓 ops，这个是搓的上限
-export const maxOps = 50000
+export const MIN_WALL_HITS = 8000
 
 /**
  * 8级时只要 cpu 足够，依旧会孵化一个 upgrader 进行升级

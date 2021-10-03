@@ -59,14 +59,6 @@ declare global {
          * powerSpawn 是否暂停
          */
         pausePS?: boolean
-        /**
-         * 当前房间物流单位的数量
-         */
-        transporterNumber?: number
-        /**
-         * 当前房间工作单位的数量
-         */
-        workerNumber?: number
     }
 
     /**

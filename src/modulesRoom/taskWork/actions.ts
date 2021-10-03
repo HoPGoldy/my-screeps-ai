@@ -2,7 +2,7 @@ import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { useCache } from '@/utils'
-import { WorkActionGenerator } from './controller'
+import RoomWork, { WorkActionGenerator } from './controller'
 import { WorkTaskType } from './types'
 
 /**
@@ -30,7 +30,7 @@ export const transportActions: {
     /**
      * 升级任务
      */
-    [WorkTaskType.Upgrade]: creep => ({
+    [WorkTaskType.Upgrade]: (creep, task, workController) => ({
         source: () => {
             if (creep.store[RESOURCE_ENERGY] > 10) return true
 
@@ -39,12 +39,14 @@ export const transportActions: {
             const upgradeLink = Game.rooms[workRoomName]?.upgradeLink
             if (upgradeLink && upgradeLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                 creep.getEngryFrom(upgradeLink)
+                workController.countWorkTime()
                 return false
             }
 
-            return getEnergy(creep)
+            return getEnergy(creep, workController)
         },
         target: () => {
+            workController.countWorkTime()
             const { workRoom: workRoomName } = creep.memory.data
 
             if (creep.upgradeRoom(workRoomName) === ERR_NOT_ENOUGH_RESOURCES) {
@@ -70,6 +72,7 @@ export const transportActions: {
                 workController.removeTask(task.key)
                 return false
             }
+            workController.countWorkTime()
 
             // 建造初始 container 时一无所有，所以只会捡地上的能量来用
             const droppedEnergy = source.getDroppedInfo().energy
@@ -85,6 +88,7 @@ export const transportActions: {
             return true
         },
         target: () => {
+            workController.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] === 0) return true
 
             // 搜索 source 附近的 container 工地并缓存
@@ -120,8 +124,9 @@ export const transportActions: {
      * 建造任务
      */
     [WorkTaskType.Build]: (creep, task, workController) => ({
-        source: () => getEnergy(creep),
+        source: () => getEnergy(creep, workController),
         target: () => {
+            workController.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
 
             // 有新墙就先刷新墙
@@ -142,8 +147,9 @@ export const transportActions: {
      * 维修任务
      */
     [WorkTaskType.Repair]: (creep, task, workController) => ({
-        source: () => getEnergy(creep),
+        source: () => getEnergy(creep, workController),
         target: () => {
+            workController.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
             const room = Game.rooms[creep.memory.data.workRoom]
             if (!room) {
@@ -189,8 +195,9 @@ export const transportActions: {
      * 刷墙任务
      */
     [WorkTaskType.FillWall]: (creep, task, workController) => ({
-        source: () => getEnergy(creep),
+        source: () => getEnergy(creep, workController),
         target: () => {
+            workController.countWorkTime()
             // 有焦点墙就优先刷
             if (creep.memory.fillWallId) creep.steadyWall()
             // 否则就按原计划维修
@@ -210,10 +217,11 @@ export const transportActions: {
  * @param creep 要获取能量的 creep
  * @returns 身上是否已经有足够的能量了
  */
-const getEnergy = function (creep: RoleCreep<CreepRole.Worker>): boolean {
+const getEnergy = function (creep: RoleCreep<CreepRole.Worker>, workController: RoomWork): boolean {
     // 因为只会从建筑里拿，所以只要拿到了就去升级
     // 切换至 target 阶段时会移除缓存，保证下一次获取能量时重新搜索，避免出现一堆人都去挤一个的情况发生
     if (creep.store[RESOURCE_ENERGY] > 10) {
+        workController.countWorkTime()
         delete creep.memory.sourceId
         return true
     }
@@ -229,6 +237,7 @@ const getEnergy = function (creep: RoleCreep<CreepRole.Worker>): boolean {
         return false
     }
 
+    workController.countWorkTime()
     const result = creep.getEngryFrom(source)
 
     // 之前用的能量来源没能量了就更新来源

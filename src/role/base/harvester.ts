@@ -233,6 +233,12 @@ const actionStrategy: ActionStrategy = {
             if (creep.room.storage && !(Game.time % 100)) {
                 const container = source.getContainer()
 
+                // 容器没了，有可能是起了 Link 或者被敌人拆了，总之重新设置目标
+                if (!container) {
+                    setHarvestMode(creep, source)
+                    return false
+                }
+
                 // 能量达到数量了就发布任务，这个值应该低一点
                 // 不然有可能出现 worker 吃能量比较快导致任务发布数量太少
                 if (container.store[RESOURCE_ENERGY] > 200) {

@@ -18,6 +18,7 @@ jest.mock('@/setting', () => ({
 }))
 jest.mock('@/utils', () => ({ log: () => {} }))
 
+import { CreepRole } from '@/role/types/role'
 import { getMockRoom } from '@test/mock'
 import { getMockSource } from '@test/mock/Source'
 import RoomSpawnController from './controller'
@@ -52,7 +53,7 @@ it('harvester 发布测试', () => {
 
 it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
     // 从零开始新增工人
-    release.changeBaseUnit('worker', 4)
+    release.changeBaseUnit(CreepRole.Worker, 4)
     // 会新增四个工人
     expect(mockAddTask.mock.calls.map(([ spawnTask ]) => spawnTask.name)).toEqual([
         GetName.worker('W1N1', 0),
@@ -67,7 +68,7 @@ it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
     mockRemoveCreep.mockReset()
 
     // 减少一个 worker
-    release.changeBaseUnit('worker', -1)
+    release.changeBaseUnit(CreepRole.Worker, -1)
     expect(mockAddTask).not.toHaveBeenCalled()
     // 从末尾减少了一个 worker
     expect(mockRemoveCreep.mock.calls.map(([ creepName ]) => creepName)).toEqual([
@@ -78,7 +79,7 @@ it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
     mockRemoveCreep.mockReset()
 
     // 减少三个，由于这次修正超限了（每个房间最低 1 个单位），所以会只移除最后两个 worker
-    release.changeBaseUnit('worker', -3)
+    release.changeBaseUnit(CreepRole.Worker, -3)
     expect(mockAddTask).not.toHaveBeenCalled()
     expect(mockRemoveCreep.mock.calls.map(([ creepName ]) => creepName)).toEqual([
         GetName.worker('W1N1', 2),
@@ -88,25 +89,25 @@ it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
 
 it('setBaseUnitLimit 重设数量上下限后，可以自动矫正数量', () => {
     // 新增10个工人
-    release.changeBaseUnit('worker', 10)
+    release.changeBaseUnit(CreepRole.Worker, 10)
     mockAddTask.mockReset()
-    release.setBaseUnitLimit('worker', { MAX: 5 })
+    release.setBaseUnitLimit(CreepRole.Worker, { MAX: 5 })
 
     // 不会新增，并且还会减少 5 个 worker，因为上限被设置成了 5
-    release.changeBaseUnit('worker', 10)
+    release.changeBaseUnit(CreepRole.Worker, 10)
 
     expect(mockAddTask.mock.calls.length).toEqual(0)
     expect(mockRemoveCreep.mock.calls.length).toEqual(5)
 
     // 新增 5 个搬运工
-    release.changeBaseUnit('manager', 5)
+    release.changeBaseUnit(CreepRole.Manager, 5)
     mockAddTask.mockReset()
     mockRemoveCreep.mockReset()
     // 把下限设置为 10
-    release.setBaseUnitLimit('manager', { MIN: 10 })
+    release.setBaseUnitLimit(CreepRole.Manager, { MIN: 10 })
 
     // 不会减少，并且还会新增 5 个搬运工
-    release.changeBaseUnit('manager', -5)
+    release.changeBaseUnit(CreepRole.Manager, -5)
 
     // 不会
     expect(mockRemoveCreep.mock.calls.length).toEqual(0)

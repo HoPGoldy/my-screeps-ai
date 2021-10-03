@@ -37,16 +37,6 @@ const REGULATE_LIMIT = 500
 
 export default class RoomTransport extends TaskController<TransportTaskType, AllRoomTransportTask> {
     /**
-     * 本房间的搬运工总生命时长
-     */
-    totalLifeTime: number = 0
-
-    /**
-     * 本房间的搬运工总工作时长
-     */
-    totalWorkTime: number = 0
-
-    /**
      * 构造- 管理指定房间的工作任务
      * 
      * @param roomName 要管理任务的房间名
@@ -67,6 +57,8 @@ export default class RoomTransport extends TaskController<TransportTaskType, All
         if (!task) return noTask(creep)
         const actionGenerator: TransportActionGenerator = transportActions[task.type]
 
+        const { x, y } = creep.pos
+        creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
         // 分配完后获取任务执行逻辑
         return actionGenerator(creep, task, this)
     }
@@ -88,12 +80,5 @@ export default class RoomTransport extends TaskController<TransportTaskType, All
         // 计算完成后移除之前的数据，不然会随着基数的增大，变化率会越来越小
         this.totalLifeTime = this.totalWorkTime = 0
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
-    }
-
-    /**
-     * 用于 actions 中 creep 统计工作时长
-     */
-    public countWorkTime(): void {
-        this.totalWorkTime += 1
     }
 }

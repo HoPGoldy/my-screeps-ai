@@ -1,4 +1,4 @@
-import { repairSetting, minWallHits } from '@/setting'
+import { repairSetting, MIN_WALL_HITS } from '@/setting'
 import roles from '@/role'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
@@ -208,7 +208,7 @@ export default class CreepExtension extends Creep {
         const wall = Game.getObjectById(this.memory.fillWallId)
         if (!wall) return ERR_NOT_FOUND
 
-        if (wall.hits < minWallHits) {
+        if (wall.hits < MIN_WALL_HITS) {
             const result = this.repair(wall)
             if (result == ERR_NOT_IN_RANGE) this.goTo(wall.pos, { range: 3 })
         }
