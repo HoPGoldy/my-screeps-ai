@@ -29,6 +29,7 @@ export const transportActions: {
     [TransportTaskType.Transport]: (creep, task, transport) => ({
         source: () => {
             if (creep.store[task.resourceType] > 0) return true
+            if (!clearCarrying(creep, getUnenergyResource(creep))) return false
 
             // 是 id，从建筑获取
             if (typeof task.from === 'string') {
@@ -193,7 +194,7 @@ export const transportActions: {
                 return false
             }
 
-            if (!clearCarryingEnergy(creep)) return false
+            if (!clearCarrying(creep, RESOURCE_ENERGY)) return false
 
             // 获取应拿取的数量（能拿取的最小值）
             const getAmount = Math.min(
@@ -241,7 +242,7 @@ export const transportActions: {
     [TransportTaskType.LabIn]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
-            if (!clearCarryingEnergy(creep)) return false
+            if (!clearCarrying(creep, RESOURCE_ENERGY)) return false
 
             // 找到第一个需要从转移的底物
             const moveResource = task.resource.find(res => res.amount > 0)
@@ -308,7 +309,7 @@ export const transportActions: {
     [TransportTaskType.LabOut]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
-            if (!clearCarryingEnergy(creep)) return false
+            if (!clearCarrying(creep, RESOURCE_ENERGY)) return false
 
             // 获取还有资源的 lab（mineralType 有值就代表其中还有资源）
             const targetLabId = task.labId.find(labId => {
@@ -388,7 +389,7 @@ export const transportActions: {
                 return false
             }
 
-            if (!clearCarryingEnergy(creep)) return false
+            if (!clearCarrying(creep, RESOURCE_ENERGY)) return false
 
             // 获取应拿取的数量
             let getAmount = Math.min(
@@ -438,6 +439,8 @@ export const transportActions: {
     [TransportTaskType.LabGetEnergy]: (creep, task, transport) => ({
         source: () => {
             transport.countWorkTime()
+            clearCarrying(creep, RESOURCE_ENERGY)
+
             if (creep.store[RESOURCE_ENERGY] > 0) return true
             const { sourceId } = creep.memory.data
             creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId as Id<EnergySourceStructure>) : creep.room.storage)
@@ -472,19 +475,27 @@ export const transportActions: {
 }
 
 /**
+ * 获取 creep 身上的首个非能量资源
+ */
+const getUnenergyResource = function (creep: Creep): ResourceConstant | undefined {
+    return Object.keys(creep.store).find(res => res !== RESOURCE_ENERGY) as ResourceConstant
+}
+
+/**
  * 处理掉 creep 身上携带的能量
  * 运输者在之前处理任务的时候身上可能会残留能量，如果不及时处理的话可能会导致任务处理能力下降
  * 
  * @param creep 要净空的 creep
  * @returns 为 true 时代表已经处理完成，可以继续执行任务
  */
-const clearCarryingEnergy = function (creep: Creep): boolean {
-    if (creep.store[RESOURCE_ENERGY] > 0) {
+const clearCarrying = function (creep: Creep, clearResource: ResourceConstant): boolean {
+    const targetRes = clearResource ? clearResource : Object.keys(creep.store)[0] as ResourceConstant
+    if (creep.store[targetRes] > 0) {
         // 能放下就放，放不下说明能量太多了，直接扔掉
-        if (creep.room.storage?.store.getFreeCapacity() >= creep.store[RESOURCE_ENERGY]) {
-            creep.transferTo(creep.room.storage, RESOURCE_ENERGY)
+        if (creep.room.storage?.store.getFreeCapacity() >= creep.store[targetRes]) {
+            creep.transferTo(creep.room.storage, targetRes)
         }
-        else creep.drop(RESOURCE_ENERGY)
+        else if (targetRes === RESOURCE_ENERGY) creep.drop(targetRes)
 
         return false
     }
@@ -500,6 +511,7 @@ const clearCarryingEnergy = function (creep: Creep): boolean {
  */
 const getEnergy = function (creep: RoleCreep<CreepRole.Manager>, transport: RoomTransport): boolean {
     if (creep.store[RESOURCE_ENERGY] > 40) return true
+    if (!clearCarrying(creep, getUnenergyResource(creep))) return false
 
     // 从工作房间查询并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {

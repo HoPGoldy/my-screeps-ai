@@ -112,6 +112,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             break
             default:
                 if (Game.time % 10 || this.inLabs.length < 2) return
+                this.memory.reactionState = LabState.GetTarget
                 this.labGetTarget()
         }
     }
@@ -214,6 +215,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         this.room.transport.addTask({
             type: TransportTaskType.LabOut,
+            need: 1,
             labId: needClearLabs.map(({ id }) => id)
         })
 
@@ -250,6 +252,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         else if (!this.room.transport.hasTask(TransportTaskType.LabIn)) {
             this.room.transport.addTask({
                 type: TransportTaskType.LabIn,
+                need: 1,
                 resource: task.res.map(res => ({
                     id: res.lab,
                     type: res.resource,
@@ -348,6 +351,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         if (!allClear) {
             this.room.transport.addTask({
                 type: TransportTaskType.LabOut,
+                need: 1,
                 labId: task.res.map(res => res.lab)
             })
             return
@@ -462,7 +466,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 return
             }
             // 底物不足的话就进入下个阶段
-            else if (runResult === ERR_NOT_ENOUGH_RESOURCES) {
+            else if (runResult === ERR_NOT_ENOUGH_RESOURCES || runResult === ERR_INVALID_ARGS) {
                 this.memory.reactionState = LabState.PutResource
                 return
             }
@@ -485,6 +489,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         if (needCleanLabs.length > 0) {
             this.room.transport.addTask({
                 type: TransportTaskType.LabOut,
+                need: 1,
                 labId: needCleanLabs.map(lab => lab.id)
             })
             return
@@ -543,7 +548,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }))
 
         // 发布任务
-        this.room.transport.addTask({ type: TransportTaskType.LabIn, resource })
+        this.room.transport.addTask({ type: TransportTaskType.LabIn, resource, need: 1 })
     }
 
     /**
@@ -553,6 +558,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      */
     public setBaseLab(labA: StructureLab, labB: StructureLab): void {
         this.memory.inLab = [labA.id, labB.id]
+        this.initLabInfo()
     }
 
     /**
@@ -570,7 +576,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     }
 
     public stats(): string {
-        const { reactionState, reactionIndex, pause, reactionAmount, boostTasks, inLab: inLabIds } = this.memory
+        const { reactionState, reactionIndex, pause, reactionAmount, boostTasks, inLab: inLabIds = [] } = this.memory
         const logs = [ `[化合物合成]` ]
 
         const reactionLogs = []

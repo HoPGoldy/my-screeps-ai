@@ -53,7 +53,11 @@ export default class PositionExtension extends RoomPosition {
             // 暂时不包含 creep，因为如果自己在附近的话会把自己的位置筛掉，这就导致无论如何自己所在的位置都不是空余开采位
             // ...this.findInRange(FIND_CREEPS, 1),
             // ...this.findInRange(FIND_POWER_CREEPS, 1)
-        ]
+        ].filter(({ structureType }) => (
+            structureType !== STRUCTURE_CONTAINER &&
+            structureType !== STRUCTURE_RAMPART &&
+            structureType !== STRUCTURE_ROAD
+        ))
 
         // 筛掉会占据位置的对象
         return this._freeSpace = result.filter(pos => nearGameObject.every(obj => !obj.pos.isEqualTo(pos)))

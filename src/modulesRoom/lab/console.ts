@@ -41,7 +41,7 @@ export default class LabConsole extends Room {
         return this.myLab.stats()
     }
 
-    public fhelp(): string {
+    public lhelp(): string {
         return createHelp({
             name: 'Lab 控制台',
             describe: `lab 将会自动监听房间中的强化化合物数量并进行合成，需要先执行 linit 进行初始化`,

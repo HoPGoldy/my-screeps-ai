@@ -70,10 +70,13 @@ export default class RoomWork extends TaskController<WorkTaskType, AllRoomWorkTa
             else return 0
         }
 
-        // 这时候能量速率也保持为 0 的，但是没能量可用，所以减少工人
+        // 没有可以用来工作的能量，慢慢减少工人
         if (totalEnergy <= 0) return -1
 
-        // 工作时长占比从高到底找到期望调整的搬运工数量
+        // 有三成时间都在摸鱼，估计是没能量了，慢慢减少工人
+        if (this.totalWorkTime / this.totalLifeTime < 0.7) return -1
+
+        // 按照能量消耗速率调整工人数量，消耗越快，减少工人越多
         const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => energyGetRate >= opt.rate)
 
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2
