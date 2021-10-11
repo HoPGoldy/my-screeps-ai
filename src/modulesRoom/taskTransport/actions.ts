@@ -244,27 +244,39 @@ export const transportActions: {
             transport.countWorkTime()
             if (!clearCarrying(creep, RESOURCE_ENERGY)) return false
 
-            // 找到第一个需要从转移的底物
-            const moveResource = task.resource.find(res => res.amount > 0)
+            // 找到第一个需要转移的底物
+            const moveResource = task.resource.find(({ amount, transporterName, type, id }) => {
+                // 不会动被别的单位负责的资源
+                if (transporterName && Game.creeps[transporterName] && transporterName !== creep.name) return false
+                const targetLab = Game.getObjectById(id)
 
-            // 找不到了就说明都已经取到身上了
+                // lab 里没装满
+                return targetLab && targetLab.store[type] < amount &&
+                    // 自己身上带的不够
+                    creep.store[type] < amount &&
+                    // 仓库里还有存货，就决定搬这个了！
+                    creep.room.myStorage.getResourcePlace(type)
+            })
+
+            // 找不到了就说明都已经取到身上了、或者别的爬在运
             if (!moveResource) return true
 
-            const storeStructure = creep.room.myStorage.getResourcePlace(moveResource.type)
+            const { type: resType, id: labId, amount: expectAmount } = moveResource
+
+            moveResource.transporterName = creep.name
+            const storeStructure = creep.room.myStorage.getResourcePlace(resType)
 
             creep.goTo(storeStructure.pos)
             const withdrawAmount = Math.min(
-                moveResource.amount,
-                creep.store.getFreeCapacity(moveResource.type),
-                storeStructure.store[moveResource.type]
+                expectAmount - Game.getObjectById(labId).store[resType],
+                creep.store.getFreeCapacity(resType),
+                storeStructure.store[resType]
             )
 
-            const result = creep.withdraw(storeStructure, moveResource.type, withdrawAmount)
+            const result = creep.withdraw(storeStructure, resType, withdrawAmount)
 
             // 拿到资源了就看下有没有拿满，满了就开始往回运
             if (result === OK) {
-                // 注意这里直接减去了任务存量，如果搬运工在半路上被击杀了就会损失掉这部分资源导致最终送到地方的资源变少
-                moveResource.amount -= withdrawAmount
                 // 此时 withdraw 还没有执行，所以需要手动减去对应的搬运量
                 if (creep.store.getFreeCapacity() - withdrawAmount <= 0) return true
             }
@@ -286,7 +298,10 @@ export const transportActions: {
 
             // 找不到了就说明身上搬空了
             if (!targetResource) {
-                const needTranserRes = task.resource.find(res => res.amount > 0)
+                const needTranserRes = task.resource.find(({ id, type, amount }) => {
+                    const targetLab = Game.getObjectById(id)
+                    return targetLab && targetLab.store[type] < amount
+                })
                 // 如果这时候任务里的所有资源待搬运量都是0的话说明任务完成
                 if (!needTranserRes) transport.removeTask(task.key)
                 return true

@@ -83,7 +83,14 @@ export interface TransportTasks {
         resource: {
             id: Id<StructureLab>
             type: ResourceConstant
+            /**
+             * 目标 lab 需要多少
+             */
             amount: number
+            /**
+             * 正在执行本资源搬运的 creep 名字
+             */
+            transporterName?: string
         }[]
     }
     /**

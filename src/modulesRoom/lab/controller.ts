@@ -65,6 +65,11 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         // 设置 inLab，如果 inLab 参加强化了就先保持原样
         (this.memory.inLab || []).forEach(id => {
+            // 如果出现了 lab 找不到，则有可能被拆了，暂停运行
+            if (!this.labInfos[id]) {
+                this.log(`找不到 lab [${id}]，集群已暂停运行`, Color.Red, true)
+                return this.off()
+            }
             if (this.labInfos[id].type != LabType.Boost) this.labInfos[id].type = LabType.Base
         })
     }
@@ -559,6 +564,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     public setBaseLab(labA: StructureLab, labB: StructureLab): void {
         this.memory.inLab = [labA.id, labB.id]
         this.initLabInfo()
+        this.on()
     }
 
     /**
@@ -581,7 +587,10 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         const reactionLogs = []
         if (this.inLabs.length < 2) {
-            if (inLabIds.length >= 2) reactionLogs.push(colorful('底物 lab 被 boost 任务借用，暂停反应', Color.Yellow))
+            if (inLabIds.length >= 2) {
+                if (this.inLabs.length >= 2) reactionLogs.push(colorful('底物 lab 被 boost 任务借用，暂停反应', Color.Yellow))
+                else reactionLogs.push(colorful('底物 lab 不足，暂停反应', Color.Yellow))
+            }
             else reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
         }
         else {
