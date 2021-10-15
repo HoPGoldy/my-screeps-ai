@@ -18,7 +18,7 @@ export interface MobilizeTask {
     /**
      * 是否需要 boost
      */
-    boost: boolean
+    needBoost: boolean
 }
 
 /**
@@ -41,8 +41,9 @@ interface SquadMemory {
 
 export interface WarManager {
     run: () => void
-    addSquad: () => void
-    removeSquad: () => void
+    addSquad: (squadType: SquadType, needBoost: boolean, squadCode: string) => void
+    removeSquad: (squadCode: string) => void
+    addMobilize: (squadType: SquadType, needBoost: boolean, squadCode: string) => void
 }
 
 export interface WarMemory {

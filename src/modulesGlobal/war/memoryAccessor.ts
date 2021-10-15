@@ -1,30 +1,28 @@
 import { SquadType, WarMemory, WarModuleMemory } from "./types"
 
-export const createMemoryAccessor = function (getMemory: () => WarModuleMemory) {
-    const queryWarCodes = function () {
+export const createMemoryAccessor = (getMemory: () => WarModuleMemory) => ({
+    queryWarCodes() {
         const memory = getMemory()
         return Object.keys(memory.wars)
-    }
-
-    const queryWarMemory = function (warCode: string): WarMemory | undefined {
+    },
+    queryWarMemory(warCode: string): WarMemory | undefined {
         const memory = getMemory()
         return memory.wars[warCode]
-    }
-
-    const insertWarMemory = function (newWarMemory: WarMemory): void {
+    },
+    insertWarMemory(newWarMemory: WarMemory): void {
         const memory = getMemory()
         memory.wars[newWarMemory.code] = newWarMemory
-    }
-
-    const updateDefaultSquad = function (squadType: SquadType, needBoost: boolean, squadCode: string) {
+    },
+    updateDefaultSquad(squadType: SquadType, needBoost: boolean, squadCode: string) {
         const memory = getMemory()
         memory.default = [squadType, needBoost, squadCode]
-    }
-
-    const queryDefaultSquad = function (): [SquadType, boolean, string] | undefined {
+    },
+    queryDefaultSquad(): [SquadType, boolean, string] | undefined {
         const memory = getMemory()
         return memory.default
+    },
+    deleteDefaultSquad(): void {
+        const memory = getMemory()
+        delete memory.default
     }
-
-    return { queryWarCodes, queryWarMemory, insertWarMemory, queryDefaultSquad, updateDefaultSquad }
-}
+})

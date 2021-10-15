@@ -1,26 +1,38 @@
-import { MobilizeState, WarMemory } from "../types";
+import { MobilizeState, SquadType, WarMemory } from "../types";
 
-export const createMemoryAccessor = function (getMemory: () => WarMemory) {
-    const querySpawnRoom = function () {
+export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
+    querySpawnRoom() {
         const memory = getMemory()
         return memory.spawnRoomName
-    }
-
-    const queryMobilizeTasks = function () {
+    },
+    queryMobilizeTasks() {
         const memory = getMemory()
         return memory.mobilizes
-    }
-
-    const updateMobilizeState = function (mobilizeCode: string, newState: MobilizeState) {
+    },
+    updateMobilizeState(mobilizeCode: string, newState: MobilizeState) {
         const memory = getMemory()
         if (!(mobilizeCode in memory.mobilizes)) return false
         memory.mobilizes[mobilizeCode].state = newState
-    }
-
-    const querySquads = function () {
+    },
+    querySquads() {
         const memory = getMemory()
         return memory.squads
+    },
+    insertSquad(squadType: SquadType, squadCode: string): void {
+        const memory = getMemory()
+        memory.squads[squadCode] = {
+            code: squadCode,
+            type: squadType,
+            memberNames: []
+        }
+    },
+    insertMobilizeTask(squadType: SquadType, needBoost: boolean, squadCode: string): void {
+        const memory = getMemory()
+        memory.mobilizes[squadCode] = {
+            state: MobilizeState.WaitBoostPrepare,
+            squadCode,
+            squadType,
+            needBoost
+        }
     }
-
-    return { querySpawnRoom, queryMobilizeTasks, updateMobilizeState, querySquads }
-}
+})
