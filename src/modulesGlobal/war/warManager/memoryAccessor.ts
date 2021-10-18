@@ -23,6 +23,7 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
         memory.squads[squadCode] = {
             code: squadCode,
             type: squadType,
+            data: {},
             memberNames: []
         }
     },

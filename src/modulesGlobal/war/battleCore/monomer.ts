@@ -1,11 +1,55 @@
+import { BattleCore } from "../squadManager/types";
+import { getMaxDamageCreep } from "../utils";
+
 /**
  * 一体机战斗核心
+ * 会一直治疗自己
+ * 
+ * 未进入房间时：治疗 + 移动
+ * 进入房间：
+ * - 移动：血量是否不满，不满则逃跑，满则向 flag 移动
+ * - 功击：三格内有敌人就 rangedMassAttack，没有就 rangeAttack
  */
-export const runMonomer = function (
-    members: [Creep],
-    targetFlag: Flag,
-    getRoomInfo: (roomName: string) => object,
-    getBaseCost: (roomName: string) => CostMatrix
-) {
-    
+export const runMonomer: BattleCore<[Creep]> = function (context) {
+    const { members: [creep], targetFlag, getBaseCost, getRoomInfo } = context
+
+    // 治疗自己，不会检查自己生命值，一直治疗
+    // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害有可能会把 tough 打穿。
+    creep.heal(creep)
+
+    // 不在房间内，先走着，用 goTo 是因为 goTo 包含对穿，这样可以避免堵在出生房间
+    if (!targetFlag.room || creep.room.name !== targetFlag.room.name) {
+        creep.goTo(targetFlag.pos)
+        return
+    }
+    // 到房间内了，进行更精细的移动
+    else {
+        const { path } = PathFinder.search(creep.pos, { pos: targetFlag.pos, range: 0 }, {
+            roomCallback: getBaseCost,
+            plainCost: 2,
+            swampCost: 10,
+            // 只要掉血了就往后撤
+            flee: creep.hits < creep.hitsMax
+        })
+        creep.move(creep.pos.getDirectionTo(path[0]))
+    }
+
+    const { hostileCreeps } = getRoomInfo(targetFlag.room.name)
+    const inRangeHostile = creep.pos.findInRange(hostileCreeps, 3)
+
+    // 优先功击威胁最大的 creep
+    if (inRangeHostile.length > 0) {
+        const pcs: PowerCreep[] = []
+        const creeps: Creep[] = []
+        inRangeHostile.forEach(hostile => 'body' in hostile ? creeps.push(hostile) : pcs.push(hostile))
+        const [maxDamageCreep, damge] = getMaxDamageCreep(creeps)
+
+        // creep 没伤害并且附近有 pc 的话就打 pc
+        if (damge <= 0 && pcs.length > 0) creep.rangedAttack(pcs[0])
+        // 否则就打 creep
+        else if (maxDamageCreep) creep.rangedAttack(maxDamageCreep)
+    }
+
+    // 附近没有爬，无脑 mass
+    creep.rangedMassAttack()
 }

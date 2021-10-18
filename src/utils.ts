@@ -189,3 +189,21 @@ export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
         return (index % 2 ? b.shift() : a.shift()) || a.shift() || b.shift()
     })
 }
+
+export const createCache = function<T> (initValue: (key: string, ...args: any[]) => T) {
+    let cacheStorage: { [key: string]: T } = {}
+
+    const get = function (key: string, ...args: any[]) {
+        if (key in cacheStorage) return cacheStorage[key]
+
+        const result = initValue(key, ...args)
+        cacheStorage[key] = result
+        return result
+    }
+
+    const refresh = function () {
+        cacheStorage = {}
+    }
+
+    return { get, refresh }
+}

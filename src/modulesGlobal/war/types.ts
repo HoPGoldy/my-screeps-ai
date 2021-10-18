@@ -24,7 +24,7 @@ export interface MobilizeTask {
 /**
  * 小队存储
  */
-interface SquadMemory {
+export interface SquadMemory {
     /**
      * 小队代号
      */
@@ -37,6 +37,33 @@ interface SquadMemory {
      * 小队成员名称
      */
     memberNames: string[]
+    /**
+     * 小队保存的数据
+     */
+    data: AnyObject
+}
+
+/**
+ * 房间内的游戏对象信息
+ */
+export type RoomInfo = {
+    /**
+     * 敌方 creep
+     */
+    hostileCreeps: (Creep | PowerCreep)[]
+    /**
+     * 敌方建筑工地
+     */
+    hostileSite: ConstructionSite[]
+    /**
+     * 我方 creep
+     */
+    myCreeps: (Creep | PowerCreep)[]
+} & {
+    /**
+     * 房间内的所有建筑
+     */
+    [StructureType in StructureConstant]: StructureType[]
 }
 
 export interface WarManager {

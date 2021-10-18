@@ -1,6 +1,7 @@
-import { createCacheAccessor } from './cacheAccessor'
+import { createCache } from '@/utils'
 import { createMemoryAccessor } from './memoryAccessor'
-import { BaseEffects, SquadType, WarManager, WarMemory, WarModuleMemory, WarState } from './types'
+import { BaseEffects, RoomInfo, SquadType, WarManager, WarMemory, WarModuleMemory, WarState } from './types'
+import { collectRoomInfo, createRoomBaseCostMatrix } from './utils'
 import { createWarManager } from './warManager/warManager'
 
 export type CreateEffects = {
@@ -10,13 +11,15 @@ export type CreateEffects = {
 export const createWarModule = function (opts: CreateEffects) {
     const warProcesses: { [warCode: string]: WarManager } = {}
     const db = createMemoryAccessor(opts.getMemory)
-    const { getCostMatrix, setCostMatrix, refresh: refreshCache } = createCacheAccessor()
+
+    const { get: getCostMatrix, refresh: refreshCostMatrix } = createCache(createRoomBaseCostMatrix)
+    const { get: getRoomInfo, refresh: refreshRoomInfo } = createCache(collectRoomInfo)
 
     const createWarEffect = function (warCode: string) {
         return {
             ...opts,
             getCostMatrix,
-            setCostMatrix,
+            getRoomInfo,
             getWarMemory: () => db.queryWarMemory(warCode)
         }
     }
@@ -51,7 +54,8 @@ export const createWarModule = function (opts: CreateEffects) {
     }
 
     const run = function () {
-        refreshCache()
+        refreshCostMatrix()
+        refreshRoomInfo()
         Object.values(warProcesses).forEach(process => process.run())
     }
 

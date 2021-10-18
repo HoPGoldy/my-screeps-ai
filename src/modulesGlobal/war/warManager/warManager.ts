@@ -1,11 +1,11 @@
-import { BaseEffects, SquadType, WarManager, WarMemory } from "../types"
+import { BaseEffects, RoomInfo, SquadType, WarManager, WarMemory } from "../types"
 import { runMobilizeTask } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
 
 type CreateEffects = {
     getWarMemory: () => WarMemory
     getCostMatrix: (roomName: string) => CostMatrix
-    setCostMatrix: (roomName: string, newCost: CostMatrix) => void
+    getRoomInfo: (roomName: string) => RoomInfo
 } & BaseEffects
 
 export const createWarManager = function (effects: CreateEffects): WarManager {
@@ -21,6 +21,7 @@ export const createWarManager = function (effects: CreateEffects): WarManager {
 
     const run = function () {
         const mobilizes = db.queryMobilizeTasks()
+        const squads = db.querySquads()
         const spawnRoom = db.querySpawnRoom()
 
         // 运行所有动员任务
@@ -30,6 +31,10 @@ export const createWarManager = function (effects: CreateEffects): WarManager {
                 effects.getRoomByName(spawnRoom),
                 newState => db.updateMobilizeState(task.squadCode, newState)
             )
+        })
+
+        Object.values(squads).forEach(squadMemory => {
+            
         })
     }
 
