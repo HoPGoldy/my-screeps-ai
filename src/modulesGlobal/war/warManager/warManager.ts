@@ -1,42 +1,101 @@
-import { BaseEffects, RoomInfo, SquadType, WarManager, WarMemory } from "../types"
-import { runMobilizeTask } from "../mobilizeManager/mobilizeManager"
+import { ContextGetCostMatrix, ContextGetRoomInfo, WarMemory } from "../types"
+import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
+import { createSquadManager } from "../squadManager/squadManager"
+import { ContextGetCreepByName, ContextGetFlagByName, ContextGetRoomByName, ContextLog } from "@/contextTypes"
+import { arrayToObject, createCluster } from "@/utils"
+import { SquadType } from "../squadManager/types"
 
-type CreateEffects = {
+type WarContext = {
+    warCode: string
     getWarMemory: () => WarMemory
-    getCostMatrix: (roomName: string) => CostMatrix
-    getRoomInfo: (roomName: string) => RoomInfo
-} & BaseEffects
+} & ContextGetCostMatrix & ContextGetRoomInfo & ContextGetRoomByName & ContextGetFlagByName & ContextLog & ContextGetCreepByName
 
-export const createWarManager = function (effects: CreateEffects): WarManager {
-    const db = createMemoryAccessor(effects.getWarMemory)
+export const createWarManager = function (context: WarContext) {
+    const { getWarMemory, getRoomByName, warCode } = context
+    const db = createMemoryAccessor(getWarMemory)
 
-    const addSquad = function () {
+    /**
+     * 初始化所有小队
+     */
+    const initSquad = function () {
+        const { squads } = getWarMemory()
 
+        return arrayToObject(Object.entries(squads).map(([code]) => [code, createSquadManager({
+            warCode,
+            squadCode: code,
+            getMemory: () => db.querySquad(code),
+            dismiss: aliveCreeps => dismissSquad(code, aliveCreeps),
+            ...context
+        })]))
     }
 
-    const removeSquad = function () {
-        
+    /**
+     * 初始化所有动员任务
+     */
+    const initMobilize = function () {
+        const { mobilizes, spawnRoomName } = getWarMemory()
+
+        return arrayToObject(Object.entries(mobilizes).map(([code, task]) => [code, createMobilizeManager({
+            getMemory: () => db.queryMobilize(code),
+            getSpawnRoom: () => getRoomByName(spawnRoomName),
+            updateState: newState => db.updateMobilizeState(task.squadCode, newState)
+        })]))
     }
 
+    const { add: addSquadProcess, remove: removeSquad, run: runAllSquadProcess } = createCluster(initSquad)
+    const { add: addMobilize, run: runAllMobilizeProcess } = createCluster(initMobilize)
+
+    /**
+     * 新建小队
+     * 
+     * @param type 小队类型
+     * @param members 小队成员
+     * @param code 小队代号
+     */
+    const addSquad = function (type: SquadType, members: Creep[], code: string) {
+        db.insertSquad(type, members.map(c => c.name), code)
+
+        const newSquad = createSquadManager({
+            warCode,
+            squadCode: code,
+            getMemory: () => db.querySquad(code),
+            dismiss: aliveCreeps => dismissSquad(code, aliveCreeps),
+            ...context
+        })
+
+        addSquadProcess(code, newSquad)
+    }
+
+    /**
+     * 解散指定小队
+     * 
+     * @param squadCode 要解散的小队代号
+     * @param aliveCreeps 剩余的小队成员
+     */
+    const dismissSquad = function (squadCode: string, aliveCreeps: Creep[]) {
+        db.insertAlonedCreep(aliveCreeps.map(c => c.name))
+    }
+
+    /**
+     * 尝试从散兵里重建小队
+     */
+    const regroup = function () {
+        const { alonedCreep } = getWarMemory()
+        console.log('尝试组建小队！', alonedCreep)
+    }
+
+    /**
+     * 执行战争行动
+     */
     const run = function () {
-        const mobilizes = db.queryMobilizeTasks()
-        const squads = db.querySquads()
-        const spawnRoom = db.querySpawnRoom()
+        runAllMobilizeProcess()
+        runAllSquadProcess()
 
-        // 运行所有动员任务
-        Object.values(mobilizes).forEach(task => {
-            runMobilizeTask(
-                task,
-                effects.getRoomByName(spawnRoom),
-                newState => db.updateMobilizeState(task.squadCode, newState)
-            )
-        })
-
-        Object.values(squads).forEach(squadMemory => {
-            
-        })
+        regroup()
     }
 
     return { run, addSquad, removeSquad, addMobilize: db.insertMobilizeTask }
 }
+
+export type WarManager = ReturnType<typeof createWarManager>

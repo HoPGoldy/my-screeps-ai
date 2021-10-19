@@ -1,6 +1,16 @@
 import { RoomInfo } from "../types";
 
-export interface BatleContext<T extends Creep[] = Creep[], M extends AnyObject = AnyObject> {
+/**
+ * 所有可用的小队类型
+ */
+export enum SquadType {
+    /**
+     * 一体机
+     */
+    Monomer = 1
+}
+
+export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject = AnyObject> {
     /**
      * 小队成员
      * 应当将泛型 T 设置为 Creep 元组来指定小队人数
@@ -30,7 +40,11 @@ export interface BatleContext<T extends Creep[] = Creep[], M extends AnyObject =
     getBaseCost: (roomName: string) => CostMatrix
 }
 
+/**
+ * 战斗核心
+ * 传入需要的素材，执行实际战斗逻辑
+ */
 export type BattleCore<
     T extends Creep[] = Creep[],
     M extends AnyObject = AnyObject
-> = (context: BatleContext<T, M>) => void
+> = (context: BattleContext<T, M>) => void

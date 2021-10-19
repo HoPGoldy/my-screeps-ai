@@ -190,7 +190,7 @@ export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
     })
 }
 
-export const createCache = function<T> (initValue: (key: string, ...args: any[]) => T) {
+export const createCache = function <T>(initValue: (key: string, ...args: any[]) => T) {
     let cacheStorage: { [key: string]: T } = {}
 
     const get = function (key: string, ...args: any[]) {
@@ -206,4 +206,41 @@ export const createCache = function<T> (initValue: (key: string, ...args: any[])
     }
 
     return { get, refresh }
+}
+
+export const arrayToObject = function <T>(array: [string, T][]): { [key: string]: T } {
+    return array.reduce((result, [key, process]) => {
+        result[key] = process
+        return result
+    }, {})
+}
+
+type ObjectWithRun = { run: () => void }
+
+export const createCluster = function <T extends ObjectWithRun>(
+    getInitial?: () => { [key: string]: T }
+) {
+    let cluster: { [key: string]: T } = getInitial ? getInitial() : {}
+
+    const add = function (key: string, process: T): void {
+        cluster[key] = process
+    }
+
+    const remove = function (key: string) {
+        delete cluster[key]
+    }
+
+    const get = function (key: string): T | undefined {
+        return cluster[key]
+    }
+
+    const run = function () {
+        Object.values(cluster).map(process => process.run())
+    }
+
+    const clear = function () {
+        cluster = {}
+    }
+
+    return { add, get, run, remove, clear }
 }

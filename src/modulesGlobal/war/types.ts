@@ -1,3 +1,5 @@
+import { SquadType } from "./squadManager/types"
+
 /**
  * 动员任务
  * 孵化、boost
@@ -34,6 +36,10 @@ export interface SquadMemory {
      */
     type: SquadType
     /**
+     * 正在进攻的旗帜名称
+     */
+    cacheTargetFlagName?: string
+    /**
      * 小队成员名称
      */
     memberNames: string[]
@@ -66,18 +72,35 @@ export type RoomInfo = {
     [StructureType in StructureConstant]: StructureType[]
 }
 
-export interface WarManager {
-    run: () => void
-    addSquad: (squadType: SquadType, needBoost: boolean, squadCode: string) => void
-    removeSquad: (squadCode: string) => void
-    addMobilize: (squadType: SquadType, needBoost: boolean, squadCode: string) => void
-}
-
+/**
+ * 战争内存
+ */
 export interface WarMemory {
+    /**
+     * 战争代号
+     * 应当存在一个以此代号为名称的旗帜
+     */
     code: string
+    /**
+     * 战争状态
+     */
     state: WarState
+    /**
+     * 本战争下被击溃小队剩余的单位名称
+     */
+    alonedCreep: string[]
+    /**
+     * 本战争的孵化房间
+     * @todo 后面可以升级成多个房间
+     */
     spawnRoomName: string
+    /**
+     * 正在进行的动员任务
+     */
     mobilizes: { [squadCode: string]: MobilizeTask }
+    /**
+     * 下属的小队
+     */
     squads: { [squadCode: string]: SquadMemory }
 }
 
@@ -127,17 +150,12 @@ export enum WarState {
     Finish
 }
 
-export enum SquadType {
-    /**
-     * 一体机
-     */
-    Monomer = 1
-}
-
 export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 
-export interface BaseEffects {
-    getRoomByName: (roomName: string) => Room | undefined
-    getCreepByName: (creepName: string) => Creep | undefined
-    getObjectById: <T>(id: Id<T>) => T | undefined
+export interface ContextGetCostMatrix {
+    getCostMatrix: (roomName: string) => CostMatrix
+}
+
+export interface ContextGetRoomInfo {
+    getRoomInfo: (roomName: string) => RoomInfo
 }

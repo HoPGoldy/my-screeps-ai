@@ -1,4 +1,5 @@
-import { SquadType, WarMemory, WarModuleMemory } from "./types"
+import { SquadType } from "./squadManager/types"
+import { WarMemory, WarModuleMemory } from "./types"
 
 export const createMemoryAccessor = (getMemory: () => WarModuleMemory) => ({
     queryWarCodes() {
@@ -13,9 +14,9 @@ export const createMemoryAccessor = (getMemory: () => WarModuleMemory) => ({
         const memory = getMemory()
         memory.wars[newWarMemory.code] = newWarMemory
     },
-    updateDefaultSquad(squadType: SquadType, needBoost: boolean, squadCode: string) {
+    updateDefaultSquad(squadType: SquadType, needBoost: boolean, squadCode?: string) {
         const memory = getMemory()
-        memory.default = [squadType, needBoost, squadCode]
+        memory.default = [squadType, needBoost, squadCode || '']
     },
     queryDefaultSquad(): [SquadType, boolean, string] | undefined {
         const memory = getMemory()

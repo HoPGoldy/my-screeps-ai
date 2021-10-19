@@ -1,30 +1,28 @@
-import { MobilizeState, SquadType, WarMemory } from "../types";
+import { SquadType } from "../squadManager/types";
+import { MobilizeState, WarMemory } from "../types";
 
 export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
-    querySpawnRoom() {
-        const memory = getMemory()
-        return memory.spawnRoomName
-    },
-    queryMobilizeTasks() {
-        const memory = getMemory()
-        return memory.mobilizes
-    },
     updateMobilizeState(mobilizeCode: string, newState: MobilizeState) {
         const memory = getMemory()
         if (!(mobilizeCode in memory.mobilizes)) return false
         memory.mobilizes[mobilizeCode].state = newState
     },
-    querySquads() {
+    querySquad(code: string) {
         const memory = getMemory()
-        return memory.squads
+        return memory.squads[code]
     },
-    insertSquad(squadType: SquadType, squadCode: string): void {
+    queryMobilize(code: string) {
+        const memory = getMemory()
+        return memory.mobilizes[code]
+    },
+    insertSquad(squadType: SquadType, memberNames: string[], squadCode: string): void {
         const memory = getMemory()
         memory.squads[squadCode] = {
             code: squadCode,
             type: squadType,
+            cacheTargetFlagName: '',
             data: {},
-            memberNames: []
+            memberNames
         }
     },
     insertMobilizeTask(squadType: SquadType, needBoost: boolean, squadCode: string): void {
@@ -35,5 +33,9 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
             squadType,
             needBoost
         }
+    },
+    insertAlonedCreep(creepNames: string[]) {
+        const memory = getMemory()
+        memory.alonedCreep = _.uniq([...memory.alonedCreep, ...creepNames])
     }
 })
