@@ -71,11 +71,3 @@ export const getMaxDamageCreep = function (creeps: Creep[]): [Creep, number] {
         return [nextCreep, nextCreepDamage]
     }, [creeps[0], 0])
 }
-
-export const collectRoomInfo = (roomName: string): RoomInfo {
-
-}
-
-export const createRoomBaseCostMatrix = (roomName: string): CostMatrix {
-    
-}

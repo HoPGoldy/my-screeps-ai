@@ -10,6 +10,10 @@ export enum SquadType {
     Monomer = 1
 }
 
+export const SquadTypeName: { [type in SquadType]: string } = {
+    [SquadType.Monomer]: '一体机'
+}
+
 export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject = AnyObject> {
     /**
      * 小队成员
@@ -30,14 +34,14 @@ export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject 
      *
      * @param roomName 要查询的房间名
      */
-    getRoomInfo: (roomName: string) => RoomInfo,
+    getRoomInfo: (roomName: string) => RoomInfo | undefined,
     /**
      * 获取本房间的基础 costMatrix
      * 包含内容如下：双方creep 255，道路 1
      *
      * @param roomName 要查询的房间名
      */
-    getBaseCost: (roomName: string) => CostMatrix
+    getBaseCost: (roomName: string) => CostMatrix | undefined
 }
 
 /**

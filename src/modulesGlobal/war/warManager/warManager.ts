@@ -6,7 +6,7 @@ import { ContextGetCreepByName, ContextGetFlagByName, ContextGetRoomByName, Cont
 import { arrayToObject, createCluster } from "@/utils"
 import { SquadType } from "../squadManager/types"
 
-type WarContext = {
+export type WarContext = {
     warCode: string
     getWarMemory: () => WarMemory
 } & ContextGetCostMatrix & ContextGetRoomInfo & ContextGetRoomByName & ContextGetFlagByName & ContextLog & ContextGetCreepByName
@@ -43,8 +43,17 @@ export const createWarManager = function (context: WarContext) {
         })]))
     }
 
-    const { add: addSquadProcess, remove: removeSquad, run: runAllSquadProcess } = createCluster(initSquad)
-    const { add: addMobilize, run: runAllMobilizeProcess } = createCluster(initMobilize)
+    const {
+        add: addSquadProcess,
+        remove: removeSquad,
+        run: runAllSquadProcess,
+        showState: showSquadState
+    } = createCluster(initSquad)
+    const {
+        add: addMobilize,
+        run: runAllMobilizeProcess,
+        showState: showMobilizeState
+    } = createCluster(initMobilize)
 
     /**
      * 新建小队
@@ -85,6 +94,19 @@ export const createWarManager = function (context: WarContext) {
         console.log('尝试组建小队！', alonedCreep)
     }
 
+    const showState = function () {
+        const squadState = showSquadState()
+        const mobilizeState = showMobilizeState()
+
+        return [
+            `${warCode} 战争情况`,
+            '战斗小队',
+            squadState.map(s => '- ' + s).join('\n'),
+            '动员任务',
+            mobilizeState.map(s => '- ' + s).join('\n')
+        ].join('\n')
+    }
+
     /**
      * 执行战争行动
      */
@@ -95,7 +117,7 @@ export const createWarManager = function (context: WarContext) {
         regroup()
     }
 
-    return { run, addSquad, removeSquad, addMobilize: db.insertMobilizeTask }
+    return { run, showState, addSquad, removeSquad, addMobilize: db.insertMobilizeTask }
 }
 
 export type WarManager = ReturnType<typeof createWarManager>

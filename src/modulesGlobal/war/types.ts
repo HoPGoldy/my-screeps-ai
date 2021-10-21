@@ -1,27 +1,5 @@
+import { MobilizeState, MobilizeTask } from "./mobilizeManager/types"
 import { SquadType } from "./squadManager/types"
-
-/**
- * 动员任务
- * 孵化、boost
- */
-export interface MobilizeTask {
-    /**
-     * 当前阶段
-     */
-    state: MobilizeState
-    /**
-     * 小队代号
-     */
-    squadCode: string
-    /**
-     * 小队类型
-     */
-    squadType: SquadType
-    /**
-     * 是否需要 boost
-     */
-    needBoost: boolean
-}
 
 /**
  * 小队存储
@@ -56,7 +34,11 @@ export type RoomInfo = {
     /**
      * 敌方 creep
      */
-    hostileCreeps: (Creep | PowerCreep)[]
+    hostileCreeps: Creep[]
+    /**
+     * 敌方 pc
+     */
+    hostilePowerCreeps: PowerCreep[]
     /**
      * 敌方建筑工地
      */
@@ -64,12 +46,16 @@ export type RoomInfo = {
     /**
      * 我方 creep
      */
-    myCreeps: (Creep | PowerCreep)[]
+    myCreeps: Creep[]
+    /**
+     * 我方 pc
+     */
+    myPowerCreeps: PowerCreep[]
 } & {
     /**
      * 房间内的所有建筑
      */
-    [StructureType in StructureConstant]: StructureType[]
+    [StructureType in StructureConstant]: Structure<StructureType>[]
 }
 
 /**
@@ -109,24 +95,7 @@ export interface WarModuleMemory {
     default?: [SquadType, boolean, string]
 }
 
-export enum MobilizeState {
-    /**
-     * 等待强化
-     */
-    WaitBoostPrepare = 1,
-    /**
-     * 等待孵化能量填充完成
-     */
-    WaitSpawnEnergyPrepare,
-    /**
-     * 孵化中
-     */
-    Spawning,
-    /**
-     * 强化中
-     */
-    Boosting
-}
+
 
 /**
  * 战争状态

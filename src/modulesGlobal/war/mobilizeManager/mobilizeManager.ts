@@ -1,9 +1,10 @@
-import { MobilizeState, MobilizeTask, UpdateMobilizeStateFunc } from "../types";
+import { SquadTypeName } from "../squadManager/types";
+import { UpdateMobilizeStateFunc } from "../types";
 import { runBoosting } from "./stateBoosting";
 import { runSpawning } from "./stateSpawning";
 import { runWaitBoostPrepare } from "./stateWaitBoostPrepare";
 import { runWaitSpawnEnergyPrepare } from "./stateWaitSpawnEnergyPrepare";
-import { RunMobilizeStateFunc } from "./types";
+import { MobilizeState, MobilizeStateName, MobilizeTask, RunMobilizeStateFunc } from "./types";
 
 /**
  * 动员任务中不同阶段到逻辑的映射
@@ -32,7 +33,15 @@ export const createMobilizeManager = function (context: MobilizeContext) {
         runState[mobliizeTask.state](mobliizeTask, getSpawnRoom(), updateState)
     }
 
-    return { run }
+    /**
+     * 显示运行状态
+     */
+    const showState = function () {
+        const { state, squadCode, squadType } = getMemory()
+        return `[${squadCode} 小队动员任务] [当前阶段] ${MobilizeStateName[state]} [小队类型] ${SquadTypeName[squadType]}`
+    }
+
+    return { run, showState }
 }
 
 export type MobilizeManager = ReturnType<typeof createMobilizeManager>
