@@ -4,7 +4,7 @@ import { createMemoryAccessor } from "./memoryAccessor"
 import { createSquadManager } from "../squadManager/squadManager"
 import { ContextGetCreepByName, ContextGetFlagByName, ContextGetRoomByName, ContextLog } from "@/contextTypes"
 import { arrayToObject, createCluster } from "@/utils"
-import { SquadType } from "../squadManager/types"
+import { SquadType, SquadTypeName } from "../squadManager/types"
 
 export type WarContext = {
     warCode: string
@@ -30,30 +30,15 @@ export const createWarManager = function (context: WarContext) {
         })]))
     }
 
-    /**
-     * 初始化所有动员任务
-     */
-    const initMobilize = function () {
-        const { mobilizes, spawnRoomName } = getWarMemory()
-
-        return arrayToObject(Object.entries(mobilizes).map(([code, task]) => [code, createMobilizeManager({
-            getMemory: () => db.queryMobilize(code),
-            getSpawnRoom: () => getRoomByName(spawnRoomName),
-            updateState: newState => db.updateMobilizeState(task.squadCode, newState)
-        })]))
-    }
-
-    const {
-        add: addSquadProcess,
-        remove: removeSquad,
-        run: runAllSquadProcess,
-        showState: showSquadState
-    } = createCluster(initSquad)
-    const {
-        add: addMobilize,
-        run: runAllMobilizeProcess,
-        showState: showMobilizeState
-    } = createCluster(initMobilize)
+    const squadCluster = createCluster(initSquad)
+    const mobilizeManager = createMobilizeManager({
+        getMemory: db.queryCurrentMobilizeTask,
+        getSpawnRoom: () => {
+            const { spawnRoomName } = getWarMemory()
+            return getRoomByName(spawnRoomName)
+        },
+        finishTask: db.deleteCurrentMobilizeTask
+    })
 
     /**
      * 新建小队
@@ -73,7 +58,7 @@ export const createWarManager = function (context: WarContext) {
             ...context
         })
 
-        addSquadProcess(code, newSquad)
+        squadCluster.add(code, newSquad)
     }
 
     /**
@@ -83,6 +68,8 @@ export const createWarManager = function (context: WarContext) {
      * @param aliveCreeps 剩余的小队成员
      */
     const dismissSquad = function (squadCode: string, aliveCreeps: Creep[]) {
+        squadCluster.remove(squadCode)
+        db.deleteSquad(squadCode)
         db.insertAlonedCreep(aliveCreeps.map(c => c.name))
     }
 
@@ -94,16 +81,23 @@ export const createWarManager = function (context: WarContext) {
         console.log('尝试组建小队！', alonedCreep)
     }
 
+    /**
+     * 返回当前战争进程状态
+     */
     const showState = function () {
-        const squadState = showSquadState()
-        const mobilizeState = showMobilizeState()
+        const squadState = squadCluster.showState()
+        const mobilizeState = mobilizeManager.showState()
+
+        const { mobilizes } = getWarMemory()
 
         return [
             `${warCode} 战争情况`,
             '战斗小队',
-            squadState.map(s => '- ' + s).join('\n'),
+            ...squadState.map(s => '- ' + s),
             '动员任务',
-            mobilizeState.map(s => '- ' + s).join('\n')
+            ' ' + mobilizeState,
+            '待执行动员任务',
+            ...Object.values(mobilizes).map(task => `- [小队代号] ${task.squadCode} [小队类型] ${SquadTypeName[task.squadType]}`)
         ].join('\n')
     }
 
@@ -111,13 +105,13 @@ export const createWarManager = function (context: WarContext) {
      * 执行战争行动
      */
     const run = function () {
-        runAllMobilizeProcess()
-        runAllSquadProcess()
+        mobilizeManager.run()
+        squadCluster.run()
 
         regroup()
     }
 
-    return { run, showState, addSquad, removeSquad, addMobilize: db.insertMobilizeTask }
+    return { run, showState, addSquad, dismissSquad, addMobilize: db.insertMobilizeTask }
 }
 
 export type WarManager = ReturnType<typeof createWarManager>

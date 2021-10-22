@@ -1,19 +1,31 @@
+import { MobilizeState } from "../mobilizeManager/types";
 import { SquadType } from "../squadManager/types";
-import { MobilizeState, WarMemory } from "../types";
+import { WarMemory } from "../types";
 
 export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
-    updateMobilizeState(mobilizeCode: string, newState: MobilizeState) {
-        const memory = getMemory()
-        if (!(mobilizeCode in memory.mobilizes)) return false
-        memory.mobilizes[mobilizeCode].state = newState
-    },
     querySquad(code: string) {
         const memory = getMemory()
         return memory.squads[code]
     },
-    queryMobilize(code: string) {
+    /**
+     * 获取当前正在处理的动员任务
+     */
+    queryCurrentMobilizeTask() {
         const memory = getMemory()
-        return memory.mobilizes[code]
+        if (!(memory.mobilizing in memory.mobilizes)) {
+            memory.mobilizing = Object.keys(memory.mobilizes)[0]
+            if (!memory.mobilizing) return undefined
+        }
+
+        return memory.mobilizes[memory.mobilizing]
+    },
+    /**
+     * 移除当前正在处理的动员任务
+     */
+    deleteCurrentMobilizeTask() {
+        const memory = getMemory()
+        if (memory.mobilizing in memory.mobilizes) delete memory.mobilizes[memory.mobilizing]
+        delete memory.mobilizing
     },
     insertSquad(squadType: SquadType, memberNames: string[], squadCode: string): void {
         const memory = getMemory()
@@ -37,5 +49,9 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
     insertAlonedCreep(creepNames: string[]) {
         const memory = getMemory()
         memory.alonedCreep = _.uniq([...memory.alonedCreep, ...creepNames])
+    },
+    deleteSquad(squadCode: string) {
+        const memory = getMemory()
+        delete memory.squads[squadCode]
     }
 })

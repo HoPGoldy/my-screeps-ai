@@ -9,6 +9,9 @@ export type WarModuleContext = {
     getMemory: () => WarModuleMemory
 } & ContextGetRoomByName & ContextGetFlagByName & ContextLog & ContextGetCreepByName
 
+/**
+ * 创建战争基础功能
+ */
 const useWar = function (
     db: ReturnType<typeof createMemoryAccessor>,
     getRoomInfo: (roomName: string) => RoomInfo,
@@ -38,7 +41,7 @@ const useWar = function (
 
     
     // 初始化所有战争进程
-    const { add, run: runAllWarProcess, showState: showWarState } = createCluster(initWar)
+    const warCluster = createCluster(initWar)
 
     /**
      * 启动新战争
@@ -60,7 +63,7 @@ const useWar = function (
 
         db.insertWarMemory(warMemory)
         const newWar = createWarManager(createWarContext(warCode))
-        add(warCode, newWar)
+        warCluster.add(warCode, newWar)
 
         // 有设置默认小队的话就直接添加动员任务
         const [squadType, needBoost, squadCode] = db.queryDefaultSquad()
@@ -81,17 +84,22 @@ const useWar = function (
     }
 
     const showState = function () {
-        return showWarState().join('\n')
+        return warCluster.showState().join('\n')
     }
 
-    return { startWar, setDefault, runAllWarProcess, showState }
+    return { startWar, setDefault, runAllWarProcess: warCluster.run, showState }
 }
 
+/**
+ * 创建获取房间单位信息功能
+ * 包含缓存
+ */
 const useCollectRoomInfo = function (getRoomByName: (roomName: string) => Room) {
     const collectRoomInfo = function (roomName: string): RoomInfo | undefined {
         const room = getRoomByName(roomName)
         if (!room) return undefined
 
+        // 查询基础信息
         const hostileCreeps = room.find(FIND_HOSTILE_CREEPS)
         const hostilePowerCreeps = room.find(FIND_HOSTILE_POWER_CREEPS)
         const hostileSite = room.find(FIND_HOSTILE_CONSTRUCTION_SITES)
@@ -99,6 +107,7 @@ const useCollectRoomInfo = function (getRoomByName: (roomName: string) => Room) 
         const myPowerCreeps = room.find(FIND_MY_POWER_CREEPS)
         const structures = room.find(FIND_STRUCTURES)
 
+        // 对建筑进行分类
         const structureGroup = _.groupBy(structures, s => s.structureType)
 
         return {
@@ -117,6 +126,10 @@ const useCollectRoomInfo = function (getRoomByName: (roomName: string) => Room) 
     return { getRoomInfo, refreshRoomInfo }
 }
 
+/**
+ * 创建获取房间 cost 功能
+ * 包含缓存
+ */
 const useGetRoomCostMatrix = function (getRoomInfo: (roomName: string) => RoomInfo | undefined) {
     const createRoomBaseCostMatrix = function (roomName: string): CostMatrix | undefined {
         const roomInfo = getRoomInfo(roomName)
@@ -125,9 +138,11 @@ const useGetRoomCostMatrix = function (getRoomInfo: (roomName: string) => RoomIn
 
         const costs = new PathFinder.CostMatrix;
 
+        // 把所有爬都设置为不可通行
         [...hostileCreeps, ...hostilePowerCreeps, ...myCreeps, ...myPowerCreeps].map(creep => {
             costs.set(creep.pos.x, creep.pos.y, 255)
         })
+        // 设置路的 cost
         road.map(r=> costs.set(r.pos.x, r.pos.y, 1))
 
         return costs
@@ -139,6 +154,9 @@ const useGetRoomCostMatrix = function (getRoomInfo: (roomName: string) => RoomIn
     return { getCostMatrix, refreshCostMatrix }
 }
 
+/**
+ * 创建战争模块
+ */
 export const createWarModule = function (context: WarModuleContext) {
     const db = createMemoryAccessor(context.getMemory)
 

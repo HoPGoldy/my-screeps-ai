@@ -1,10 +1,12 @@
 import { SquadType } from "../squadManager/types";
-import { UpdateMobilizeStateFunc } from "../types";
+
+export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 
 export type RunMobilizeStateFunc = (
     task: MobilizeTask,
     room: Room,
-    updateState: UpdateMobilizeStateFunc
+    updateState: UpdateMobilizeStateFunc,
+    finishTask: () => void
 ) => void
 
 export enum MobilizeState {

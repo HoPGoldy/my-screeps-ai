@@ -81,7 +81,11 @@ export interface WarMemory {
      */
     spawnRoomName: string
     /**
-     * 正在进行的动员任务
+     * 正在动员的任务代号（squadCode）
+     */
+    mobilizing?: string
+    /**
+     * 所有的动员任务
      */
     mobilizes: { [squadCode: string]: MobilizeTask }
     /**
@@ -94,8 +98,6 @@ export interface WarModuleMemory {
     wars: { [warCode: string]: WarMemory }
     default?: [SquadType, boolean, string]
 }
-
-
 
 /**
  * 战争状态
@@ -118,8 +120,6 @@ export enum WarState {
      */
     Finish
 }
-
-export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 
 export interface ContextGetCostMatrix {
     getCostMatrix: (roomName: string) => CostMatrix
