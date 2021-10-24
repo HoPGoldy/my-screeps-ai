@@ -7,6 +7,10 @@ declare global {
          */
         spawnList: SpawnTask[]
         /**
+         * 当前是否外借 spawn
+         */
+        lendSpawn?: boolean
+        /**
          * 该房间的基础运维单位上下限
          * 不存在时将使用 ./constant.ts 中的 BASE_ROLE_LIMIT
          */

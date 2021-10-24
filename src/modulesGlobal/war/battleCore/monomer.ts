@@ -34,8 +34,8 @@ export const runMonomer: BattleCore<[Creep]> = function (context) {
         creep.move(creep.pos.getDirectionTo(path[0]))
     }
 
-    const { hostileCreeps } = getRoomInfo(targetFlag.room.name)
-    const inRangeHostile = creep.pos.findInRange(hostileCreeps, 3)
+    const { hostileCreeps, hostilePowerCreeps } = getRoomInfo(targetFlag.room.name)
+    const inRangeHostile = creep.pos.findInRange([...hostileCreeps, ...hostilePowerCreeps], 3)
 
     // 优先功击威胁最大的 creep
     if (inRangeHostile.length > 0) {

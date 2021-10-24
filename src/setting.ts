@@ -34,35 +34,6 @@ export const BASE_MINERAL = [
 export const POWER_PROCESS_ENERGY_LIMIT = 500000
 
 /**
- * 战争 boost 需要的所有强化材料，在启动战争状态后，manager 会依次将下列资源填充至 lab
- * 注意：在强化旗帜旁的 lab 数量需要超过下面的资源数量
- */
-export const BOOST_RESOURCE: BoostResourceConfig = {
-    // 对外战争所需的资源
-    WAR: [
-        // DISMANTLE
-        RESOURCE_CATALYZED_ZYNTHIUM_ACID,
-        // RANGED_ATTACK
-        RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
-        // HEAL
-        RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
-        // MOVE
-        RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
-        // TOUGH
-        RESOURCE_CATALYZED_GHODIUM_ALKALIDE
-    ],
-    // 主动防御所需资源
-    DEFENSE: [
-        // ATTACK
-        RESOURCE_CATALYZED_UTRIUM_ACID,
-        // TOUGH
-        RESOURCE_CATALYZED_GHODIUM_ALKALIDE,
-        // MOVE
-        RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE
-    ]
-}
-
-/**
  * 默认的旗帜名称
  */
 export const DEFAULT_FLAG_NAME = {

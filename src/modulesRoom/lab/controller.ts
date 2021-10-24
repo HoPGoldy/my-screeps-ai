@@ -158,7 +158,10 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @param resConfig 该任务的强化材料配置
      * @return 该任务的唯一 id
      */
-    public addBoostTask(resConfig: BoostResourceConfig[]): number {
+    public addBoostTask(resConfig: BoostResourceConfig[]): number | undefined {
+        // 强化任务需要的 lab 大于当前房间里的 lab 数量，无法完成强化
+        if (resConfig.length > this.room[STRUCTURE_LAB].length) return
+
         const taskData: BoostTask = {
             id: getUniqueKey(),
             res: _.cloneDeep(resConfig),
@@ -170,6 +173,27 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 执行一次 lab 分配，如果分配失败的话后面还会定期执行分配
         this.boostGetLab(taskData)
         return taskData.id
+    }
+
+    /**
+     * 重新装填某个 boost 任务的资源
+     * @param taskId 要重新装填的 boost 任务
+     */
+    public reloadBoostTask(taskId: number): ERR_NOT_FOUND | OK {
+        if (!(taskId in this.memory.boostTasks)) return ERR_NOT_FOUND
+
+        const boostTask = this.memory.boostTasks[taskId]
+        this.room.transport.addTask({
+            type: TransportTaskType.LabIn,
+            need: 1,
+            resource: boostTask.res.map(res => ({
+                id: res.lab,
+                type: res.resource,
+                amount: res.amount - Game.getObjectById(res.lab).store[res.resource]
+            }))
+        })
+
+        boostTask.state = BoostState.GetResource
     }
 
     /**

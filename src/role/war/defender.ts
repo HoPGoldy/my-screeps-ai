@@ -9,20 +9,26 @@ import { boostPrepare } from './configPart'
  */
 const defender: CreepConfig<CreepRole.Defender> = {
     // 委托 controller 判断房间内是否有威胁
-    isNeed: room => {
+    isNeed: (room, preMemory) => {
         const needSpawn = room.controller.checkEnemyThreat()
+        const { boostTaskId } = preMemory.data
 
-        // 如果威胁已经解除了，就解除主动防御相关工作
-        if (!needSpawn) {
-            room.memory.boost && (room.memory.boost.state = 'boostClear')
-            delete room.memory.war
-            delete room.memory.defenseMode
-
+        // 如果威胁已经解除了，就不再孵化
+        if (!needSpawn && boostTaskId) {
+            room.myLab.finishBoost(boostTaskId)
             Game.notify(`[${room.name}][${Game.time}] 入侵威胁解除，已取消主动防御模式`)
         }
+        // 还要打，续上
+        else room.myLab.reloadBoostTask(boostTaskId)
+
         return needSpawn
     },
-    ...boostPrepare(),
+    prepare: creep => {
+        const { boostTaskId } = creep.memory.data
+        if (!boostTaskId) return true
+
+        return creep.room.myLab.boostCreep(creep, boostTaskId)
+    },
     target: creep => {
         let enemys: (Creep | PowerCreep)[] = creep.room._enemys
         // 没有缓存则新建缓存

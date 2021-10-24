@@ -51,11 +51,6 @@ declare global {
          */
         war?: { }
         /**
-         * boost 强化任务
-         * @see doc/boost设计案
-         */
-        boost?: BoostTask
-        /**
          * powerSpawn 是否暂停
          */
         pausePS?: boolean
@@ -104,18 +99,6 @@ declare global {
          * 资源共享 api
          */
         giver(roomName: string, resourceType: ResourceConstant, amount?: number): string
-
-        /**
-         * boost api 
-         */
-        boost(boostType: string, boostConfig: BoostConfig): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_ARGS | ERR_NOT_ENOUGH_RESOURCES
-        boostCreep(creep: Creep): OK | ERR_NOT_FOUND | ERR_BUSY | ERR_NOT_IN_RANGE
-
-        /**
-         * 战争相关 api
-         */
-        startWar(boostType: BoostType): OK | ERR_NAME_EXISTS | ERR_NOT_FOUND | ERR_INVALID_TARGET
-        stopWar(): OK | ERR_NOT_FOUND
 
         /**
          * 自动规划相关

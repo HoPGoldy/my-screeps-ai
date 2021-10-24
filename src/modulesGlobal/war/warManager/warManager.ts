@@ -2,17 +2,18 @@ import { ContextGetCostMatrix, ContextGetRoomInfo, WarMemory } from "../types"
 import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
 import { createSquadManager } from "../squadManager/squadManager"
-import { ContextGetCreepByName, ContextGetFlagByName, ContextGetRoomByName, ContextLog } from "@/contextTypes"
+import { BaseContext } from "@/contextTypes"
 import { arrayToObject, createCluster } from "@/utils"
 import { SquadType, SquadTypeName } from "../squadManager/types"
 
 export type WarContext = {
     warCode: string
     getWarMemory: () => WarMemory
-} & ContextGetCostMatrix & ContextGetRoomInfo & ContextGetRoomByName & ContextGetFlagByName & ContextLog & ContextGetCreepByName
+} & ContextGetCostMatrix & ContextGetRoomInfo & BaseContext
 
 export const createWarManager = function (context: WarContext) {
     const { getWarMemory, getRoomByName, warCode } = context
+    const { spawnRoomName } = getWarMemory()
     const db = createMemoryAccessor(getWarMemory)
 
     /**
@@ -33,11 +34,9 @@ export const createWarManager = function (context: WarContext) {
     const squadCluster = createCluster(initSquad)
     const mobilizeManager = createMobilizeManager({
         getMemory: db.queryCurrentMobilizeTask,
-        getSpawnRoom: () => {
-            const { spawnRoomName } = getWarMemory()
-            return getRoomByName(spawnRoomName)
-        },
-        finishTask: db.deleteCurrentMobilizeTask
+        getSpawnRoom: () => getRoomByName(spawnRoomName),
+        finishTask: db.deleteCurrentMobilizeTask,
+        ...context
     })
 
     /**

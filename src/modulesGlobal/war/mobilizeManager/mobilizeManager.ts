@@ -1,9 +1,10 @@
+import { BaseContext } from "@/contextTypes";
 import { SquadTypeName } from "../squadManager/types";
 import { runBoosting } from "./stateBoosting";
 import { runSpawning } from "./stateSpawning";
 import { runWaitBoostPrepare } from "./stateWaitBoostPrepare";
 import { runWaitSpawnEnergyPrepare } from "./stateWaitSpawnEnergyPrepare";
-import { MobilizeState, MobilizeStateName, MobilizeTask, RunMobilizeStateFunc } from "./types";
+import { MobilizeContext, MobilizeState, MobilizeStateName, RunMobilizeStateFunc } from "./types";
 
 /**
  * 动员任务中不同阶段到逻辑的映射
@@ -15,26 +16,17 @@ const runState: { [state in MobilizeState]: RunMobilizeStateFunc } = {
     [MobilizeState.Boosting]: runBoosting
 }
 
-type MobilizeContext = {
-    getMemory: () => MobilizeTask,
-    getSpawnRoom: () => Room,
-    finishTask: () => void
-}
-
 export const createMobilizeManager = function (context: MobilizeContext) {
-    const { getMemory, getSpawnRoom, finishTask } = context
+    const { getMemory } = context
 
     /**
      * 运行动员任务
      */
     const run = function () {
+        if (Game.time % 10) return
+
         const mobliizeTask = getMemory()
-        runState[mobliizeTask.state](
-            mobliizeTask,
-            getSpawnRoom(),
-            newState => mobliizeTask.state = newState,
-            finishTask
-        )
+        runState[mobliizeTask.state](context)
     }
 
     /**

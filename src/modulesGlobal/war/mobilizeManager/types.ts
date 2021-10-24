@@ -1,13 +1,15 @@
+import { BaseContext } from "@/contextTypes";
 import { SquadType } from "../squadManager/types";
 
 export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 
-export type RunMobilizeStateFunc = (
-    task: MobilizeTask,
-    room: Room,
-    updateState: UpdateMobilizeStateFunc,
+export type MobilizeContext = {
+    getMemory: () => MobilizeTask,
+    getSpawnRoom: () => Room,
     finishTask: () => void
-) => void
+} & BaseContext
+
+export type RunMobilizeStateFunc = (context: MobilizeContext) => void
 
 export enum MobilizeState {
     /**
@@ -32,7 +34,7 @@ export enum MobilizeState {
  * 动员任务
  * 孵化、boost
  */
- export interface MobilizeTask {
+export interface MobilizeTask {
     /**
      * 当前阶段
      */
@@ -49,6 +51,17 @@ export enum MobilizeState {
      * 是否需要 boost
      */
     needBoost: boolean
+    /**
+     * 该任务存放的临时数据
+     */
+    data: MobilizeTaskData
+}
+
+/**
+ * 动员任务数据
+ */
+interface MobilizeTaskData {
+    boostTaskId?: number
 }
 
 export const MobilizeStateName: { [state in MobilizeState]: string } = {

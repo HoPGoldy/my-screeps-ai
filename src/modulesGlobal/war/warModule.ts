@@ -1,4 +1,4 @@
-import { ContextGetCreepByName, ContextGetFlagByName, ContextGetRoomByName, ContextLog } from '@/contextTypes'
+import { BaseContext } from '@/contextTypes'
 import { arrayToObject, createCache, createCluster } from '@/utils'
 import { createMemoryAccessor } from './memoryAccessor'
 import { SquadType } from './squadManager/types'
@@ -7,7 +7,7 @@ import { createWarManager, WarContext, WarManager } from './warManager/warManage
 
 export type WarModuleContext = {
     getMemory: () => WarModuleMemory
-} & ContextGetRoomByName & ContextGetFlagByName & ContextLog & ContextGetCreepByName
+} & BaseContext
 
 /**
  * 创建战争基础功能
@@ -39,7 +39,6 @@ const useWar = function (
         return arrayToObject(warCodes.map(code => [code, createWarManager(createWarContext(code))]))
     }
 
-    
     // 初始化所有战争进程
     const warCluster = createCluster(initWar)
 
@@ -50,7 +49,7 @@ const useWar = function (
      * @param warCode 战争代号
      */
     const startWar = function (spawnRoomName: string, warCode: string): WarManager {
-        if (!context.getFlagByName(warCode)) return undefined
+        if (!context.game.getFlagByName(warCode)) return undefined
 
         const warMemory: WarMemory = {
             code: warCode,

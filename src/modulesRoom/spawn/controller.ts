@@ -1,4 +1,4 @@
-import { creepDefaultMemory, importantRoles } from './constant'
+import { BASE_ROLE_LIMIT, creepDefaultMemory, importantRoles } from './constant'
 import RoomAccessor from '../RoomAccessor'
 import roles from '@/role'
 import RoomCreepRelease from './creepRelease'
@@ -6,6 +6,7 @@ import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
 import { TransportTaskType } from '../taskTransport/types'
 import { CreepConfig, CreepData, CreepRole, RoleDatas } from '@/role/types/role'
+import { GetName } from './nameGetter'
 
 /**
  * 房间孵化管理模块
@@ -100,7 +101,29 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         })
     }
 
+    /**
+     * 外借 spawn
+     * 借出之后 spawn 将不会执行任何工作，完全交给对方模块
+     * 借 spawn 的模块需要做好房间运维能力的检查，如果填能量的单位死掉了可以先归还 spawn，待孵化完成后再借走。
+     */
+    public lendSpawn(): boolean {
+        if (this.room.memory.lendSpawn) return false
+        this.room.memory.lendSpawn = true
+        return true
+    }
+
+    /**
+     * 归还 spawn
+     * 借出之后可以通过该方法归还之前借出的 spawn
+     */
+    public remandSpawn(): void {
+        delete this.room.memory.lendSpawn
+    }
+
     public runSpawn(spawn: StructureSpawn): void {
+        // spawn 被外借了，不再处理孵化工作
+        if (this.room.memory.lendSpawn) return
+
         if (spawn.spawning) {
             /**
              * 开始孵化后向物流队列推送能量填充任务

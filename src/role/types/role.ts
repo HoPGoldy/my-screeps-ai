@@ -111,7 +111,14 @@ export interface RoleDatas {
     [CreepRole.Dismantler]: WarUnitData
     [CreepRole.BoostDismantler]: WarUnitData
     [CreepRole.Apocalypse]: ApocalypseData
-    [CreepRole.Defender]: EmptyData
+    [CreepRole.Defender]: DefenderData
+}
+
+interface DefenderData {
+    /**
+     * 防御单位要执行的强化
+     */
+    boostTaskId?: number
 }
 
 /**
@@ -208,7 +215,7 @@ interface transporterData {
     /**
      * 该工作单位的特殊身体部件，同 WorkData.bodyType
      */
-    bodyType: SepicalBodyType
+    bodyType?: SepicalBodyType
     /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里

@@ -40,10 +40,11 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
     insertMobilizeTask(squadType: SquadType, needBoost: boolean, squadCode: string): void {
         const memory = getMemory()
         memory.mobilizes[squadCode] = {
-            state: MobilizeState.WaitBoostPrepare,
+            state: needBoost ? MobilizeState.WaitBoostPrepare : MobilizeState.WaitSpawnEnergyPrepare,
             squadCode,
             squadType,
-            needBoost
+            needBoost,
+            data: {}
         }
     },
     insertAlonedCreep(creepNames: string[]) {

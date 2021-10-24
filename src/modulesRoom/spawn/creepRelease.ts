@@ -330,58 +330,6 @@ export default class RoomCreepRelease {
     }
 
     /**
-     * 孵化 boost 进攻一体机
-     * 
-     * @param bearTowerNum 抗塔等级 0-6，等级越高扛伤能力越强，伤害越低
-     * @param targetFlagName 目标旗帜名称
-     * @param keepSpawn 是否持续生成
-     */
-    public rangedAttacker(bearTowerNum: 0 | 1 | 3 | 5 | 2 | 4 | 6 = 6, targetFlagName: string = DEFAULT_FLAG_NAME.ATTACK, keepSpawn: boolean = false): string {
-        const { room } = this.spawner
-
-        if (!room.memory.boost) return `发布失败，未启动 Boost 进程，执行 ${room.name}.war() 来启动战争状态`
-        if (room.memory.boost.state !== 'waitBoost') return `无法发布，Boost 材料未准备就绪`
-
-        const creepName = GetName.apocalypse(room.name)
-
-        this.spawner.addTask(creepName, CreepRole.Apocalypse, {
-            targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
-            bearTowerNum,
-            keepSpawn
-        })
-
-        return `已发布进攻一体机 [${creepName}] [扛塔等级] ${bearTowerNum} [进攻旗帜名称] ${targetFlagName} ${keepSpawn ? '' : '不'}持续生成，GoodLuck Commander`
-    }
-
-    /**
-     * 孵化 boost 拆墙小组
-     * 
-     * @param targetFlagName 进攻旗帜名称
-     * @param keepSpawn 是否持续生成
-     */
-    public dismantleGroup(targetFlagName: string = '', keepSpawn: boolean = false): string {
-        const { room } = this.spawner
-
-        if (!room.memory.boost) return `发布失败，未启动 Boost 进程，执行 ${room.name}.war() 来启动战争状态`
-        if (room.memory.boost.state !== 'waitBoost') return `无法发布，Boost 材料未准备就绪`
-
-        const dismantlerName = GetName.boostDismantler(room.name)
-        const healerName = GetName.boostDoctor(room.name)
-
-        this.spawner.addTask(dismantlerName, CreepRole.BoostDismantler, {
-            targetFlagName: targetFlagName || DEFAULT_FLAG_NAME.ATTACK,
-            healerName,
-            keepSpawn
-        })
-        this.spawner.addTask(healerName, CreepRole.BoostDoctor, {
-            creepName: dismantlerName,
-            keepSpawn
-        })
-
-        return `已发布拆墙小组，正在孵化，GoodLuck Commander`
-    }
-
-    /**
      * 孵化基础进攻单位
      * 
      * @param targetFlagName 进攻旗帜名称

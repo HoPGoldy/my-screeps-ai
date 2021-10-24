@@ -244,56 +244,6 @@ export default class TowerExtension extends StructureTower {
     }
 
     /**
-     * 刷墙指令
-     * 维修 WALL 和 RAMPART
-     * 
-     * @returns 要刷墙返回 true，否则返回 false
-     */
-    private commandFillWall(): boolean {
-        // 还没到检查时间跳过
-        if (Game.time % repairSetting.wallCheckInterval) return false
-        // 如果有 tower 已经刷过墙了就跳过
-        if (this.room._hasFillWall) return false
-        // 能量不够跳过
-        if (this.store[RESOURCE_ENERGY] < repairSetting.energyLimit) return false
-
-        const focusWall = this.room.memory.focusWall
-        let targetWall: StructureWall | StructureRampart = null
-        // 该属性不存在 或者 当前时间已经大于关注时间 就刷新
-        if (!focusWall || (focusWall && Game.time >= focusWall.endTime)) {
-            // 获取所有没填满的墙
-            const walls = [...this.room[STRUCTURE_WALL], ...this.room[STRUCTURE_RAMPART]].filter(s => s.hits < s.hitsMax)
-
-            // 没有目标就啥都不干
-            if (walls.length <= 0) return false
-
-            // 找到血量最小的墙
-            targetWall = walls.sort((a, b) => a.hits - b.hits)[0]
-
-            // 将其缓存在内存里
-            this.room.memory.focusWall = {
-                id: targetWall.id,
-                endTime: Game.time + repairSetting.focusTime
-            }
-        }
-
-        // 获取墙壁
-        if (!targetWall) targetWall = Game.getObjectById(focusWall.id)
-        // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
-        if (!targetWall) {
-            delete this.room.memory.focusWall
-            return false
-        }
-
-        // 填充墙壁
-        this.repair(targetWall)
-
-        // 标记一下防止其他 tower 继续刷墙
-        this.room._hasFillWall = true
-        return true
-    }
-
-    /**
      * 搜索敌人
      * 
      * @param searchInterval 搜索间隔，每隔多久进行一次搜索
