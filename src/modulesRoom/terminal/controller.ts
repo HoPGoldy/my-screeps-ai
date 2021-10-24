@@ -58,7 +58,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
     private balanceResource() {
         if (this.room.storage.store.getFreeCapacity() > 0) {
             this.room.myStorage.balanceResource()
-            this.log('剩余空间不足，执行资源平衡')
+            this.log.normal('剩余空间不足，执行资源平衡')
             return
         }
 
@@ -71,7 +71,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
 
         const targetAmount = Math.min(store[targetRes], MAX_DROP_AMOUNT)
 
-        this.log(`剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
+        this.log.normal(`剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
         this.room.centerTransport.send(
             CenterStructure.Terminal,
             CenterStructure.Drop,
@@ -211,7 +211,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         if (dealResult === OK) {
             const crChange = (targetOrder.type == ORDER_BUY ? '+ ' : '- ') + (amount * targetOrder.price).toString() + ' Cr' 
             const introduce = `${(targetOrder.type == ORDER_BUY ? '卖出' : '买入')} ${amount} ${targetOrder.resourceType} 单价: ${targetOrder.price}`
-            this.log(`交易成功! ${introduce} ${crChange}`, Color.Green)
+            this.log.success(`交易成功! ${introduce} ${crChange}`)
             delete this.memory?.orderId
 
             this.setNextIndex()
@@ -220,7 +220,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
             return false
         }
         else if (dealResult === ERR_INVALID_ARGS) delete this.memory?.orderId
-        else this.log(`${this.room.name} 处理订单异常 ${dealResult}`, Color.Yellow)
+        else this.log.warning(`${this.room.name} 处理订单异常 ${dealResult}`)
     }
 
     /**
@@ -239,7 +239,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
             if (resourceAmount >= resource.amount) return this.setNextIndex()
         }
         else {
-            this.log(`未知监听类型 ${resource.mod}`, Color.Yellow)
+            this.log.warning(`未知监听类型 ${resource.mod}`)
             return this.setNextIndex()
         }
 
@@ -276,7 +276,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
 
             // 找不到对应的渠道
             default:
-                this.log(`未知渠道 ${resource.channel}`, Color.Yellow)
+                this.log.warning(`未知渠道 ${resource.channel}`)
                 return this.setNextIndex()
             break
         }
@@ -301,7 +301,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
                 const result = Game.market.changeOrderPrice(order.id, getOrderPrice(resourceType, type))
 
                 if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, Color.Yellow)
+                    this.log.warning(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
                     return this.setNextIndex()
                 }
             }
@@ -311,7 +311,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
                 const result = Game.market.extendOrder(order.id, amount - order.remainingAmount)
 
                 if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                    this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, Color.Yellow)
+                    this.log.warning(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
                 }
             }
         }
@@ -326,10 +326,10 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
             })
 
             if (result === ERR_NOT_ENOUGH_RESOURCES) {
-                this.log(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`, Color.Yellow)
+                this.log.warning(`没有足够的 credit 来为 ${resourceType} ${type} 缴纳挂单费用`)
             }
             else if (result === ERR_FULL) {
-                this.log(`订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`, Color.Yellow)
+                this.log.warning(`订单数超过上限，无法为 ${resourceType} ${type} 创建新订单`)
             }
         }
 

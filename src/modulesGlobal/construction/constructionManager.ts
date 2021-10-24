@@ -54,7 +54,7 @@ export const createConstructionManager = function (effects: CreateOptions) {
             }
             // 放置失败，下次重试
             else if (result !== OK && result !== ERR_FULL && result !== ERR_RCL_NOT_ENOUGH) {
-                effects.log(`工地 ${type} 无法放置，位置 [${sitePos}]，createConstructionSite 结果 ${result}`, ['建造控制器'], Color.Yellow)
+                effects.log(`工地 ${type} 无法放置，位置 [${sitePos}]，createConstructionSite 结果 ${result}`, '建造控制器', Color.Yellow)
                 return true
             }
 

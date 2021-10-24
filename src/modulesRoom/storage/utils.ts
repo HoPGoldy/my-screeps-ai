@@ -1,4 +1,4 @@
-import { Color, colorful, createRoomLink } from "@/modulesGlobal"
+import { green, red, yellow, createRoomLink } from "@/modulesGlobal"
 
 /**
  * 统计当前所有房间的存储状态
@@ -17,16 +17,20 @@ export const showStorageAmountOverview = function(): string {
      * @param warningLimit 报警的颜色等级
      */
     const addColor = (capacity: number, structureType: STRUCTURE_TERMINAL | STRUCTURE_STORAGE): string => {
-        if (capacity === undefined) return colorful('无法访问', Color.Red)
+        if (capacity === undefined) return red('无法访问')
 
-        const color = capacity > colorLevel[structureType].warning ? Color.Green : 
-            capacity > colorLevel[structureType].danger ? Color.Yellow : Color.Red
+        const colorFunc = capacity > colorLevel[structureType].warning ? green : 
+            capacity > colorLevel[structureType].danger ? yellow : red
 
-        return colorful(_.padRight(capacity.toString(), 9), color)
+        return colorFunc(_.padRight(capacity.toString(), 9))
     }
 
     const logs = [
-        `存储剩余容量 [storage 报警限制] ${colorful(colorLevel[STRUCTURE_STORAGE].warning.toString(), Color.Yellow)} ${colorful(colorLevel[STRUCTURE_STORAGE].danger.toString(), Color.Red)} [terminal 报警限制] ${colorful(colorLevel[STRUCTURE_TERMINAL].warning.toString(), Color.Yellow)} ${colorful(colorLevel[STRUCTURE_TERMINAL].danger.toString(), Color.Red)}`,
+        `存储剩余容量 [storage 报警限制] ` +
+        `${yellow(colorLevel[STRUCTURE_STORAGE].warning.toString())} ` +
+        `${red(colorLevel[STRUCTURE_STORAGE].danger.toString())} [terminal 报警限制] ` +
+        `${yellow(colorLevel[STRUCTURE_TERMINAL].warning.toString())} ` +
+        `${red(colorLevel[STRUCTURE_TERMINAL].danger.toString())}`,
         '',
         _.padRight('ROOM', 8) + _.padRight('STORAGE', 9) + _.padRight('TERMINAL', 9),
         ...Object.values(Game.rooms).map(room => {

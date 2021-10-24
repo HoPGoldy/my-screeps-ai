@@ -1,4 +1,4 @@
-import { Color, colorful, createHelp } from '@/modulesGlobal/console'
+import { colorful, createHelp } from '@/modulesGlobal/console'
 import { getName } from '@/utils'
 
 /**
@@ -52,7 +52,7 @@ export default class RemoteConsole extends Room {
         const logs: string[] = []
         logs.push(...remoteList.map(info => {
             let log = `[${info.remoteRoomName} source ${info.sourceId}] `
-            log += info.reharvestTick ? colorful(`暂停至 ${info.reharvestTick}`) : '采集中'
+            log += info.reharvestTick ? colorful.yellow(`暂停至 ${info.reharvestTick}`) : '采集中'
             return log
         }))
 

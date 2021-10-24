@@ -53,12 +53,17 @@ const COLOR_VALUE: { [name in Color]: string } = {
  * @param colorName 要添加的颜色常量字符串
  * @param bolder 是否加粗
  */
-export function colorful(content: string, colorName: Color = null, bold: boolean = false): string {
+export const colorful = function (content: string | number, colorName: Color = null, bold: boolean = false): string {
     const colorStyle = colorName ? `color: ${COLOR_VALUE[colorName]};` : ''
     const boldStyle = bold ? 'font-weight: bold;' : ''
 
     return `<text style="${[ colorStyle, boldStyle ].join(' ')}">${content}</text>`
 }
+
+export const green = (content: string | number, bold?: boolean) => colorful(content, Color.Green, bold)
+export const red = (content: string | number, bold?: boolean) => colorful(content, Color.Red, bold)
+export const yellow = (content: string | number, bold?: boolean) => colorful(content, Color.Yellow, bold)
+export const blue = (content: string | number, bold?: boolean) => colorful(content, Color.Blue, bold)
 
 /**
  * 生成控制台链接
@@ -96,20 +101,29 @@ export function createConst(name: string, constant: string): string {
  * 全局日志
  * 
  * @param content 日志内容
- * @param prefixes 前缀中包含的内容
+ * @param prefix 日志前缀
  * @param color 日志前缀颜色
  * @param notify 是否发送邮件
  */
-export function log(content: string, prefixes: string[] = [], color: Color = null, notify: boolean = false): OK {
+export function log(content: string, prefix: string = '', color: Color = null, notify: boolean = false): void {
     // 有前缀就组装在一起
-    let prefix = prefixes.length > 0 ? `【${prefixes.join(' ')}】 ` : ''
+    let prefixContent = prefix ? `【${prefix}】 ` : ''
     // 指定了颜色
-    prefix = colorful(prefix, color, true)
+    prefix = colorful(prefixContent, color, true)
 
     const logContent = `${prefix}${content}`
     console.log(logContent)
     // 转发到邮箱
     if (notify) Game.notify(logContent)
-
-    return OK
 }
+
+/**
+ * 生成快捷日志方法
+ * @param prefix 模块日志前缀
+ */
+export const createLog = (prefix: string) => ({
+    normal: (content: string) => log(content, prefix),
+    success: (content: string) => log(content, prefix, Color.Green),
+    warning: (content: string) => log(content, prefix, Color.Blue),
+    error: (content: string) => log(content, prefix, Color.Red, true),
+})

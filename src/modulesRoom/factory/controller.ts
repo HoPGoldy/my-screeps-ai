@@ -1,4 +1,4 @@
-import { Color, colorful } from '@/modulesGlobal';
+import { green, yellow } from '@/modulesGlobal';
 import FactoryBase from './base';
 import { FactoryState, InteractAction, TOP_TARGET } from './constant';
 import StageGetResource from './stageGetResource';
@@ -172,8 +172,8 @@ export default class RoomFactoryController extends FactoryBase {
         if (!this.memory) return `[${this.room.name} factory] 工厂未启用`
         const memory = this.memory
 
-        const workStats = memory.pause ? colorful('[暂停中]', Color.Yellow) :
-        memory.sleep ? colorful(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`, Color.Yellow) : colorful('工作中', Color.Green)
+        const workStats = memory.pause ? yellow('[暂停中]') :
+        memory.sleep ? yellow(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`) : green('工作中')
 
         // 自己加入的生产线
         const joinedChain = memory.depositTypes ? memory.depositTypes.join(', ') : '未指定'

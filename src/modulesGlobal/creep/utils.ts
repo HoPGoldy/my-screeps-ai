@@ -1,5 +1,5 @@
 import { CreepData } from "@/role/types/role"
-import { Color, colorful } from "../console/utils"
+import { green, yellow, red } from "../console/utils"
 
 /**
  * creep 移除配置项
@@ -72,8 +72,8 @@ export const showCreep = function (): string {
         
         // 检查该单位的存活状态
         let liveStats: string = ''
-        if (spawning) liveStats = colorful('孵化中', Color.Yellow)
-        else liveStats = `${colorful('存活', Color.Green)} 剩余生命 ${ticksToLive}`
+        if (spawning) liveStats = yellow('孵化中')
+        else liveStats = `${green('存活')} 剩余生命 ${ticksToLive}`
 
         format[memory.spawnRoom].push(`  - [${name}] [角色] ${memory.role} [当前状态] ${liveStats}`)
     }
@@ -81,7 +81,7 @@ export const showCreep = function (): string {
     // 显示所有还没有孵化的 creep
     Object.entries(Memory.waitSpawnCreeps).map(([creepName, spawnRoomName]) => {
         if (!(spawnRoomName in format)) format[spawnRoomName] = [ `${spawnRoomName} 下属 creep：` ]
-        format[spawnRoomName].push(`  - [${creepName}] [当前状态] ${colorful('待孵化', Color.Red)}}`)
+        format[spawnRoomName].push(`  - [${creepName}] [当前状态] ${red('待孵化')}}`)
     })
 
     let logs = []

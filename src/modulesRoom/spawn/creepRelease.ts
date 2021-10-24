@@ -111,7 +111,7 @@ export default class RoomCreepRelease {
             if (keepWhenDiedCreep.length > 0) logContent += `[将在死亡后继续孵化] ${keepWhenDiedCreep.join(',')}`
             if (newSpawnCreep.length > 0) logContent += `[新孵化] ${newSpawnCreep.join(',')}`
             
-            log(logContent, [room.name])
+            log(logContent, room.name)
         }
     }
 
@@ -248,7 +248,7 @@ export default class RoomCreepRelease {
     public remoteHelper(remoteRoomName: string): void {
         const room = Game.rooms[remoteRoomName]
         if (!room) {
-            log(`目标房间没有视野，无法发布支援单位`, [ this.spawner.room.name, 'CreepRelease' ], Color.Yellow)
+            log(`目标房间没有视野，无法发布支援单位`, this.spawner.room.name + ' CreepRelease', Color.Yellow)
             return
         }
 

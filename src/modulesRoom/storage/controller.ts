@@ -41,10 +41,10 @@ export default class StorageController extends RoomAccessor<undefined> {
         // 能量太少了，请求资源共享
         if (energyAmount < ENERGY_REQUEST_LIMIT && this.terminal) {
             const room = this.room.share.request(RESOURCE_ENERGY, ENERGY_REQUEST_LIMIT - energyAmount)
-            if (room) this.log(`能量过低（剩余：${energyAmount}），将接受 ${room.name} 的能量支援（共享数量：${ENERGY_REQUEST_LIMIT - energyAmount}）`)
+            if (room) this.log.normal(`能量过低（剩余：${energyAmount}），将接受 ${room.name} 的能量支援（共享数量：${ENERGY_REQUEST_LIMIT - energyAmount}）`)
             else {
                 // 控制的房间多了才会打印这个 log，不然也挺烦的
-                if (Object.keys(Game.spawns).length > 3) this.log(`能量过低（${energyAmount}），但未找到可以提供支援的房间`)
+                if (Object.keys(Game.spawns).length > 3) this.log.normal(`能量过低（${energyAmount}），但未找到可以提供支援的房间`)
             }
         }
     }

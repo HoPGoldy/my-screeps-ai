@@ -131,7 +131,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         // 这个任务被其他模块移除了，不再孵化
         if (!(task.name in Memory.waitSpawnCreeps)) {
             this.removeCurrentTask()
-            this.log(`${task.name} 已被移除，禁止孵化`)
+            this.log.normal(`${task.name} 已被移除，禁止孵化`)
             return
         }
         // 进行生成
@@ -140,7 +140,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         // 孵化成功后移除任务
         if (spawnResult === OK) {
             this.removeCurrentTask()
-            // this.log(`执行成功，移除 ${task}`)
+            // this.log.normal(`执行成功，移除 ${task}`)
         }
         // 能量不足就挂起任务，但是如果是重要角色的话就会卡住然后优先孵化
         else if (
@@ -174,14 +174,14 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
             return OK
         }
         else if (spawnResult == ERR_NAME_EXISTS) {
-            this.log(`${name} 已经存在 ${this.roomName} 将不再生成`)
+            this.log.normal(`${name} 已经存在 ${this.roomName} 将不再生成`)
             // creep 已经存在，把数据直接更新给他
             updateCreepData(name, data)
             // 这里返回 ok，然后让外层方法移除对应的孵化任务
             return OK
         }
         else {
-            // this.log(`生成失败, ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`, Color.Red)
+            // this.log.error(`生成失败, ${creepConfig.spawnRoom} 任务 ${configName} 挂起, 错误码 ${spawnResult}`)
             return spawnResult
         }
     }

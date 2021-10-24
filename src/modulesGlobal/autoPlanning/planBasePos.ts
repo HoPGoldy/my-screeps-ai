@@ -171,11 +171,11 @@ export const setBornCenter = function (firstSpawn: StructureSpawn) {
         // 设置中心点位，上面找到墙的话就给个提示
         if (setBaseCenter(firstSpawn.room, centerPos) === OK) {
             const warningTip = hasWallInRange ? `，但是以该目标为中心的 ${BASE_SIZE}*${BASE_SIZE} 区域内存在墙体，将导致有建筑无法建筑` : '';
-            log(`已将 ${centerPos} 设置为基地中心点${warningTip}`, ['自动规划'], hasWallInRange ? Color.Yellow : Color.Green)
+            log(`已将 ${centerPos} 设置为基地中心点${warningTip}`, '自动规划', hasWallInRange ? Color.Yellow : Color.Green)
         }
-        else log(`${centerPos} 无法设置为基地中心点，请手动设置`, ['自动规划'], Color.Yellow)
+        else log(`${centerPos} 无法设置为基地中心点，请手动设置`, '自动规划', Color.Yellow)
     }
     catch (e) {
-        log(`[${x - offsetX}, ${y - offsetY}, ${roomName}] 无法设置为基地中心点，请手动设置`, ['自动规划'], Color.Yellow)
+        log(`[${x - offsetX}, ${y - offsetY}, ${roomName}] 无法设置为基地中心点，请手动设置`, '自动规划', Color.Yellow)
     }
 }

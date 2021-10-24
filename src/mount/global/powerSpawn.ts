@@ -1,4 +1,4 @@
-import { Color, colorful, createRoomLink } from "@/modulesGlobal"
+import { red, createRoomLink } from "@/modulesGlobal"
 
 // 查看当前启用的 powerSpawn 工作状态
 export default function(): string {
@@ -9,7 +9,7 @@ export default function(): string {
     // 遍历保存的所有房间，统计 ps 状态
     const stats = Memory.psRooms.map(roomName => {
         const room = Game.rooms[roomName]
-        if (!room || !room.powerSpawn) return `${colorful('●', Color.Red, true)} ${createRoomLink(roomName)} 无法访问该房间中的 powerSpawn，已移除。`
+        if (!room || !room.powerSpawn) return `${red('●', true)} ${createRoomLink(roomName)} 无法访问该房间中的 powerSpawn，已移除。`
         workingPowerSpawn.push(roomName)
 
         return room.powerSpawn.stats()

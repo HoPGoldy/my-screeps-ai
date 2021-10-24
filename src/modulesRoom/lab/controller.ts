@@ -1,4 +1,4 @@
-import { Color, colorful } from '@/modulesGlobal'
+import { yellow, blue } from '@/modulesGlobal'
 import { getUniqueKey } from '@/utils'
 import { TransportTaskType } from '../taskTransport/types'
 import RoomAccessor from '../RoomAccessor'
@@ -67,7 +67,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         (this.memory.inLab || []).forEach(id => {
             // 如果出现了 lab 找不到，则有可能被拆了，暂停运行
             if (!this.labInfos[id]) {
-                this.log(`找不到 lab [${id}]，集群已暂停运行`, Color.Red, true)
+                this.log.error(`找不到 lab [${id}]，集群已暂停运行`)
                 return this.off()
             }
             if (this.labInfos[id].type != LabType.Boost) this.labInfos[id].type = LabType.Base
@@ -250,7 +250,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         // 都就位了就进入下一个阶段
         if (allResourceReady) {
-            this.log(`boost 材料准备完成，开始填充能量`, Color.Green)
+            this.log.success(`boost 材料准备完成，开始填充能量`)
             task.state = BoostState.GetEnergy
         }
         // 否则就发布资源移入任务
@@ -364,7 +364,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         this.removeBoostTask(task.id)
         this.initLabInfo()
-        this.log(`强化材料回收完成`, Color.Green)
+        this.log.success(`强化材料回收完成`)
     }
 
     /**
@@ -402,11 +402,11 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 resource.number - this.room.myStorage.getResource(resource.target).total
             )
 
-            this.log(`指定合成目标：${resource.target}`)
+            this.log.normal(`指定合成目标：${resource.target}`)
         }
         // 合成不了
         else {
-            // this.log(`无法合成 ${resource.target}`, Color.Yellow)
+            // this.log.warning(`无法合成 ${resource.target}`)
             this.setNextIndex()
         }
     }
@@ -476,7 +476,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 return
             }
             else if (runResult !== OK) {
-                this.log(`runReaction 异常，错误码 ${runResult}`, Color.Red)
+                this.log.error(`runReaction 异常，错误码 ${runResult}`)
             }
         }
     }
@@ -526,7 +526,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 获取资源及其数量
         const needResourcesName = REACTION_SOURCE[resourceType]
         if (!needResourcesName) {
-            this.log(`reactionSource 中未定义 ${resourceType}`, Color.Yellow)
+            this.log.warning(`reactionSource 中未定义 ${resourceType}`)
             return 0
         }
         // 将底物按数量从小到大排序
@@ -588,18 +588,18 @@ export default class LabController extends RoomAccessor<LabMemory> {
         const reactionLogs = []
         if (this.inLabs.length < 2) {
             if (inLabIds.length >= 2) {
-                if (this.inLabs.length >= 2) reactionLogs.push(colorful('底物 lab 被 boost 任务借用，暂停反应', Color.Yellow))
-                else reactionLogs.push(colorful('底物 lab 不足，暂停反应', Color.Yellow))
+                if (this.inLabs.length >= 2) reactionLogs.push(yellow('底物 lab 被 boost 任务借用，暂停反应'))
+                else reactionLogs.push(yellow('底物 lab 不足，暂停反应'))
             }
-            else reactionLogs.push(colorful('未设置底物 lab，暂未启用', Color.Yellow))
+            else reactionLogs.push(yellow('未设置底物 lab，暂未启用'))
         }
         else {
-            if (pause) reactionLogs.push(colorful('暂停中', Color.Yellow))
+            if (pause) reactionLogs.push(yellow('暂停中'))
             reactionLogs.push(`- [状态] ${reactionState}`)
 
             if (reactionState === LabState.GetTarget) {
                 const targetLogs = LAB_TARGETS.map(({ target, number }, index) => {
-                    let log = `- [待选目标] ${colorful(target, Color.Blue)} [目标数量] ${colorful(number.toString(), Color.Blue)}`
+                    let log = `- [待选目标] ${blue(target)} [目标数量] ${blue(number)}`
                     if (reactionIndex === index) log += ' <= 正在检查'
                     return log
                 })
@@ -607,7 +607,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             }
             else if (reactionState === LabState.GetResource) {
                 const res = LAB_TARGETS[reactionIndex]
-                logs.push(`- [正在获取资源] ${colorful(res.target, Color.Blue)} 目标合成数量 ${reactionAmount}`) 
+                logs.push(`- [正在获取资源] ${blue(res.target)} 目标合成数量 ${reactionAmount}`) 
             }
             // 在工作就显示工作状态
             else if (reactionState === LabState.Working) {
@@ -621,7 +621,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             }
             else if (reactionState === LabState.PutResource) {
                 const res = LAB_TARGETS[reactionIndex]
-                logs.push(`- [正在移出资源] ${colorful(res.target, Color.Blue)}`) 
+                logs.push(`- [正在移出资源] ${blue(res.target)}`) 
             }
         }
         logs.push(reactionLogs.join(' '))

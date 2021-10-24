@@ -128,7 +128,7 @@ declare global {
      * 来自于 ./extension.ts
      */
     interface Creep {
-        log(content:string, color?: Color, notify?: boolean): void
+        log(content: string, color?: Color, notify?: boolean): void
         onWork(): void
         checkEnemy(): boolean
         goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode

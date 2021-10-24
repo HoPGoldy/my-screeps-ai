@@ -1,5 +1,5 @@
 import { DEPOSIT_MAX_COOLDOWN, OBSERVER_DEPOSIT_MAX, OBSERVER_INTERVAL, OBSERVER_POWERBANK_MAX } from './constant'
-import { Color, colorful, createRoomLink } from '@/modulesGlobal/console'
+import { green, createRoomLink } from '@/modulesGlobal/console'
 import RoomAccessor from '../RoomAccessor'
 import { ObserverMemory } from './types'
 
@@ -77,7 +77,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
             delete this.memory.checkRoomName
             return
         }
-        // this.log(`搜索房间 ${room.name}`)
+        // this.log.normal(`搜索房间 ${room.name}`)
 
         // 还没插旗的话就继续查找 deposit
         if (depoList.length < OBSERVER_DEPOSIT_MAX) {
@@ -91,7 +91,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
 
                 // 确认完成，插旗
                 this.harvestDeposit(deposit)
-                this.log(`${checkRoomName} 检测到新 deposit, 已插旗`, Color.Green)
+                this.log.success(`${checkRoomName} 检测到新 deposit, 已插旗`)
             })
         }
 
@@ -108,7 +108,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     
                 // 确认完成，插旗
                 this.harvestPowerBank(powerBank)
-                this.log(`${checkRoomName} 检测到新 pb, 已插旗`, Color.Green)  
+                this.log.success(`${checkRoomName} 检测到新 pb, 已插旗`)  
             })
         }
 
@@ -169,7 +169,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
         // 执行视野获取
         const roomName = watchRooms[watchIndex]
         const obResult = this.observer.observeRoom(roomName)
-        // this.log(`ob 房间 ${roomName}`)
+        // this.log.normal(`ob 房间 ${roomName}`)
 
         // 标志该房间视野已经获取，可以进行检查
         if (obResult === OK) this.memory.checkRoomName = roomName
@@ -222,7 +222,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
      */
     public showList(): string {
         const roomList = this.memory.watchRooms.map((room, index) => {
-            if (index === this.memory.watchIndex) return colorful(room, Color.Green)
+            if (index === this.memory.watchIndex) return green(room)
             else return room
         }).join(' ')
 

@@ -1,4 +1,4 @@
-import { Color, colorful } from "@/modulesGlobal"
+import { red, yellow } from "@/modulesGlobal"
 
 /**
  * 规划与确认发射指令
@@ -53,7 +53,7 @@ export const nuker = function () {
         const targetFlag = Game.flags[nukerDirective[source]]
         return `${source} > ${nukerDirective[source]} [${targetFlag.pos.roomName} ${targetFlag.pos.x}/${targetFlag.pos.y}]`
     }))
-    logs.push(`\n确认发射请键入 ${colorful('confirmNuker', Color.Red)}，取消发射请键入 ${colorful('cancelnuker', Color.Yellow)}`)
+    logs.push(`\n确认发射请键入 ${red('confirmNuker')}，取消发射请键入 ${yellow('cancelnuker')}`)
 
     return logs.join('\n')
 }

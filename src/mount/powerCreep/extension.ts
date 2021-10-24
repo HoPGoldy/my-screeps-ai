@@ -24,7 +24,7 @@ export default class PowerCreepExtension extends PowerCreep {
      */
     log(content: string, color: Color = undefined, notify: boolean = false): void {
         // 因为 pc 可能未孵化，所以这里需要特别判断一下
-        if (!this.room) log(content, [ this.name ], color, notify)
+        if (!this.room) log(content, this.name, color, notify)
         else this.room.log(content, this.name, color, notify)
     }
 

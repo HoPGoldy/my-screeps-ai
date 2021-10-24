@@ -1,4 +1,3 @@
-import { Color } from '@/modulesGlobal'
 import RoomAccessor from '../RoomAccessor'
 import { ENERGY_SHARE_LIMIT } from '../storage/constant'
 import { CenterStructure } from '../taskCenter/types'
@@ -112,7 +111,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         const { amount: taskAmount, resourceType, target } = this.memory
 
         if (taskAmount <= 0) {
-            this.log(`共享资源的数量不可为负 (${resourceType}/${taskAmount})，任务已移除`, Color.Yellow)
+            this.log.warning(`共享资源的数量不可为负 (${resourceType}/${taskAmount})，任务已移除`)
             this.memory = undefined
             return
         }
@@ -133,7 +132,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         // console.log(this.roomName, '共享任务计算结果', target, resourceType, sendAmount, cost)
 
         if (sendAmount <= 0) {
-            this.log(`${this.roomName} Terminal 剩余空间不足 (${resourceType}/${taskAmount})，任务已移除`, Color.Yellow)
+            this.log.warning(`${this.roomName} Terminal 剩余空间不足 (${resourceType}/${taskAmount})，任务已移除`)
             this.memory = undefined
             return
         }
@@ -182,10 +181,10 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         // 任务执行成功，更新共享任务
         if (sendResult == OK) this.updateTaskAmount(sendAmount)
         else if (sendResult == ERR_INVALID_ARGS) {
-            this.log(`共享任务参数异常，无法执行传送，已移除`, Color.Yellow)
+            this.log.warning(`共享任务参数异常，无法执行传送，已移除`)
             this.memory = undefined
         }
-        else this.log(`执行共享任务出错, 错误码：${sendResult}`, Color.Yellow)
+        else this.log.warning(`执行共享任务出错, 错误码：${sendResult}`)
     }
 
     /**
@@ -199,7 +198,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
     ) {
         const { total } = terminal.room.myStorage.getResource(resourceType)
         if (total < sendAmount) {
-            this.log(
+            this.log.normal(
                 `由于 ${resourceType} 资源不足 ${terminal.store[resourceType] || 0}/${sendAmount}` +
                 `${target} 的共享任务已被移除`
             )

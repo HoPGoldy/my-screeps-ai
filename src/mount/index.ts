@@ -77,7 +77,7 @@ export const extensionAppPlugin: AppLifecycleCallbacks = {
         const spawns = Object.values(Game.spawns)
         if (spawns.length > 1) return
     
-        log('欢迎来到 Screeps 的世界!\n', ['hopgoldy bot'], Color.Green)
+        log('欢迎来到 Screeps 的世界!\n', 'hopgoldy bot', Color.Green)
         // 设置中心点位并执行初始化配置
         setBornCenter(spawns[0])
         spawns[0].room.controller.onLevelChange(1)
@@ -85,7 +85,7 @@ export const extensionAppPlugin: AppLifecycleCallbacks = {
     },
 
     reset: () => {
-        log('重新挂载拓展', ['global'], Color.Green)
+        log('重新挂载拓展', 'global', Color.Green)
 
         // 存储的兜底工作
         initStorage()

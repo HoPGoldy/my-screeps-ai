@@ -1,4 +1,3 @@
-import { Color } from "@/modulesGlobal"
 import FactoryBase from "./base"
 import { FactoryState } from "./constant"
 import { FactoryTask } from "./types"
@@ -39,7 +38,7 @@ export default class StageWorking extends FactoryBase {
         // 这里只是个兜底，一般情况下在上面的 this.canContinueProduce() 判断后就已经确定了是否要进入下个阶段
         else if (actionResult === ERR_NOT_ENOUGH_RESOURCES) this.setState(FactoryState.PutResource)
         else if (actionResult === ERR_INVALID_TARGET || actionResult === ERR_BUSY) this.requirePower()
-        else this.log(`working 阶段出现异常，错误码: ${actionResult}`, Color.Red)
+        else this.log.error(`working 阶段出现异常，错误码: ${actionResult}`)
     }
 
     /**
@@ -62,6 +61,6 @@ export default class StageWorking extends FactoryBase {
      */
     private requirePower(): void {
         if (this.room.controller.isPowerEnabled) this.room.power.addTask(PWR_OPERATE_FACTORY)
-        else this.log(`请求 ${this.memory.level} 级 PWR_OPERATE_FACTORY, 但房间并未激活 power`, Color.Yellow)
+        else this.log.warning(`请求 ${this.memory.level} 级 PWR_OPERATE_FACTORY, 但房间并未激活 power`)
     }
 }

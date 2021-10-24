@@ -1,4 +1,4 @@
-import { Color, log } from '@/modulesGlobal/console/utils'
+import { createLog } from '@/modulesGlobal/console/utils'
 import { getUniqueKey } from '@/utils'
 import RoomAccessor from '../RoomAccessor'
 
@@ -16,7 +16,13 @@ export default class TaskController<
      */
     constructor(roomName: string, memoryKey: string) {
         super(`roomTask ${memoryKey}`, roomName, memoryKey, { tasks: [], creeps: {} })
+        this.log = createLog('taskController')
     }
+
+    /**
+     * 发送日志
+     */
+    protected log: ReturnType<typeof createLog>
 
     /**
      * 任务队列的快捷访问
@@ -406,17 +412,6 @@ export default class TaskController<
      */
     public countWorkTime(): void {
         this.totalWorkTime += 1
-    }
-
-    /**
-     * 发送日志
-     * 
-     * @param content 日志内容
-     * @param color 日志前缀颜色
-     * @param notify 是否发送邮件
-     */
-    protected log(content: string, color: Color = undefined, notify: boolean = false): void {
-        log(content, ['taskController'], color, notify)
     }
 
     /**

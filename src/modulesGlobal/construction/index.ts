@@ -52,7 +52,7 @@ const getNearSite = function (pos: RoomPosition): ConstructionSite {
     // 这里的解决方法是有目标但是又到不了附近，就往那边走着（因为寻路是可以正常找到路径的）
     const result = pos.findClosestByPath(targetSites)
     if (!result) {
-        log(`发现了无法抵达的工地：${targetSites.map(site => site.pos)}，出发位置 ${pos}，工地已移除`, ['建造控制器'], Color.Yellow)
+        log(`发现了无法抵达的工地：${targetSites.map(site => site.pos)}，出发位置 ${pos}，工地已移除`, '建造控制器', Color.Yellow)
         return targetSites[0]
     }
     return result

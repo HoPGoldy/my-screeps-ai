@@ -8,7 +8,7 @@
  */
 
 import { SourceMapConsumer } from "source-map"
-import { colorful, Color } from "./console/utils"
+import { colorful } from "./console/utils"
 
 // 缓存 SourceMap
 let consumer = null
@@ -86,7 +86,7 @@ export const errorMapper = function (next: () => any): void {
                 `沙盒模式无法使用 source-map - 显示原始追踪栈<br>${_.escape(e.stack)}` :
                 `${_.escape(sourceMappedStackTrace(e))}`
             
-            console.log(colorful(errorMessage, Color.Red))
+            console.log(colorful.red(errorMessage))
         }
         // 处理不了，直接抛出
         else throw e

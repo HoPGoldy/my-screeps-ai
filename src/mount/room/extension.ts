@@ -12,10 +12,11 @@ import { Color, createRoomLink, log } from '@/modulesGlobal'
 
 export default class RoomExtension extends Room {
     /**
-     * 全局日志
+     * 房间打印日志
+     * 会包含房间的信息
      * 
      * @param content 日志内容
-     * @param prefixes 前缀中包含的内容
+     * @param instanceName 实例名称
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
@@ -23,8 +24,8 @@ export default class RoomExtension extends Room {
         // 为房间名添加超链接
         const roomName = createRoomLink(this.name)
         // 生成前缀并打印日志
-        const prefixes = instanceName ? [ roomName, instanceName ] : [ roomName ]
-        log(content, prefixes, color, notify)
+        const prefix = instanceName ? roomName + ' ' + instanceName : roomName
+        log(content, prefix, color, notify)
     }
 
     /**

@@ -1,4 +1,5 @@
 import { Color } from "@/modulesGlobal";
+import { MoveInfo, MoveOpt } from "@/modulesGlobal/move/types";
 
 declare global {
     /**

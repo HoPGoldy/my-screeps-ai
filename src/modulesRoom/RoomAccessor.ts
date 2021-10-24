@@ -1,4 +1,4 @@
-import { Color, createRoomLink, log } from "@/modulesGlobal/console/utils"
+import { Color, createLog, createRoomLink, log } from "@/modulesGlobal/console/utils"
 
 /**
  * 房间访问器
@@ -24,6 +24,8 @@ export default class RoomAccessor<MemoryType> {
      */
     protected defaultMemory: MemoryType
 
+    protected log: ReturnType<typeof createLog>
+
     /**
      * 初始化房间访问
      * 
@@ -37,6 +39,7 @@ export default class RoomAccessor<MemoryType> {
         this.moduleName = moduleName
         this.memoryKey = memoryKey
         this.defaultMemory = defaultMemory
+        this.log = createLog(createRoomLink(this.roomName) + ' ' + this.moduleName)
     }
 
     /**
@@ -57,7 +60,7 @@ export default class RoomAccessor<MemoryType> {
      */
     public get room(): Room {
         if (!Game.rooms[this.roomName]) {
-            log(`无法访问房间实例，模块已停止运行`, [this.roomName, this.moduleName], Color.Red, true)
+            this.log.error(`无法访问房间实例，模块已停止运行`)
             throw new Error(`${this.roomName} ${this.moduleName} 房间实例不存在`)
         }
         return Game.rooms[this.roomName]
@@ -71,18 +74,5 @@ export default class RoomAccessor<MemoryType> {
 
         if (!newMemory) delete memory[this.memoryKey]
         else memory[this.memoryKey] = newMemory
-    }
-
-    /**
-     * 显示日志
-     * 
-     * @param content 日志内容
-     * @param color 日志前缀颜色
-     * @param notify 是否发送邮件
-     */
-    protected log(content: string, color: Color | undefined = undefined, notify: boolean = false): void {
-        // 为房间名添加超链接
-        const roomName = createRoomLink(this.roomName)
-        log(content, [ roomName, this.moduleName ], color, notify)
     }
 }

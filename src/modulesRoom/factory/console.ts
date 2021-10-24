@@ -1,4 +1,4 @@
-import { Color, colorful, createHelp } from '@/modulesGlobal/console'
+import { yellow, createHelp } from '@/modulesGlobal/console'
 
 /**
  * Factory 上的用户控制接口
@@ -30,8 +30,8 @@ export default class FactoryConsole extends Room {
             return `[${this.name} factory] ${log}`
         }
         else if (result === ERR_INVALID_TARGET) {
-            const command = colorful(`Game.rooms.${this.name}.factory.setlevel`, Color.Yellow)
-            const help = colorful(`Game.rooms.${this.name}.factory.help`, Color.Yellow) + '()'
+            const command = yellow(`Game.rooms.${this.name}.factory.setlevel`)
+            const help = yellow(`Game.rooms.${this.name}.factory.help`) + '()'
             return `[${this.name} factory] 设置失败，请先执行 ${command}, 查看 ${help} 获取更多帮助`
         }
     }
@@ -44,7 +44,7 @@ export default class FactoryConsole extends Room {
 
         if (actionResult === ERR_NOT_FOUND) return `[${this.name} factory] 尚未启用`
         if (actionResult === OK) {
-            const stopCommand = colorful(`delete Game.rooms.${this.name}.memory.factory.remove`, Color.Yellow)
+            const stopCommand = yellow(`delete Game.rooms.${this.name}.memory.factory.remove`)
             return `[${this.name} factory] 已启动废弃进程，正在搬出所有资源，执行 ${stopCommand} 以终止进程`
         }
     }
@@ -109,7 +109,7 @@ export default class FactoryConsole extends Room {
     public fhelp(): string {
         return createHelp({
             name: 'Factory 控制台',
-            describe: `工厂分为自动运行模式和手动运行模式，自动运行模式下会根据设置的目标 ${colorful('.setlevel', Color.Yellow)}() 和生产线 ${colorful('.setchain', Color.Yellow)}() 自行安排生产任务，手动运行模式下将一直生产指定 ${colorful('.set', Color.Yellow)}() 的目标。`,
+            describe: `工厂分为自动运行模式和手动运行模式，自动运行模式下会根据设置的目标 ${yellow('.setlevel')}() 和生产线 ${yellow('.setchain')}() 自行安排生产任务，手动运行模式下将一直生产指定 ${yellow('.set')}() 的目标。`,
             api: [
                 {
                     title: '设置工厂等级',

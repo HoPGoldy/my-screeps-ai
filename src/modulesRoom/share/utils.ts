@@ -1,4 +1,4 @@
-import { Color, colorful } from "@/modulesGlobal"
+import { red, blue, yellow } from "@/modulesGlobal"
 
 /**
  * 格式化输出当前的资源提供房间
@@ -12,12 +12,12 @@ export const showResourceSource = function (): string {
         // 格式化房间名和其中资源数量
         const roomStats = roomList.map(roomName => {
             const room = Game.rooms[roomName]
-            if (!room) return `[${roomName} ${colorful('无法访问', Color.Red)}]`
+            if (!room) return `[${roomName} ${red('无法访问')}]`
 
             const { total } = room.myStorage.getResource(resourceType)
-            return `[${roomName} ${colorful(total.toString(), Color.Blue)}]`
+            return `[${roomName} ${blue(total)}]`
         })
-        return `[${colorful(resourceType, Color.Yellow, true)}] 提供者 ${roomStats.join(' ')}`
+        return `[${yellow(resourceType, true)}] 提供者 ${roomStats.join(' ')}`
     }).join('\n')
 }
 
