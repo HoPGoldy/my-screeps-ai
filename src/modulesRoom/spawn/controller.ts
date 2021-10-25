@@ -55,7 +55,14 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * @returns 有则返回 true
      */
     public hasTask(creepName: string): boolean {
-        return !!this.memory.find(({ name }) => name === creepName)
+        return !!this.memory.find(({ name, role }) => name === creepName)
+    }
+
+    /**
+     * 使用角色名获取孵化任务
+     */
+    public getTaskByRole(creepRole: CreepRole): SpawnTask[] {
+        return this.memory.filter(({ role }) => role === creepRole)
     }
 
     /**

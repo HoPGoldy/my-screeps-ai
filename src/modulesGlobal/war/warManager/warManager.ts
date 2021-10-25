@@ -2,17 +2,17 @@ import { ContextGetCostMatrix, ContextGetRoomInfo, WarMemory } from "../types"
 import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
 import { createSquadManager } from "../squadManager/squadManager"
-import { BaseContext } from "@/contextTypes"
+import { EnvContext } from "@/contextTypes"
 import { arrayToObject, createCluster } from "@/utils"
 import { SquadType, SquadTypeName } from "../squadManager/types"
 
 export type WarContext = {
     warCode: string
     getWarMemory: () => WarMemory
-} & ContextGetCostMatrix & ContextGetRoomInfo & BaseContext
+} & ContextGetCostMatrix & ContextGetRoomInfo & EnvContext
 
 export const createWarManager = function (context: WarContext) {
-    const { getWarMemory, getRoomByName, warCode } = context
+    const { getWarMemory, env, warCode } = context
     const { spawnRoomName } = getWarMemory()
     const db = createMemoryAccessor(getWarMemory)
 
@@ -34,8 +34,16 @@ export const createWarManager = function (context: WarContext) {
     const squadCluster = createCluster(initSquad)
     const mobilizeManager = createMobilizeManager({
         getMemory: db.queryCurrentMobilizeTask,
-        getSpawnRoom: () => getRoomByName(spawnRoomName),
-        finishTask: db.deleteCurrentMobilizeTask,
+        getSpawnRoom: () => env.getRoomByName(spawnRoomName),
+        finishTask: (creeps) => {
+            db.deleteCurrentMobilizeTask()
+            console.log('动员任务完成', creeps)
+        },
+        abandonTask: reason => {
+            const task = db.queryCurrentMobilizeTask()
+            env.log.warning(`动员任务 ${SquadTypeName[task.squadType]} ${task.squadCode} 已停止：` + reason)
+            db.deleteCurrentMobilizeTask()
+        },
         ...context
     })
 
@@ -47,6 +55,9 @@ export const createWarManager = function (context: WarContext) {
      * @param code 小队代号
      */
     const addSquad = function (type: SquadType, members: Creep[], code: string) {
+        /**
+         * @todo 多个小队怎么同时进攻一个旗帜
+         */
         db.insertSquad(type, members.map(c => c.name), code)
 
         const newSquad = createSquadManager({

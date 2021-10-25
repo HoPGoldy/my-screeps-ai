@@ -1,4 +1,4 @@
-import { BaseContext } from '@/contextTypes'
+import { EnvContext } from '@/contextTypes'
 import { arrayToObject, createCache, createCluster } from '@/utils'
 import { createMemoryAccessor } from './memoryAccessor'
 import { SquadType } from './squadManager/types'
@@ -7,7 +7,7 @@ import { createWarManager, WarContext, WarManager } from './warManager/warManage
 
 export type WarModuleContext = {
     getMemory: () => WarModuleMemory
-} & BaseContext
+} & EnvContext
 
 /**
  * 创建战争基础功能
@@ -49,7 +49,7 @@ const useWar = function (
      * @param warCode 战争代号
      */
     const startWar = function (spawnRoomName: string, warCode: string): WarManager {
-        if (!context.game.getFlagByName(warCode)) return undefined
+        if (!context.env.getFlagByName(warCode)) return undefined
 
         const warMemory: WarMemory = {
             code: warCode,
@@ -159,7 +159,7 @@ const useGetRoomCostMatrix = function (getRoomInfo: (roomName: string) => RoomIn
 export const createWarModule = function (context: WarModuleContext) {
     const db = createMemoryAccessor(context.getMemory)
 
-    const { getRoomInfo, refreshRoomInfo } = useCollectRoomInfo(context.getRoomByName)
+    const { getRoomInfo, refreshRoomInfo } = useCollectRoomInfo(context.env.getRoomByName)
     const { getCostMatrix, refreshCostMatrix } = useGetRoomCostMatrix(getRoomInfo)
     const { startWar, runAllWarProcess, showState, setDefault } = useWar(db, getRoomInfo, getCostMatrix, context)
 

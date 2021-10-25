@@ -1,18 +1,17 @@
 import { allBattleCore } from "../battleCore"
 import { ContextGetCostMatrix, ContextGetRoomInfo, SquadMemory } from "../types"
-import { ContextGetCreepByName, ContextGetFlagByName, ContextLog } from "@/contextTypes"
+import { EnvContext } from "@/contextTypes"
 
 type SquadContext = {
     warCode: string
     squadCode: string
     getMemory: () => SquadMemory
     dismiss: (aliveCreeps: Creep[]) => void
-} & ContextGetCostMatrix & ContextGetRoomInfo & ContextGetFlagByName & ContextGetCreepByName & ContextLog
+} & ContextGetCostMatrix & ContextGetRoomInfo & EnvContext
 
 export const createSquadManager = function (context: SquadContext) {
     const {
-        getMemory, squadCode, warCode, log, dismiss, getRoomInfo,
-        getCreepByName, getFlagByName, getCostMatrix, colors
+        getMemory, squadCode, warCode, env, dismiss, getRoomInfo, getCostMatrix
     } = context
 
     /**
@@ -22,7 +21,7 @@ export const createSquadManager = function (context: SquadContext) {
         const { memberNames, type, data }= getMemory()
 
         // 获取本小队的所有成员
-        const members = memberNames.map(getCreepByName).filter(Boolean)
+        const members = memberNames.map(env.getCreepByName).filter(Boolean)
         // 有成员死掉了，上报解散小队
         if (members.length < memberNames.length) {
             dismiss(members)
@@ -34,7 +33,7 @@ export const createSquadManager = function (context: SquadContext) {
         // 获取并运行战斗核心
         const runBattleCore = allBattleCore[type]
         if (!runBattleCore) {
-            log(`未知的小队类型 ${type}，找不到对应的战斗核心`, ['小队', squadCode], colors.Red)
+            env.log.error(`${squadCode} 小队：未知的小队类型 ${type}，找不到对应的战斗核心`)
             return
         }
 
@@ -46,7 +45,7 @@ export const createSquadManager = function (context: SquadContext) {
      */
     const getTargetFlag = function (): Flag {
         const memory = getMemory()
-        const cacheFlag = getFlagByName(memory.cacheTargetFlagName)
+        const cacheFlag = env.getFlagByName(memory.cacheTargetFlagName)
 
         if (cacheFlag) {
             if (!hasMyCreep(cacheFlag)) return cacheFlag
@@ -54,13 +53,13 @@ export const createSquadManager = function (context: SquadContext) {
         }
 
         for (let i = 0; i <= 10; i++) {
-            const flag = getFlagByName(squadCode + i)
+            const flag = env.getFlagByName(squadCode + i)
             if (!flag) continue
 
             // 抵达了，这个目标就完成了，删除
             if (hasMyCreep(flag)) {
                 flag.remove()
-                log(`已抵达旗帜 ${flag.name}`, ['小队', squadCode], colors.Green)
+                env.log.success(`${squadCode} 小队已抵达旗帜 ${flag.name}`)
                 continue
             }
 
@@ -71,7 +70,7 @@ export const createSquadManager = function (context: SquadContext) {
 
         // 小队没有路径点，把战争旗帜当作目标
         memory.cacheTargetFlagName = warCode
-        return getFlagByName(warCode)
+        return env.getFlagByName(warCode)
     }
 
     /**

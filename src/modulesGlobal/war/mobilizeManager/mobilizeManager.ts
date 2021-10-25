@@ -1,9 +1,7 @@
-import { BaseContext } from "@/contextTypes";
 import { SquadTypeName } from "../squadManager/types";
 import { runBoosting } from "./stateBoosting";
 import { runSpawning } from "./stateSpawning";
 import { runWaitBoostPrepare } from "./stateWaitBoostPrepare";
-import { runWaitSpawnEnergyPrepare } from "./stateWaitSpawnEnergyPrepare";
 import { MobilizeContext, MobilizeState, MobilizeStateName, RunMobilizeStateFunc } from "./types";
 
 /**
@@ -11,22 +9,28 @@ import { MobilizeContext, MobilizeState, MobilizeStateName, RunMobilizeStateFunc
  */
 const runState: { [state in MobilizeState]: RunMobilizeStateFunc } = {
     [MobilizeState.WaitBoostPrepare]: runWaitBoostPrepare,
-    [MobilizeState.WaitSpawnEnergyPrepare]: runWaitSpawnEnergyPrepare,
     [MobilizeState.Spawning]: runSpawning,
     [MobilizeState.Boosting]: runBoosting
 }
 
 export const createMobilizeManager = function (context: MobilizeContext) {
-    const { getMemory } = context
+    const { getMemory, getSpawnRoom, finishTask, abandonTask, env } = context
 
     /**
      * 运行动员任务
      */
     const run = function () {
         if (Game.time % 10) return
+        const task = getMemory()
+        const room = getSpawnRoom()
 
-        const mobliizeTask = getMemory()
-        runState[mobliizeTask.state](context)
+        runState[task.state]({ 
+            task,
+            room,
+            updateState: newState => task.state = newState,
+            finishTask,
+            abandonTask
+        }, env)
     }
 
     /**

@@ -1,25 +1,34 @@
-import { BaseContext } from "@/contextTypes";
+import { EnvContext, EnvMethods } from "@/contextTypes";
 import { SquadType } from "../squadManager/types";
 
 export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 
+type FinishTaskFunc = (creeps: Creep[]) => void
+
+type AbandonTaskFunc = (reason: string) => void
+
 export type MobilizeContext = {
     getMemory: () => MobilizeTask,
     getSpawnRoom: () => Room,
-    finishTask: () => void
-} & BaseContext
+    finishTask: FinishTaskFunc
+    abandonTask: AbandonTaskFunc
+} & EnvContext
 
-export type RunMobilizeStateFunc = (context: MobilizeContext) => void
+interface RunMobilizeStateContext {
+    task: MobilizeTask,
+    room: Room,
+    updateState: UpdateMobilizeStateFunc,
+    finishTask: FinishTaskFunc,
+    abandonTask: AbandonTaskFunc
+}
+
+export type RunMobilizeStateFunc = (context: RunMobilizeStateContext, env: EnvMethods) => void
 
 export enum MobilizeState {
     /**
      * 等待强化
      */
     WaitBoostPrepare = 1,
-    /**
-     * 等待孵化能量填充完成
-     */
-    WaitSpawnEnergyPrepare,
     /**
      * 孵化中
      */
@@ -61,12 +70,22 @@ export interface MobilizeTask {
  * 动员任务数据
  */
 interface MobilizeTaskData {
+    /**
+     * 该任务对应的 boost 任务 id
+     */
     boostTaskId?: number
+    /**
+     * 该任务是否已经借到了 spawn
+     */
+    lendedSpawn?: boolean
+    /**
+     * 该小队已经孵化出来，但是还未准备就绪的爬名字
+     */
+    members?: string[]
 }
 
 export const MobilizeStateName: { [state in MobilizeState]: string } = {
     [MobilizeState.WaitBoostPrepare]: '等待强化材料准备就绪',
-    [MobilizeState.WaitSpawnEnergyPrepare]: '等待孵化能量就绪',
     [MobilizeState.Spawning]: '孵化中',
     [MobilizeState.Boosting]: '强化中'
 }
