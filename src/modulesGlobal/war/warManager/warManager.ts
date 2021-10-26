@@ -5,6 +5,7 @@ import { createSquadManager } from "../squadManager/squadManager"
 import { EnvContext } from "@/contextTypes"
 import { arrayToObject, createCluster } from "@/utils"
 import { SquadType, SquadTypeName } from "../squadManager/types"
+import { DEFAULT_SQUAD_CODE } from "../utils"
 
 export type WarContext = {
     warCode: string
@@ -32,12 +33,15 @@ export const createWarManager = function (context: WarContext) {
     }
 
     const squadCluster = createCluster(initSquad)
+
     const mobilizeManager = createMobilizeManager({
         getMemory: db.queryCurrentMobilizeTask,
         getSpawnRoom: () => env.getRoomByName(spawnRoomName),
         finishTask: (creeps) => {
+            const { squadCode, suqadTarget, squadType } = db.queryCurrentMobilizeTask()
+            addSquad(squadType, creeps, suqadTarget, squadCode)
+            env.log.success(`动员任务 ${SquadTypeName[squadType]} ${squadCode} 已完成`)
             db.deleteCurrentMobilizeTask()
-            console.log('动员任务完成', creeps)
         },
         abandonTask: reason => {
             const task = db.queryCurrentMobilizeTask()
@@ -52,13 +56,11 @@ export const createWarManager = function (context: WarContext) {
      * 
      * @param type 小队类型
      * @param members 小队成员
+     * @param targetFlagName 要进攻的旗帜名
      * @param code 小队代号
      */
-    const addSquad = function (type: SquadType, members: Creep[], code: string) {
-        /**
-         * @todo 多个小队怎么同时进攻一个旗帜
-         */
-        db.insertSquad(type, members.map(c => c.name), code)
+    const addSquad = function (type: SquadType, members: Creep[], targetFlagName: string, code: string) {
+        db.insertSquad(type, members.map(c => c.name), targetFlagName, code)
 
         const newSquad = createSquadManager({
             warCode,
@@ -81,6 +83,35 @@ export const createWarManager = function (context: WarContext) {
         squadCluster.remove(squadCode)
         db.deleteSquad(squadCode)
         db.insertAlonedCreep(aliveCreeps.map(c => c.name))
+    }
+
+    /**
+     * 新增动员任务
+     * 
+     * @param type 要孵化的小队类型
+     * @param needBoost 是否需要 boost
+     * @param targetFlagName 要进攻的旗帜名
+     * @param squadCode 小队代号
+     */
+    const addMobilize = function (type: SquadType, needBoost: boolean = true, targetFlagName?: string, squadCode?: string) {
+        let confirmSquadCode = squadCode
+        // 没有指定小队代号的话就挑选一个默认的
+        if (!confirmSquadCode) {
+            const { squads } = getWarMemory()
+            const usedSquadCode = Object.keys(squads)
+            confirmSquadCode = DEFAULT_SQUAD_CODE.find(code => !usedSquadCode.includes(code))
+            if (!confirmSquadCode) {
+                env.log.warning('默认小队代号已用尽，请手动执行小队代号')
+                return
+            }
+        }
+
+        let confirmTarget = targetFlagName
+        // 目标旗帜未确认的话就使用小队代号的首字母当作旗帜名
+        if (!confirmTarget) confirmSquadCode = confirmSquadCode[0]
+
+        env.log.success(`小队 ${confirmSquadCode} 已被添加至动员队列，小队类型 ${SquadTypeName[type]} 进攻旗帜名 ${targetFlagName}`)
+        db.insertMobilizeTask(type, needBoost, confirmTarget, confirmSquadCode)
     }
 
     /**
@@ -121,7 +152,7 @@ export const createWarManager = function (context: WarContext) {
         regroup()
     }
 
-    return { run, showState, addSquad, dismissSquad, addMobilize: db.insertMobilizeTask }
+    return { run, showState, addSquad, dismissSquad, addMobilize }
 }
 
 export type WarManager = ReturnType<typeof createWarManager>

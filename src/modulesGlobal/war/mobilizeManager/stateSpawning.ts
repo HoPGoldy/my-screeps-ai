@@ -1,13 +1,23 @@
 import { CreepRole } from "@/role/types/role";
 import { getBodySpawnEnergy } from "@/utils";
-import { getBodyPart } from "./getBodyPart";
-import { RunMobilizeStateFunc } from "./types";
+import { createSpawnInfo } from "../utils";
+import { MobilizeState, RunMobilizeStateFunc } from "./types";
 
+/**
+ * 动员任务孵化阶段
+ * 
+ * @todo 孵化四人小队的生命对齐功能
+ */
 export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateState, abandonTask }, env) {
     console.log('正在执行 Spawning')
 
-    const bodys = getBodyPart[task.squadType]()
-    const spawnEnergyCost = getBodySpawnEnergy(bodys)
+    // 创建待孵化 creep 的名字与身体部件
+    if (!task.data.spawnInfo) {
+        task.data.spawnInfo = createSpawnInfo(task.squadCode, task.squadType)
+    }
+
+    const allBody: BodyPartConstant[] = [].concat(...Object.values(task.data.spawnInfo))
+    const spawnEnergyCost = getBodySpawnEnergy(allBody)
 
     if (room.energyCapacityAvailable < spawnEnergyCost) {
         abandonTask(`孵化所用能量大于房间最大孵化能量 ${spawnEnergyCost} > ${room.energyCapacityAvailable}`)
@@ -30,10 +40,27 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
         task.data.lendedSpawn = true
     }
 
-    /**
-     * @todo 判断是否已经在孵化了，没有的话再检查能量是否足够孵化
-     */
-    if (room.energyAvailable >= spawnEnergyCost) {
+    // 找到所有没孵化的成员
+    const unSpawnMembers = Object.entries(task.data.spawnInfo).filter(([creepName]) => !env.getCreepByName(creepName))
 
+    // 所有的单位都已经进入孵化或孵化完成，进入下一阶段
+    if (unSpawnMembers.length <= 0) {
+        // 更新一下内存，spawnInfo 挺长的，后面阶段用不到了，清掉
+        task.data.members = Object.keys(task.data.spawnInfo)
+        delete task.data.spawnInfo
+        updateState(MobilizeState.Boosting)
+        return
     }
+
+    // 空闲状态的 spawn
+    const freeSpawn = room[STRUCTURE_SPAWN].filter(spawn => !spawn.spawning)
+
+    if (freeSpawn.length <= 0) return
+
+    // 开始执行孵化，这里不会判断是否孵化成功
+    // 因为返回 OK 也有可能会被别人覆盖，等待下次执行本阶段时会检查是否存在未孵化成员
+    freeSpawn.map((spawn, index) => {
+        const [creepName, body] = unSpawnMembers[index]
+        spawn.spawnCreep(body, creepName)
+    })
 }

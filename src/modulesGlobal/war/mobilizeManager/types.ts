@@ -53,6 +53,10 @@ export interface MobilizeTask {
      */
     squadCode: string
     /**
+     * 小队进攻旗帜名
+     */
+    suqadTarget: string
+    /**
      * 小队类型
      */
     squadType: SquadType
@@ -79,9 +83,22 @@ interface MobilizeTaskData {
      */
     lendedSpawn?: boolean
     /**
+     * 孵化信息
+     */
+    spawnInfo?: {
+        [creepName: string]: BodyPartConstant[]
+    }
+    /**
      * 该小队已经孵化出来，但是还未准备就绪的爬名字
      */
     members?: string[]
+    /**
+     * 小队成员是否完成了 boost
+     * 对应的 value 为 true 代表完成了 boost
+     */
+    boostNote?: {
+        [creepName: string]: boolean
+    }
 }
 
 export const MobilizeStateName: { [state in MobilizeState]: string } = {

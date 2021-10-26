@@ -1,7 +1,47 @@
-import { RunMobilizeStateFunc, MobilizeState } from "./types";
+import { RunMobilizeStateFunc } from "./types";
 
-export const runBoosting: RunMobilizeStateFunc = function ({ task, room, updateState, finishTask, abandonTask }) {
+/**
+ * 强化执行阶段
+ * 注意：执行这个阶段时有可能存在 creep 还没有孵化完成
+ * 因为那边的前置判断比较多，放在这边等孵化结束比较省 cpu
+ */
+export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishTask }, env) {
     console.log('正在执行 Boosting')
-    console.log(task, room)
-    updateState(MobilizeState.WaitSpawnEnergyPrepare)
+
+    if (!task.data.members) {
+        env.log.error(`动员任务 ${task.squadCode} 找不到小队成员名称，任务中断`)
+        return
+    }
+    const members = task.data.members.map(env.getCreepByName)
+    const allAlive = members.every(Boolean)
+
+    if (!allAlive) {
+        env.log.error(`动员任务 ${task.squadCode} 找不到指定的成员，任务中断`)
+        return
+    }
+
+    const hasSpawning = !!members.find(creep => creep.spawning)
+    if (!hasSpawning) return
+
+    // 不需要 boost，直接完成动员任务
+    if (!task.needBoost) return finishTask(members)
+
+    if (task.data.boostNote) {
+        // 都完成强化了就完成动员任务
+        const allBoost = Object.values(task.data.boostNote).every(Boolean)
+        if (allBoost) {
+            room.myLab.finishBoost(task.data.boostTaskId)
+            return finishTask(members)
+        }
+    }
+    else {
+        task.data.boostNote = {}
+        members.forEach(creep => task.data.boostNote[creep.name] = false)
+    }
+
+    // 没有完成 boost 的单位继续执行 boost
+    const unfinishBoostMembers = members.filter(creep => task.data.boostNote[creep.name])
+    unfinishBoostMembers.forEach(creep => {
+        task.data.boostNote[creep.name] = room.myLab.boostCreep(creep, task.data.boostTaskId)
+    })
 }

@@ -20,8 +20,9 @@ export const createMobilizeManager = function (context: MobilizeContext) {
      * 运行动员任务
      */
     const run = function () {
-        if (Game.time % 10) return
         const task = getMemory()
+        // boost 阶段每 tick 都要执行，其他阶段每 10 tick 执行一次
+        if (task.state !== MobilizeState.Boosting && Game.time % 10) return
         const room = getSpawnRoom()
 
         runState[task.state]({ 

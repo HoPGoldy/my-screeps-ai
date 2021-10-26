@@ -27,21 +27,23 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
         if (memory.mobilizing in memory.mobilizes) delete memory.mobilizes[memory.mobilizing]
         delete memory.mobilizing
     },
-    insertSquad(squadType: SquadType, memberNames: string[], squadCode: string): void {
+    insertSquad(squadType: SquadType, memberNames: string[], suqadTarget: string, squadCode: string): void {
         const memory = getMemory()
         memory.squads[squadCode] = {
             code: squadCode,
+            target: suqadTarget,
             type: squadType,
             cacheTargetFlagName: '',
             data: {},
             memberNames
         }
     },
-    insertMobilizeTask(squadType: SquadType, needBoost: boolean, squadCode: string): void {
+    insertMobilizeTask(squadType: SquadType, needBoost: boolean, suqadTarget: string, squadCode: string): void {
         const memory = getMemory()
         memory.mobilizes[squadCode] = {
-            state: needBoost ? MobilizeState.WaitBoostPrepare : MobilizeState.WaitSpawnEnergyPrepare,
+            state: needBoost ? MobilizeState.WaitBoostPrepare : MobilizeState.Spawning,
             squadCode,
+            suqadTarget,
             squadType,
             needBoost,
             data: {}

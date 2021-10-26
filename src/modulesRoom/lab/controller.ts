@@ -316,7 +316,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 强化指定 creep
      * @param creep 要强化的 creep
      * @param boostTaskId 要执行的强化任务
-     * @returns 强化是否完成（因出现问题导致无法正常完成强化也会返回 true）
+     * @returns 强化是否完成（因出现问题导致无法正常完成强化也会返回 true，比如任务里有 HEAL 强化，但是 creep 没有 HEAL 身体）
      */
     public boostCreep(creep: Creep, taskId: number): boolean {
         const task = this.memory.boostTasks[taskId]

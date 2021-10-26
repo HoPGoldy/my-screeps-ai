@@ -66,7 +66,7 @@ const useWar = function (
 
         // 有设置默认小队的话就直接添加动员任务
         const [squadType, needBoost, squadCode] = db.queryDefaultSquad()
-        if (squadType) newWar.addMobilize(squadType, needBoost, squadCode || warCode + 'A')
+        if (squadType) newWar.addMobilize(squadType, needBoost, squadCode, squadCode)
 
         return newWar
     }

@@ -41,6 +41,23 @@ export const createSquadManager = function (context: SquadContext) {
     }
 
     /**
+     * 判断一个旗帜是否可以当作目标
+     */
+    const useFlagAsTarget = function (flag: Flag) {
+        if (!flag) return false
+
+        // 抵达了，这个目标就完成了，删除
+        if (hasMyCreep(flag)) {
+            flag.remove()
+            env.log.success(`${squadCode} 小队已抵达旗帜 ${flag.name}`)
+            return false
+        }
+
+        // 没有抵达，这个就是目标
+        return true
+    }
+
+    /**
      * 获取当前行动的目标旗帜
      */
     const getTargetFlag = function (): Flag {
@@ -52,18 +69,17 @@ export const createSquadManager = function (context: SquadContext) {
             delete memory.cacheTargetFlagName
         }
 
+        // 优先选择小队代号对应的旗帜
+        const codeFlag = env.getFlagByName(squadCode)
+        if (useFlagAsTarget(codeFlag)) {
+            memory.cacheTargetFlagName = codeFlag.name
+            return codeFlag
+        }
+
+        // 找不到再找有没有路径点
         for (let i = 0; i <= 10; i++) {
             const flag = env.getFlagByName(squadCode + i)
-            if (!flag) continue
-
-            // 抵达了，这个目标就完成了，删除
-            if (hasMyCreep(flag)) {
-                flag.remove()
-                env.log.success(`${squadCode} 小队已抵达旗帜 ${flag.name}`)
-                continue
-            }
-
-            // 没有抵达，这个就是目标
+            if (!useFlagAsTarget(codeFlag)) continue
             memory.cacheTargetFlagName = flag.name
             return flag
         }

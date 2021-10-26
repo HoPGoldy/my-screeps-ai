@@ -1,4 +1,6 @@
-import { RoomInfo } from "./types"
+import { getUniqueKey } from "@/utils"
+import { getBodyPart } from "./mobilizeManager/getBodyPart"
+import { SquadType } from "./squadManager/types"
 
 /**
  * 获取身体部件提供的威力
@@ -70,4 +72,26 @@ export const getMaxDamageCreep = function (creeps: Creep[]): [Creep, number] {
         if (nextCreepDamage < maxCreepInfo[1]) return maxCreepInfo
         return [nextCreep, nextCreepDamage]
     }, [creeps[0], 0])
+}
+
+/**
+ * 默认小队代号
+ */
+export const DEFAULT_SQUAD_CODE = [
+    'Alpha', 'Bravo', 'Charlie', 'Delta', 'Echo', 'Foxtrot', 'Golf', 'Hotel', 'India', 'Juliet',
+    'Kilo', 'Mike', 'November', 'Oscar', 'Papa', 'Quebec', 'Romeo', 'Sierra', 'Tango', 'Uniform',
+    'Victor', 'Whiskey', 'Xray', 'Yankee', 'Zulu'
+]
+
+/**
+ * 创建小队孵化信息
+ * 
+ * @param squadCode 小队代号
+ * @param squadType 小队类型
+ */
+export const createSpawnInfo = function (squadCode: string, squadType: SquadType) {
+    const bodys = getBodyPart[squadType]()
+    const spawnInfo = {}
+    bodys.forEach(body => spawnInfo[squadCode + getUniqueKey()] = body)
+    return spawnInfo
 }

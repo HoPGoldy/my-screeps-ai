@@ -10,13 +10,18 @@ export interface SquadMemory {
      */
     code: string
     /**
-     * 小队类型
+     * 要进攻的旗帜名
+     * 和 cacheTargetFlagName 的区别就是，本属性是旗帜名前缀，而 cacheTargetFlagName 是完整的旗帜名
      */
-    type: SquadType
+    target: string
     /**
      * 正在进攻的旗帜名称
      */
     cacheTargetFlagName?: string
+    /**
+     * 小队类型
+     */
+    type: SquadType
     /**
      * 小队成员名称
      */
