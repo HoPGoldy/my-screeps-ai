@@ -1,7 +1,7 @@
 import { calcBodyPart } from '../bodyUtils'
 import { BodySet } from '../types/body'
 import { CreepConfig, CreepRole } from '../types/role'
-import { battleBase, boostPrepare } from './configPart'
+import { battleBase } from './configPart'
 
 /**
  * 强化 - 重型作战单位
@@ -13,7 +13,6 @@ import { battleBase, boostPrepare } from './configPart'
  */
 const apocalypse: CreepConfig<CreepRole.Apocalypse> = {
     ...battleBase(),
-    ...boostPrepare(),
     target: creep => {
         const { targetFlagName } = creep.memory.data
 

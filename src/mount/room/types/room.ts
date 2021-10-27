@@ -47,6 +47,10 @@ declare global {
          */
         defenseMode?: 'defense' | 'active'
         /**
+         * 主动防御下的 boost 任务
+         */
+        defenseBoostTaskId?: number
+        /**
          * 战争状态
          */
         war?: { }

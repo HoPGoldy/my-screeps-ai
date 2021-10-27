@@ -1,5 +1,6 @@
 import { Color } from '@/modulesGlobal'
 import { TransportTaskType } from '@/modulesRoom'
+import { BoostState } from '@/modulesRoom/lab/types'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { CreepRole } from '@/role/types/role'
 import { repairSetting } from '@/setting'
@@ -96,11 +97,11 @@ export default class TowerExtension extends StructureTower {
             const enemys = this.findEnemy()
 
             // 没有敌人了就返回日常模式
-            if (enemys.length <= 0){
+            if (enemys.length <= 0) {
                 // this.log('威胁解除，返回日常模式')
                 delete this.room.memory.defenseMode
                 this.room.planLayout()
-                this.room.stopWar()
+                this.room.myLab.finishBoost(this.room.memory.defenseBoostTaskId)
                 return
             }
 
@@ -121,28 +122,28 @@ export default class TowerExtension extends StructureTower {
      * @param defenderName 要发布的防御单位名称
      */
     private prepareBoost(defenderName: string): void {
-        if (!this.room.memory.boost) {
-            this.log('正在准备 boost 主动防御')
-            const result = this.room.startWar('DEFENSE')
+        if (!this.room.memory.defenseBoostTaskId) {
+            this.room.memory.defenseBoostTaskId = this.room.myLab.addBoostTask([
+                { resource: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, amount: 16 * LAB_BOOST_MINERAL },
+                { resource: RESOURCE_ZYNTHIUM_ALKALIDE, amount: 16 * LAB_BOOST_MINERAL },
+                { resource: RESOURCE_UTRIUM_ACID, amount: 16 * LAB_BOOST_MINERAL }
+            ])
 
-            if (result === ERR_NOT_FOUND) this.log(`未找到名为 [${this.room.name}Boost] 的旗帜，请保证其周围有足够数量的 lab（至少 5 个）`, Color.Yellow)
-            else if (result === ERR_INVALID_TARGET) this.log('旗帜周围的 lab 数量不足，请移动旗帜位置', Color.Yellow)
-
+            this.log('发布主动防御 boost 任务，任务 id', this.room.memory.defenseBoostTaskId)
             return
         }
 
-        // 已经有主动防御任务了
-        if (this.room.memory.boost.type === 'DEFENSE') {
-            // 强化准备完成，发布防御单位
-            if (this.room.memory.boost.state === 'waitBoost' && !(defenderName in Game.creeps)) {
-                const result = this.room.spawner.addTask(defenderName, CreepRole.Defender, {})
-                this.log(`已发布主动防御单位，返回值：${result}`, Color.Green)
-            }
+        const taskState = this.room.myLab.getBoostState(this.room.memory.defenseBoostTaskId);
+        if (taskState === ERR_NOT_FOUND) {
+            delete this.room.memory.defenseBoostTaskId
+            return
         }
-        // 房间处于其他 boost 任务时结束其任务并切换至主动防御 boost 任务
-        else if (this.room.memory.boost.state !== 'boostClear') {
-            this.log(`当前正处于战争状态，正在切换至主动防御模式，请稍后...`)
-            this.room.stopWar()
+
+        if (taskState === BoostState.WaitBoost && !(defenderName in Game.creeps)) {
+            const result = this.room.spawner.addTask(defenderName, CreepRole.Defender, {
+                boostTaskId: this.room.memory.defenseBoostTaskId
+            })
+            this.log(`已发布主动防御单位 ${defenderName}，返回值：${result}`, Color.Green)
         }
     }
 

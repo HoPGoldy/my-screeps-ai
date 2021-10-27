@@ -1,6 +1,6 @@
 import { calcBodyPart } from '../bodyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
-import { battleBase, boostPrepare } from './configPart'
+import { battleBase } from './configPart'
 
 /**
  * 强化 - 拆除者
@@ -12,7 +12,6 @@ import { battleBase, boostPrepare } from './configPart'
  */
 const boostDismantler: CreepConfig<CreepRole.BoostDismantler> = {
     ...battleBase(),
-    ...boostPrepare(),
     target: creep => {
         const { targetFlagName, healerName } = creep.memory.data
         return creep.dismantleFlag(targetFlagName, healerName)

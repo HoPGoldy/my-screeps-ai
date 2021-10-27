@@ -1,6 +1,5 @@
 import { calcBodyPart } from '../bodyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
-import { boostPrepare } from './configPart'
 
 /**
  * 强化 - HEAL
@@ -11,12 +10,6 @@ import { boostPrepare } from './configPart'
  */
 const boostDoctor: CreepConfig<CreepRole.BoostDoctor> = {
     isNeed: (room, preMemory) => preMemory.data.keepSpawn,
-    prepare: creep => {
-        // 治疗单位不允许发起对穿
-        if (!creep.memory.disableCross) creep.memory.disableCross = true
-
-        return boostPrepare().prepare(creep)
-    },
     target: creep => {
         const target = Game.creeps[creep.memory.data.creepName]
         if (!target) {

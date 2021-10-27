@@ -1,6 +1,5 @@
 import { calcBodyPart } from '../bodyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
-import { boostPrepare } from './configPart'
 
 /**
  * 防御单位
