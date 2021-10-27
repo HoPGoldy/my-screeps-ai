@@ -50,33 +50,33 @@ export const REACTION_SOURCE: ReactionSource = {
  */
 export const LAB_TARGETS: LabTarget[] = [
     // 基础
-    { target: RESOURCE_HYDROXIDE, number: 500 },
-    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 500 },
-    { target: RESOURCE_UTRIUM_LEMERGITE, number: 500 },
+    { target: RESOURCE_HYDROXIDE, number: 1000 },
+    { target: RESOURCE_ZYNTHIUM_KEANITE, number: 1000 },
+    { target: RESOURCE_UTRIUM_LEMERGITE, number: 1000 },
     // G
     { target: RESOURCE_GHODIUM, number: 5000 },
     // XKHO2 生产线，强化 RANGE_ATTACK
-    { target: RESOURCE_KEANIUM_OXIDE, number: 300 },
-    { target: RESOURCE_KEANIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_KEANIUM_OXIDE, number: 500 },
+    { target: RESOURCE_KEANIUM_ALKALIDE, number: 1500 },
     { target: RESOURCE_CATALYZED_KEANIUM_ALKALIDE, number: 5000 },
     // XLHO2 生产线，强化 HEAL
-    { target: RESOURCE_LEMERGIUM_OXIDE, number: 300 },
-    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_LEMERGIUM_OXIDE, number: 500 },
+    { target: RESOURCE_LEMERGIUM_ALKALIDE, number: 1500 },
     { target: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE, number: 5000 },
     // XZHO2 生产线，强化 MOVE
-    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 300 },
-    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_ZYNTHIUM_OXIDE, number: 500 },
+    { target: RESOURCE_ZYNTHIUM_ALKALIDE, number: 1500 },
     { target: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE, number: 5000 },
     // XZH2O 生产线，强化 WORK 的 dismantle
-    { target: RESOURCE_ZYNTHIUM_HYDRIDE, number: 300 },
-    { target: RESOURCE_ZYNTHIUM_ACID, number: 1000 },
+    { target: RESOURCE_ZYNTHIUM_HYDRIDE, number: 500 },
+    { target: RESOURCE_ZYNTHIUM_ACID, number: 1500 },
     { target: RESOURCE_CATALYZED_ZYNTHIUM_ACID, number: 5000 },
     // XGHO2 生产线，强化 TOUGH
-    { target: RESOURCE_GHODIUM_OXIDE, number: 300 },
-    { target: RESOURCE_GHODIUM_ALKALIDE, number: 1000 },
+    { target: RESOURCE_GHODIUM_OXIDE, number: 500 },
+    { target: RESOURCE_GHODIUM_ALKALIDE, number: 1500 },
     { target: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, number: 5000 },
     // XGH20 生产线，强化 controller 升级
-    { target: RESOURCE_GHODIUM_HYDRIDE, number: 1000 },
-    { target: RESOURCE_GHODIUM_ACID, number: 1000 },
+    { target: RESOURCE_GHODIUM_HYDRIDE, number: 500 },
+    { target: RESOURCE_GHODIUM_ACID, number: 1500 },
     { target: RESOURCE_CATALYZED_GHODIUM_ACID, number: 3000 },
 ]

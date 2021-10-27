@@ -426,7 +426,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 resource.number - this.room.myStorage.getResource(resource.target).total
             )
 
-            this.log.normal(`指定合成目标：${resource.target}`)
+            this.log.normal(`指定合成目标：${resource.target} ${this.memory.reactionAmount}`)
         }
         // 合成不了
         else {
