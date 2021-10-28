@@ -1,4 +1,4 @@
-import { ContextGetCostMatrix, ContextGetRoomInfo, WarMemory } from "../types"
+import { ContextGetCostMatrix, ContextGetRoomInfo, WarMemory, WarState } from "../types"
 import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
 import { createSquadManager } from "../squadManager/squadManager"
@@ -9,6 +9,7 @@ import { DEFAULT_SQUAD_CODE } from "../utils"
 
 export type WarContext = {
     warCode: string
+    removeSelf: () => void
     getWarMemory: () => WarMemory
 } & ContextGetCostMatrix & ContextGetRoomInfo & EnvContext
 
@@ -27,6 +28,7 @@ export const createWarManager = function (context: WarContext) {
             warCode,
             squadCode: code,
             getMemory: () => db.querySquad(code),
+            getWarState: () => getWarMemory().state,
             dismiss: aliveCreeps => dismissSquad(code, aliveCreeps),
             ...context
         })]))
@@ -66,6 +68,7 @@ export const createWarManager = function (context: WarContext) {
             warCode,
             squadCode: code,
             getMemory: () => db.querySquad(code),
+            getWarState: () => getWarMemory().state,
             dismiss: aliveCreeps => dismissSquad(code, aliveCreeps),
             ...context
         })
@@ -143,16 +146,53 @@ export const createWarManager = function (context: WarContext) {
     }
 
     /**
+     * 终止战争
+     */
+    const closeWar = function () {
+        const memory = getWarMemory()
+        if (memory.state === WarState.Progress) {
+            memory.state = WarState.Aborted
+            env.log.success(
+                `战争 ${warCode} 已切换至终止模式，不再孵化新单位，当前存在的单位将继续作战\n` +
+                `- 执行 ${env.colorful.yellow('war.continue')} 来恢复战争\n` +
+                `- 再次执行 ${env.colorful.yellow('war.close')} 来彻底关闭战争（将会移除所有单位和动员任务）\n`
+            )
+        }
+
+        // 释放所有下属资源
+        squadCluster.map(squad => squad.close())
+        mobilizeManager.close()
+        env.getFlagByName(memory.code)?.remove()
+
+        context.removeSelf()
+    }
+
+    /**
+     * 从其他状态中恢复战争
+     */
+    const continueWar = function () {
+        const memory = getWarMemory()
+        if (memory.state === WarState.Progress) {
+            return env.log.normal(`战争 ${warCode} 正在执行`)
+        }
+        memory.state = WarState.Progress
+        env.log.normal(`战争 ${warCode} 已重新启动`)
+    }
+
+    /**
      * 执行战争行动
      */
     const run = function () {
-        mobilizeManager.run()
+        const { state } = getWarMemory()
+
+        // 战争正常进行时才会进行动员任务
+        if (state === WarState.Progress) mobilizeManager.run()
         squadCluster.run()
 
         regroup()
     }
 
-    return { run, showState, addSquad, dismissSquad, addMobilize }
+    return { run, showState, addSquad, closeWar, continueWar, addMobilize }
 }
 
 export type WarManager = ReturnType<typeof createWarManager>

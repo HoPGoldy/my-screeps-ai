@@ -1,9 +1,9 @@
 import { EnvContext } from '@/contextTypes'
 import { arrayToObject, createCache, createCluster } from '@/utils'
 import { createMemoryAccessor } from './memoryAccessor'
-import { SquadType } from './squadManager/types'
-import { RoomInfo, WarMemory, WarModuleMemory, WarState } from './types'
-import { createWarManager, WarContext, WarManager } from './warManager/warManager'
+import { SquadType } from '../squadManager/types'
+import { RoomInfo, WarMemory, WarModuleMemory, WarState } from '../types'
+import { createWarManager, WarContext, WarManager } from '../warManager/warManager'
 
 export type WarModuleContext = {
     getMemory: () => WarModuleMemory
@@ -26,6 +26,10 @@ const useWar = function (
             warCode,
             getCostMatrix,
             getRoomInfo,
+            removeSelf: () => {
+                db.deleteWar(warCode)
+                warCluster.remove(warCode)
+            },
             getWarMemory: () => db.queryWarMemory(warCode),
             ...context
         }
@@ -156,7 +160,7 @@ const useGetRoomCostMatrix = function (getRoomInfo: (roomName: string) => RoomIn
 /**
  * 创建战争模块
  */
-export const createWarModule = function (context: WarModuleContext) {
+export const createWarController = function (context: WarModuleContext) {
     const db = createMemoryAccessor(context.getMemory)
 
     const { getRoomInfo, refreshRoomInfo } = useCollectRoomInfo(context.env.getRoomByName)

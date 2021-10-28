@@ -1,17 +1,18 @@
 import { allBattleCore } from "../battleCore"
-import { ContextGetCostMatrix, ContextGetRoomInfo, SquadMemory } from "../types"
+import { ContextGetCostMatrix, ContextGetRoomInfo, SquadMemory, WarState } from "../types"
 import { EnvContext } from "@/contextTypes"
 
 type SquadContext = {
     warCode: string
     squadCode: string
     getMemory: () => SquadMemory
+    getWarState: () => WarState
     dismiss: (aliveCreeps: Creep[]) => void
 } & ContextGetCostMatrix & ContextGetRoomInfo & EnvContext
 
 export const createSquadManager = function (context: SquadContext) {
     const {
-        getMemory, squadCode, warCode, env, dismiss, getRoomInfo, getCostMatrix
+        getMemory, getWarState, squadCode, warCode, env, dismiss, getRoomInfo, getCostMatrix
     } = context
 
     /**
@@ -19,6 +20,7 @@ export const createSquadManager = function (context: SquadContext) {
      */
     const run = function () {
         const { memberNames, type, data }= getMemory()
+        const warState = getWarState()
 
         // 获取本小队的所有成员
         const members = memberNames.map(env.getCreepByName).filter(Boolean)
@@ -37,7 +39,7 @@ export const createSquadManager = function (context: SquadContext) {
             return
         }
 
-        runBattleCore({ members, memory: data, targetFlag, getRoomInfo, getBaseCost: getCostMatrix })
+        runBattleCore({ members, memory: data, warState, targetFlag, getRoomInfo, getBaseCost: getCostMatrix })
     }
 
     /**
@@ -90,6 +92,24 @@ export const createSquadManager = function (context: SquadContext) {
     }
 
     /**
+     * 危险操作！
+     * 将会杀掉所有小队成员并移除相关旗帜
+     */
+    const close = function () {
+        const { memberNames } = getMemory()
+        memberNames.map(env.getCreepByName).map(creep => creep?.suicide())
+
+        // 移除旗帜
+        const codeFlag = env.getFlagByName(squadCode)
+        if (codeFlag) codeFlag.remove()
+
+        for (let i = 0; i <= 10; i++) {
+            const flag = env.getFlagByName(squadCode + i)
+            if (flag) flag.remove()
+        }
+    }
+
+    /**
      * 返回当前小队状态
      */
     const showState = function () {
@@ -97,7 +117,7 @@ export const createSquadManager = function (context: SquadContext) {
         return `[小队 ${squadCode}] [队员] ${memberNames.join(',')} [目标旗帜] ${cacheTargetFlagName}`
     }
 
-    return { run, showState }
+    return { run, close, showState }
 }
 
 export type SquadManager = ReturnType<typeof createSquadManager>

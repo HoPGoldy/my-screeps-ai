@@ -35,6 +35,17 @@ export const createMobilizeManager = function (context: MobilizeContext) {
     }
 
     /**
+     * 释放自己持有的资源
+     */
+    const close = function () {
+        const { data: { boostTaskId, lendedSpawn } = {} } = getMemory()
+        const room = getSpawnRoom()
+
+        if (boostTaskId) room.myLab.finishBoost(boostTaskId)
+        if (lendedSpawn) room.spawner.remandSpawn()
+    }
+
+    /**
      * 显示运行状态
      */
     const showState = function () {
@@ -42,7 +53,7 @@ export const createMobilizeManager = function (context: MobilizeContext) {
         return `[${squadCode} 小队动员任务] [当前阶段] ${MobilizeStateName[state]} [小队类型] ${SquadTypeName[squadType]}`
     }
 
-    return { run, showState }
+    return { run, showState, close }
 }
 
 export type MobilizeManager = ReturnType<typeof createMobilizeManager>

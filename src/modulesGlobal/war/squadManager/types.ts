@@ -1,4 +1,4 @@
-import { RoomInfo } from "../types";
+import { RoomInfo, WarState } from "../types";
 
 /**
  * 所有可用的小队类型
@@ -28,6 +28,10 @@ export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject 
      * 小队要进攻的目标旗帜
      */
     targetFlag: Flag,
+    /**
+     * 当前战争状态
+     */
+    warState: WarState,
     /**
      * 获取本房间的信息
      * 没有视野时返回 undefined

@@ -48,6 +48,7 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
         // 更新一下内存，spawnInfo 挺长的，后面阶段用不到了，清掉
         task.data.members = Object.keys(task.data.spawnInfo)
         delete task.data.spawnInfo
+        room.spawner.remandSpawn()
         updateState(MobilizeState.Boosting)
         return
     }

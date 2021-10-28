@@ -1,0 +1,1 @@
+export { createWarController } from './globalController/creator'
