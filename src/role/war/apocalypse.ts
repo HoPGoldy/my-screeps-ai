@@ -1,5 +1,5 @@
 import { calcBodyPart } from '../bodyUtils'
-import { BodySet } from '../types/body'
+import { BodyRepeat } from '../types/body'
 import { CreepConfig, CreepRole } from '../types/role'
 import { battleBase } from './configPart'
 
@@ -47,16 +47,16 @@ const apocalypse: CreepConfig<CreepRole.Apocalypse> = {
         // 越界就置为 6
         if (data.bearTowerNum < 0 || data.bearTowerNum > 6) data.bearTowerNum = 6
         // 扛塔等级和bodyPart的对应关系
-        const bodyMap = {
-            0: { [TOUGH]: 0, [RANGED_ATTACK]: 15, [MOVE]: 6, [HEAL]: 3 },
-            1: { [TOUGH]: 2, [RANGED_ATTACK]: 15, [MOVE]: 6, [HEAL]: 5 },
-            2: { [TOUGH]: 4, [RANGED_ATTACK]: 20, [MOVE]: 9, [HEAL]: 9 },
-            3: { [TOUGH]: 6, [RANGED_ATTACK]: 21, [MOVE]: 10, [HEAL]: 13 },
-            4: { [TOUGH]: 8, [RANGED_ATTACK]: 15, [MOVE]: 10, [HEAL]: 17 },
-            5: { [TOUGH]: 10, [RANGED_ATTACK]: 9, [MOVE]: 10, [HEAL]: 21 },
-            6: { [TOUGH]: 12, [RANGED_ATTACK]: 5, [MOVE]: 10, [HEAL]: 23 }
+        const bodyMap: { [level: number]: BodyRepeat[] } = {
+            0: [[TOUGH, 0], [RANGED_ATTACK, 15], [MOVE, 6], [HEAL, 3]],
+            1: [[TOUGH, 2], [RANGED_ATTACK, 15], [MOVE, 6], [HEAL, 5]],
+            2: [[TOUGH, 4], [RANGED_ATTACK, 20], [MOVE, 9], [HEAL, 9]],
+            3: [[TOUGH, 6], [RANGED_ATTACK, 21], [MOVE, 10], [HEAL, 13]],
+            4: [[TOUGH, 8], [RANGED_ATTACK, 15], [MOVE, 10], [HEAL, 17]],
+            5: [[TOUGH, 10], [RANGED_ATTACK, 9], [MOVE, 10], [HEAL, 21]],
+            6: [[TOUGH, 12], [RANGED_ATTACK, 5], [MOVE, 10], [HEAL, 23]]
         }
-        const bodyConfig: BodySet = bodyMap[data.bearTowerNum]
+        const bodyConfig = bodyMap[data.bearTowerNum]
 
         return calcBodyPart(bodyConfig)
     }

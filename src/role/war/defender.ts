@@ -45,7 +45,7 @@ const defender: CreepConfig<CreepRole.Defender> = {
         creep.attack(enemy)
     },
     // 34 个 t3 强化的 ATTACK 可以造成 4.08K/T 的伤害，刚好可以打穿 12 个 T3 TOUGH
-    bodys: () => calcBodyPart({ [TOUGH]: 6, [ATTACK]: 34, [MOVE]: 10 })
+    bodys: () => calcBodyPart([[TOUGH, 6], [ATTACK, 34], [MOVE, 10]])
 }
 
 export default defender

@@ -121,7 +121,7 @@ const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
         }
         else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
     },
-    bodys: () => calcBodyPart({ [ATTACK]: 20, [MOVE]: 20 })
+    bodys: () => calcBodyPart([[ATTACK, 20], [MOVE, 20]])
 }
 
 /**

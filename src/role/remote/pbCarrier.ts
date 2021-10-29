@@ -77,7 +77,7 @@ const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
             return true
         }
     },
-    bodys: () => calcBodyPart({ [CARRY]: 32, [MOVE]: 16 })
+    bodys: () => calcBodyPart([[CARRY, 32], [MOVE, 16]])
 }
 
 export default pbCarrier

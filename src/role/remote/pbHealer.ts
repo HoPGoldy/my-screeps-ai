@@ -27,7 +27,7 @@ const pbHealer: CreepConfig<CreepRole.PbHealer> = {
         if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
         else creep.goTo(targetCreep.pos, { range: 1, checkTarget: false })
     },
-    bodys: () => calcBodyPart({ [HEAL]: 25, [MOVE]: 25 })
+    bodys: () => calcBodyPart([[HEAL, 25], [MOVE, 25]])
 }
 
 export default pbHealer

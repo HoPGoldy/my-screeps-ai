@@ -86,7 +86,7 @@ const claimer: CreepConfig<CreepRole.Claimer> = {
         else if (claimResult === ERR_GCL_NOT_ENOUGH) creep.log(`CCL 不足，无法占领`)
         else creep.say(`占领 ${claimResult}`)
     },
-    bodys: () => [ MOVE, CLAIM ]
+    bodys: () => [MOVE, CLAIM]
 }
 
 export default claimer

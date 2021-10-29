@@ -19,7 +19,7 @@ const boostDoctor: CreepConfig<CreepRole.BoostDoctor> = {
         creep.healTo(target)
         return false
     },
-    bodys: () => calcBodyPart({ [TOUGH]: 12, [HEAL]: 25, [MOVE]: 10 })
+    bodys: () => calcBodyPart([[TOUGH, 12], [HEAL, 25], [MOVE, 10]])
 }
 
 export default boostDoctor

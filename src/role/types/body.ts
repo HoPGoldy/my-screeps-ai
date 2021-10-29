@@ -3,18 +3,9 @@ import { CreepRole } from "./role"
 /**
  * 简写版本的 bodyPart[]，格式如下：
  * 
- * @example { [TOUGH]: 3, [WORK]: 4, [MOVE]: 7 }
+ * @example [[TOUGH, 3], [WORK, 4], [MOVE, 7]]
  */
-export interface BodySet {
-    [MOVE]?: number
-    [CARRY]?: number
-    [ATTACK]?: number
-    [RANGED_ATTACK]?: number
-    [WORK]?: number
-    [CLAIM]?: number
-    [TOUGH]?: number
-    [HEAL]?: number
-}
+export type BodyRepeat = [BodyPartConstant, number]
 
 /**
  * 单个角色类型的身体部件配置

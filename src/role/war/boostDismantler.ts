@@ -16,7 +16,7 @@ const boostDismantler: CreepConfig<CreepRole.BoostDismantler> = {
         const { targetFlagName, healerName } = creep.memory.data
         return creep.dismantleFlag(targetFlagName, healerName)
     },
-    bodys: () => calcBodyPart({ [TOUGH]: 12, [WORK]: 28, [MOVE]: 10 })
+    bodys: () => calcBodyPart([[TOUGH, 12], [WORK, 28], [MOVE, 10]])
 }
 
 export default boostDismantler
