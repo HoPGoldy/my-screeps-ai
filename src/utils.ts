@@ -238,8 +238,8 @@ export const createCluster = function <T extends ObjectWithRun>(
         Object.values(cluster).map(process => process.run())
     }
 
-    const map = function (func: (process: T, name: string) => unknown) {
-        Object.entries(cluster).map(([key, process]) => func(process, key))
+    const map = function <R>(func: (process: T, name: string) => R) {
+        return Object.entries(cluster).map(([key, process]) => func(process, key))
     }
 
     const showState = function () {

@@ -15,10 +15,6 @@ export interface SquadMemory {
      */
     target: string
     /**
-     * 正在进攻的旗帜名称
-     */
-    cacheTargetFlagName?: string
-    /**
      * 小队类型
      */
     type: SquadType

@@ -61,33 +61,20 @@ export const createSquadManager = function (context: SquadContext) {
 
     /**
      * 获取当前行动的目标旗帜
+     * 这里不应该缓存旗帜名，不然会出现新建了路径点，但是小队没有立刻响应的情况出现
      */
     const getTargetFlag = function (): Flag {
-        const memory = getMemory()
-        const cacheFlag = env.getFlagByName(memory.cacheTargetFlagName)
-
-        if (cacheFlag) {
-            if (!hasMyCreep(cacheFlag)) return cacheFlag
-            delete memory.cacheTargetFlagName
-        }
-
         // 优先选择小队代号对应的旗帜
         const codeFlag = env.getFlagByName(squadCode)
-        if (useFlagAsTarget(codeFlag)) {
-            memory.cacheTargetFlagName = codeFlag.name
-            return codeFlag
-        }
+        if (useFlagAsTarget(codeFlag)) return codeFlag
 
         // 找不到再找有没有路径点
         for (let i = 0; i <= 10; i++) {
             const flag = env.getFlagByName(squadCode + i)
-            if (!useFlagAsTarget(codeFlag)) continue
-            memory.cacheTargetFlagName = flag.name
-            return flag
+            if (useFlagAsTarget(codeFlag)) return flag
         }
 
         // 小队没有路径点，把战争旗帜当作目标
-        memory.cacheTargetFlagName = warCode
         return env.getFlagByName(warCode)
     }
 
@@ -113,8 +100,9 @@ export const createSquadManager = function (context: SquadContext) {
      * 返回当前小队状态
      */
     const showState = function () {
-        const { memberNames, cacheTargetFlagName } = getMemory()
-        return `[小队 ${squadCode}] [队员] ${memberNames.join(',')} [目标旗帜] ${cacheTargetFlagName}`
+        const { memberNames } = getMemory()
+        const targetFlag = getTargetFlag()
+        return `[小队 ${squadCode}] [队员] ${memberNames.join(',')} [目标旗帜] ${targetFlag?.name || '???'}`
     }
 
     return { run, close, showState }

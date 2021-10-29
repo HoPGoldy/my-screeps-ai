@@ -1,7 +1,7 @@
 import { EnvContext } from '@/contextTypes'
 import { arrayToObject, createCache, createCluster } from '@/utils'
 import { createMemoryAccessor } from './memoryAccessor'
-import { SquadType } from '../squadManager/types'
+import { SquadType, SquadTypeName } from '../squadManager/types'
 import { RoomInfo, WarMemory, WarModuleMemory, WarState } from '../types'
 import { createWarManager, WarContext, WarManager } from '../warManager/warManager'
 
@@ -47,13 +47,27 @@ const useWar = function (
     const warCluster = createCluster(initWar)
 
     /**
+     * 检查孵化房间是否可用
+     */
+    const spawnRoomCheck = function (room: Room): boolean {
+        if (!room?.controller?.my) {
+            context.env.log.warning(`房间 ${room.name} 所有者不为自己，无法作为孵化房间`)
+            return false
+        }
+    }
+
+    /**
      * 启动新战争
      * 
      * @param spawnRoomName 孵化单位的房间名
      * @param warCode 战争代号
      */
-    const startWar = function (spawnRoomName: string, warCode: string): WarManager {
-        if (!context.env.getFlagByName(warCode)) return undefined
+    const startWar = function (spawnRoomName: string, warCode: string): WarManager | undefined {
+        const spawnRoom = context.env.getRoomByName(spawnRoomName)
+
+        if (!spawnRoom) return
+        if (!context.env.getFlagByName(warCode)) return
+        if (!spawnRoomCheck(spawnRoom)) return
 
         const warMemory: WarMemory = {
             code: warCode,
@@ -69,7 +83,7 @@ const useWar = function (
         warCluster.add(warCode, newWar)
 
         // 有设置默认小队的话就直接添加动员任务
-        const [squadType, needBoost, squadCode] = db.queryDefaultSquad()
+        const [squadType, needBoost, squadCode] = db.queryDefaultSquad() || []
         if (squadType) newWar.addMobilize(squadType, needBoost, squadCode, squadCode)
 
         return newWar
@@ -86,11 +100,20 @@ const useWar = function (
         db.updateDefaultSquad(squadType, needBoost, squadCode)
     }
 
+    /**
+     * 显示状态
+     */
     const showState = function () {
-        return warCluster.showState().join('\n')
+        const logs = warCluster.showState()
+        const [squadType, needBoost, squadCode] = db.queryDefaultSquad() || [];
+
+        if (!squadType) logs.push('\n未配置默认小队')
+        else logs.push(`\n默认小队：[小队类型] ${SquadTypeName[squadType]} [是否 boost] ${needBoost} [小队代号] ${squadCode || '自动分配'}`)
+
+        return logs.join('\n')
     }
 
-    return { startWar, setDefault, runAllWarProcess: warCluster.run, showState }
+    return { startWar, setDefault, runAllWarProcess: warCluster.run, showState, warCluster }
 }
 
 /**
@@ -165,7 +188,7 @@ export const createWarController = function (context: WarModuleContext) {
 
     const { getRoomInfo, refreshRoomInfo } = useCollectRoomInfo(context.env.getRoomByName)
     const { getCostMatrix, refreshCostMatrix } = useGetRoomCostMatrix(getRoomInfo)
-    const { startWar, runAllWarProcess, showState, setDefault } = useWar(db, getRoomInfo, getCostMatrix, context)
+    const { warCluster, startWar, runAllWarProcess, showState, setDefault } = useWar(db, getRoomInfo, getCostMatrix, context)
 
     /**
      * 运行战争模块
@@ -176,5 +199,5 @@ export const createWarController = function (context: WarModuleContext) {
         runAllWarProcess()
     }
 
-    return { startWar, setDefault, run, clearDefault: db.deleteDefaultSquad, showState }
+    return { wars: warCluster, startWar, setDefault, run, clearDefault: db.deleteDefaultSquad, showState }
 }

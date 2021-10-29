@@ -6,7 +6,7 @@ import help from './help'
 import { nuker, cancelNuker as cancelnuker, confirmNuker as confirmnuker } from './nuker'
 import ps from './powerSpawn'
 import ob from './observer'
-import { war } from './war'
+import { createWarModule } from './war'
 import { showStorageAmountOverview } from '@/modulesRoom/storage/utils'
 import bypass from './bypass'
 import reive from './reive'
@@ -35,7 +35,7 @@ const extensions =  {
     // 全局发送资源到指定房间
     give,
     // 战争管理模块
-    war,
+    war: createWarModule(),
     // 将 creepApi 挂载到全局方便手动操作
     creep: {
         show: showCreep,

@@ -3,9 +3,10 @@ import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
 import { createSquadManager } from "../squadManager/squadManager"
 import { EnvContext } from "@/contextTypes"
-import { arrayToObject, createCluster } from "@/utils"
+import { arrayToObject, createCluster, getBodySpawnEnergy } from "@/utils"
 import { SquadType, SquadTypeName } from "../squadManager/types"
-import { DEFAULT_SQUAD_CODE } from "../utils"
+import { createSpawnInfo, DEFAULT_SQUAD_CODE } from "../utils"
+import { getBodyBoostResource } from "@/role/bodyUtils"
 
 export type WarContext = {
     warCode: string
@@ -89,6 +90,47 @@ export const createWarManager = function (context: WarContext) {
     }
 
     /**
+     * 检查房间是否具有足够孵化该小队的能力
+     * 
+     * @param room 孵化房间
+     * @param needBoost 是否需要 boost
+     * @param type 小队类型
+     */
+    const checkMobilizeAbility = function (room: Room, needBoost: boolean, type: SquadType): boolean {
+        const spawnInfo = createSpawnInfo('test', type)
+        const allBody: BodyPartConstant[] = [].concat(...Object.values(spawnInfo))
+
+        if (needBoost) {
+            const boostResource = getBodyBoostResource(allBody)
+
+            const allResourceEnough = boostResource.every(boostRes => {
+                const { total } = room.myStorage.getResource(boostRes.resource)
+                return total > boostRes.amount
+            })
+
+            if (boostResource.length > room[STRUCTURE_LAB].length) {
+                env.log.warning(`所需 lab 数量不足，需要 ${boostResource.length} 现存 ${room[STRUCTURE_LAB].length}`)
+                return false
+            }
+
+            // boost 资源不足，将不会继续动员
+            if (!allResourceEnough) {
+                env.log.warning('所需 boost 资源不足')
+                return false
+            }
+        }
+
+        const spawnEnergyCost = getBodySpawnEnergy(allBody)
+
+        if (room.energyCapacityAvailable < spawnEnergyCost) {
+            env.log.warning(`孵化所用能量大于房间最大孵化能量 ${spawnEnergyCost} > ${room.energyCapacityAvailable}`)
+            return false
+        }
+
+        return true
+    }
+
+    /**
      * 新增动员任务
      * 
      * @param type 要孵化的小队类型
@@ -96,7 +138,9 @@ export const createWarManager = function (context: WarContext) {
      * @param targetFlagName 要进攻的旗帜名
      * @param squadCode 小队代号
      */
-    const addMobilize = function (type: SquadType, needBoost: boolean = true, targetFlagName?: string, squadCode?: string) {
+    const addMobilize = function (type: SquadType, needBoost: boolean = true, targetFlagName?: string, squadCode?: string): boolean {
+        if (!checkMobilizeAbility(env.getRoomByName(spawnRoomName), needBoost, type)) return false
+
         let confirmSquadCode = squadCode
         // 没有指定小队代号的话就挑选一个默认的
         if (!confirmSquadCode) {
@@ -115,6 +159,8 @@ export const createWarManager = function (context: WarContext) {
 
         env.log.success(`小队 ${confirmSquadCode} 已被添加至动员队列，小队类型 ${SquadTypeName[type]} 进攻旗帜名 ${targetFlagName}`)
         db.insertMobilizeTask(type, needBoost, confirmTarget, confirmSquadCode)
+
+        return true
     }
 
     /**
@@ -134,37 +180,52 @@ export const createWarManager = function (context: WarContext) {
 
         const { mobilizes } = getWarMemory()
 
-        return [
+        const logs = [
             `${warCode} 战争情况`,
+            '可通过创建名称为小队代号+数字的旗帜的方式指定路径点，数字越小优先级越高',
             '战斗小队',
-            ...squadState.map(s => '- ' + s),
+            ...squadState.map(s => '- ' + s) || '- 暂无',
             '动员任务',
-            ' ' + mobilizeState,
-            '待执行动员任务',
-            ...Object.values(mobilizes).map(task => `- [小队代号] ${task.squadCode} [小队类型] ${SquadTypeName[task.squadType]}`)
-        ].join('\n')
+        ]
+
+        if (Object.keys(mobilizes).length > 0) {
+            logs.push(
+                env.colorful.green('● ') + mobilizeState,
+                ...Object.values(mobilizes).map(task => env.colorful.yellow('●') + ` [小队代号] ${task.squadCode} [小队类型] ${SquadTypeName[task.squadType]}`)
+            )
+        }
+        else logs.push('- 暂无')
+
+        return logs.join('\n');
     }
 
     /**
      * 终止战争
+     * 当战争进行中时会切换至终止模式，当战争处于其他模式时会彻底删除战争
+     * 
+     * @returns [是否真正关闭, 输出日志]
      */
-    const closeWar = function () {
+    const closeWar = function (): [boolean, string] {
         const memory = getWarMemory()
+        // 无论暂停战争还是关闭战争，都需要移除动员任务
+        // 不然可能出现动员任务占用着 spawn 和 lab 但是什么都不干的问题
+        mobilizeManager.close()
+
         if (memory.state === WarState.Progress) {
             memory.state = WarState.Aborted
-            env.log.success(
-                `战争 ${warCode} 已切换至终止模式，不再孵化新单位，当前存在的单位将继续作战\n` +
-                `- 执行 ${env.colorful.yellow('war.continue')} 来恢复战争\n` +
-                `- 再次执行 ${env.colorful.yellow('war.close')} 来彻底关闭战争（将会移除所有单位和动员任务）\n`
-            )
+            const logContent = `战争 ${warCode} 已切换至终止模式，不再孵化新单位，当前存在的单位将继续作战\n` +
+            `- 执行 ${env.colorful.yellow('war.continue')} 来恢复战争\n` +
+            `- 再次执行 ${env.colorful.yellow('war.close')} 来彻底关闭战争（将会移除所有单位和动员任务）\n`
+
+            return [false, logContent]
         }
 
         // 释放所有下属资源
         squadCluster.map(squad => squad.close())
-        mobilizeManager.close()
         env.getFlagByName(memory.code)?.remove()
 
         context.removeSelf()
+        return [true, `战争 ${warCode} 已彻底移除`]
     }
 
     /**
@@ -173,10 +234,10 @@ export const createWarManager = function (context: WarContext) {
     const continueWar = function () {
         const memory = getWarMemory()
         if (memory.state === WarState.Progress) {
-            return env.log.normal(`战争 ${warCode} 正在执行`)
+            return `战争 ${warCode} 正在执行`
         }
         memory.state = WarState.Progress
-        env.log.normal(`战争 ${warCode} 已重新启动`)
+        return `战争 ${warCode} 已重新启动`
     }
 
     /**
@@ -192,7 +253,7 @@ export const createWarManager = function (context: WarContext) {
         regroup()
     }
 
-    return { run, showState, addSquad, closeWar, continueWar, addMobilize }
+    return { warCode, squads: squadCluster, run, showState, addSquad, closeWar, continueWar, addMobilize }
 }
 
 export type WarManager = ReturnType<typeof createWarManager>
