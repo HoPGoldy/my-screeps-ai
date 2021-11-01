@@ -89,6 +89,7 @@ export class OperationStrategy {
         if (this.room.controller.level >= 8) {
             // 如果本 shard 的 cpu 较少，8 级之后就限制只要一个 worker
             const MAX = (
+                Game.cpu.shardLimits && 
                 Game.cpu.shardLimits[Game.shard.name] <= 20 &&
                 this.room.controller.level >= 8
             ) ? 1 : 20;

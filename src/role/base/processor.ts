@@ -68,7 +68,7 @@ const processor: CreepConfig<CreepRole.Processor> = {
         else if (result === ERR_NOT_IN_RANGE) creep.goTo(structure.pos, { range: 1 })
         else if (result === ERR_FULL) return true
         else {
-            creep.log(`source 阶段取出异常，错误码 ${result}`, Color.Red)
+            creep.log(`source 阶段取出异常，错误码 ${result}，错误任务 ${JSON.stringify(task)}`, Color.Red)
             creep.room.centerTransport.hangTask()
         }
 

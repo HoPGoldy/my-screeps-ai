@@ -1,7 +1,7 @@
-import { ContextGetCostMatrix, ContextGetRoomInfo, WarMemory, WarState } from "../types"
+import { WarMemory, WarState } from "../types"
 import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
 import { createMemoryAccessor } from "./memoryAccessor"
-import { createSquadManager } from "../squadManager/squadManager"
+import { createSquadManager, hasMyCreep } from "../squadManager/squadManager"
 import { EnvContext } from "@/contextTypes"
 import { arrayToObject, createCluster, getBodySpawnEnergy } from "@/utils"
 import { SquadType, SquadTypeName } from "../squadManager/types"
@@ -12,7 +12,7 @@ export type WarContext = {
     warCode: string
     removeSelf: () => void
     getWarMemory: () => WarMemory
-} & ContextGetCostMatrix & ContextGetRoomInfo & EnvContext
+} & EnvContext
 
 export const createWarManager = function (context: WarContext) {
     const { getWarMemory, env, warCode } = context
@@ -26,18 +26,19 @@ export const createWarManager = function (context: WarContext) {
         const { squads } = getWarMemory()
 
         return arrayToObject(Object.entries(squads).map(([code]) => [code, createSquadManager({
+            ...context,
             warCode,
             squadCode: code,
             getMemory: () => db.querySquad(code),
             getWarState: () => getWarMemory().state,
-            dismiss: aliveCreeps => dismissSquad(code, aliveCreeps),
-            ...context
+            dismiss: aliveCreeps => dismissSquad(code, aliveCreeps)
         })]))
     }
 
     const squadCluster = createCluster(initSquad)
 
     const mobilizeManager = createMobilizeManager({
+        ...context,
         getMemory: db.queryCurrentMobilizeTask,
         getSpawnRoom: () => env.getRoomByName(spawnRoomName),
         finishTask: (creeps) => {
@@ -50,8 +51,7 @@ export const createWarManager = function (context: WarContext) {
             const task = db.queryCurrentMobilizeTask()
             env.log.warning(`动员任务 ${SquadTypeName[task.squadType]} ${task.squadCode} 已停止：` + reason)
             db.deleteCurrentMobilizeTask()
-        },
-        ...context
+        }
     })
 
     /**
@@ -66,12 +66,12 @@ export const createWarManager = function (context: WarContext) {
         db.insertSquad(type, members.map(c => c.name), targetFlagName, code)
 
         const newSquad = createSquadManager({
+            ...context,
             warCode,
             squadCode: code,
             getMemory: () => db.querySquad(code),
             getWarState: () => getWarMemory().state,
-            dismiss: aliveCreeps => dismissSquad(code, aliveCreeps),
-            ...context
+            dismiss: aliveCreeps => dismissSquad(code, aliveCreeps)
         })
 
         squadCluster.add(code, newSquad)
@@ -144,20 +144,20 @@ export const createWarManager = function (context: WarContext) {
         let confirmSquadCode = squadCode
         // 没有指定小队代号的话就挑选一个默认的
         if (!confirmSquadCode) {
-            const { squads } = getWarMemory()
-            const usedSquadCode = Object.keys(squads)
+            const { squads, mobilizes } = getWarMemory()
+            const usedSquadCode = [...Object.keys(squads), ...mobilizes.map(task => task.squadCode)]
             confirmSquadCode = DEFAULT_SQUAD_CODE.find(code => !usedSquadCode.includes(code))
             if (!confirmSquadCode) {
-                env.log.warning('默认小队代号已用尽，请手动执行小队代号')
+                env.log.warning('默认小队代号已用尽，请手动指定小队代号')
                 return
             }
         }
 
         let confirmTarget = targetFlagName
         // 目标旗帜未确认的话就使用小队代号的首字母当作旗帜名
-        if (!confirmTarget) confirmSquadCode = confirmSquadCode[0]
+        if (!confirmTarget) confirmTarget = confirmSquadCode[0]
 
-        env.log.success(`小队 ${confirmSquadCode} 已被添加至动员队列，小队类型 ${SquadTypeName[type]} 进攻旗帜名 ${targetFlagName}`)
+        env.log.success(`小队 ${confirmSquadCode} 已被添加至动员队列，小队类型 ${env.colorful.yellow(SquadTypeName[type])} 进攻旗帜名 ${confirmTarget}`)
         db.insertMobilizeTask(type, needBoost, confirmTarget, confirmSquadCode)
 
         return true
@@ -168,7 +168,8 @@ export const createWarManager = function (context: WarContext) {
      */
     const regroup = function () {
         const { alonedCreep } = getWarMemory()
-        console.log('尝试组建小队！', alonedCreep)
+        if (!alonedCreep || alonedCreep.length <= 0) return
+        console.log('尝试重组小队！', alonedCreep)
     }
 
     /**
@@ -177,24 +178,28 @@ export const createWarManager = function (context: WarContext) {
     const showState = function () {
         const squadState = squadCluster.showState()
         const mobilizeState = mobilizeManager.showState()
-
         const { mobilizes } = getWarMemory()
 
-        const logs = [
-            `${warCode} 战争情况`,
-            '可通过创建名称为小队代号+数字的旗帜的方式指定路径点，数字越小优先级越高',
-            '战斗小队',
-            ...squadState.map(s => '- ' + s) || '- 暂无',
-            '动员任务',
-        ]
+        const logs = [env.colorful.blue(`${warCode} 战争情况`, true)]
+
+        if (squadState.length > 0) {
+            logs.push(
+                '战斗小队',
+                squadState.map(s => '- ' + s).join('\n')
+            )
+        }
+        else logs.push(env.colorful.yellow('暂无战斗小队'))
 
         if (Object.keys(mobilizes).length > 0) {
             logs.push(
+                '动员任务',
                 env.colorful.green('● ') + mobilizeState,
-                ...Object.values(mobilizes).map(task => env.colorful.yellow('●') + ` [小队代号] ${task.squadCode} [小队类型] ${SquadTypeName[task.squadType]}`)
+                ...Object.values(mobilizes).slice(1).map(task => {
+                    return env.colorful.yellow('●') + ` [小队代号] ${task.squadCode} [小队类型] ${SquadTypeName[task.squadType]}`
+                })
             )
         }
-        else logs.push('- 暂无')
+        else logs.push(env.colorful.yellow('暂无动员任务'))
 
         return logs.join('\n');
     }
@@ -245,6 +250,10 @@ export const createWarManager = function (context: WarContext) {
      */
     const run = function () {
         const { state } = getWarMemory()
+
+        const targetFlag = env.getFlagByName(warCode)
+        if (!targetFlag) env.log.error(`找不到名称为 ${warCode} 的战争目标旗帜，请重新放置`)
+        if (state !== WarState.Success && targetFlag.room && hasMyCreep(targetFlag)) db.updateState(WarState.Success)
 
         // 战争正常进行时才会进行动员任务
         if (state === WarState.Progress) mobilizeManager.run()

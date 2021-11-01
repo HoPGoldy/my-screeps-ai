@@ -1,3 +1,4 @@
+import { TransportTaskType } from "@/modulesRoom/taskTransport/types";
 import { CreepRole } from "@/role/types/role";
 import { getBodySpawnEnergy } from "@/utils";
 import { createSpawnInfo } from "../utils";
@@ -9,7 +10,7 @@ import { MobilizeState, RunMobilizeStateFunc } from "./types";
  * @todo 孵化四人小队的生命对齐功能
  */
 export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateState, abandonTask }, env) {
-    console.log('正在执行 Spawning')
+    // console.log('正在执行 Spawning')
 
     // 创建待孵化 creep 的名字与身体部件
     if (!task.data.spawnInfo) {
@@ -22,6 +23,10 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
     if (room.energyCapacityAvailable < spawnEnergyCost) {
         abandonTask(`孵化所用能量大于房间最大孵化能量 ${spawnEnergyCost} > ${room.energyCapacityAvailable}`)
         return
+    }
+
+    if (room.energyAvailable <= room.energyCapacityAvailable) {
+        room.transport.updateTask({ type: TransportTaskType.FillExtension, priority: 10 }, { dispath: true })
     }
 
     // 搬运工不足，归还 spawn 并尝试补充孵化工
@@ -61,7 +66,9 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
     // 开始执行孵化，这里不会判断是否孵化成功
     // 因为返回 OK 也有可能会被别人覆盖，等待下次执行本阶段时会检查是否存在未孵化成员
     freeSpawn.map((spawn, index) => {
-        const [creepName, body] = unSpawnMembers[index]
+        // spawn 比未孵化单位多
+        const [creepName, body] = unSpawnMembers[index] || []
+        if (!creepName) return
         spawn.spawnCreep(body, creepName)
     })
 }

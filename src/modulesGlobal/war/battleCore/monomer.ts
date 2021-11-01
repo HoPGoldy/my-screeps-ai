@@ -1,5 +1,5 @@
 import { BattleCore } from "../squadManager/types";
-import { getMaxDamageCreep } from "../utils";
+import { getMaxDamageCreep, getMaxEndure } from "../utils";
 
 /**
  * 一体机战斗核心
@@ -11,7 +11,7 @@ import { getMaxDamageCreep } from "../utils";
  * - 功击：三格内有敌人就 rangedMassAttack，没有就 rangeAttack
  */
 export const runMonomer: BattleCore<[Creep]> = function (context) {
-    const { members: [creep], targetFlag, getBaseCost, getRoomInfo } = context
+    const { members: [creep], targetFlag, getBaseCost, getRoomInfo, getEnemyDamage } = context
 
     // 治疗自己，不会检查自己生命值，一直治疗
     // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害有可能会把 tough 打穿。
@@ -24,13 +24,31 @@ export const runMonomer: BattleCore<[Creep]> = function (context) {
     }
     // 到房间内了，进行更精细的移动
     else {
-        const { path } = PathFinder.search(creep.pos, { pos: targetFlag.pos, range: 0 }, {
-            roomCallback: getBaseCost,
+        const { path, ops, cost, incomplete } = PathFinder.search(creep.pos, { pos: targetFlag.pos, range: 1 }, {
+            roomCallback: roomName => {
+                const costs = getBaseCost(roomName)?.clone()
+                if (!costs) return
+
+                const enemyDamage = getEnemyDamage(roomName)
+                const maxEndure = getMaxEndure(creep)
+                console.log('maxEndure', creep.name, maxEndure)
+                enemyDamage.map((x, y, value) => {
+                    if (value === -1) return
+                    // 可以打穿自己的防御，这里不能走
+                    if (value >= maxEndure) costs.set(x, y, 255)
+                })
+
+                return costs
+            },
             plainCost: 2,
             swampCost: 10,
             // 只要掉血了就往后撤
             flee: creep.hits < creep.hitsMax
         })
+
+        creep.room.visual.poly(path)
+        console.log('path', path, ops, cost, incomplete)
+
         creep.move(creep.pos.getDirectionTo(path[0]))
     }
 

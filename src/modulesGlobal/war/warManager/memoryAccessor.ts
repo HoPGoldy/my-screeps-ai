@@ -1,6 +1,6 @@
 import { MobilizeState } from "../mobilizeManager/types";
 import { SquadType } from "../squadManager/types";
-import { WarMemory } from "../types";
+import { WarMemory, WarState } from "../types";
 
 export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
     querySquad(code: string) {
@@ -12,20 +12,15 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
      */
     queryCurrentMobilizeTask() {
         const memory = getMemory()
-        if (!(memory.mobilizing in memory.mobilizes)) {
-            memory.mobilizing = Object.keys(memory.mobilizes)[0]
-            if (!memory.mobilizing) return undefined
-        }
-
-        return memory.mobilizes[memory.mobilizing]
+        if (!memory.mobilizes) memory.mobilizes = []
+        return memory.mobilizes[0]
     },
     /**
      * 移除当前正在处理的动员任务
      */
     deleteCurrentMobilizeTask() {
         const memory = getMemory()
-        if (memory.mobilizing in memory.mobilizes) delete memory.mobilizes[memory.mobilizing]
-        delete memory.mobilizing
+        memory.mobilizes.shift()
     },
     insertSquad(squadType: SquadType, memberNames: string[], suqadTarget: string, squadCode: string): void {
         const memory = getMemory()
@@ -33,21 +28,26 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
             code: squadCode,
             target: suqadTarget,
             type: squadType,
-            cacheTargetFlagName: '',
             data: {},
             memberNames
         }
     },
     insertMobilizeTask(squadType: SquadType, needBoost: boolean, suqadTarget: string, squadCode: string): void {
         const memory = getMemory()
-        memory.mobilizes[squadCode] = {
+        if (!memory.mobilizes) memory.mobilizes = []
+
+        memory.mobilizes.push({
             state: needBoost ? MobilizeState.WaitBoostPrepare : MobilizeState.Spawning,
             squadCode,
             suqadTarget,
             squadType,
             needBoost,
             data: {}
-        }
+        })
+    },
+    updateState(newState: WarState) {
+        const memory = getMemory()
+        memory.state = newState
     },
     insertAlonedCreep(creepNames: string[]) {
         const memory = getMemory()

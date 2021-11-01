@@ -190,7 +190,7 @@ export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
     })
 }
 
-export const createCache = function <T extends (...args: any[]) => any>(initValue: T) {
+export const createCache = function <T extends (...args: any[]) => any>(initValue: T): [T, () => void] {
     let cacheStorage: { [key: string]: ReturnType<T> } = {}
 
     const get = function (key: string, ...args: any[]) {
@@ -202,7 +202,7 @@ export const createCache = function <T extends (...args: any[]) => any>(initValu
         cacheStorage = {}
     }
 
-    return { get, refresh }
+    return [get, refresh]
 }
 
 export const arrayToObject = function <T>(array: [string, T][]): { [key: string]: T } {
@@ -215,6 +215,33 @@ export const arrayToObject = function <T>(array: [string, T][]): { [key: string]
 type ObjectWithRun = {
     run: () => void
     showState: () => string
+}
+
+/**
+ * 创建共享上下文
+ * 类似于 react 的 createContext
+ * 
+ * @param defaultValue 默认值
+ */
+export const createContext = function <T>(defaultValue?: T) {
+    let context = defaultValue
+
+    /**
+     * 使用上下文
+     */
+    const use = function () {
+        if (!context) throw new Error('未提供 context！请先调用 context.provide()')
+        return context
+    }
+
+    /**
+     * 提供上下文
+     */
+    const provide = function(value: T) {
+        context = value
+    }
+
+    return { use, provide }
 }
 
 export const createCluster = function <T extends ObjectWithRun>(
@@ -261,4 +288,77 @@ export const createCluster = function <T extends ObjectWithRun>(
  */
 export const getBodySpawnEnergy = function (bodys: BodyPartConstant[]): number {
     return bodys.reduce((cost, body) => cost + BODYPART_COST[body], 0)
+}
+
+/**
+ * 创建坐标值数组
+ * 一般用于范围计算时获取周围的 x, y 轴坐标
+ * 例如 center=30, range=2，会返回 [28, 29, 30, 31, 32]
+ * 
+ * @param center 中心点的坐标值
+ * @param range 左右延申的范围
+ * @returns 以 center 为中心，已 range 为范围的坐标值数组
+ */
+export const getRangeIndex = function (center: number, range: number) {
+    return Array.from({ length: range * 2 + 1 }).map((_, index) => center - range + index)
+}
+
+/**
+ * 游戏中 CostMatrix 的升级版
+ * 游戏里的 CostMatrix 只能存放 0 - 255 的数字，无法满足复杂场景下的使用需求
+ * 所以就诞生了这个东西，可以存放任意类型的值
+ */
+export interface RoomTileMap<T> {
+    set: (x: number, y: number, value: T) => void
+    get: (x: number, y: number) => T
+    map: <R>(callback: (x: number, y: number, value: T) => R) => R[][]
+    clone: () => RoomTileMap<T>
+}
+
+/**
+ * 创建 RoomTileMap
+ * 为什么内部不是 50*50 而是 48*48 呢？因为最外边一圈都是墙和入口，基本不会涉及到对应位置的计算
+ */
+export const createTileMap = function <T = true>(initialCallback?: (x: number, y: number) => T): RoomTileMap<T> {
+    let data: T[][]
+
+    // 没有初始化函数的话就默认填充为 true
+    if (initialCallback) {
+        data = Array.from({ length: 48 }).map((_, x) => {
+            return Array.from({ length: 48 }).map((_, y) => {
+                return initialCallback(x + 1, y + 1)
+            })
+        })
+    }
+    else {
+        data = Array(48).fill(Array(48).fill(true))
+    }
+
+    const set = function (x: number, y: number, value: T) {
+        data[x - 1][y - 1] = value
+    }
+
+    const get = function (x: number, y: number): T {
+        try {
+            return data[x - 1][y - 1]
+        }
+        catch (e) {
+            console.log(e)
+            console.log(x, y, JSON.stringify(data, null, 4))
+        }
+    }
+
+    const map = function <R>(callback: (x: number, y: number, value: T) => R): R[][] {
+        return Array.from({ length: 48 }).map((_, x) => {
+            return Array.from({ length: 48 }).map((_, y) => {
+                return callback(x + 1, y + 1, data[x][y])
+            })
+        })
+    }
+
+    const clone = function (): RoomTileMap<T> {
+        return createTileMap((x, y) => data[x - 1][y - 1])
+    }
+
+    return { set, get, map, clone }
 }

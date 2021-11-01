@@ -452,14 +452,7 @@ export const transportActions: {
      * 将给指定的 lab 填满能量
      */
     [TransportTaskType.LabGetEnergy]: (creep, task, transport) => ({
-        source: () => {
-            transport.countWorkTime()
-            clearCarrying(creep, RESOURCE_ENERGY)
-
-            if (creep.store[RESOURCE_ENERGY] > 0) return true
-            const { sourceId } = creep.memory.data
-            creep.getEngryFrom(sourceId ? Game.getObjectById(sourceId as Id<EnergySourceStructure>) : creep.room.storage)
-        },
+        source: () => getEnergy(creep, transport),
         target: () => {
             transport.countWorkTime()
             const boostLabs = creep.room.myLab.boostLabs
@@ -482,7 +475,7 @@ export const transportActions: {
             // 转移资源
             creep.goTo(targetLab.pos)
             const result = creep.transfer(targetLab, RESOURCE_ENERGY)
-            if (result === OK) return true
+            if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) return true
             // 正常转移资源则更新任务
             else if (result != ERR_NOT_IN_RANGE) creep.say(`强化能量 ${result}`)
         }

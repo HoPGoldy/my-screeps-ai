@@ -1,3 +1,4 @@
+import { RoomTileMap } from "@/utils";
 import { RoomInfo, WarState } from "../types";
 
 /**
@@ -33,19 +34,20 @@ export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject 
      */
     warState: WarState,
     /**
-     * 获取本房间的信息
+     * 获取指定房间的信息
      * 没有视野时返回 undefined
-     *
-     * @param roomName 要查询的房间名
      */
     getRoomInfo: (roomName: string) => RoomInfo | undefined,
     /**
-     * 获取本房间的基础 costMatrix
-     * 包含内容如下：双方creep 255，道路 1
-     *
-     * @param roomName 要查询的房间名
+     * 获取指定房间的基础 costMatrix
+     * 包含内容如下：双方creep 255，墙壁根据血量 5-254，道路 1
+     * （不包含其他建筑，不能走就拆过去）
      */
     getBaseCost: (roomName: string) => CostMatrix | undefined
+    /**
+     * 获取指定房间的敌方伤害值
+     */
+    getEnemyDamage: (roomName: string) => RoomTileMap<number> | undefined
 }
 
 /**

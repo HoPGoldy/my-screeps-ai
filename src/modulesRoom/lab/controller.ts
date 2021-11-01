@@ -212,46 +212,55 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 检查是否已经有正在执行的移出任务
         if (this.room.transport.hasTask(TransportTaskType.LabOut)) return
 
-        // 需要清空的 lab 数组
-        const needClearLabs: StructureLab[] = []
-
-        // 将 lab 分配到 boost 任务上
-        const assignLab = (labs: StructureLab[]) => {
-            for (const boostRes of task.res) {
-                const lab = labs.shift()
-                boostRes.lab = lab.id
-                this.changeLabType(lab.id, LabType.Boost)
-                needClearLabs.push(lab)
-            }
-        }
+        // 需要分配给 boost 的 lab 数组
+        const boostUseLabs: StructureLab[] = []
 
         const reactionLabs = this.reactionLabs
         const inLabs = this.inLabs
 
         // 反应 lab 数量足够，直接使用
         if (reactionLabs.length >= task.res.length) {
-            assignLab(reactionLabs)
+            boostUseLabs.push(...reactionLabs)
         }
         // 反应 lab 数量不足了，加上 in lab 试试
         else if (reactionLabs.length + inLabs.length >= task.res.length) {
-            const labList = [...reactionLabs, ...inLabs]
-            assignLab(labList)
             // 数量足够的话就直接把整个反应程序停了，inLab 都去 boost 了还合成个啥
-            needClearLabs.push(...labList)
+            boostUseLabs.push(...reactionLabs, ...inLabs)
             this.memory.reactionState = LabState.PutResource
             delete this.memory.reactionAmount
         }
+        // lab 加起来也不够用，放弃任务
+        else {
+            this.log.warning(
+                `强化任务 ${task} 需要 lab ${task.res.length} 个，但是目前可用 lab 只有` +
+                `${reactionLabs.length + inLabs.length} 个，任务已放弃`
+            )
+            this.removeBoostTask(task.id)
+            this.initLabInfo()
+            return
+        }
 
-        this.room.transport.addTask({
-            type: TransportTaskType.LabOut,
-            need: 1,
-            labId: needClearLabs.map(({ id }) => id)
-        })
-
-        const allSet = task.res.every(({ lab }) => !!lab)
-        // lab 分配好了，进行下一步操作
-        if (!allSet) return
-        task.state = BoostState.GetResource
+        // 找到需要清空的 lab
+        const needClearLabs = boostUseLabs.filter(lab => lab.mineralType).map(({ id }) => id)
+        if (needClearLabs.length > 0) {
+            this.room.transport.addTask({
+                type: TransportTaskType.LabOut,
+                need: 1,
+                labId: needClearLabs
+            })
+        }
+        // 所有 lab 已经清空完毕，进入下个阶段
+        else {
+            // 将 lab 分配到 boost 任务上
+            for (const boostRes of task.res) {
+                const lab = boostUseLabs.shift()
+                boostRes.lab = lab.id
+                this.changeLabType(lab.id, LabType.Boost)
+                boostUseLabs.push(lab)
+            }
+            console.log('lab 清理完成！', JSON.stringify(task))
+            task.state = BoostState.GetResource
+        }
     }
 
     /**
@@ -279,6 +288,11 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
         // 否则就发布资源移入任务
         else if (!this.room.transport.hasTask(TransportTaskType.LabIn)) {
+            console.log('添加 labin 任务', JSON.stringify(task.res.map(res => ({
+                id: res.lab,
+                type: res.resource,
+                amount: res.amount
+            }))))
             this.room.transport.addTask({
                 type: TransportTaskType.LabIn,
                 need: 1,
@@ -388,7 +402,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         this.removeBoostTask(task.id)
         this.initLabInfo()
-        this.log.success(`强化材料回收完成`)
+        this.log.success(`强化任务已完成`)
     }
 
     /**

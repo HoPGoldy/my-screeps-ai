@@ -1,6 +1,7 @@
 import { allBattleCore } from "../battleCore"
-import { ContextGetCostMatrix, ContextGetRoomInfo, SquadMemory, WarState } from "../types"
+import { SquadMemory, WarState } from "../types"
 import { EnvContext } from "@/contextTypes"
+import { contextCostMatrix, contextEnemyDamage, contextRoomInfo } from "../context"
 
 type SquadContext = {
     warCode: string
@@ -8,12 +9,16 @@ type SquadContext = {
     getMemory: () => SquadMemory
     getWarState: () => WarState
     dismiss: (aliveCreeps: Creep[]) => void
-} & ContextGetCostMatrix & ContextGetRoomInfo & EnvContext
+} & EnvContext
 
 export const createSquadManager = function (context: SquadContext) {
     const {
-        getMemory, getWarState, squadCode, warCode, env, dismiss, getRoomInfo, getCostMatrix
+        getMemory, getWarState, squadCode, warCode, env, dismiss
     } = context
+
+    const getRoomInfo = contextRoomInfo.use()
+    const getCostMatrix = contextCostMatrix.use()
+    const getEnemyDamage = contextEnemyDamage.use()
 
     /**
      * 执行小队行动
@@ -39,7 +44,7 @@ export const createSquadManager = function (context: SquadContext) {
             return
         }
 
-        runBattleCore({ members, memory: data, warState, targetFlag, getRoomInfo, getBaseCost: getCostMatrix })
+        runBattleCore({ members, memory: data, warState, targetFlag, getRoomInfo, getBaseCost: getCostMatrix, getEnemyDamage })
     }
 
     /**
@@ -64,13 +69,14 @@ export const createSquadManager = function (context: SquadContext) {
      * 这里不应该缓存旗帜名，不然会出现新建了路径点，但是小队没有立刻响应的情况出现
      */
     const getTargetFlag = function (): Flag {
+        const { target: squadFlagCode } = getMemory()
         // 优先选择小队代号对应的旗帜
-        const codeFlag = env.getFlagByName(squadCode)
+        const codeFlag = env.getFlagByName(squadFlagCode)
         if (useFlagAsTarget(codeFlag)) return codeFlag
 
         // 找不到再找有没有路径点
         for (let i = 0; i <= 10; i++) {
-            const flag = env.getFlagByName(squadCode + i)
+            const flag = env.getFlagByName(squadFlagCode + i)
             if (useFlagAsTarget(codeFlag)) return flag
         }
 
@@ -113,6 +119,6 @@ export type SquadManager = ReturnType<typeof createSquadManager>
 /**
  * 检查指定旗帜是否有自己人抵达了
  */
-const hasMyCreep = function (flag: Flag) {
+export const hasMyCreep = function (flag: Flag) {
     return flag.pos.lookFor(LOOK_CREEPS).find(c => c.my)
 }

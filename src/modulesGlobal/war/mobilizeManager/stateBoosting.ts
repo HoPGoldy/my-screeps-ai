@@ -6,7 +6,7 @@ import { RunMobilizeStateFunc } from "./types";
  * 因为那边的前置判断比较多，放在这边等孵化结束比较省 cpu
  */
 export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishTask }, env) {
-    console.log('正在执行 Boosting')
+    // console.log('正在执行 Boosting')
 
     if (!task.data.members) {
         env.log.error(`动员任务 ${task.squadCode} 找不到小队成员名称，任务中断`)
@@ -21,7 +21,7 @@ export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishT
     }
 
     const hasSpawning = !!members.find(creep => creep.spawning)
-    if (!hasSpawning) return
+    if (hasSpawning) return
 
     // 不需要 boost，直接完成动员任务
     if (!task.needBoost) return finishTask(members)
@@ -40,7 +40,7 @@ export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishT
     }
 
     // 没有完成 boost 的单位继续执行 boost
-    const unfinishBoostMembers = members.filter(creep => task.data.boostNote[creep.name])
+    const unfinishBoostMembers = members.filter(creep => !task.data.boostNote[creep.name])
     unfinishBoostMembers.forEach(creep => {
         task.data.boostNote[creep.name] = room.myLab.boostCreep(creep, task.data.boostTaskId)
     })

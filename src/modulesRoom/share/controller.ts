@@ -206,7 +206,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
             return
         }
 
-        const getAmount = sendAmount - terminal.store[RESOURCE_ENERGY]
+        const getAmount = sendAmount - terminal.store[resourceType]
 
         terminal.room.centerTransport.send(
             CenterStructure.Storage,

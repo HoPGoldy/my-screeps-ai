@@ -71,7 +71,7 @@ const handleNotExistCreep = function (creepName: string, creepMemory: CreepMemor
     // 没有找到目标孵化房间
     const spawnRoom = Game.rooms[spawnRoomName]
     if (!spawnRoom) {
-        log(`死亡 ${creepName} 未找到 ${spawnRoomName}, 已删除`, 'creepController')
+        // log(`死亡 ${creepName} 未找到孵化房间 ${spawnRoomName}, 已删除`, 'creepController')
         delete Memory.creeps[creepName]
         return
     }

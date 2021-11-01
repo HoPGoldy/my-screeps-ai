@@ -124,6 +124,6 @@ export function log(content: string, prefix: string = '', color: Color = null, n
 export const createLog = (prefix: string) => ({
     normal: (content: string) => log(content, prefix),
     success: (content: string) => log(content, prefix, Color.Green),
-    warning: (content: string) => log(content, prefix, Color.Blue),
+    warning: (content: string) => log(content, prefix, Color.Yellow),
     error: (content: string) => log(content, prefix, Color.Red, true),
 })

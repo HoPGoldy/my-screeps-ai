@@ -31,7 +31,7 @@ export interface SquadMemory {
 /**
  * 房间内的游戏对象信息
  */
-export type RoomInfo = {
+export interface RoomInfo {
     /**
      * 敌方 creep
      */
@@ -52,11 +52,27 @@ export type RoomInfo = {
      * 我方 pc
      */
     myPowerCreeps: PowerCreep[]
-} & {
-    /**
-     * 房间内的所有建筑
-     */
-    [StructureType in StructureConstant]: Structure<StructureType>[]
+    [STRUCTURE_CONTROLLER]: StructureController[]
+    [STRUCTURE_EXTENSION]: StructureExtension[]
+    [STRUCTURE_EXTRACTOR]: StructureExtractor[]
+    [STRUCTURE_FACTORY]: StructureFactory[]
+    [STRUCTURE_INVADER_CORE]: StructureInvaderCore[]
+    [STRUCTURE_KEEPER_LAIR]: StructureKeeperLair[]
+    [STRUCTURE_LAB]: StructureLab[]
+    [STRUCTURE_LINK]: StructureLink[]
+    [STRUCTURE_NUKER]: StructureNuker[]
+    [STRUCTURE_OBSERVER]: StructureObserver[]
+    [STRUCTURE_POWER_SPAWN]: StructurePowerSpawn[]
+    [STRUCTURE_POWER_BANK]: StructurePowerBank[]
+    [STRUCTURE_RAMPART]: StructureRampart[]
+    [STRUCTURE_SPAWN]: StructureSpawn[]
+    [STRUCTURE_STORAGE]: StructureStorage[]
+    [STRUCTURE_TERMINAL]: StructureTerminal[]
+    [STRUCTURE_TOWER]: StructureTower[]
+    [STRUCTURE_CONTAINER]: StructureContainer[]
+    [STRUCTURE_PORTAL]: StructurePortal[]
+    [STRUCTURE_ROAD]: StructureRoad[]
+    [STRUCTURE_WALL]: StructureWall[]
 }
 
 /**
@@ -82,13 +98,9 @@ export interface WarMemory {
      */
     spawnRoomName: string
     /**
-     * 正在动员的任务代号（squadCode）
-     */
-    mobilizing?: string
-    /**
      * 所有的动员任务
      */
-    mobilizes: { [squadCode: string]: MobilizeTask }
+    mobilizes: MobilizeTask[]
     /**
      * 下属的小队
      */
@@ -120,12 +132,4 @@ export enum WarState {
      * 战争结束
      */
     Finish
-}
-
-export interface ContextGetCostMatrix {
-    getCostMatrix: (roomName: string) => CostMatrix
-}
-
-export interface ContextGetRoomInfo {
-    getRoomInfo: (roomName: string) => RoomInfo
 }

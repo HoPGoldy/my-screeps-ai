@@ -6,7 +6,7 @@ import { WarManager } from '@/modulesGlobal/war/warManager/warManager'
 
 declare global {
     interface Memory {
-        wars: WarModuleMemory
+        warMemory: WarModuleMemory
     }
 }
 
@@ -51,7 +51,7 @@ const showGlobalWarHelp = () => createHelp({
  */
 const showWarHelp = () => createHelp({
     name: '战争进程',
-    describe: '管理单场战争，',
+    describe: '管理战争中的小队，可通过创建名称为 “小队代号+数字” 的旗帜的方式为小队指定路径点，数字越小优先级越高，例如：alpha0',
     api: [
         {
             title: '新建小队',
@@ -61,7 +61,7 @@ const showWarHelp = () => createHelp({
                 { name: 'targetFlagName', desc: '【可选】小队进攻的旗帜名，默认将以小队代号作为目标旗帜名' },
                 { name: 'squadCode', desc: '【可选】小队代号' }
             ],
-            functionName: 'squad'
+            functionName: 's'
         },
         {
             title: '终止战争',
@@ -77,7 +77,7 @@ const showWarHelp = () => createHelp({
             functionName: 'continue'
         },
         {
-            title: '终止战争',
+            title: '显示战争状态',
             functionName: 'show'
         },
     ]
@@ -90,7 +90,7 @@ const warpConsoleFunc = function (warManager: WarManager) {
     const { warCode, addMobilize, closeWar, continueWar, showState } = warManager
     return {
         warCode,
-        squad: (...args: Parameters<typeof addMobilize>) => {
+        s: (...args: Parameters<typeof addMobilize>) => {
             const result = addMobilize(...args)
             return result ? '小队添加成功' : '小队添加失败'
         },
@@ -112,33 +112,35 @@ const mountToGlobal = function (warManager: ReturnType<typeof warpConsoleFunc>) 
     Object.assign(global, { [warManager.warCode]: warManager })
 }
 
-export const createWarModule = function () {
-    if (!Memory.wars) Memory.wars = { wars: {} }
+if (!Memory.warMemory) Memory.warMemory = { wars: {} }
 
-    const warModule = createWarController({
-        getMemory: () => Memory.wars,
-        env: createEnvContext('war')
-    })
+const warModule = createWarController({
+    getMemory: () => Memory.warMemory,
+    env: createEnvContext('war')
+})
 
-    // 初始化时在全局重建战争进程
-    warModule.wars.map(warpConsoleFunc).map(mountToGlobal)
+// 初始化时在全局重建战争进程
+warModule.wars.map(warpConsoleFunc).map(mountToGlobal)
 
-    const { startWar, showState, setDefault, clearDefault } = warModule
+const { startWar, showState, setDefault, clearDefault } = warModule
 
-    return {
-        start: (...args: Parameters<typeof startWar>) => {
-            const [spawnRoomName, warFlagName] = args
-            if (warFlagName in global) return `无法使用 ${warFlagName} 作为旗帜名，已存在同名的 global 属性`
+export const consoleWarModule = {
+    start: (...args: Parameters<typeof startWar>) => {
+        const [spawnRoomName, warFlagName] = args
+        if (warFlagName in global) return `无法使用 ${warFlagName} 作为旗帜名，已存在同名的 global 属性`
 
-            const warManager = startWar(...args)
-            if (!warManager) return `战争未启动`
+        const warManager = startWar(...args)
+        if (!warManager) return `战争未启动`
 
-            mountToGlobal(warpConsoleFunc(warManager))
-            return `战争已启动，输入 ${warFlagName}.help() 来查看详细操作`
-        },
-        show: showState,
-        setdefault: setDefault,
-        cleardefault: clearDefault,
-        help: showGlobalWarHelp
-    }
+        mountToGlobal(warpConsoleFunc(warManager))
+        return `战争已启动，输入 ${warFlagName}.help() 来查看详细操作`
+    },
+    show: showState,
+    setdefault: setDefault,
+    cleardefault: clearDefault,
+    help: showGlobalWarHelp
+}
+
+export const warAppPlugin: AppLifecycleCallbacks = {
+    tickStart: warModule.run
 }

@@ -10,6 +10,7 @@ import {
 } from './modulesGlobal'
 import { generatePixelAppPlugin } from './utils'
 import { mountList, extensionAppPlugin } from './mount'
+import { warAppPlugin } from './mount/global/war'
 
 // 挂载所有的原型拓展
 const app = new App({ mountList })
@@ -34,6 +35,9 @@ app.on(delayQueueAppPlugin)
 
 // 注册地图库插件
 app.on(mapLibraryAppPlugin)
+
+// 注册全局战争运行模块
+app.on(warAppPlugin)
 
 // 注册搓 pixel 任务
 app.on(generatePixelAppPlugin)
