@@ -73,8 +73,8 @@ export default function (room: Room, centerPos: RoomPosition, structurePlacePlan
      */
     const findPath = (targetPos: RoomPosition, range: number = 2) => {
         const searchResult = PathFinder.search(centerPos, { pos: targetPos, range }, {
-            plainCost: 2,
-            swampCost: 10,
+            plainCost: 10,
+            swampCost: 20,
             roomCallback: (roomName) => {
                 // 不是自己房间就正常进行搜索
                 if (roomName !== room.name) return true

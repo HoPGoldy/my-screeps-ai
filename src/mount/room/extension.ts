@@ -4,9 +4,7 @@
  * 包含了所有自定义的 room 拓展方法
  * 这些方法主要是用于和其他模块代码进行交互
  */
-
-import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
-import { manageStructure } from '@/modulesGlobal/autoPlanning'
+import { manageStructure, clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
 import { removeCreep } from '@/modulesGlobal/creep'
 import { Color, createRoomLink, log } from '@/modulesGlobal'
 
@@ -102,7 +100,14 @@ export default class RoomExtension extends Room {
      * 执行自动建筑规划
      */
     public planLayout(): string {
-        const result = manageStructure(this)
+        if (this.memory.noLayout) return '房间指定了 noLayout，不运行自动规划'
+        if (!this.memory.center) return '房间未指定中央点位'
+
+        // 一级的时候移除所有非重要建筑
+        if (this.controller.level === 1) clearStructure(this)
+
+        const centerPos = new RoomPosition(...this.memory.center, this.name)
+        const result = manageStructure(this, centerPos)
 
         if (result === OK) return `自动规划完成`
         else if (result === ERR_NOT_OWNER) return `自动规划失败，房间没有控制权限`

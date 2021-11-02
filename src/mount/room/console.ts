@@ -7,9 +7,8 @@
 import { createHelp, red, yellow, colorful } from '@/modulesGlobal/console'
 import { DEFAULT_FLAG_NAME, ROOM_REMOVE_INTERVAL } from '@/setting'
 import { getName } from '@/utils'
-import { setBaseCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
 import RoomExtension from './extension'
-import { manageStructure } from '@/modulesGlobal/autoPlanning'
+import { manageStructure, clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
 import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
 import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 import { WorkTaskType } from '@/modulesRoom'
@@ -139,8 +138,12 @@ export default class RoomConsole extends RoomExtension {
 
         setBaseCenter(this, flag.pos)
         flag.remove()
+
+        // 一级的时候移除所有非重要建筑
+        if (this.controller.level === 1) clearStructure(this)
+
         // 设置好了之后自动运行布局规划
-        manageStructure(this)
+        manageStructure(this, flag.pos)
         return `[${this.name}] 已将 ${flagName} 设置为中心点，controller 升级时自动执行布局规划`
     }
 
