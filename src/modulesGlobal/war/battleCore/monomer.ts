@@ -1,5 +1,5 @@
 import { BattleCore } from "../squadManager/types";
-import { getMaxDamageCreep, getMaxEndure } from "../utils";
+import { getMaxDamageCreep, getMaxEndure } from "./common/calculator";
 
 /**
  * 一体机战斗核心

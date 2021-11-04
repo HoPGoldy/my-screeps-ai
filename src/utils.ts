@@ -1,7 +1,7 @@
 /**
  * 判断一个位置是否在房间入口处（是否骑墙）
  */
-export const onEnter = function (pos: RoomPosition): boolean {
+export const onEdge = function (pos: RoomPosition): boolean {
     return pos.x === 0 || pos.x === 49 || pos.y === 0 || pos.y === 49
 }
 
@@ -190,21 +190,39 @@ export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
     })
 }
 
-export const createCache = function <T extends (...args: any[]) => any>(initValue: T): [T, () => void] {
+/**
+ * 创建缓存
+ * 当 callback 第一个参数不为数字、字符串时需务必指定 getCacheKey！
+ * 
+ * @param callback 要缓存返回值的函数
+ * @param getCacheKey 获取缓存的 key，入参和 callback 相同，返回一个字符串或者数字，不填则使用 callback 第一个参数作为键
+ */
+export const createCache = function <T extends (...args: any[]) => any>(
+    callback: T,
+    getCacheKey?: (...args: Parameters<T>) => string | number
+): [T, () => void, (key: string| number) => void] {
     let cacheStorage: { [key: string]: ReturnType<T> } = {}
 
-    const get = function (key: string, ...args: any[]) {
-        if (key in cacheStorage) return cacheStorage[key]
-        return cacheStorage[key] = initValue(key, ...args)
+    const get = function (...args) {
+        const cacheKey = getCacheKey(...args as Parameters<T>) || args[0]
+        if (cacheKey in cacheStorage) return cacheStorage[cacheKey]
+        return cacheStorage[cacheKey] = callback(...args as Parameters<T>)
     } as T
 
     const refresh = function () {
         cacheStorage = {}
     }
 
-    return [get, refresh]
+    const drop = function (key: string | number) {
+        delete cacheStorage[key]
+    }
+
+    return [get, refresh, drop]
 }
 
+/**
+ * 将 array 转换为 kv 形式
+ */
 export const arrayToObject = function <T>(array: [string, T][]): { [key: string]: T } {
     return array.reduce((result, [key, process]) => {
         result[key] = process

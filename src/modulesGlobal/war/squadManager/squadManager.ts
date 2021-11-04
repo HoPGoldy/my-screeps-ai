@@ -44,7 +44,11 @@ export const createSquadManager = function (context: SquadContext) {
             return
         }
 
-        runBattleCore({ members, memory: data, warState, targetFlag, getRoomInfo, getBaseCost: getCostMatrix, getEnemyDamage })
+        runBattleCore({
+            members, memory: data, warState, targetFlag,
+            getRoomInfo, getBaseCost: getCostMatrix, getEnemyDamage,
+            env
+        })
     }
 
     /**

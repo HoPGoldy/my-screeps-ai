@@ -1,3 +1,4 @@
+import { EnvMethods } from "@/contextTypes";
 import { RoomTileMap } from "@/utils";
 import { RoomInfo, WarState } from "../types";
 
@@ -41,13 +42,16 @@ export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject 
     /**
      * 获取指定房间的基础 costMatrix
      * 包含内容如下：双方creep 255，墙壁根据血量 5-254，道路 1
-     * （不包含其他建筑，不能走就拆过去）
      */
     getBaseCost: (roomName: string) => CostMatrix | undefined
     /**
      * 获取指定房间的敌方伤害值
      */
     getEnemyDamage: (roomName: string) => RoomTileMap<number> | undefined
+    /**
+     * 环境依赖
+     */
+    env: EnvMethods
 }
 
 /**

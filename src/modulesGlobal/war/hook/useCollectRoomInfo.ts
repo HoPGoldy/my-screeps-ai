@@ -31,6 +31,7 @@ export const useCollectRoomInfo = function (getRoomByName: (roomName: string) =>
         return {
             ...defaultStructures,
             ...structureGroup,
+            structures,
             hostileCreeps,
             hostilePowerCreeps,
             hostileSite,

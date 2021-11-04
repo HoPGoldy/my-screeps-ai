@@ -2,7 +2,7 @@ import { repairSetting, MIN_WALL_HITS } from '@/setting'
 import roles from '@/role'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
-import { onEnter, useCache } from '@/utils'
+import { onEdge, useCache } from '@/utils'
 import { getNearSite } from '@/modulesGlobal/construction'
 import { Color } from '@/modulesGlobal'
 import { CreepConfig, CreepRole, RoleCreep } from '@/role/types/role'
@@ -448,7 +448,7 @@ export default class CreepExtension extends Creep {
         else this.goTo(creep.pos)
         
         // 检查自己是不是在骑墙
-        if (onEnter(this.pos)) {
+        if (onEdge(this.pos)) {
             const safePosFinder = i => i !== 0 && i !== 49
             // 遍历找到目标 creep 身边的不骑墙位置
             const x = [creep.pos.x - 1, creep.pos.x + 1].find(safePosFinder)

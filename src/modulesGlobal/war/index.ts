@@ -1,1 +1,1 @@
-export { createWarController } from './globalController/creator'
+export { createWarController } from './globalController/controller'

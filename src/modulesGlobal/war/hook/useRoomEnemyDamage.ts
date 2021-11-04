@@ -1,9 +1,9 @@
 import { createCache, createTileMap, RoomTileMap, getRangeIndex } from "@/utils"
 import { RoomInfo } from "../types"
-import { getCreepDamage } from "../utils"
+import { getCreepDamage } from "../battleCore/common/calculator"
 
 /**
- * 创建房间地方伤害值
+ * 创建房间敌方伤害值
  * 包含缓存
  */
 export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => RoomInfo | undefined) {
@@ -41,7 +41,7 @@ export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => R
         const enemyDamage = getTowerDamage(roomName).clone()
 
         hostileCreeps.map(creep => {
-            const [nearDamage, rangeDamage] = getCreepDamage(creep)
+            const [nearDamage, rangeDamage] = getCreepDamage(creep.body)
 
             const xs = getRangeIndex(creep.pos.x, 4)
             const ys = getRangeIndex(creep.pos.y, 4)

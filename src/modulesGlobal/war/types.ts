@@ -10,8 +10,7 @@ export interface SquadMemory {
      */
     code: string
     /**
-     * 要进攻的旗帜名
-     * 和 cacheTargetFlagName 的区别就是，本属性是旗帜名前缀，而 cacheTargetFlagName 是完整的旗帜名
+     * 要进攻的旗帜名前缀
      */
     target: string
     /**
@@ -52,6 +51,10 @@ export interface RoomInfo {
      * 我方 pc
      */
     myPowerCreeps: PowerCreep[]
+    /**
+     * 房间内的建筑
+     */
+    structures: AnyStructure[]
     [STRUCTURE_CONTROLLER]: StructureController[]
     [STRUCTURE_EXTENSION]: StructureExtension[]
     [STRUCTURE_EXTRACTOR]: StructureExtractor[]
