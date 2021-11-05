@@ -16,10 +16,6 @@ export const createSquadManager = function (context: SquadContext) {
         getMemory, getWarState, squadCode, warCode, env, dismiss
     } = context
 
-    const getRoomInfo = contextRoomInfo.use()
-    const getCostMatrix = contextCostMatrix.use()
-    const getEnemyDamage = contextEnemyDamage.use()
-
     /**
      * 执行小队行动
      */
@@ -44,11 +40,7 @@ export const createSquadManager = function (context: SquadContext) {
             return
         }
 
-        runBattleCore({
-            members, memory: data, warState, targetFlag,
-            getRoomInfo, getBaseCost: getCostMatrix, getEnemyDamage,
-            env
-        })
+        runBattleCore({ members, memory: data, squadCode, warState, targetFlag, env })
     }
 
     /**

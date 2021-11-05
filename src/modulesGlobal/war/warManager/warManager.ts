@@ -5,8 +5,9 @@ import { createSquadManager, hasMyCreep } from "../squadManager/squadManager"
 import { EnvContext } from "@/contextTypes"
 import { arrayToObject, createCluster, getBodySpawnEnergy } from "@/utils"
 import { SquadType, SquadTypeName } from "../squadManager/types"
-import { createSpawnInfo, DEFAULT_SQUAD_CODE } from "../utils"
+import { DEFAULT_SQUAD_CODE } from "../utils"
 import { getBodyBoostResource } from "@/role/bodyUtils"
+import { createSpawnInfo } from "../mobilizeManager/getBodyPart"
 
 export type WarContext = {
     warCode: string
@@ -97,7 +98,7 @@ export const createWarManager = function (context: WarContext) {
      * @param type 小队类型
      */
     const checkMobilizeAbility = function (room: Room, needBoost: boolean, type: SquadType): boolean {
-        const spawnInfo = createSpawnInfo('test', type)
+        const spawnInfo = createSpawnInfo(room, 'test', type)
         const allBody: BodyPartConstant[] = [].concat(...Object.values(spawnInfo))
 
         if (needBoost) {

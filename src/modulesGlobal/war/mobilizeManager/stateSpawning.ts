@@ -1,7 +1,7 @@
 import { TransportTaskType } from "@/modulesRoom/taskTransport/types";
 import { CreepRole } from "@/role/types/role";
 import { getBodySpawnEnergy } from "@/utils";
-import { createSpawnInfo } from "../utils";
+import { createSpawnInfo } from "./getBodyPart";
 import { MobilizeState, RunMobilizeStateFunc } from "./types";
 
 /**
@@ -14,7 +14,7 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
 
     // 创建待孵化 creep 的名字与身体部件
     if (!task.data.spawnInfo) {
-        task.data.spawnInfo = createSpawnInfo(task.squadCode, task.squadType)
+        task.data.spawnInfo = createSpawnInfo(room, task.squadCode, task.squadType)
     }
 
     const allBody: BodyPartConstant[] = [].concat(...Object.values(task.data.spawnInfo))
@@ -67,8 +67,8 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
     // 因为返回 OK 也有可能会被别人覆盖，等待下次执行本阶段时会检查是否存在未孵化成员
     freeSpawn.map((spawn, index) => {
         // spawn 比未孵化单位多
-        const [creepName, body] = unSpawnMembers[index] || []
+        const [creepName, { soliderRole, bodys }] = unSpawnMembers[index] || []
         if (!creepName) return
-        spawn.spawnCreep(body, creepName)
+        spawn.spawnCreep(bodys, creepName, { memory: { soliderRole } as unknown as CreepMemory})
     })
 }

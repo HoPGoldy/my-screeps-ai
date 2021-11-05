@@ -30,7 +30,7 @@ export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => R
     const createRoomEnemyDamage = function (roomName: string): RoomTileMap<number> | undefined {
         const { tower, hostileCreeps } = getRoomInfo(roomName) || {}
         if (!tower) return undefined
-        
+
         // 如果房间里的 tower 数量变了，就移除 tower 伤害缓存
         if (tower.length !== getTowerNumber(roomName)) {
             refrshTowerDamage()

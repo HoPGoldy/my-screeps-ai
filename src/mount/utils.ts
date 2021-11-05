@@ -11,7 +11,7 @@ export const createEnvContext = function (moduleName: string): EnvMethods {
         getRoomByName: roomName => Game.rooms[roomName],
         getCreepByName: creepName => Game.creeps[creepName],
         getFlagByName: flagName => Game.flags[flagName],
-        getObjectById: Game.getObjectById,
+        getObjectById: id => Game.getObjectById(id),
         log: createLog(moduleName),
         colorful: { green, red, yellow, blue }
     }

@@ -1,6 +1,6 @@
 import { BoostState } from "@/modulesRoom/lab/types";
 import { getBodyBoostResource } from "@/role/bodyUtils";
-import { createSpawnInfo } from "../utils";
+import { createSpawnInfo } from "./getBodyPart";
 import { RunMobilizeStateFunc, MobilizeState } from "./types";
 
 /**
@@ -13,7 +13,7 @@ export const runWaitBoostPrepare: RunMobilizeStateFunc = function ({ task, room,
     if (!task.data.boostTaskId) {
         // 创建待孵化 creep 的名字与身体部件
         if (!task.data.spawnInfo) {
-            task.data.spawnInfo = createSpawnInfo(task.squadCode, task.squadType)
+            task.data.spawnInfo = createSpawnInfo(room, task.squadCode, task.squadType)
         }
 
         const allBody: BodyPartConstant[] = [].concat(...Object.values(task.data.spawnInfo))

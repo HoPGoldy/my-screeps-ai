@@ -10,7 +10,7 @@ type SquadMemory = SquadMemberMemory & {
 /**
  * 黄绿球二人组
  */
-export const runDismantle2: BattleCore<[Creep, Creep], SquadMemory> = function (context) {
+export const runAttack2: BattleCore<[Creep, Creep], SquadMemory> = function (context) {
     const { members, memory, targetFlag, squadCode, env } = context
     const { attacker, healer } = getNamedMember(WORK, memory, members)
 
@@ -30,7 +30,7 @@ export const runDismantle2: BattleCore<[Creep, Creep], SquadMemory> = function (
  * @param attacker 进攻手
  * @param target 进攻目标
  */
- const execAttack = function (
+const execAttack = function (
     attacker: Creep, memory: SquadMemory, targetFlag: Flag,
     getObjectById: typeof Game.getObjectById
 ) {
@@ -49,19 +49,30 @@ export const runDismantle2: BattleCore<[Creep, Creep], SquadMemory> = function (
     if (attacker.pos.isNearTo(targetFlag)) {
         const attackStructure = targetFlag.pos.lookFor(LOOK_STRUCTURES)
         if (attackStructure.length > 0) {
-            attacker.dismantle(attackStructure[0])
+            attacker.attack(attackStructure[0])
             return
         }
     }
 
     const getRoomInfo = contextRoomInfo.use()
-    const { structures } = getRoomInfo(targetFlag.room.name)
+    const { structures, hostileCreeps, hostilePowerCreeps } = getRoomInfo(targetFlag.room.name)
 
-    // 血量由低到高给身边的建筑排序
-    const nearStructures = attacker.pos.findInRange(structures, 1).sort((a, b) => b.hits - a.hits)
-    if (nearStructures.length > 0) {
-        attacker.dismantle(nearStructures[0])
-        memory.cacheAttackTargetId = nearStructures[0].id
+    const sortByHits = (a, b) => b.hits - a.hits
+    let attackTarget: Creep | PowerCreep | AnyStructure
+
+    const nearPowerCreeps = attacker.pos.findInRange(hostilePowerCreeps, 1).sort(sortByHits)
+    if (nearPowerCreeps.length > 0) attackTarget = nearPowerCreeps[0]
+
+    if (!attackTarget) {
+        const nearCreeps = attacker.pos.findInRange(hostileCreeps, 1).sort(sortByHits)
+        if (nearCreeps.length > 0) attackTarget = nearCreeps[0]
     }
-    
+
+    if (!attackTarget) {
+        const nearStructures = attacker.pos.findInRange(structures, 1).sort(sortByHits)
+        if (nearStructures.length > 0) attackTarget = nearStructures[0]
+    }
+
+    attacker.attack(attackTarget)
+    memory.cacheAttackTargetId = attackTarget.id
 }

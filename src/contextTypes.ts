@@ -4,7 +4,7 @@ export interface EnvMethods {
     getGame: () => Game
     getRoomByName: (roomName: string) => Room | undefined
     getCreepByName: (creepName: string) => Creep | undefined
-    getObjectById: <T>(id: Id<T>) => T | undefined
+    getObjectById: typeof Game.getObjectById
     getFlagByName: (flagName: string) => Flag | undefined
     log: ReturnType<typeof createLog>
     colorful: {

@@ -1,5 +1,7 @@
+import { contextRoomInfo } from "../context";
 import { BattleCore } from "../squadManager/types";
-import { getMaxDamageCreep, getMaxEndure } from "./common/calculator";
+import { getMaxDamageCreep } from "./common/calculator";
+import { execSquadMove } from "./common/squad1";
 
 /**
  * 一体机战斗核心
@@ -11,47 +13,24 @@ import { getMaxDamageCreep, getMaxEndure } from "./common/calculator";
  * - 功击：三格内有敌人就 rangedMassAttack，没有就 rangeAttack
  */
 export const runMonomer: BattleCore<[Creep]> = function (context) {
-    const { members: [creep], targetFlag, getBaseCost, getRoomInfo, getEnemyDamage } = context
+    const { squadCode, members: [creep], targetFlag } = context
+
+    execAttack(creep, targetFlag)
 
     // 治疗自己，不会检查自己生命值，一直治疗
     // 因为本 tick 受到的伤害只有在下个 tick 才能发现，两个 tick 累计的伤害有可能会把 tough 打穿。
     creep.heal(creep)
 
-    // 不在房间内，先走着，用 goTo 是因为 goTo 包含对穿，这样可以避免堵在出生房间
-    if (!targetFlag.room || creep.room.name !== targetFlag.room.name) {
-        creep.goTo(targetFlag.pos)
-        return
-    }
-    // 到房间内了，进行更精细的移动
-    else {
-        const { path, ops, cost, incomplete } = PathFinder.search(creep.pos, { pos: targetFlag.pos, range: 1 }, {
-            roomCallback: roomName => {
-                const costs = getBaseCost(roomName)?.clone()
-                if (!costs) return
+    // 只要掉血了就往后撤
+    const flee = creep.hits < creep.hitsMax
+    execSquadMove({ squadCode, creep, flee, targetFlag })
+}
 
-                const enemyDamage = getEnemyDamage(roomName)
-                const maxEndure = getMaxEndure(creep)
-                console.log('maxEndure', creep.name, maxEndure)
-                enemyDamage.map((x, y, value) => {
-                    if (value === -1) return
-                    // 可以打穿自己的防御，这里不能走
-                    if (value >= maxEndure) costs.set(x, y, 255)
-                })
-
-                return costs
-            },
-            plainCost: 2,
-            swampCost: 10,
-            // 只要掉血了就往后撤
-            flee: creep.hits < creep.hitsMax
-        })
-
-        creep.room.visual.poly(path)
-        console.log('path', path, ops, cost, incomplete)
-
-        creep.move(creep.pos.getDirectionTo(path[0]))
-    }
-
+/**
+ * 执行一体机功击
+ */
+const execAttack = function (creep: Creep, targetFlag: Flag) {
+    const getRoomInfo = contextRoomInfo.use()
     const { hostileCreeps, hostilePowerCreeps } = getRoomInfo(targetFlag.room.name)
     const inRangeHostile = creep.pos.findInRange([...hostileCreeps, ...hostilePowerCreeps], 3)
 
