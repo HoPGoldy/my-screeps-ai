@@ -104,7 +104,7 @@ export default class RoomCreepRelease {
         }
 
         if (realAdjust !== 0) {
-            let logContent = `${type} 数量自适应 [调整] ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
+            let logContent = `${type} 数量更新 [调整] ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
                 `[上/下限] ${MAX}/${MIN} [当前数量] ${aliveUnit.length} `
 
             if (removeWhenDiedCreep.length > 0) logContent += `[将在死亡后移除] ${removeWhenDiedCreep.join(',')}`

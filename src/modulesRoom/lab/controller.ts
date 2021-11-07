@@ -11,7 +11,7 @@ import { BoostState, LabMemory, LabState, BoostTask, BoostResourceConfig, LabTyp
 export default class LabController extends RoomAccessor<LabMemory> {
     constructor(roomName: string) {
         super('lab', roomName, 'lab', {
-            boostTasks: {},
+            boostTasks: [],
             boostingNote: {}
         })
 
@@ -59,7 +59,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }, {})
 
         // 设置 boost lab
-        Object.values(this.memory.boostTasks).map(({ res }) => {
+        this.memory.boostTasks.map(({ res }) => {
             res.map(({ lab }) => this.labInfos[lab] = { type: LabType.Boost })
         });
 
@@ -123,9 +123,13 @@ export default class LabController extends RoomAccessor<LabMemory> {
     }
 
     public runBoostController(): void {
-        if (Object.keys(this.memory.boostTasks).length > 0 && !(Game.time % 10)) {
-            Object.values(this.memory.boostTasks).map(task => this.boostController(task))
-        }
+        if (Game.time % 10) return
+        if (this.room._hasRunBoost) return
+        if (this.memory.boostTasks.length <= 0) return
+
+        // 同时时间只会执行一个 boost 任务
+        this.boostController(this.memory.boostTasks[0])
+        this.room._hasRunBoost = true
     }
 
     /**
@@ -168,7 +172,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             state: BoostState.GetLab
         }
 
-        this.memory.boostTasks[taskData.id] = taskData
+        this.memory.boostTasks.push(taskData)
 
         // 执行一次 lab 分配，如果分配失败的话后面还会定期执行分配
         this.boostGetLab(taskData)
@@ -180,9 +184,9 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @param taskId 要重新装填的 boost 任务
      */
     public reloadBoostTask(taskId: number): ERR_NOT_FOUND | OK {
-        if (!(taskId in this.memory.boostTasks)) return ERR_NOT_FOUND
+        const boostTask = this.memory.boostTasks.find(task => task.id === taskId)
+        if (!boostTask) return ERR_NOT_FOUND
 
-        const boostTask = this.memory.boostTasks[taskId]
         this.room.transport.addTask({
             type: TransportTaskType.LabIn,
             need: 1,
@@ -201,7 +205,8 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @param taskId 要移除的任务索引
      */
     public removeBoostTask(taskId: number) {
-        delete this.memory.boostTasks[taskId]
+        const removeIndex = this.memory.boostTasks.findIndex(task => task.id === taskId)
+        this.memory.boostTasks.splice(removeIndex, 1)
     }
 
     /**
@@ -230,9 +235,10 @@ export default class LabController extends RoomAccessor<LabMemory> {
             delete this.memory.reactionAmount
         }
         // lab 加起来也不够用，放弃任务
-        else {
+        // 注意，这里不会因为可用的 lab（lab 总数大于任务所需数量，但是有些 lab 被其他任务占用）不足就放弃任务，因为只要 lab 总数足够，总有一天任务会安排上
+        else if (task.res.length > this.room[STRUCTURE_LAB].length) {
             this.log.warning(
-                `强化任务 ${task} 需要 lab ${task.res.length} 个，但是目前可用 lab 只有` +
+                `强化任务 ${task} 需要 lab ${task.res.length} 个，但是目前 lab 只有` +
                 `${reactionLabs.length + inLabs.length} 个，任务已放弃`
             )
             this.removeBoostTask(task.id)
@@ -250,7 +256,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             })
         }
         // 所有 lab 已经清空完毕，进入下个阶段
-        else {
+        else if (boostUseLabs.length > task.res.length) {
             // 将 lab 分配到 boost 任务上
             for (const boostRes of task.res) {
                 const lab = boostUseLabs.shift()
@@ -258,7 +264,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 this.changeLabType(lab.id, LabType.Boost)
                 boostUseLabs.push(lab)
             }
-            console.log('lab 清理完成！', JSON.stringify(task))
+            // console.log('lab 清理完成！', task.id)
             task.state = BoostState.GetResource
         }
     }
@@ -288,11 +294,8 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
         // 否则就发布资源移入任务
         else if (!this.room.transport.hasTask(TransportTaskType.LabIn)) {
-            console.log('添加 labin 任务', JSON.stringify(task.res.map(res => ({
-                id: res.lab,
-                type: res.resource,
-                amount: res.amount
-            }))))
+            // console.log('添加 labin 任务', task.id)
+
             this.room.transport.addTask({
                 type: TransportTaskType.LabIn,
                 need: 1,
@@ -333,7 +336,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @returns 强化是否完成（因出现问题导致无法正常完成强化也会返回 true，比如任务里有 HEAL 强化，但是 creep 没有 HEAL 身体）
      */
     public boostCreep(creep: Creep, taskId: number): boolean {
-        const task = this.memory.boostTasks[taskId]
+        const task = this.memory.boostTasks.find(task => task.id === taskId)
         if (!task) return true
 
         // 之前没来强化过，新建个档案
@@ -348,7 +351,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 掏出来所有清单上还没强化过的 lab，挨个执行强化
         boostingNote.filter(({ boosted }) => !boosted).map((notBoostLab, index) => {
             const lab = Game.getObjectById(notBoostLab.labId)
-            if (!lab) {
+            if (!lab || !lab.mineralType) {
                 notBoostLab.boosted = true
                 return
             }
@@ -366,13 +369,13 @@ export default class LabController extends RoomAccessor<LabMemory> {
     }
 
     public getBoostState(taskId: number): ERR_NOT_FOUND | BoostState {
-        const task = this.memory.boostTasks[taskId]
+        const task = this.memory.boostTasks.find(task => task.id === taskId)
         if (!task) return ERR_NOT_FOUND
         return task.state
     }
 
     public finishBoost(taskId: number): void {
-        const task = this.memory.boostTasks[taskId]
+        const task = this.memory.boostTasks.find(task => task.id === taskId)
         if (!task) return
         task.state = BoostState.ClearResource
     }
@@ -666,9 +669,9 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         logs.push('[强化任务]')
 
-        if (Object.keys(boostTasks).length == 0) logs.push('- 暂无任务')
+        if (boostTasks.length == 0) logs.push('- 暂无任务')
         else {
-            const taskLogs = Object.values(boostTasks).map(task => {
+            const taskLogs = boostTasks.map(task => {
                 const info = `- [${task.id}] [当前阶段] ${task.state} `
                 const resLog = task.res.map(res => `[${res.resource}] ${res.amount}`).join(' ')
                 return info + resLog

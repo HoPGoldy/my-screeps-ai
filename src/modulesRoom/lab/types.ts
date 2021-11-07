@@ -67,9 +67,7 @@ export interface LabMemory {
     /**
      * 该房间存在的强化任务
      */
-    boostTasks: {
-        [taskId: number]: BoostTask
-    }
+    boostTasks: BoostTask[]
     /**
      * 强化清单
      * 用于临时保存某个 creep 的强化进度
@@ -157,7 +155,11 @@ declare global {
          * 该房间是否已经执行过 lab 集群作业了
          * 在 Lab.work 中调用，一个房间只会执行一次
          */
-         _hasRunLab: boolean
+        _hasRunLab: boolean
+        /**
+         * 该房间是否运行过 boost 作业了
+         */
+        _hasRunBoost: boolean
     }
     interface RoomMemory {
         /**

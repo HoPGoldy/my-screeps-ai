@@ -120,12 +120,12 @@ const [searchPath, refreshPath, dropPath] = createCache((context: SquadMoveConte
  */
 export const execSquadMove = function (conetxt: SquadMoveContext) {
     const { header, tailer, targetFlag, squadCode, flee } = conetxt
-
     // 两个人不在一起，会合
-    if (!header.pos.isNearTo(tailer)) {
+    if (!header.pos.isNearTo(tailer) && !onEdge(header.pos)) {
         // 因为领头单位会优先跨过房间，这时候如果向跟随单位移动的话，两个人就会开始来回骑墙
-        if (!onEdge(header.pos)) header.goTo(tailer.pos)
+        if (header.room.name === tailer.room.name) header.goTo(tailer.pos)
         tailer.goTo(header.pos)
+        return
     }
 
     // 没冷却好就不进行移动
@@ -142,7 +142,7 @@ export const execSquadMove = function (conetxt: SquadMoveContext) {
 
     // 前队按路径走，后队跟前队
     moveCreepByCachePath(header, path)
-    tailer.moveTo(header)
+    tailer.move(tailer.pos.getDirectionTo(header))
 
     // 走到头了，丢弃缓存
     if (path.length <= 0) dropPath(getPathCacheKey({ squadCode, flee }))

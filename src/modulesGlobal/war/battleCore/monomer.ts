@@ -30,6 +30,8 @@ export const runMonomer: BattleCore<[Creep]> = function (context) {
  * 执行一体机功击
  */
 const execAttack = function (creep: Creep, targetFlag: Flag) {
+    if (!targetFlag.room) return
+
     const getRoomInfo = contextRoomInfo.use()
     const { hostileCreeps, hostilePowerCreeps } = getRoomInfo(targetFlag.room.name)
     const inRangeHostile = creep.pos.findInRange([...hostileCreeps, ...hostilePowerCreeps], 3)

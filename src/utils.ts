@@ -204,7 +204,7 @@ export const createCache = function <T extends (...args: any[]) => any>(
     let cacheStorage: { [key: string]: ReturnType<T> } = {}
 
     const get = function (...args) {
-        const cacheKey = getCacheKey(...args as Parameters<T>) || args[0]
+        const cacheKey = getCacheKey ? getCacheKey(...args as Parameters<T>) : args[0]
         if (cacheKey in cacheStorage) return cacheStorage[cacheKey]
         return cacheStorage[cacheKey] = callback(...args as Parameters<T>)
     } as T
@@ -318,7 +318,8 @@ export const getBodySpawnEnergy = function (bodys: BodyPartConstant[]): number {
  * @returns 以 center 为中心，已 range 为范围的坐标值数组
  */
 export const getRangeIndex = function (center: number, range: number) {
-    return Array.from({ length: range * 2 + 1 }).map((_, index) => center - range + index)
+    const indexs = Array.from({ length: range * 2 + 1 }).map((_, index) => center - range + index)
+    return indexs.filter(index => index >= 0 && index <= 49)
 }
 
 /**
@@ -335,47 +336,46 @@ export interface RoomTileMap<T> {
 
 /**
  * 创建 RoomTileMap
- * 为什么内部不是 50*50 而是 48*48 呢？因为最外边一圈都是墙和入口，基本不会涉及到对应位置的计算
  */
 export const createTileMap = function <T = true>(initialCallback?: (x: number, y: number) => T): RoomTileMap<T> {
     let data: T[][]
 
     // 没有初始化函数的话就默认填充为 true
     if (initialCallback) {
-        data = Array.from({ length: 48 }).map((_, x) => {
-            return Array.from({ length: 48 }).map((_, y) => {
-                return initialCallback(x + 1, y + 1)
+        data = Array.from({ length: 50 }).map((_, x) => {
+            return Array.from({ length: 50 }).map((_, y) => {
+                return initialCallback(x, y)
             })
         })
     }
     else {
-        data = Array(48).fill(Array(48).fill(true))
+        data = Array(50).fill(Array(50).fill(true))
     }
 
     const set = function (x: number, y: number, value: T) {
-        data[x - 1][y - 1] = value
+        data[x][y] = value
     }
 
     const get = function (x: number, y: number): T {
         try {
-            return data[x - 1][y - 1]
+            return data[x][y]
         }
         catch (e) {
             console.log(e)
-            console.log(x, y, JSON.stringify(data, null, 4))
+            console.log(x, y, data[x])
         }
     }
 
     const map = function <R>(callback: (x: number, y: number, value: T) => R): R[][] {
-        return Array.from({ length: 48 }).map((_, x) => {
-            return Array.from({ length: 48 }).map((_, y) => {
-                return callback(x + 1, y + 1, data[x][y])
+        return Array.from({ length: 50 }).map((_, x) => {
+            return Array.from({ length: 50 }).map((_, y) => {
+                return callback(x, y, data[x][y])
             })
         })
     }
 
     const clone = function (): RoomTileMap<T> {
-        return createTileMap((x, y) => data[x - 1][y - 1])
+        return createTileMap((x, y) => data[x][y])
     }
 
     return { set, get, map, clone }

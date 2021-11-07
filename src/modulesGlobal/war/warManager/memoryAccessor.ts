@@ -53,6 +53,10 @@ export const createMemoryAccessor = (getMemory: () => WarMemory) => ({
         const memory = getMemory()
         memory.alonedCreep = _.uniq([...memory.alonedCreep, ...creepNames])
     },
+    updateAlonedCreep(creepNames: string[]) {
+        const memory = getMemory()
+        memory.alonedCreep = creepNames
+    },
     deleteSquad(squadCode: string) {
         const memory = getMemory()
         delete memory.squads[squadCode]

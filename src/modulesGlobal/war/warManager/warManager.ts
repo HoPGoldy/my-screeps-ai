@@ -99,7 +99,7 @@ export const createWarManager = function (context: WarContext) {
      */
     const checkMobilizeAbility = function (room: Room, needBoost: boolean, type: SquadType): boolean {
         const spawnInfo = createSpawnInfo(room, 'test', type)
-        const allBody: BodyPartConstant[] = [].concat(...Object.values(spawnInfo))
+        const allBody: BodyPartConstant[] = [].concat(...Object.values(spawnInfo).map(info => info.bodys))
 
         if (needBoost) {
             const boostResource = getBodyBoostResource(allBody)
@@ -171,6 +171,8 @@ export const createWarManager = function (context: WarContext) {
         const { alonedCreep } = getWarMemory()
         if (!alonedCreep || alonedCreep.length <= 0) return
         console.log('尝试重组小队！', alonedCreep)
+        const aliveCreeps = alonedCreep.map(env.getCreepByName).filter(Boolean)
+        db.updateAlonedCreep(aliveCreeps.map(c => c.name))
     }
 
     /**

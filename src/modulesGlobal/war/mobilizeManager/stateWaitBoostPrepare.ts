@@ -16,7 +16,7 @@ export const runWaitBoostPrepare: RunMobilizeStateFunc = function ({ task, room,
             task.data.spawnInfo = createSpawnInfo(room, task.squadCode, task.squadType)
         }
 
-        const allBody: BodyPartConstant[] = [].concat(...Object.values(task.data.spawnInfo))
+        const allBody: BodyPartConstant[] = [].concat(...Object.values(task.data.spawnInfo).map(info => info.bodys))
         const boostResource = getBodyBoostResource(allBody)
 
         const allResourceEnough = boostResource.every(boostRes => {

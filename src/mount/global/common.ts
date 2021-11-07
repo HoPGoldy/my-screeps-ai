@@ -98,10 +98,13 @@ export const give = function (roomName: string, resourceType: ResourceConstant, 
         if (amount - sendAmount <= 0) break
         // 没有对应资源就下个房间
         const room = Game.rooms[currentRoomName]
-        if (roomName === room.name || !room.terminal || !room.terminal.my || room.terminal.store[resourceType] <= 0) continue
+        if (roomName === room.name) continue
+
+        const { total } = room.myStorage.getResource(resourceType)
+        if (total <= 0) continue
 
         // 计算本房间应发送的数量（不超的情况下直接发完）
-        const roomAmount = Math.min(room.terminal.store[resourceType], amount - sendAmount)
+        const roomAmount = Math.min(total, amount - sendAmount)
 
         // 发送资源并记录结果
         logs.push(`[${currentRoomName}]${room.giver(roomName, resourceType, roomAmount)}`)

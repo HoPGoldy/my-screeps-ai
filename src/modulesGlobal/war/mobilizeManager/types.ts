@@ -1,5 +1,6 @@
 import { EnvContext, EnvMethods } from "@/contextTypes";
-import { SoliderRole, SquadType } from "../squadManager/types";
+import { SquadType } from "../squadManager/types";
+import { SquadSpawnInfo } from "./getBodyPart";
 
 export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 
@@ -85,12 +86,7 @@ interface MobilizeTaskData {
     /**
      * 孵化信息
      */
-    spawnInfo?: {
-        [creepName: string]: {
-            soliderRole: SoliderRole
-            bodys: BodyPartConstant[]
-        }
-    }
+    spawnInfo?: SquadSpawnInfo
     /**
      * 该小队已经孵化出来，但是还未准备就绪的爬名字
      */

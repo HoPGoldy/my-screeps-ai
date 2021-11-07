@@ -11,12 +11,14 @@ export const getPathCacheKey = ({ squadCode, flee }: { squadCode: string, flee: 
  * 会修改缓存数组
  */
 export const moveCreepByCachePath = function (creep: Creep, path: RoomPosition[]) {
+    if (creep.fatigue) return
+
     const nextPos = path.shift()
     let nextMove = creep.pos.getDirectionTo(nextPos)
     // 这里找不到是因为跨房了，读出另一个房间的坐标然后移动过去
     if (!nextMove) {
-        const nextnextPos = path.shift()
-        nextMove = nextPos.getDirectionTo(nextnextPos)
+        const nextPos = path.shift()
+        nextMove = creep.pos.getDirectionTo(nextPos)
     }
 
     creep.room.visual.poly(path)

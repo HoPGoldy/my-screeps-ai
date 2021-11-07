@@ -54,7 +54,7 @@ export const createMobilizeManager = function (context: MobilizeContext) {
         const { state, squadCode, squadType } = getMemory() || {}
         if (!state) return `暂无动员任务`
 
-        return `[${squadCode} 小队动员任务] [当前阶段] ${MobilizeStateName[state]} [小队类型] ${SquadTypeName[squadType]}`
+        return `[${squadCode} 小队] [当前阶段] ${MobilizeStateName[state]} [小队类型] ${SquadTypeName[squadType]}`
     }
 
     return { run, showState, close }

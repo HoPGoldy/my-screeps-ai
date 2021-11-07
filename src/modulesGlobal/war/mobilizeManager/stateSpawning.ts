@@ -67,8 +67,8 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
     // 因为返回 OK 也有可能会被别人覆盖，等待下次执行本阶段时会检查是否存在未孵化成员
     freeSpawn.map((spawn, index) => {
         // spawn 比未孵化单位多
-        const [creepName, { soliderRole, bodys }] = unSpawnMembers[index] || []
+        const [creepName, { role, bodys }] = unSpawnMembers[index] || ['', {}]
         if (!creepName) return
-        spawn.spawnCreep(bodys, creepName, { memory: { soliderRole } as unknown as CreepMemory})
+        spawn.spawnCreep(bodys, creepName, { memory: { soliderRole: role } as unknown as CreepMemory})
     })
 }

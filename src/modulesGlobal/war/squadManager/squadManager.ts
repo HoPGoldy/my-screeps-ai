@@ -116,5 +116,6 @@ export type SquadManager = ReturnType<typeof createSquadManager>
  * 检查指定旗帜是否有自己人抵达了
  */
 export const hasMyCreep = function (flag: Flag) {
+    if (!flag.room) return false
     return flag.pos.lookFor(LOOK_CREEPS).find(c => c.my)
 }
