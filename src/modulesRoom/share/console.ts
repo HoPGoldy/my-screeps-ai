@@ -1,3 +1,4 @@
+import { createHelp } from '@/modulesGlobal/console'
 /**
  * 资源共享模块的用户控制接口
  */
@@ -5,7 +6,7 @@ export default class ShareConsole extends Room {
     /**
      * 显示共享任务详情
      */
-    public shareshow(): string {
+    public shares(): string {
         const { terminal, storage } = this
         if (!terminal) return '该房间暂无 terminal，无法执行共享任务'
         if (!this.share.task) return '暂无共享任务'
@@ -87,5 +88,43 @@ export default class ShareConsole extends Room {
      */
     public givep(roomName: string, amount: number = 5000) {
         return this.giver(roomName, RESOURCE_POWER, amount)
+    }
+
+    public sharehelp() {
+        return createHelp({
+            name: '资源共享模块',
+            describe: '用于向其他房间调配资源',
+            api: [
+                {
+                    title: '发送资源',
+                    params: [
+                        { name: 'roomName', desc: '要发送到的房间名' },
+                        { name: 'resourceType', desc: '要发送的资源类型' },
+                        { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 1k' }
+                    ],
+                    functionName: 'giver'
+                },
+                {
+                    title: '发送能量到指定房间',
+                    params: [
+                        { name: 'roomName', desc: '要发送到的房间名' },
+                        { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 100k' }
+                    ],
+                    functionName: 'givee'
+                },
+                {
+                    title: '发送 power 到指定房间',
+                    params: [
+                        { name: 'roomName', desc: '要发送到的房间名' },
+                        { name: 'amount', desc: '[可选] 要转移的能量数量, 默认 5k' }
+                    ],
+                    functionName: 'givep'
+                },
+                {
+                    title: '查看共享任务状态',
+                    functionName: 'shares'
+                }
+            ]
+        })
     }
 }

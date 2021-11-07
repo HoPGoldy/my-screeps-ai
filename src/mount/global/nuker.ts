@@ -53,7 +53,7 @@ export const nuker = function () {
         const targetFlag = Game.flags[nukerDirective[source]]
         return `${source} > ${nukerDirective[source]} [${targetFlag.pos.roomName} ${targetFlag.pos.x}/${targetFlag.pos.y}]`
     }))
-    logs.push(`\n确认发射请键入 ${red('confirmNuker')}，取消发射请键入 ${yellow('cancelnuker')}`)
+    logs.push(`\n确认发射请键入 ${red('confirmnuker')}，取消发射请键入 ${yellow('cancelnuker')}`)
 
     return logs.join('\n')
 }
