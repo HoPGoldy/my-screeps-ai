@@ -289,7 +289,6 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         // 都就位了就进入下一个阶段
         if (allResourceReady) {
-            this.log.success(`boost 材料准备完成，开始填充能量`)
             task.state = BoostState.GetEnergy
         }
         // 否则就发布资源移入任务
@@ -320,6 +319,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
             // 有 lab 能量不达标的话就发布能量填充任务
             if (lab && lab.store[RESOURCE_ENERGY] < 1000) {
+                this.log.normal(`正在填充 boost 能量`)
                 this.room.transport.addTask({ type: TransportTaskType.LabGetEnergy })
                 return
             }
@@ -327,6 +327,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         // 能循环完说明能量都填好了
         task.state = BoostState.WaitBoost
+        this.log.success(`boost 任务准备就绪，正在等待强化`)
     }
 
     /**

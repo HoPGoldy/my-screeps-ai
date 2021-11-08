@@ -10,6 +10,11 @@ import { contextCostMatrix, contextRoomInfo } from "../../context"
 export const getPathCacheKey = ({ squadCode, flee }: { squadCode: string, flee: boolean }) => squadCode + flee
 
 /**
+ * 获取寻路 cost 缓存索引
+ */
+export const getMoveCacheKey = (squadCode: string, roomName: string) => squadCode + roomName
+
+/**
  * 按照缓存路径移动 creep
  * 会修改缓存数组
  */
@@ -36,9 +41,10 @@ export interface SquadMoveContext {
 }
 
 export const [searchPath, refreshAllPath, dropPath] = createCache((context: SquadMoveContext) => {
-    const { startPos, flee, targetFlag, setCustomCost } = context
+    const { squadCode, startPos, flee, targetFlag, setCustomCost } = context
     const getBaseCost = contextCostMatrix.use()
     const getRoomInfo = contextRoomInfo.use()
+    const moveCostCache = contextCostMatrix.use()
 
     let moveToRange = 1
     if (targetFlag.room) {
@@ -54,22 +60,28 @@ export const [searchPath, refreshAllPath, dropPath] = createCache((context: Squa
     const searchResult = PathFinder.search(startPos, { pos: targetFlag.pos, range: 1 }, {
         roomCallback: roomName => {
             const costs = getBaseCost(roomName)?.clone()
-            if (!costs) return
-            return setCustomCost ? setCustomCost(roomName, costs) : costs
+            // 没有目标房间视野时使用缓存的寻路 cost
+            if (!costs) return moveCostCache[getMoveCacheKey(squadCode, roomName)]
+
+            const finalCosts = setCustomCost ? setCustomCost(roomName, costs) : costs
+            moveCostCache[getMoveCacheKey(squadCode, roomName)] = finalCosts
+
+            return finalCosts
         },
         plainCost: 2,
-        swampCost: 10,
+        swampCost: 30,
         flee
     })
 
     let reuseLength = 10
     const { hostileCreeps } = getRoomInfo(startPos.roomName) || {}
-    if (hostileCreeps) {
+    if (hostileCreeps && hostileCreeps.length > 0) {
         const closestHostile = startPos.findClosestByRange(hostileCreeps)
         // 根据与敌方的距离找到缓存距离，有敌人就缓存彼此之间距离的一半再减 3（3 是功击范围），确保缓存的路径里没有敌人能打到自己
         reuseLength = Math.max(Math.floor(startPos.getRangeTo(closestHostile) / 2) - 3, 1)
     }
 
+    // console.log('pathResult', searchResult.path.map(pos => `${pos.roomName} ${pos.x} ${pos.y}`).join(' | '))
     searchResult.path = searchResult.path.slice(0, reuseLength)
 
     return searchResult
