@@ -5,9 +5,9 @@ import { SquadType, SquadTypeName } from '../squadManager/types'
 import { WarMemory, WarModuleMemory, WarState } from '../types'
 import { createWarManager, WarContext, WarManager } from '../warManager/warManager'
 import { contextCostMatrix, contextRoomInfo, contextEnemyDamage } from '../context'
-import { useCollectRoomInfo } from '../hook/useCollectRoomInfo'
-import { useGetRoomCostMatrix } from '../hook/useRoomCost'
-import { useRoomEnemyDamage } from '../hook/useRoomEnemyDamage'
+import { useCollectRoomInfo } from './hook/useCollectRoomInfo'
+import { useGetRoomCostMatrix } from './hook/useRoomCost'
+import { useRoomEnemyDamage } from './hook/useRoomEnemyDamage'
 
 export type WarModuleContext = {
     getMemory: () => WarModuleMemory

@@ -1,7 +1,7 @@
-import { createCache, onEdge } from "@/utils"
-import { contextCostMatrix, contextEnemyDamage } from "../../context"
+import { onEdge } from "@/utils"
+import { contextEnemyDamage } from "../../context"
 import { getMaxEndure, getNextHeal } from "./calculator"
-import { getPathCacheKey, moveCreepByCachePath } from "./move"
+import { searchPath, shiftNextMoveDirection, dropPath, getPathCacheKey } from "./move"
 
 /**
  * 双人主从小队的通用逻辑
@@ -83,16 +83,19 @@ export interface SquadMoveContext {
     targetFlag: Flag
 }
 
-const [searchPath, refreshPath, dropPath] = createCache((context: SquadMoveContext) => {
-    const { header, tailer, flee, targetFlag } = context
-    const getBaseCost = contextCostMatrix.use()
+/**
+ * 执行小队移动逻辑
+ */
+export const execSquadMove = function (conetxt: SquadMoveContext) {
+    const { header, tailer, targetFlag, squadCode, flee } = conetxt
     const getEnemyDamage = contextEnemyDamage.use()
 
-    const { path, ops, cost, incomplete } = PathFinder.search(header.pos, { pos: targetFlag.pos, range: 1 }, {
-        roomCallback: roomName => {
-            const costs = getBaseCost(roomName)?.clone()
-            if (!costs) return
-
+    const pathResult = searchPath({
+        startPos: header.pos,
+        flee,
+        targetFlag,
+        squadCode,
+        setCustomCost: (roomName, costs) => {
             const enemyDamage = getEnemyDamage(roomName)
             // 拿掉血多的计算伤害，这里不太科学
             const weakCreep = tailer.hitsMax - tailer.hits > header.hitsMax - header.hits ? tailer : header
@@ -105,45 +108,26 @@ const [searchPath, refreshPath, dropPath] = createCache((context: SquadMoveConte
             })
 
             return costs
-        },
-        plainCost: 2,
-        swampCost: 10,
-        flee
+        }
     })
 
-    // 缓存 5 格路径
-    return path.slice(0, 5)
-}, getPathCacheKey)
-
-/**
- * 执行小队移动逻辑
- */
-export const execSquadMove = function (conetxt: SquadMoveContext) {
-    const { header, tailer, targetFlag, squadCode, flee } = conetxt
     // 两个人不在一起，会合
     if (!header.pos.isNearTo(tailer) && !onEdge(header.pos)) {
         // 因为领头单位会优先跨过房间，这时候如果向跟随单位移动的话，两个人就会开始来回骑墙
-        if (header.room.name === tailer.room.name) header.goTo(tailer.pos)
-        tailer.goTo(header.pos)
+        if (header.room.name === tailer.room.name) {
+            header.move(header.pos.getDirectionTo(tailer))
+            dropPath(getPathCacheKey({ squadCode, flee }))
+        }
+        tailer.move(tailer.pos.getDirectionTo(header))
         return
     }
 
     // 没冷却好就不进行移动
     if (header.fatigue !== 0 || tailer.fatigue !== 0) return
 
-    // 还没到房间
-    if (!targetFlag.room || header.room.name !== targetFlag.room.name) {
-        header.goTo(targetFlag.pos)
-        tailer.goTo(header.pos)
-        return
-    }
-
-    const path = searchPath(conetxt)
+    const nextMove = shiftNextMoveDirection(header.pos, pathResult.path)
 
     // 前队按路径走，后队跟前队
-    moveCreepByCachePath(header, path)
+    header.move(nextMove)
     tailer.move(tailer.pos.getDirectionTo(header))
-
-    // 走到头了，丢弃缓存
-    if (path.length <= 0) dropPath(getPathCacheKey({ squadCode, flee }))
 }

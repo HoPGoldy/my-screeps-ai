@@ -190,29 +190,56 @@ export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
     })
 }
 
+interface CreateCacheOptions<T extends (...args: any[]) => any> {
+    /**
+     * 获取缓存的 key
+     * 入参和 callback 相同，返回一个字符串或者数字，不填则使用 callback 第一个参数作为键
+     */
+    getCacheKey?: (...args: Parameters<T>) => string | number,
+    /**
+     * 是否可以重用
+     * 会在发现缓存后调用，传入缓存的值和本次查询的参数，返回 boolean，为 true 时代表可以继续使用缓存
+     */
+    shouldReuse?: (reuseResult: ReturnType<T>, ...args: Parameters<T>) => boolean
+}
+
 /**
  * 创建缓存
  * 当 callback 第一个参数不为数字、字符串时需务必指定 getCacheKey！
  * 
  * @param callback 要缓存返回值的函数
- * @param getCacheKey 获取缓存的 key，入参和 callback 相同，返回一个字符串或者数字，不填则使用 callback 第一个参数作为键
  */
 export const createCache = function <T extends (...args: any[]) => any>(
     callback: T,
-    getCacheKey?: (...args: Parameters<T>) => string | number
+    opt: CreateCacheOptions<T> = {}
 ): [T, () => void, (key: string| number) => void] {
     let cacheStorage: { [key: string]: ReturnType<T> } = {}
 
+    /**
+     * 添加了缓存功能的 callback 函数
+     */
     const get = function (...args) {
-        const cacheKey = getCacheKey ? getCacheKey(...args as Parameters<T>) : args[0]
-        if (cacheKey in cacheStorage) return cacheStorage[cacheKey]
+        // 找到缓存的键
+        const cacheKey = opt.getCacheKey ? opt.getCacheKey(...args as Parameters<T>) : args[0]
+        if (cacheKey in cacheStorage) {
+            const cacheData = cacheStorage[cacheKey]
+            // 检查一下是否可以重用这个缓存
+            const keepReuse = opt.shouldReuse ? opt.shouldReuse(cacheData, ...args as Parameters<T>) : true
+            if (keepReuse) return cacheStorage[cacheKey]
+        }
         return cacheStorage[cacheKey] = callback(...args as Parameters<T>)
     } as T
 
+    /**
+     * 删除所有缓存
+     */
     const refresh = function () {
         cacheStorage = {}
     }
 
+    /**
+     * 删除指定缓存
+     */
     const drop = function (key: string | number) {
         delete cacheStorage[key]
     }

@@ -1,5 +1,5 @@
 import { createCache } from "@/utils"
-import { RoomInfo } from "../types"
+import { RoomInfo } from "../../types"
 
 /**
  * 创建获取房间单位信息功能

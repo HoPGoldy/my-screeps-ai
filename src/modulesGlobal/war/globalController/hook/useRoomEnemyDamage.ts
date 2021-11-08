@@ -1,6 +1,6 @@
 import { createCache, createTileMap, RoomTileMap, getRangeIndex } from "@/utils"
-import { RoomInfo } from "../types"
-import { getCreepDamage } from "../battleCore/common/calculator"
+import { RoomInfo } from "../../types"
+import { getCreepDamage } from "../../battleCore/common/calculator"
 
 /**
  * 创建房间敌方伤害值
