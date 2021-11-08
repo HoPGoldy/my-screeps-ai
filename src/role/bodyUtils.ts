@@ -5,7 +5,6 @@
 import { BoostResourceConfig } from '@/modulesRoom/lab/types'
 import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
 import { BodyConfig, BodyConfigs, BodyPartGenerator, BodyRepeat } from './types/body'
-import { CreepRole } from './types/role'
 
 /**
  * 根据身体配置生成完成的身体数组
@@ -166,49 +165,6 @@ export const bodyConfigs: BodyConfigs = {
         [[MOVE, 2], [CLAIM, 2]],
         [[MOVE, 3], [CLAIM, 3]],
         [[MOVE, 5], [CLAIM, 5]]
-    ),
-
-    /**
-     * 基础攻击单位
-     * 使用 attack 身体部件的攻击单位
-     */
-    [CreepRole.Soldier]: getBodyConfig(
-        [[MOVE, 2], [ATTACK, 2]],
-        [[MOVE, 3], [ATTACK, 3]],
-        [[MOVE, 4], [ATTACK, 4]],
-        [[MOVE, 5], [ATTACK, 5]],
-        [[MOVE, 6], [ATTACK, 6]],
-        [[MOVE, 7], [ATTACK, 7]],
-        [[MOVE, 8], [ATTACK, 8]],
-        [[MOVE, 9], [ATTACK, 9]]
-    ),
-
-    /**
-     * 基础治疗单位
-     */
-    [CreepRole.Doctor]: getBodyConfig(
-        [[MOVE, 1], [HEAL, 1]],
-        [[MOVE, 1], [HEAL, 1]],
-        [[MOVE, 2], [HEAL, 2]],
-        [[MOVE, 4], [HEAL, 4]],
-        [[MOVE, 6], [HEAL, 6]],
-        [[MOVE, 7], [HEAL, 7]],
-        [[MOVE, 16], [HEAL, 16]],
-        [[MOVE, 25], [HEAL, 25]]
-    ), 
-
-    /**
-     * 拆除者身体
-     */
-    dismantler: getBodyConfig(
-        [[WORK, 1], [MOVE, 2]],
-        [[WORK, 2], [MOVE, 4]],
-        [[WORK, 4], [MOVE, 4]],
-        [[WORK, 6], [MOVE, 6]],
-        [[WORK, 10], [MOVE, 10]],
-        [[WORK, 15], [MOVE, 15]],
-        [[WORK, 25], [MOVE, 25]],
-        [[WORK, 25], [MOVE, 25]]
     ),
 
     /**

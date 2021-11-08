@@ -39,12 +39,6 @@ export enum CreepRole {
     PbCarrier = 'pbCarrier',
     MoveTester = 'moveTester',
     Reiver = 'reiver',
-    Soldier = 'soldier',
-    Doctor = 'doctor',
-    BoostDoctor = 'boostDoctor',
-    Dismantler = 'dismantler',
-    BoostDismantler = 'boostDismantler',
-    Apocalypse = 'apocalypse',
     Defender = 'defender',
 }
 
@@ -105,12 +99,6 @@ export interface RoleDatas {
     /**
      * 战斗单位
      */
-    [CreepRole.Soldier]: WarUnitData
-    [CreepRole.Doctor]: HealUnitData
-    [CreepRole.BoostDoctor]: HealUnitData
-    [CreepRole.Dismantler]: WarUnitData
-    [CreepRole.BoostDismantler]: WarUnitData
-    [CreepRole.Apocalypse]: ApocalypseData
     [CreepRole.Defender]: DefenderData
 }
 

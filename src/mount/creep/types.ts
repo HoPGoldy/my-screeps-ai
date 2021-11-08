@@ -114,10 +114,6 @@ declare global {
          */
         targetFlagName?: string
         /**
-         *  rangeSoldier 特有，是否启用 massAttack
-         */
-        massMode?: boolean
-        /**
          * 运营单位特有，当前正在执行的物流 / 工作任务索引
          */
         taskKey?: number
@@ -130,7 +126,6 @@ declare global {
     interface Creep {
         log(content: string, color?: Color, notify?: boolean): void
         onWork(): void
-        checkEnemy(): boolean
         goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
         setWayPoint(target: string[] | string): ScreepsReturnCode
         upgradeRoom(roomName: string): ScreepsReturnCode
@@ -139,12 +134,6 @@ declare global {
         getEngryFrom(target: AllEnergySource): ScreepsReturnCode
         transferTo(target:  AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
         backToGetEnergy(): true
-        attackFlag(flagName: string): boolean
-        rangedAttackFlag(flagName: string): boolean
-        smass(): void
-        dismantleFlag(flagName: string, healerName?: string): boolean
-        healTo(creep: Creep): void
-        getFlag(flagName: string): Flag|null
         steadyWall(): OK | ERR_NOT_FOUND
     }
 }
