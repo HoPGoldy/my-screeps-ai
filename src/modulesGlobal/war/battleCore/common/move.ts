@@ -57,7 +57,7 @@ export const [searchPath, refreshAllPath, dropPath] = createCache((context: Squa
         if (!cantMoveOn) moveToRange = 0
     }
 
-    const searchResult = PathFinder.search(startPos, { pos: targetFlag.pos, range: 1 }, {
+    const searchResult = PathFinder.search(startPos, { pos: targetFlag.pos, range: moveToRange }, {
         roomCallback: roomName => {
             const costs = getBaseCost(roomName)?.clone()
             // 没有目标房间视野时使用缓存的寻路 cost
@@ -69,7 +69,7 @@ export const [searchPath, refreshAllPath, dropPath] = createCache((context: Squa
             return finalCosts
         },
         plainCost: 2,
-        swampCost: 30,
+        swampCost: 40,
         flee
     })
 
@@ -77,8 +77,8 @@ export const [searchPath, refreshAllPath, dropPath] = createCache((context: Squa
     const { hostileCreeps } = getRoomInfo(startPos.roomName) || {}
     if (hostileCreeps && hostileCreeps.length > 0) {
         const closestHostile = startPos.findClosestByRange(hostileCreeps)
-        // 根据与敌方的距离找到缓存距离，有敌人就缓存彼此之间距离的一半再减 3（3 是功击范围），确保缓存的路径里没有敌人能打到自己
-        reuseLength = Math.max(Math.floor(startPos.getRangeTo(closestHostile) / 2) - 3, 1)
+        // 根据与敌方的距离找到缓存距离，有敌人就缓存彼此之间距离，确保缓存的路径里没有敌人能打到自己
+        reuseLength = Math.max(Math.floor(startPos.getRangeTo(closestHostile) / 2), 1)
     }
 
     // console.log('pathResult', searchResult.path.map(pos => `${pos.roomName} ${pos.x} ${pos.y}`).join(' | '))

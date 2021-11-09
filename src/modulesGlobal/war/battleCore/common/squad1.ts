@@ -38,7 +38,7 @@ export const execSquadMove = function (context: SquadMoveContext) {
     })
 
     // 在自己家里，可能被堵住了，用对穿移动
-    if (creep.room.controller.my && pathResult.incomplete) {
+    if (creep.room?.controller?.my && pathResult.incomplete) {
         goTo(creep, targetFlag.pos)
         return
     } 

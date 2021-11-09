@@ -119,12 +119,15 @@ export const execSquadMove = function (conetxt: SquadMoveContext) {
             header.move(header.pos.getDirectionTo(tailer))
             dropPath(getPathCacheKey({ squadCode, flee }))
         }
-        tailer.move(tailer.pos.getDirectionTo(header))
+        // 如果在自己家里就用对穿移动，不然可能会出现两个人中间卡着一个人，三个人就都动不了的问题
+        if (header.room?.controller?.my) goTo(tailer, header.pos)
+        else tailer.move(tailer.pos.getDirectionTo(header))
+
         return
     }
 
     // 在自己家里，可能被堵住了，用对穿移动
-    if (header.room.controller.my && pathResult.incomplete) {
+    if (header.room?.controller?.my && pathResult.incomplete) {
         goTo(header, targetFlag.pos)
         goTo(tailer, targetFlag.pos)
         return

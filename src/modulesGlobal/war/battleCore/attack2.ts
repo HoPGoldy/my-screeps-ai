@@ -36,6 +36,14 @@ const execAttack = function (
 ) {
     if (!targetFlag.room || attacker.room.name !== targetFlag.room.name) return
 
+    if (attacker.pos.isNearTo(targetFlag)) {
+        const attackStructure = targetFlag.pos.lookFor(LOOK_STRUCTURES)
+        if (attackStructure.length > 0) {
+            attacker.attack(attackStructure[0])
+            return
+        }
+    }
+
     if (memory.cacheAttackTargetId) {
         const cacheTarget = getObjectById(memory.cacheAttackTargetId)
         if (cacheTarget && cacheTarget.pos.isNearTo(attacker)) {
@@ -44,14 +52,6 @@ const execAttack = function (
         }
 
         delete memory.cacheAttackTargetId
-    }
-
-    if (attacker.pos.isNearTo(targetFlag)) {
-        const attackStructure = targetFlag.pos.lookFor(LOOK_STRUCTURES)
-        if (attackStructure.length > 0) {
-            attacker.attack(attackStructure[0])
-            return
-        }
     }
 
     const getRoomInfo = contextRoomInfo.use()

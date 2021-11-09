@@ -36,22 +36,22 @@ export const runDismantle2: BattleCore<[Creep, Creep], SquadMemory> = function (
 ) {
     if (!targetFlag.room || attacker.room.name !== targetFlag.room.name) return
 
-    if (memory.cacheAttackTargetId) {
-        const cacheTarget = getObjectById(memory.cacheAttackTargetId)
-        if (cacheTarget && cacheTarget.pos.isNearTo(attacker)) {
-            attacker.attack(cacheTarget)
-            return
-        }
-
-        delete memory.cacheAttackTargetId
-    }
-
     if (attacker.pos.isNearTo(targetFlag)) {
         const attackStructure = targetFlag.pos.lookFor(LOOK_STRUCTURES)
         if (attackStructure.length > 0) {
             attacker.dismantle(attackStructure[0])
             return
         }
+    }
+
+    if (memory.cacheAttackTargetId) {
+        const cacheTarget = getObjectById(memory.cacheAttackTargetId)
+        if (cacheTarget && cacheTarget.pos.isNearTo(attacker)) {
+            attacker.dismantle(cacheTarget as Structure)
+            return
+        }
+
+        delete memory.cacheAttackTargetId
     }
 
     const getRoomInfo = contextRoomInfo.use()
