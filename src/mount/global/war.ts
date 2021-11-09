@@ -3,6 +3,9 @@ import { WarModuleMemory } from '@/modulesGlobal/war/types'
 import { createEnvContext } from '../utils'
 import { createHelp } from '@/modulesGlobal/console'
 import { WarManager } from '@/modulesGlobal/war/warManager/warManager'
+import { goTo } from '@/modulesGlobal/move'
+import { TransportTaskType } from "@/modulesRoom/taskTransport/types";
+import { CreepRole } from '@/role/types/role'
 
 declare global {
     interface Memory {
@@ -114,8 +117,33 @@ const mountToGlobal = function (warManager: ReturnType<typeof warpConsoleFunc>) 
 
 if (!Memory.warMemory) Memory.warMemory = { wars: {} }
 
+// 链接依赖并构建战争模块
 const warModule = createWarController({
     getMemory: () => Memory.warMemory,
+    goTo: (creep, pos) => goTo(creep, pos, {}),
+    remandSpawn: room => room.spawner.remandSpawn(),
+    lendSpawn: room => room.spawner.lendSpawn(),
+    getRoomManager: room => room.transport.getUnit(),
+    addManager: (room, addNumber) => {
+        if (room.spawner.getTaskByRole(CreepRole.Manager).length <= 0) {
+            room.spawner.release.changeBaseUnit(CreepRole.Manager, addNumber)
+        }
+    },
+    addFillEnergyTask: room => {
+        room.transport.updateTask({
+            type: TransportTaskType.FillExtension, priority: 10
+        }, { dispath: true })
+    },
+    getRoomSpawn: room => room[STRUCTURE_SPAWN],
+    getResource: (room, res) => {
+        const { total } = room.myStorage.getResource(res)
+        return total
+    },
+    getRoomLab: room => room[STRUCTURE_LAB],
+    addBoostTask: (room, config) => room.myLab.addBoostTask(config),
+    getBoostState: (room, taskId) => room.myLab.getBoostState(taskId),
+    boostCreep: (room, creep, taskId) => room.myLab.boostCreep(creep, taskId),
+    finishBoost: (room, taskId) => room.myLab.finishBoost(taskId),
     env: createEnvContext('war')
 })
 

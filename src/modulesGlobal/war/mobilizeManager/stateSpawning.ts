@@ -1,6 +1,5 @@
-import { TransportTaskType } from "@/modulesRoom/taskTransport/types";
-import { CreepRole } from "@/role/types/role";
 import { getBodySpawnEnergy } from "@/utils";
+import { contextOutside } from "../context";
 import { createSpawnInfo } from "./getBodyPart";
 import { MobilizeState, RunMobilizeStateFunc } from "./types";
 
@@ -11,6 +10,7 @@ import { MobilizeState, RunMobilizeStateFunc } from "./types";
  */
 export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateState, abandonTask }, env) {
     // console.log('正在执行 Spawning')
+    const { addFillEnergyTask, getRoomManager, remandSpawn, addManager, lendSpawn, getRoomSpawn } = contextOutside.use()
 
     // 创建待孵化 creep 的名字与身体部件
     if (!task.data.spawnInfo) {
@@ -25,23 +25,20 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
         return
     }
 
-    if (room.energyAvailable <= room.energyCapacityAvailable) {
-        room.transport.updateTask({ type: TransportTaskType.FillExtension, priority: 10 }, { dispath: true })
-    }
+    // 能量不足，请求填充孵化能量
+    if (room.energyAvailable < room.energyCapacityAvailable) addFillEnergyTask(room)
 
     // 搬运工不足，归还 spawn 并尝试补充孵化工
-    const managers = room.transport.getUnit((task, creep) => creep.ticksToLive > 300)
+    const managers = getRoomManager(room).filter(creep => creep.ticksToLive > 300)
     if (managers.length <= 0) {
-        room.spawner.remandSpawn()
-        if (room.spawner.getTaskByRole(CreepRole.Manager).length <= 0) {
-            room.spawner.release.changeBaseUnit(CreepRole.Manager, 1)
-        }
+        remandSpawn(room)
+        addManager(room, 1)
         return
     }
 
     // 先锁定了 spawn，再等孵化能量足够，不然有可能会孵化其他爬导致好久都生不出战斗爬
     if (!task.data.lendedSpawn) {
-        if (!room.spawner.lendSpawn()) return
+        if (!lendSpawn(room)) return
         task.data.lendedSpawn = true
     }
 
@@ -53,13 +50,13 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
         // 更新一下内存，spawnInfo 挺长的，后面阶段用不到了，清掉
         task.data.members = Object.keys(task.data.spawnInfo)
         delete task.data.spawnInfo
-        room.spawner.remandSpawn()
+        remandSpawn(room)
         updateState(MobilizeState.Boosting)
         return
     }
 
     // 空闲状态的 spawn
-    const freeSpawn = room[STRUCTURE_SPAWN].filter(spawn => !spawn.spawning)
+    const freeSpawn = getRoomSpawn(room).filter(spawn => !spawn.spawning)
 
     if (freeSpawn.length <= 0) return
 

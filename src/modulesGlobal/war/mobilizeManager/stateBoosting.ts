@@ -1,3 +1,4 @@
+import { contextOutside } from "../context";
 import { RunMobilizeStateFunc } from "./types";
 
 /**
@@ -7,6 +8,7 @@ import { RunMobilizeStateFunc } from "./types";
  */
 export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishTask }, env) {
     // console.log('正在执行 Boosting')
+    const { finishBoost, boostCreep } = contextOutside.use()
 
     if (!task.data.members) {
         env.log.error(`动员任务 ${task.squadCode} 找不到小队成员名称，任务中断`)
@@ -30,7 +32,7 @@ export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishT
         // 都完成强化了就完成动员任务
         const allBoost = Object.values(task.data.boostNote).every(Boolean)
         if (allBoost) {
-            room.myLab.finishBoost(task.data.boostTaskId)
+            finishBoost(room, task.data.boostTaskId)
             return finishTask(members)
         }
     }
@@ -42,6 +44,6 @@ export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishT
     // 没有完成 boost 的单位继续执行 boost
     const unfinishBoostMembers = members.filter(creep => !task.data.boostNote[creep.name])
     unfinishBoostMembers.forEach(creep => {
-        task.data.boostNote[creep.name] = room.myLab.boostCreep(creep, task.data.boostTaskId)
+        task.data.boostNote[creep.name] = boostCreep(room, creep, task.data.boostTaskId)
     })
 }

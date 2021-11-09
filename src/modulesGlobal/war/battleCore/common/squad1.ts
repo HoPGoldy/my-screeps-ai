@@ -1,4 +1,4 @@
-import { contextEnemyDamage } from "../../context"
+import { contextEnemyDamage, contextOutside } from "../../context"
 import { getMaxEndure } from "./calculator"
 import { searchPath, shiftNextMoveDirection } from "./move"
 
@@ -16,6 +16,7 @@ export interface SquadMoveContext {
 export const execSquadMove = function (context: SquadMoveContext) {
     const { squadCode, targetFlag, creep, flee } = context
     const getEnemyDamage = contextEnemyDamage.use()
+    const { goTo } = contextOutside.use()
 
     const pathResult = searchPath({
         startPos: creep.pos,
@@ -35,6 +36,12 @@ export const execSquadMove = function (context: SquadMoveContext) {
             return costs
         }
     })
+
+    // 在自己家里，可能被堵住了，用对穿移动
+    if (creep.room.controller.my && pathResult.incomplete) {
+        goTo(creep, targetFlag.pos)
+        return
+    } 
 
     if (creep.fatigue !== 0) return
     const nextMove = shiftNextMoveDirection(creep.pos, pathResult.path)

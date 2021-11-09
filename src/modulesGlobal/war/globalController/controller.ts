@@ -1,17 +1,12 @@
-import { EnvContext } from '@/contextTypes'
 import { arrayToObject, createCluster } from '@/utils'
 import { createMemoryAccessor } from './memoryAccessor'
 import { SquadType, SquadTypeName } from '../squadManager/types'
-import { WarMemory, WarModuleMemory, WarState } from '../types'
+import { WarMemory, WarModuleContext, WarState } from '../types'
 import { createWarManager, WarContext, WarManager } from '../warManager/warManager'
-import { contextCostMatrix, contextRoomInfo, contextEnemyDamage } from '../context'
+import { contextCostMatrix, contextRoomInfo, contextEnemyDamage, contextOutside } from '../context'
 import { useCollectRoomInfo } from './hook/useCollectRoomInfo'
 import { useGetRoomCostMatrix } from './hook/useRoomCost'
 import { useRoomEnemyDamage } from './hook/useRoomEnemyDamage'
-
-export type WarModuleContext = {
-    getMemory: () => WarModuleMemory
-} & EnvContext
 
 /**
  * 创建战争模块
@@ -31,10 +26,13 @@ export const createWarController = function (context: WarModuleContext) {
     const [getEnemyDamage, refreshEnemyDamage] = useRoomEnemyDamage(getRoomInfo)
     contextEnemyDamage.provide(getEnemyDamage)
 
+    // 提供外界操作
+    contextOutside.provide(context)
+
     /**
      * 创建战争管理器上下文
      */
-     const createWarContext = function (warCode: string): WarContext {
+    const createWarContext = function (warCode: string): WarContext {
         return {
             warCode,
             removeSelf: () => {

@@ -1,3 +1,4 @@
+import { contextOutside } from "../context";
 import { SquadTypeName } from "../squadManager/types";
 import { runBoosting } from "./stateBoosting";
 import { runSpawning } from "./stateSpawning";
@@ -15,6 +16,7 @@ const runState: { [state in MobilizeState]: RunMobilizeStateFunc } = {
 
 export const createMobilizeManager = function (context: MobilizeContext) {
     const { getMemory, getSpawnRoom, finishTask, abandonTask, env } = context
+    const { finishBoost, remandSpawn } = contextOutside.use()
 
     /**
      * 运行动员任务
@@ -27,7 +29,7 @@ export const createMobilizeManager = function (context: MobilizeContext) {
         if (task.state !== MobilizeState.Boosting && Game.time % 10) return
         const room = getSpawnRoom()
 
-        runState[task.state]({ 
+        runState[task.state]({
             task,
             room,
             updateState: newState => task.state = newState,
@@ -43,8 +45,8 @@ export const createMobilizeManager = function (context: MobilizeContext) {
         const { data: { boostTaskId, lendedSpawn } = {} } = getMemory()
         const room = getSpawnRoom()
 
-        if (boostTaskId) room.myLab.finishBoost(boostTaskId)
-        if (lendedSpawn) room.spawner.remandSpawn()
+        if (boostTaskId) finishBoost(room, boostTaskId)
+        if (lendedSpawn) remandSpawn(room)
     }
 
     /**

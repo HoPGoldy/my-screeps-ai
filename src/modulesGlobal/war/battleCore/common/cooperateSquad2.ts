@@ -1,5 +1,5 @@
 import { onEdge } from "@/utils"
-import { contextEnemyDamage } from "../../context"
+import { contextEnemyDamage, contextOutside } from "../../context"
 import { getMaxEndure, getNextHeal } from "./calculator"
 import { searchPath, shiftNextMoveDirection, dropPath, getPathCacheKey } from "./move"
 
@@ -89,6 +89,7 @@ export interface SquadMoveContext {
 export const execSquadMove = function (conetxt: SquadMoveContext) {
     const { header, tailer, targetFlag, squadCode, flee } = conetxt
     const getEnemyDamage = contextEnemyDamage.use()
+    const { goTo } = contextOutside.use()
 
     const pathResult = searchPath({
         startPos: header.pos,
@@ -121,6 +122,13 @@ export const execSquadMove = function (conetxt: SquadMoveContext) {
         tailer.move(tailer.pos.getDirectionTo(header))
         return
     }
+
+    // 在自己家里，可能被堵住了，用对穿移动
+    if (header.room.controller.my && pathResult.incomplete) {
+        goTo(header, targetFlag.pos)
+        goTo(tailer, targetFlag.pos)
+        return
+    } 
 
     // 没冷却好就不进行移动
     if (header.fatigue !== 0 || tailer.fatigue !== 0) return

@@ -1,5 +1,77 @@
-import { MobilizeState, MobilizeTask } from "./mobilizeManager/types"
+import { EnvContext } from "@/contextTypes"
+import { BoostResourceConfig, BoostState } from "@/modulesRoom/lab/types"
+import { MobilizeTask } from "./mobilizeManager/types"
 import { SquadType } from "./squadManager/types"
+
+/**
+ * **重要** 该战争模块对于外界模块的依赖
+ */
+export interface OutsideContext {
+    /**
+     * 包含对穿的进行移动
+     * 将会在战斗单位在自己房间内寻不到路时使用，用于解决集中布局时的堵路问题
+     */
+    goTo: (creep: Creep, targetPos: RoomPosition) => void
+    /**
+     * 归还一个房间的 spawn
+     */
+    remandSpawn: (room: Room) => void
+    /**
+     * 锁定一个房间的 spawn
+     * 调用该方法后该房间的 spawn 不应执行任何其他操作
+     * 若无法锁定可以返回 false
+     */
+    lendSpawn: (room: Room) => boolean
+    /**
+     * 获取一个房间的运营单位数量
+     */
+    getRoomManager: (room: Room) => Creep[]
+    /**
+     * 添加指定数量的新运营单位
+     */
+    addManager: (room: Room, addNumber: number) => void
+    /**
+     * 获取房间内的 spawn
+     * 用于接入房间快捷访问
+     */
+    getRoomSpawn: (room: Room) => StructureSpawn[]
+    /**
+     * 添加填充 spawn 能量任务
+     * @danger 注意，该任务会在房间能量不足时持续调用，直到能量满额为止，请注意查重
+     */
+    addFillEnergyTask: (room: Room) => void
+    /**
+     * 获取一个房间的资源总量
+     */
+    getResource: (room: Room, resource: ResourceConstant) => number
+    
+    /**
+     * 获取房间内的 lab
+     * 用于接入房间快捷访问
+     */
+    getRoomLab: (room: Room) => StructureLab[]
+    /**
+     * 添加一个 boost 任务
+     * 应返回该任务的唯一索引
+     */
+    addBoostTask: (room: Room, boostConfig: BoostResourceConfig[]) => number
+    /**
+     * 获取 boost 任务的状态
+     */
+    getBoostState: (room: Room, boostTaskId: number) => ERR_NOT_FOUND | BoostState
+    /**
+     * 让一个 creep 按照指定 boost 任务进行强化
+     */
+    boostCreep: (room: Room, creep: Creep, boostTaskId: number) => boolean
+    /**
+     * 结束 boost 任务
+     */
+    finishBoost: (room: Room, boostTaskId: number) => void
+}
+
+export type WarModuleContext = {
+    getMemory: () => WarModuleMemory
+} & EnvContext & OutsideContext
 
 /**
  * 小队存储
