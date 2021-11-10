@@ -1,6 +1,6 @@
-interface RoomTaskMemory<Task extends RoomTask> {
+interface RoomTaskMemory<Task extends RoomTask, UnitData extends AnyObject> {
     tasks: Task[]
-    creeps: { [creepName: string]: TaskUnitInfo }
+    creeps: { [creepName: string]: TaskUnitInfo<UnitData> }
 }
 
 /**
@@ -55,7 +55,7 @@ interface RoomTaskAction {
 /**
  * 正在处理任务的 creep
  */
-interface TaskUnitInfo {
+interface TaskUnitInfo<CustomData> {
     /**
      * 该 creep 正在执行的工作
      * 没有任务时为空
@@ -66,6 +66,10 @@ interface TaskUnitInfo {
      * 当该字段为 true 时，creep 可以正常工作，但是老死之后将不会重新孵化
      */
     fired?: boolean
+    /**
+     * 该单位保存的自定义数据
+     */
+    data: CustomData
 }
 
 /**

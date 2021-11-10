@@ -1,7 +1,8 @@
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import TaskController from '../taskBase/controller'
 import { noTask, transportActions } from './actions'
-import { AllRoomTransportTask, TransportTasks, TransportTaskType } from './types'
+import { runManager } from './newAction'
+import { AllRoomTransportTask, ManagerData, TaskFinishReason, TransportTaskData, TransportTasks, TransportTaskType } from './types'
 
 /**
  * 搬运工工作时长占比到调整期望的 map
@@ -35,7 +36,7 @@ export type TransportActionGenerator<T extends TransportTaskType = TransportTask
  */
 const REGULATE_LIMIT = 500
 
-export default class RoomTransport extends TaskController<TransportTaskType, AllRoomTransportTask> {
+export default class RoomTransport extends TaskController<TransportTaskType, TransportTaskData, ManagerData> {
     /**
      * 构造- 管理指定房间的工作任务
      * 
@@ -55,12 +56,85 @@ export default class RoomTransport extends TaskController<TransportTaskType, All
 
         const task = this.getUnitTask(creep)
         if (!task) return noTask(creep)
-        const actionGenerator: TransportActionGenerator = transportActions[task.type]
+        // const actionGenerator: TransportActionGenerator = transportActions[task.type]
+
+        // const { x, y } = creep.pos
+        // creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
+        // 分配完后获取任务执行逻辑
+        // return actionGenerator(creep, task, this)
+    }
+
+    /**
+     * 让该爬执行搬运工任务
+     */
+    public doManagerWork(creep: Creep): void {
+        this.totalLifeTime += 1
+        const task = this.getUnitTask(creep)
+        if (!task) {
+            creep.say('💤')
+            return
+        }
+
+        this.totalWorkTime += 1
 
         const { x, y } = creep.pos
         creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
-        // 分配完后获取任务执行逻辑
-        return actionGenerator(creep, task, this)
+
+        runManager({
+            manager: creep,
+            workRoom: this.room,
+            taskData: task,
+            managerData: this.creeps[creep.name].data,
+            requireFinishTask: this.requireFinishTask.bind(this)
+        })
+    }
+
+    /**
+     * 申请结束任务
+     * 由于可能存在多个爬一起做一个任务，所以会出现某个爬觉得任务完成了，但是其他爬正在做的情况
+     * 所以搬运爬应该调用这个方法申请结束任务，由本方法统一检查是否可以结束
+     * 
+     * @param task 要结束的任务
+     * @param reason 结束的理由
+     */
+    public requireFinishTask(task: TransportTaskData, reason: TaskFinishReason) {
+        if (reason === TaskFinishReason.Complete) this.removeTask(task.key)
+        else if (reason === TaskFinishReason.CantFindSource) {
+            this.log.error(`找不到来源目标 ${JSON.stringify(task.from)}，任务已移除`)
+            this.removeTask(task.key)
+        }
+        else if (reason === TaskFinishReason.CantFindTarget) {
+            this.log.error(`找不到存放目标 ${JSON.stringify(task.to)}，任务已移除`)
+            this.removeTask(task.key)
+        }
+        else if (reason === TaskFinishReason.NotEnoughResource) {
+            // 找到所有还活着正在从事该任务的搬运工
+            const relatedManagers = Object.entries(this.creeps)
+                .map<[Creep, TaskUnitInfo<ManagerData>]>(([creepName, info]) => [Game.creeps[creepName], info])
+                .filter(([creep, info]) => creep && info.doing === task.key)
+
+            // 找到所有已经完成工作的爬
+            const slackoffManagers = relatedManagers.filter(([creep, info]) => {
+                const { carry } = info.data
+                if (carry?.length <= 0) return true
+
+                // 身上还有资源，说明还在运输，这个爬应该继续执行任务
+                const stillWorking = carry.find(carryRes => creep.store[carryRes] > 0)
+                return !stillWorking
+            })
+
+            // 所有爬手里的活都完成了，结束整个任务
+            if (relatedManagers.length === slackoffManagers.length) {
+                this.log.error(`部分资源数量不足 ${JSON.stringify(task.res)}，任务已移除`)
+                this.removeTask(task.key)
+                return
+            }
+
+            // 让所有干完活的爬和任务解绑，让其可以重新寻找其他任务
+            slackoffManagers.forEach(([creep, info]) => {
+                this.removeTaskUnit(this.getTask(info.doing), creep)
+            })
+        }
     }
 
     /**

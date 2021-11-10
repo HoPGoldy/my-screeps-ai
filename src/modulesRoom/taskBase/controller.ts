@@ -6,8 +6,10 @@ export default class TaskController<
     // 该任务模块包含的所有任务类型
     TaskType extends string,
     // 该任务模块包含的所有任务
-    CostomTask extends RoomTask<TaskType>
-> extends RoomAccessor<RoomTaskMemory<CostomTask>> {
+    CostomTask extends RoomTask<TaskType>,
+    // 该任务模块包含的单位自定义数据
+    UnitData extends AnyObject = {}
+> extends RoomAccessor<RoomTaskMemory<CostomTask, UnitData>> {
     /**
      * 构造 - 管理指定房间的任务
      * 
@@ -162,7 +164,7 @@ export default class TaskController<
         if (!task || !unit) return
 
         task.unit = (task.unit > 0) ? task.unit + 1 : 1
-        if (!this.creeps[unit.name]) this.creeps[unit.name] = {}
+        if (!this.creeps[unit.name]) this.creeps[unit.name] = { data: {} as UnitData }
         this.creeps[unit.name].doing = task.key
         unit.memory.taskKey = task.key
 
@@ -341,7 +343,7 @@ export default class TaskController<
         if (!doingTask) {
             doingTask = this.dispatchCreep(creep)
 
-            const workInfo = this.creeps[creep.name] || {}
+            const workInfo = this.creeps[creep.name] || { data: {} as UnitData }
             workInfo.doing = doingTask?.key
             this.creeps[creep.name] = workInfo
         }
@@ -354,7 +356,7 @@ export default class TaskController<
      * 
      * @param filter 筛选器，接受 creep 数据与 creep 本身，返回是否选择
      */
-    public getUnit(filter?: (info: TaskUnitInfo, creep: Creep) => boolean): Creep[] {
+    public getUnit(filter?: (info: TaskUnitInfo<UnitData>, creep: Creep) => boolean): Creep[] {
         const units: Creep[] = []
 
         // 给干完活的单位重新分配任务

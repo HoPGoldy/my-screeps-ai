@@ -3,7 +3,7 @@ declare global {
         /**
          * 房间物流任务内存
          */
-        transport: RoomTaskMemory<AllRoomTransportTask>
+        transport: RoomTaskMemory<AllRoomTransportTask, ManagerData>
     }
 }
 
@@ -25,6 +25,110 @@ export enum TransportTaskType {
  * 所有的房间物流任务
  */
 export type AllRoomTransportTask = TransportTasks[TransportTaskType]
+
+/**
+ * 房间物流任务
+ */
+export interface TransportTask {
+    /**
+     * 从哪里获取资源
+     * 支持 id 和位置
+     */
+    from: Id<StructureWithStore> | [number, number, string]
+    /**
+     * 资源搬运到哪里
+     * 支持 id、位置、建筑常量
+     */
+    to: Id<StructureWithStore | Creep | PowerCreep> | StructureConstant | [number, number, string]
+    /**
+     * 要搬运的资源
+     */
+    res: TransportResource[]
+}
+
+/**
+ * 物流任务的目标资源配置
+ */
+interface TransportResource {
+    /**
+     * 要转移的资源类型
+     */
+    resType: ResourceConstant
+    /**
+     * 要转移的数量，不填的话将会把目标填满或者把来源掏空
+     */
+    amount?: number
+}
+
+/**
+ * 搬运工状态
+ */
+export enum ManagerState {
+    /**
+     * 清理身上的无用资源
+     */
+    ClearRemains = 1,
+    /**
+     * 获取要搬运的资源
+     */
+    GetResource,
+    /**
+     * 将资源搬运到目标
+     */
+    PutResource
+}
+
+/**
+ * 物流任务完整版
+ */
+export type TransportTaskData = RoomTask<TransportTaskType.Transport> & TransportTask & {
+    res: (TransportResource & {
+        /**
+         * 正在处理该资源的搬运工名称
+         */
+        managerName?: string
+        /**
+         * 已经搬运完成了多少资源
+         */
+        arrivedAmount?: number
+    })[]
+}
+
+/**
+ * 搬运工数据
+ */
+export interface ManagerData {
+    /**
+     * 当前搬运状态
+     */
+    state: ManagerState
+    /**
+     * 当前携带的任务资源
+     */
+    carry: ResourceConstant[]
+}
+
+/**
+ * 搬运任务完成原因
+ */
+export enum TaskFinishReason {
+    /**
+     * 完成搬运目标
+     */
+    Complete = 1,
+    /**
+     * 没有找到足够的资源
+     */
+    NotEnoughResource,
+    /**
+     * 没有找到资源存放目标
+     */
+    CantFindSource,
+    /**
+     * 没有找到要搬运到的目标
+     */
+    CantFindTarget
+}
 
 /**
  * 所有的物流任务
