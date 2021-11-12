@@ -131,7 +131,10 @@ const warModule = createWarController({
     },
     addFillEnergyTask: room => {
         room.transport.updateTask({
-            type: TransportTaskType.FillExtension, priority: 10
+            type: TransportTaskType.FillExtension,
+            priority: 10,
+            to: [STRUCTURE_EXTENSION],
+            res: [{ resType: RESOURCE_ENERGY }]
         }, { dispath: true })
     },
     getRoomSpawn: room => room[STRUCTURE_SPAWN],

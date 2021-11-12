@@ -69,7 +69,7 @@ export const transportActions: {
             const source = Game.getObjectById(task.sourceId)
             if (!source || source.getContainer()) {
                 if (!source) creep.log(`找不到 source，container 建造任务移除`, Color.Yellow)
-                workController.removeTask(task.key)
+                workController.removeTaskByKey(task.key)
                 return false
             }
             workController.countWorkTime()
@@ -97,7 +97,7 @@ export const transportActions: {
 
                 if (!source) {
                     creep.log(`找不到 source，container 建造任务移除`, Color.Yellow)
-                    workController.removeTask(task.key)
+                    workController.removeTaskByKey(task.key)
                     return
                 }
 
@@ -108,7 +108,7 @@ export const transportActions: {
 
                 // 找不到了，说明任务完成
                 if (containerSites.length <= 0) {
-                    workController.removeTask(task.key)
+                    workController.removeTaskByKey(task.key)
                     return
                 }
 
@@ -136,7 +136,7 @@ export const transportActions: {
                 // 优先建设任务中指定的工地
                 const taskTarget = Game.getObjectById(task.targetId)
                 if (creep.buildStructure(taskTarget) === ERR_NOT_FOUND) {
-                    workController.removeTask(task.key)
+                    workController.removeTaskByKey(task.key)
                     return creep.backToGetEnergy()
                 }
             }
@@ -153,7 +153,7 @@ export const transportActions: {
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
             const room = Game.rooms[creep.memory.data.workRoom]
             if (!room) {
-                workController.removeTask(task.key)
+                workController.removeTaskByKey(task.key)
                 return true
             }
 
@@ -172,7 +172,7 @@ export const transportActions: {
 
             // 没有需要维修的建筑，任务完成
             if (!target) {
-                workController.removeTask(task.key)
+                workController.removeTaskByKey(task.key)
                 delete creep.memory.repairStructureId
                 return true
             }
@@ -203,7 +203,7 @@ export const transportActions: {
             // 否则就按原计划维修
             else {
                 const filling = creep.fillDefenseStructure()
-                if (!filling) workController.removeTask(task.key)
+                if (!filling) workController.removeTaskByKey(task.key)
             }
 
             if (creep.store.getUsedCapacity() === 0) return creep.backToGetEnergy()

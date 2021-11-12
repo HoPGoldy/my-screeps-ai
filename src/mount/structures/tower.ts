@@ -282,8 +282,16 @@ export default class TowerExtension extends StructureTower {
      * @param lowerLimit 能量下限，当自己能量低于该值时将发起请求
      */
     private requireEnergy(lowerLimit: number = 900): void {
-        if (this.store[RESOURCE_ENERGY] <= lowerLimit && !this.room.transport.hasTask(TransportTaskType.FillTower)) {
-            this.room.transport.addTask({ type: TransportTaskType.FillTower, id: this.id, priority: 9 })
+        if (
+            this.store[RESOURCE_ENERGY] <= lowerLimit &&
+            !this.room.transport.hasTaskWithType(TransportTaskType.FillTower)
+        ) {
+            this.room.transport.addTask({
+                type: TransportTaskType.FillTower,
+                priority: 9,
+                to: [STRUCTURE_TOWER],
+                res: [{ resType: RESOURCE_ENERGY }]
+            })
         }
     }
 }

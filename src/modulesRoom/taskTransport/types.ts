@@ -3,53 +3,75 @@ declare global {
         /**
          * 房间物流任务内存
          */
-        transport: RoomTaskMemory<AllRoomTransportTask, ManagerData>
+        transport: RoomTaskMemory<TransportTaskData, ManagerData>
     }
 }
 
 /**
  * 所有的物流任务类型
+ * 没什么实际作用，只是方便使用者搜索自己的任务
  */
 export enum TransportTaskType {
-    Transport = 'transport',
-    FillExtension = 'fillExtension',
-    FillTower = 'fillTower',
-    FillNuker = 'fillNuker',
-    FillPowerSpawn = 'fillPowerSpawn',
-    LabIn = 'labIn',
-    LabOut = 'labOut',
-    LabGetEnergy = 'labGetEnergy',
+    ContainerEnergyTransfer = 1,
+    FillExtension,
+    FillTower,
+    FillNuker,
+    FillPowerSpawn,
+    LabIn,
+    LabOut,
+    LabGetEnergy,
 }
 
 /**
- * 所有的房间物流任务
+ * 物流任务工作处理上下文
  */
-export type AllRoomTransportTask = TransportTasks[TransportTaskType]
+export interface TransportWorkContext {
+    /**
+     * 物流任务所处的房间
+     */
+    workRoom: Room
+    /**
+     * 当前执行任务的爬
+     */
+    manager: Creep
+    /**
+     * 该任务的数据
+     */
+    taskData: TransportTaskData
+    /**
+     * 该搬运爬的数据
+     */
+    managerData: ManagerData
+    /**
+     * 请求结束该任务
+     */
+    requireFinishTask: (reason: TaskFinishReason) => void
+}
 
 /**
  * 房间物流任务
  */
-export interface TransportTask {
-    /**
-     * 从哪里获取资源
-     * 支持 id 和位置
-     */
-    from: Id<StructureWithStore> | [number, number, string]
-    /**
-     * 资源搬运到哪里
-     * 支持 id、位置、建筑常量
-     */
-    to: Id<StructureWithStore | Creep | PowerCreep> | StructureConstant | [number, number, string]
+export interface TransportTask<T = TransportRequests> {
     /**
      * 要搬运的资源
      */
-    res: TransportResource[]
+    requests: T[]
 }
 
 /**
  * 物流任务的目标资源配置
  */
-interface TransportResource {
+interface TransportRequests {
+    /**
+     * 从哪里获取资源
+     * 支持 id 和位置
+     */
+    from?: Id<StructureWithStore> | [number, number, string]
+     /**
+      * 资源搬运到哪里
+      * 支持 id、位置、建筑常量
+      */
+    to?: Id<StructureWithStore | Creep | PowerCreep> | StructureConstant[] | [number, number, string]
     /**
      * 要转移的资源类型
      */
@@ -60,14 +82,29 @@ interface TransportResource {
     amount?: number
 }
 
+export type TransportRequestData = TransportRequests & {
+    /**
+     * 正在处理该资源的搬运工名称
+     */
+    managerName?: string
+    /**
+     * 已经搬运完成了多少资源
+     */
+    arrivedAmount?: number
+}
+
 /**
  * 搬运工状态
  */
 export enum ManagerState {
     /**
+     * 临死之前处理后事
+     */
+    DeathClear = 1,
+    /**
      * 清理身上的无用资源
      */
-    ClearRemains = 1,
+    ClearRemains,
     /**
      * 获取要搬运的资源
      */
@@ -81,18 +118,7 @@ export enum ManagerState {
 /**
  * 物流任务完整版
  */
-export type TransportTaskData = RoomTask<TransportTaskType.Transport> & TransportTask & {
-    res: (TransportResource & {
-        /**
-         * 正在处理该资源的搬运工名称
-         */
-        managerName?: string
-        /**
-         * 已经搬运完成了多少资源
-         */
-        arrivedAmount?: number
-    })[]
-}
+export type TransportTaskData = RoomTask & TransportTask<TransportRequestData>
 
 /**
  * 搬运工数据
@@ -129,90 +155,3 @@ export enum TaskFinishReason {
      */
     CantFindTarget
 }
-
-/**
- * 所有的物流任务
- */
-export interface TransportTasks {
-    /**
-     * 基础搬运任务
-     */
-    [TransportTaskType.Transport]: RoomTask<TransportTaskType.Transport> & {
-        /**
-         * 从哪里搬运，数字元组代表一个位置
-         */
-        from: [number, number, string] | Id<StructureWithStore>
-        /**
-         * 搬运到哪里
-         */
-        to: [number, number, string] | Id<StructureWithStore>
-        /**
-         * 搬运啥
-         */
-        resourceType: ResourceConstant
-        /**
-         * 当目标的资源数量小于该值时即代表任务完成，默认为全部搬完
-         * 注意，如果是 source 旁放能量的 container 的话，creep 一直在往里放能量，默认可能会导致任务迟迟无法完结
-         */
-        endWith?: number
-    }
-    /**
-     * 填充 spawn 及 extension
-     */
-    [TransportTaskType.FillExtension]: RoomTask<TransportTaskType.FillExtension>
-    /**
-     * 填充 tower
-     */
-    [TransportTaskType.FillTower]: RoomTask<TransportTaskType.FillTower> & {
-        id: Id<StructureTower>
-    }
-    /**
-     * 填充 nuker
-     */
-    [TransportTaskType.FillNuker]: RoomTask<TransportTaskType.FillNuker> & {
-        id: Id<StructureNuker>
-        resourceType: ResourceConstant
-    }
-    /**
-     * 填充 powerSpawn
-     */
-    [TransportTaskType.FillPowerSpawn]: RoomTask<TransportTaskType.FillPowerSpawn> & {
-        id: Id<StructurePowerSpawn>
-        resourceType: ResourceConstant
-    }
-    /**
-     * lab 填充底物
-     */
-    [TransportTaskType.LabIn]: RoomTask<TransportTaskType.LabIn> & {
-        resource: {
-            id: Id<StructureLab>
-            type: ResourceConstant
-            /**
-             * 目标 lab 需要多少
-             */
-            amount: number
-            /**
-             * 正在执行本资源搬运的 creep 名字
-             */
-            transporterName?: string
-        }[]
-    }
-    /**
-     * lab 移出产物
-     */
-    [TransportTaskType.LabOut]: RoomTask<TransportTaskType.LabOut> & {
-        /**
-         * 需要净空的 lab id
-         */
-        labId: Id<StructureLab>[]
-    }
-    /**
-     * boost 填充资源
-     */
-    [TransportTaskType.LabGetEnergy]: RoomTask<TransportTaskType.LabGetEnergy>
-}
-
-/**
- * 从内存 transport 字段解析出来的存储格式
- */
-export type TransportData = TransportTasks[TransportTaskType][]

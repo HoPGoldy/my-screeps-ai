@@ -1,8 +1,6 @@
-import { CreepRole, RoleCreep } from '@/role/types/role'
 import TaskController from '../taskBase/controller'
-import { noTask, transportActions } from './actions'
-import { runManager } from './newAction'
-import { AllRoomTransportTask, ManagerData, TaskFinishReason, TransportTaskData, TransportTasks, TransportTaskType } from './types'
+import { runManager } from './runManager'
+import { ManagerData, ManagerState, TaskFinishReason, TransportTask, TransportTaskData } from './types'
 
 /**
  * 搬运工工作时长占比到调整期望的 map
@@ -20,13 +18,9 @@ const WORK_PROPORTION_TO_EXPECT = [
 ]
 
 /**
- * 物流搬运任务逻辑的生成函数
+ * manager 触发后事处理的最小生命
  */
-export type TransportActionGenerator<T extends TransportTaskType = TransportTaskType> = (
-   creep: RoleCreep<CreepRole.Manager>,
-   task: TransportTasks[T],
-   transportController: RoomTransport
-) => RoomTaskAction
+const TRANSFER_DEATH_LIMIT = 20
 
 /**
  * 期望调整的统计下限
@@ -36,7 +30,7 @@ export type TransportActionGenerator<T extends TransportTaskType = TransportTask
  */
 const REGULATE_LIMIT = 500
 
-export default class RoomTransport extends TaskController<TransportTaskType, TransportTaskData, ManagerData> {
+export default class RoomTransport extends TaskController<string | number, TransportTaskData, ManagerData> {
     /**
      * 构造- 管理指定房间的工作任务
      * 
@@ -44,24 +38,6 @@ export default class RoomTransport extends TaskController<TransportTaskType, Tra
      */
     constructor(roomName: string) {
         super(roomName, 'transport')
-    }
-
-    /**
-     * 获取应该执行的任务逻辑
-     * 获取后请在本 tick 直接执行，不要进行存储
-     * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
-     */
-    public getWork(creep: RoleCreep<CreepRole.Manager>): RoomTaskAction {
-        this.totalLifeTime += 1
-
-        const task = this.getUnitTask(creep)
-        if (!task) return noTask(creep)
-        // const actionGenerator: TransportActionGenerator = transportActions[task.type]
-
-        // const { x, y } = creep.pos
-        // creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
-        // 分配完后获取任务执行逻辑
-        // return actionGenerator(creep, task, this)
     }
 
     /**
@@ -78,15 +54,22 @@ export default class RoomTransport extends TaskController<TransportTaskType, Tra
         this.totalWorkTime += 1
 
         const { x, y } = creep.pos
-        creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
+        creep.room.visual.text(task.type.toString(), x, y, { opacity: 0.5, font: 0.3 })
+
+        const managerData = this.creeps[creep.name].data
+        if (creep.ticksToLive <= TRANSFER_DEATH_LIMIT) managerData.state = ManagerState.DeathClear
 
         runManager({
             manager: creep,
             workRoom: this.room,
             taskData: task,
-            managerData: this.creeps[creep.name].data,
-            requireFinishTask: this.requireFinishTask.bind(this)
+            managerData,
+            requireFinishTask: reason => this.requireFinishTask(task, reason)
         })
+    }
+
+    public addTask(task: RoomTask & TransportTask, opt?: AddTaskOpt) {
+        return super.addTask(task, opt)
     }
 
     /**
@@ -98,14 +81,14 @@ export default class RoomTransport extends TaskController<TransportTaskType, Tra
      * @param reason 结束的理由
      */
     public requireFinishTask(task: TransportTaskData, reason: TaskFinishReason) {
-        if (reason === TaskFinishReason.Complete) this.removeTask(task.key)
+        if (reason === TaskFinishReason.Complete) this.removeTaskByKey(task.key)
         else if (reason === TaskFinishReason.CantFindSource) {
             this.log.error(`找不到来源目标 ${JSON.stringify(task.from)}，任务已移除`)
-            this.removeTask(task.key)
+            this.removeTaskByKey(task.key)
         }
         else if (reason === TaskFinishReason.CantFindTarget) {
             this.log.error(`找不到存放目标 ${JSON.stringify(task.to)}，任务已移除`)
-            this.removeTask(task.key)
+            this.removeTaskByKey(task.key)
         }
         else if (reason === TaskFinishReason.NotEnoughResource) {
             // 找到所有还活着正在从事该任务的搬运工
@@ -126,7 +109,7 @@ export default class RoomTransport extends TaskController<TransportTaskType, Tra
             // 所有爬手里的活都完成了，结束整个任务
             if (relatedManagers.length === slackoffManagers.length) {
                 this.log.error(`部分资源数量不足 ${JSON.stringify(task.res)}，任务已移除`)
-                this.removeTask(task.key)
+                this.removeTaskByKey(task.key)
                 return
             }
 

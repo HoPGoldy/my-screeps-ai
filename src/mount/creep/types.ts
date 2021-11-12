@@ -117,6 +117,11 @@ declare global {
          * 运营单位特有，当前正在执行的物流 / 工作任务索引
          */
         taskKey?: number
+        /**
+         * 当前正在执行的初始 container 能量转移到 storage 的任务索引
+         * harvester 特有
+         */
+        containerEnergyTransferTaskId?: number
     }
 
     /**

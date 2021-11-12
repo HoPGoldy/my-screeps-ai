@@ -241,19 +241,15 @@ const actionStrategy: ActionStrategy = {
 
                 // 能量达到数量了就发布任务，这个值应该低一点
                 // 不然有可能出现 worker 吃能量比较快导致任务发布数量太少
-                if (container.store[RESOURCE_ENERGY] > 200) {
-                    // 看看是不是已经有发布好的任务了
-                    const hasTransportTask = creep.room.transport.tasks.find(task => {
-                        return 'from' in task && task.from === container.id
-                    })
-
-                    // 没有任务的话才会发布
-                    !hasTransportTask && creep.room.transport.addTask({
-                        type: TransportTaskType.Transport,
+                if (
+                    container.store[RESOURCE_ENERGY] > 200 &&
+                    !creep.room.transport.hasTaskWithType(TransportTaskType.ContainerEnergyTransfer)
+                ) {
+                    creep.memory.containerEnergyTransferTaskId = creep.room.transport.addTask({
+                        type: TransportTaskType.ContainerEnergyTransfer,
                         from: container.id,
                         to: creep.room.storage.id,
-                        resourceType: RESOURCE_ENERGY,
-                        endWith: 100
+                        res: [{ resType: RESOURCE_ENERGY, amount: 200 }]
                     })
                 }
             }

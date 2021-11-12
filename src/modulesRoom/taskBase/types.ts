@@ -7,7 +7,7 @@ interface RoomTaskMemory<Task extends RoomTask, UnitData extends AnyObject> {
  * 房间任务基础信息
  * 该任务是物流任务和工作任务的基础
  */
-interface RoomTask<T extends string = string> {
+interface RoomTask<T = string | number> {
     /**
      * 该任务的类型
      */

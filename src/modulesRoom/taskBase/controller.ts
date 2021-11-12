@@ -4,7 +4,7 @@ import RoomAccessor from '../RoomAccessor'
 
 export default class TaskController<
     // 该任务模块包含的所有任务类型
-    TaskType extends string,
+    TaskType extends string | number,
     // 该任务模块包含的所有任务
     CostomTask extends RoomTask<TaskType>,
     // 该任务模块包含的单位自定义数据
@@ -57,8 +57,7 @@ export default class TaskController<
      * @param opt 配置项
      */
     public addTask(task: CostomTask, opt: AddTaskOpt = {}) {
-        const addOpt: UpdateTaskOpt = { dispath: false }
-        Object.assign(addOpt, opt)
+        const addOpt: UpdateTaskOpt = { dispath: false, ...opt }
 
         task = this.refineNewTask(task)
 
@@ -107,8 +106,7 @@ export default class TaskController<
      * @returns 被更新任务的索引，如果新建了任务则返回新任务的索引，若更新了多个任务的话则返回最后一个任务的索引
      */
     public updateTask(newTask: CostomTask, opt: UpdateTaskOpt = {}): number {
-        const updateOpt: UpdateTaskOpt = { addWhenNotFound: true }
-        Object.assign(updateOpt, opt)
+        const updateOpt = { addWhenNotFound: true, ...opt }
 
         // 是否找到了要更新的任务
         let notFound = true
@@ -295,32 +293,44 @@ export default class TaskController<
     }
 
     /**
-     * 是否存在某个（种）任务
-     * 
-     * @returns 存在则返回 true，不存在返回 false
+     * 是否存在包含指定索引的任务
      */
-    public hasTask(taskIndex: number | TaskType): boolean {
-        // 用任务类型判断
-        if (typeof taskIndex === 'string') return !!this.tasks.find(task => task.type === taskIndex)
-        // 用任务索引判断
-        else return !!this.tasks.find(task => task.key === taskIndex)
+    public hasTaskWithKey(taskKey: number): boolean {
+        return !!this.tasks.find(task => task.key === taskKey)
     }
 
     /**
-     * 移除一个任务
-     * 
-     * @param taskKey 要移除的任务索引（key 或者 type）
+     * 是否存在包含指定类型的任务
      */
-    public removeTask(taskIndex: number): OK | ERR_NOT_FOUND
-    public removeTask(taskIndex: TaskType): OK | ERR_NOT_FOUND
-    public removeTask(taskIndex: number | TaskType): OK | ERR_NOT_FOUND {
+    public hasTaskWithType(taskTyep: TaskType): boolean {
+        return !!this.tasks.find(task => task.type === taskTyep)
+    }
+
+    /**
+     * 使用任务索引移除任务
+     */
+    public removeTaskByKey(taskKey: number): OK | ERR_NOT_FOUND {
+        // 移除任务并收集被移除的任务索引
+        const removeTaskIndex = this.tasks.findIndex(task => task.key !== taskKey)
+        this.memory.tasks.splice(removeTaskIndex, 1)
+
+        // 给正在干这个活的单位重新分配任务
+        this.getUnit(({ doing }) => taskKey === doing)
+            .map(creep => this.dispatchCreep(creep))
+
+        return OK
+    }
+
+    /**
+     * 使用类型移除任务
+     * 会移除所有同类型任务
+     */
+    public removeTaskByType(taskType: TaskType): OK | ERR_NOT_FOUND {
         const removeTaskKeys = []
 
         // 移除任务并收集被移除的任务索引
         this.memory.tasks = this.tasks.filter(task => {
-            const prop = (typeof taskIndex === 'number') ? 'key' : 'type'
-            if (task[prop] !== taskIndex) return true
-
+            if (task.type !== taskType) return true
             removeTaskKeys.push(task.key)
             return false
         })
@@ -426,7 +436,7 @@ export default class TaskController<
         ]
 
         logs.push(...this.tasks.map(task => (
-            _.padRight(task.type, 10) +
+            _.padRight(task.type.toString(), 10) +
             _.padRight(task.key.toString(), 10) +
             _.padRight(task.need.toString(), 10) +
             _.padRight(task.unit.toString(), 10) +
