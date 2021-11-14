@@ -42,8 +42,7 @@ export class PowerSpawnExtension extends StructurePowerSpawn {
         ) {
             this.room.transport.addTask({
                 type: TransportTaskType.FillPowerSpawn,
-                to: this.id,
-                res: [{ resType, amount: Math.min(amount, total) }]
+                requests: [{ resType, amount: Math.min(amount, total), to: this.id }]
             })
         }
 

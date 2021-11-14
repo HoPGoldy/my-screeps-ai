@@ -34,9 +34,11 @@ export enum HarvestMode {
  */
 const harvester: CreepConfig<CreepRole.Harvester> = {
     prepare: creep => {
-        const { harvestRoom, sourceId } = creep.memory.data
-        if (creep.room.name !== harvestRoom) {
-            creep.goTo(new RoomPosition(25, 25, harvestRoom), { checkTarget: false })
+        const { harvestRoom: harvestRoomName, sourceId } = creep.memory.data
+        const harvestRoom = Game.rooms[harvestRoomName]
+
+        if (!harvestRoom) {
+            creep.goTo(new RoomPosition(25, 25, harvestRoomName), { checkTarget: false })
             return false
         }
         const source = Game.getObjectById(sourceId)
@@ -188,7 +190,6 @@ const actionStrategy: ActionStrategy = {
                 return false
             }
 
-            creep.goTo(targetSpawn.pos, { range: 1, checkTarget: false })
             creep.transferTo(targetSpawn, RESOURCE_ENERGY)
         }
     },
@@ -247,9 +248,12 @@ const actionStrategy: ActionStrategy = {
                 ) {
                     creep.memory.containerEnergyTransferTaskId = creep.room.transport.addTask({
                         type: TransportTaskType.ContainerEnergyTransfer,
-                        from: container.id,
-                        to: creep.room.storage.id,
-                        res: [{ resType: RESOURCE_ENERGY, amount: 200 }]
+                        requests: [{
+                            from: container.id,
+                            to: creep.room.storage.id,
+                            resType: RESOURCE_ENERGY,
+                            amount: 200
+                        }]
                     })
                 }
             }

@@ -189,10 +189,9 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         this.room.transport.addTask({
             type: TransportTaskType.LabIn,
-            need: 1,
-            resource: boostTask.res.map(res => ({
-                id: res.lab,
-                type: res.resource,
+            requests: boostTask.res.map(res => ({
+                to: res.lab,
+                resType: res.resource,
                 amount: res.amount - Game.getObjectById(res.lab).store[res.resource]
             }))
         })
@@ -215,7 +214,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      */
     private boostGetLab(task: BoostTask): void {
         // 检查是否已经有正在执行的移出任务
-        if (this.room.transport.hasTask(TransportTaskType.LabOut)) return
+        if (this.room.transport.hasTaskWithType(TransportTaskType.LabOut)) return
 
         // 需要分配给 boost 的 lab 数组
         const boostUseLabs: StructureLab[] = []
@@ -247,12 +246,16 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
 
         // 找到需要清空的 lab
-        const needClearLabs = boostUseLabs.filter(lab => lab.mineralType).map(({ id }) => id)
-        if (needClearLabs.length > 0) {
+        const needCleanLabs = boostUseLabs.filter(lab => lab.mineralType)
+        if (needCleanLabs.length > 0) {
             this.room.transport.addTask({
                 type: TransportTaskType.LabOut,
                 need: 1,
-                labId: needClearLabs
+                requests: needCleanLabs.map(lab => ({
+                    from: lab.id,
+                    resType: lab.mineralType,
+                    amount: lab.store[lab.mineralType]
+                }))
             })
         }
         // 所有 lab 已经清空完毕，进入下个阶段
@@ -273,7 +276,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * boost 阶段：获取强化材料
      */
     private boostGetResource(task: BoostTask): void {    
-        if (this.room.transport.hasTask(TransportTaskType.LabIn)) return
+        if (this.room.transport.hasTaskWithType(TransportTaskType.LabIn)) return
     
         // 遍历检查资源是否到位
         const allResourceReady = task.res.every(res => {
@@ -292,15 +295,15 @@ export default class LabController extends RoomAccessor<LabMemory> {
             task.state = BoostState.GetEnergy
         }
         // 否则就发布资源移入任务
-        else if (!this.room.transport.hasTask(TransportTaskType.LabIn)) {
+        else if (!this.room.transport.hasTaskWithType(TransportTaskType.LabIn)) {
             // console.log('添加 labin 任务', task.id)
 
             this.room.transport.addTask({
                 type: TransportTaskType.LabIn,
                 need: 1,
-                resource: task.res.map(res => ({
-                    id: res.lab,
-                    type: res.resource,
+                requests: task.res.map(res => ({
+                    to: res.lab,
+                    resType: res.resource,
                     amount: res.amount
                 }))
             })
@@ -311,23 +314,27 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * boost 阶段：获取能量
      */
     private boostGetEnergy(task: BoostTask): void {
-        if (this.room.transport.hasTask(TransportTaskType.LabGetEnergy)) return
+        if (this.room.transport.hasTaskWithType(TransportTaskType.LabGetEnergy)) return
 
-        // 遍历所有执行强化的 lab
-        for (const res of task.res) {
-            const lab = Game.getObjectById(res.lab)
+        const needFillLabs = task.res
+            .map(res => Game.getObjectById(res.lab))
+            .filter(lab => lab.store[RESOURCE_ENERGY] < 1000)
 
-            // 有 lab 能量不达标的话就发布能量填充任务
-            if (lab && lab.store[RESOURCE_ENERGY] < 1000) {
-                this.log.normal(`正在填充 boost 能量`)
-                this.room.transport.addTask({ type: TransportTaskType.LabGetEnergy })
-                return
-            }
+        if (needFillLabs.length > 0) {
+            this.log.normal(`正在填充 boost 能量`)
+            this.room.transport.addTask({
+                type: TransportTaskType.LabGetEnergy,
+                requests: needFillLabs.map(lab => ({
+                    to: lab.id,
+                    resType: RESOURCE_ENERGY
+                }))
+            })
         }
-
-        // 能循环完说明能量都填好了
-        task.state = BoostState.WaitBoost
-        this.log.success(`boost 任务准备就绪，正在等待强化`)
+        else {
+            // 能循环完说明能量都填好了
+            task.state = BoostState.WaitBoost
+            this.log.success(`boost 任务准备就绪，正在等待强化`)
+        }
     }
 
     /**
@@ -386,20 +393,20 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 将强化用剩下的材料从 lab 中转移到 terminal 中
      */
     private boostClear(task: BoostTask): void {
-        if (this.room.transport.hasTask(TransportTaskType.LabOut)) return
+        if (this.room.transport.hasTaskWithType(TransportTaskType.LabOut)) return
 
-        const allClear = task.res.every(res => {
-            const lab = Game.getObjectById(res.lab)
-            // lab 没了或者资源清空了
-            return !lab || !lab.mineralType
-        })
+        const needCleanLabs = task.res
+            .map(res => Game.getObjectById(res.lab))
+            .filter(lab => lab.mineralType)
 
         // 没有全部净空，添加回收任务
-        if (!allClear) {
+        if (needCleanLabs.length > 0) {
             this.room.transport.addTask({
                 type: TransportTaskType.LabOut,
-                need: 1,
-                labId: task.res.map(res => res.lab)
+                requests: needCleanLabs.map(lab => ({
+                    from: lab.id,
+                    resType: lab.mineralType
+                }))
             })
             return
         }
@@ -462,7 +469,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             return
         }
         // 检查是否有资源移入任务
-        if (this.room.transport.hasTask(TransportTaskType.LabIn)) return
+        if (this.room.transport.hasTaskWithType(TransportTaskType.LabIn)) return
 
         // 检查 InLab 底物数量，都有底物的话就进入下个阶段
         if (this.inLabs.every(lab => lab.store[lab.mineralType] >= this.memory.reactionAmount)) {
@@ -528,16 +535,19 @@ export default class LabController extends RoomAccessor<LabMemory> {
      */
     private labPutResource(): void {
         // 检查是否已经有正在执行的移出任务
-        if (this.room.transport.hasTask(TransportTaskType.LabOut)) return
+        if (this.room.transport.hasTaskWithType(TransportTaskType.LabOut)) return
 
         const workLabs = [...this.reactionLabs, ...this.inLabs]
         const needCleanLabs = workLabs.filter(lab => lab.mineralType)
+
         // 还有没净空的就发布移出任务
         if (needCleanLabs.length > 0) {
             this.room.transport.addTask({
                 type: TransportTaskType.LabOut,
-                need: 1,
-                labId: needCleanLabs.map(lab => lab.id)
+                requests: needCleanLabs.map(lab => ({
+                    from: lab.id,
+                    resType: lab.mineralType
+                }))
             })
             return
         }
@@ -588,14 +598,14 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 获取目标产物
         const targetResource = LAB_TARGETS[this.memory.reactionIndex].target
         // 获取底物及其数量
-        const resource = REACTION_SOURCE[targetResource].map((resourceType, index) => ({
-            id: this.inLabs[index].id,
-            type: resourceType,
+        const requests = REACTION_SOURCE[targetResource].map((resourceType, index) => ({
+            to: this.inLabs[index].id,
+            resType: resourceType,
             amount: this.memory.reactionAmount
         }))
 
         // 发布任务
-        this.room.transport.addTask({ type: TransportTaskType.LabIn, resource, need: 1 })
+        this.room.transport.addTask({ type: TransportTaskType.LabIn, requests })
     }
 
     /**

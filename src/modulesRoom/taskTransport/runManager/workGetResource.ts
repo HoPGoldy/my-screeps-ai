@@ -1,168 +1,155 @@
-import { ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportTaskData, TransportWorkContext } from "../types"
+import { GetTargetReturn, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
 
 export const onGetResource = (context: TransportWorkContext) => {
-    const { taskData, manager, workRoom, managerData, requireFinishTask } = context
+    const { manager, managerData } = context
 
     if (manager.store.getFreeCapacity() <= 0) {
         managerData.state = ManagerState.PutResource
         return
     }
 
-    // 来源是个位置
-    if (typeof taskData.from === 'object') {
-        const sourcePos = new RoomPosition(...taskData.from)
-        if (!sourcePos) return requireFinishTask(TaskFinishReason.CantFindSource)
-
-        getResourceFromPos(sourcePos, context)
-    }
-    // 来源是个建筑
-    else if (typeof taskData.from === 'string') {
-        const sourceStructure = Game.getObjectById(taskData.from)
-        if (!sourceStructure) return requireFinishTask(TaskFinishReason.CantFindSource)
-
-        getResourceFromStructure(sourceStructure, context)
-    }
-    // 没有指定来源
-    else {
-        getResourceFromRoom(workRoom, context)
-    }
-}
-
-/**
- * 从指定位置获取物流任务资源
- */
-const getResourceFromPos = function (sourcePos: RoomPosition, context: TransportWorkContext) {
-    const { taskData, manager, managerData, requireFinishTask } = context
-
-    if (!manager.pos.isNearTo(sourcePos)) {
-        manager.goTo(sourcePos)
-        return
-    }
-
-    // 找到目标位置丢弃的资源，并转化为 kv 格式
-    const droppedRes = sourcePos.lookFor(LOOK_RESOURCES)
-        .reduce<Map<ResourceConstant, Resource<ResourceConstant>>>((resMap, nextRes) => {
-            resMap.set(nextRes.resourceType, nextRes)
-            return resMap
-        }, new Map())
-
-    // 找到要捡起的资源
-    const targetRes = findMoveResource(taskData, manager, type => droppedRes.get(type)?.amount || 0)
-
-    // 还找不到就说明都已经取到身上了、或者别的爬在运
-    if (!targetRes) {
+    // 找到要拿取的请求
+    const processingRequest = getProcessingRequest(context)
+    // 找不到就说明完成了或者自己拿到了最后一批，切换模式
+    if (!processingRequest) {
         managerData.state = ManagerState.PutResource
         return
     }
 
-    // 捡起资源，捡起不能设置数量
-    const pickupRes = droppedRes.get(targetRes.resType)
-    const result = manager.pickup(pickupRes)
+    // 找到往哪走
+    const destination = getTarget(processingRequest, context)
+    if (!destination) return
 
-    handleGetResourceRetureCode(result, managerData, targetRes, manager, requireFinishTask)
+    // 走过去
+    const arrived = destination.target
+        ? manager.pos.isEqualTo(destination.pos)
+        : manager.pos.isNearTo(destination.pos)
+
+    if (!arrived) {
+        manager.goTo(destination.pos, { range: destination.target ? 1 : 0 })
+        return
+    }
+
+    // 拿起资源
+    withdrawResource(destination, processingRequest, context)
 }
 
-/**
- * 从指定建筑获取物流任务资源
- */
-const getResourceFromStructure = function (sourceStructure: StructureWithStore, context: TransportWorkContext) {
-    const { taskData, manager, managerData, requireFinishTask } = context
+const getProcessingRequest = function (context: TransportWorkContext) {
+    const { manager, taskData } = context
+    let otherUnfinishRequest: TransportRequestData
 
-    if (!manager.pos.isNearTo(sourceStructure.pos)) {
-        manager.goTo(sourceStructure.pos)
-        return
-    }
+    const targetRes = taskData.requests.find(res => {
+        const unfinish = getwithdrawAmount(res, manager) > 0
+        const otherProcessing = res.managerName && res.managerName !== manager.name
 
-    const targetRes = findMoveResource(taskData, manager, type => sourceStructure.store[type])
-
-    // 还找不到就说明都已经取到身上了、或者别的爬在运
-    if (!targetRes) {
-        managerData.state = ManagerState.PutResource
-        return
-    }
-
-    const withdrawAmount = Math.min(
-        sourceStructure.store[targetRes.resType],
-        getwithdrawAmount(targetRes, manager)
-    )
-    const result = manager.withdraw(sourceStructure, targetRes.resType, withdrawAmount)
-
-    if (result === OK) {
-        // 此时 withdraw 动作还没有真正执行，这里模拟判断一下会不会拿满，可以节省一 tick
-        if (manager.store.getFreeCapacity() - withdrawAmount <= 0) {
-            managerData.state = ManagerState.PutResource
-            return
-        }
-    }
-
-    handleGetResourceRetureCode(result, managerData, targetRes, manager, requireFinishTask)
-}
-
-/**
- * 从指定房间获取物流任务资源
- * （用于没有指定资源来处的物流任务）
- */
-const getResourceFromRoom = function (sourceRoom: Room, context: TransportWorkContext) {
-    const { taskData, manager, managerData, requireFinishTask } = context
-
-    // 先找到资源，不然不知道往哪走
-    const targetRes = findMoveResource(taskData, manager, type => sourceRoom.myStorage.getResource(type)?.total || 0)
-
-    // 还找不到就说明都已经取到身上了、或者别的爬在运
-    if (!targetRes) {
-        managerData.state = ManagerState.PutResource
-        return
-    }
-
-    // 找到要去的位置，先走过去
-    const sourceStructure = sourceRoom.myStorage.getResourcePlace(targetRes.resType)
-    if (!manager.pos.isNearTo(sourceStructure.pos)) {
-        manager.goTo(sourceStructure.pos)
-        return
-    }
-
-    const withdrawAmount = Math.min(
-        manager.store.getFreeCapacity(),
-        sourceStructure.store[targetRes.resType],
-        targetRes.amount - manager.store[targetRes.resType] - (targetRes.arrivedAmount || 0)
-    )
-    const result = manager.withdraw(sourceStructure, targetRes.resType, withdrawAmount)
-
-    if (result === OK) {
-        // 此时 withdraw 动作还没有真正执行，这里模拟判断一下会不会拿满，可以节省一 tick
-        if (manager.store.getFreeCapacity() - withdrawAmount <= 0) {
-            managerData.state = ManagerState.PutResource
-            return
-        }
-    }
-
-    handleGetResourceRetureCode(result, managerData, targetRes, manager, requireFinishTask)
-}
-
-/**
- * 查找本 tick 要拿到身上的任务资源
- */
- const findMoveResource = function (
-    taskData: TransportTaskData,
-    manager: Creep,
-    getResAmount: (resType: ResourceConstant) => number
-) {
-    // 先找一个没有人运的资源
-    let targetRes = taskData.res.find(res => {
-        if (res.managerName && res.managerName !== manager.name) return false
-        if (getResAmount(res.resType) <= 0) return false
-        return getwithdrawAmount(res, manager) > 0
+        // 会同时记录下没有完成但是有其他人正在处理的请求
+        if (unfinish && otherProcessing) otherUnfinishRequest = res
+        return unfinish
     })
 
-    // 找不到就去去看看别的爬在负责的资源，去棒棒忙
-    if (!targetRes) {
-        targetRes = taskData.res.find(res => {
-            if (getResAmount(res.resType) <= 0) return false
-            return getwithdrawAmount(res, manager) > 0
-        })
+    return targetRes ? targetRes : otherUnfinishRequest
+}
+
+const getTarget = function (request: TransportRequestData, context: TransportWorkContext): GetTargetReturn<StructureWithStore> {
+    const { workRoom, requireFinishTask } = context
+    let target: StructureWithStore
+    let targetPos: RoomPosition
+
+    // 没有指定位置
+    if (!request.from) {
+        target = workRoom.myStorage.getResourcePlace(request.resType)
+        targetPos = target?.pos
+
+        // 如果是能量就特判一下，因为能量可以从启动 container 里取到
+        if (!targetPos && request.resType === RESOURCE_ENERGY) {
+            for (const source of workRoom.source) {
+                const { pos, energy } = source.getDroppedInfo()
+                console.log('pos, energy', pos, energy?.amount)
+                if (energy?.amount > 0) {
+                    targetPos = pos
+                    break
+                }
+                const energyContainer = source.getContainer()
+                console.log('energyContainer.store[RESOURCE_ENERGY]', energyContainer.store[RESOURCE_ENERGY])
+
+                if (energyContainer.store[RESOURCE_ENERGY] > 0) {
+                    target = energyContainer
+                    targetPos = energyContainer.pos
+                    break
+                }
+            }
+        }
+        if (!targetPos) {
+            requireFinishTask(TaskFinishReason.CantFindSource)
+            return
+        }
+    }
+    // 来源是个位置
+    else if (typeof request.from === 'object') {
+        targetPos = new RoomPosition(...request.from as [number, number, string])
+    }
+    // 来源是个 id
+    else {
+        target = Game.getObjectById(request.from)
+        if (!target) {
+            requireFinishTask(TaskFinishReason.CantFindSource)
+            return
+        }
+        targetPos = target.pos
     }
 
-    return targetRes
+    return { target, pos: targetPos }
+}
+
+const withdrawResource = function (
+    destination: GetTargetReturn<StructureWithStore>,
+    request: TransportRequestData,
+    context: TransportWorkContext
+) {
+    const { manager, managerData, requireFinishTask, taskData } = context
+    let operationResult: ScreepsReturnCode
+
+    if (!destination.target) {
+        // 找到要捡起的资源
+        const targetRes = destination.pos.lookFor(LOOK_RESOURCES)
+            .find(res => res.resourceType === request.resType)
+
+        operationResult = manager.pickup(targetRes)
+    }
+    else {
+        const withdrawAmount = Math.min(
+            destination.target.store[request.resType],
+            getwithdrawAmount(request, manager)
+        )
+
+        operationResult = manager.withdraw(destination.target, request.resType, withdrawAmount)
+        if (operationResult === OK) {
+            // 此时 withdraw 动作还没有真正执行，这里模拟判断一下会不会拿满，可以节省一 tick
+            if (manager.store.getFreeCapacity() - withdrawAmount <= 0) {
+                managerData.state = ManagerState.PutResource
+                return
+            }
+        }
+    }
+
+    if (operationResult === OK) {
+        if (!managerData.carrying) managerData.carrying = []
+        const requestIndex = taskData.requests.findIndex((req => req === request))
+        managerData.carrying.push(requestIndex)
+        if (!request.managerName) request.managerName = manager.name
+    }
+    // 拿不下了就运过去
+    else if (operationResult === ERR_FULL) {
+        managerData.state = ManagerState.PutResource
+        return
+    }
+    else if (operationResult === ERR_NOT_ENOUGH_RESOURCES) {
+        requireFinishTask(TaskFinishReason.NotEnoughResource)
+        manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(request)}`)
+    }
+    else {
+        manager.log(`物流任务获取资源出错！${operationResult} ${JSON.stringify(request)}`)
+    }
 }
 
 /**
@@ -171,34 +158,5 @@ const getResourceFromRoom = function (sourceRoom: Room, context: TransportWorkCo
 const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
     // 没有指定数里，能拿多少拿多少
     if (res.amount == undefined) return manager.store.getFreeCapacity()
-    return Math.min(res.amount - (res.arrivedAmount + manager.store[res.resType] || 0), 0)
-}
-
-/**
- * 统一处理获取能量操作的返回值
- */
-const handleGetResourceRetureCode = function (
-    retureCode: ScreepsReturnCode,
-    managerData: ManagerData,
-    targetRes: TransportRequestData,
-    manager: Creep,
-    requireFinishTask: (reason: TaskFinishReason) => void
-) {
-    if (retureCode === OK) {
-        if (!managerData.carry) managerData.carry = []
-        managerData.carry.push(targetRes.resType)
-        if (!targetRes.managerName) targetRes.managerName = manager.name
-    }
-    // 拿不下了就运过去
-    else if (retureCode === ERR_FULL) {
-        managerData.state = ManagerState.PutResource
-        return
-    }
-    else if (retureCode === ERR_NOT_ENOUGH_RESOURCES) {
-        requireFinishTask(TaskFinishReason.NotEnoughResource)
-        manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(targetRes)}`)
-    }
-    else {
-        manager.log(`物流任务获取资源出错！${retureCode} ${JSON.stringify(targetRes)}`)
-    }
+    return Math.max(res.amount - (res.arrivedAmount + manager.store[res.resType] || 0), 0)
 }

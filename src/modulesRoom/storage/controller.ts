@@ -234,4 +234,14 @@ export default class StorageController extends RoomAccessor<undefined> {
         // storage 里的资源不足的话就挑哪个的资源多
         return terminalAmount > storageAmount ? this.room.terminal : this.room.storage
     }
+
+    /**
+     * 获取一个资源应该存放在哪里
+     */
+    public getStorePlace(res: ResourceConstant): StructureTerminal | StructureStorage | undefined {
+        if (!this.terminal) return this.storage
+        if (!this.storage) return undefined
+
+        return this.storage.store.getFreeCapacity() > this.terminal.store.getFreeCapacity() ? this.storage : this.terminal
+    }
 }

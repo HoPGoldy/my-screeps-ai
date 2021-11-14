@@ -133,8 +133,10 @@ const warModule = createWarController({
         room.transport.updateTask({
             type: TransportTaskType.FillExtension,
             priority: 10,
-            to: [STRUCTURE_EXTENSION],
-            res: [{ resType: RESOURCE_ENERGY }]
+            requests: [{
+                resType: RESOURCE_ENERGY,
+                to: [STRUCTURE_EXTENSION, STRUCTURE_SPAWN]
+            }]
         }, { dispath: true })
     },
     getRoomSpawn: room => room[STRUCTURE_SPAWN],

@@ -33,8 +33,7 @@ export default class NukerExtension extends StructureNuker {
         ) {
             this.room.transport.addTask({
                 type: TransportTaskType.FillNuker,
-                to: this.id,
-                res: [{ resType, amount: Math.min(amount, total) }]
+                requests: [{ resType, amount: Math.min(amount, total), to: this.id }]
             })
         }
 

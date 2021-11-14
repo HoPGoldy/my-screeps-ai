@@ -83,11 +83,11 @@ export default class RoomTransport extends TaskController<string | number, Trans
     public requireFinishTask(task: TransportTaskData, reason: TaskFinishReason) {
         if (reason === TaskFinishReason.Complete) this.removeTaskByKey(task.key)
         else if (reason === TaskFinishReason.CantFindSource) {
-            this.log.error(`找不到来源目标 ${JSON.stringify(task.from)}，任务已移除`)
+            this.log.error(`找不到资源来源，任务已移除。任务详情：${JSON.stringify(task)}`)
             this.removeTaskByKey(task.key)
         }
         else if (reason === TaskFinishReason.CantFindTarget) {
-            this.log.error(`找不到存放目标 ${JSON.stringify(task.to)}，任务已移除`)
+            this.log.error(`找不到存放目标，任务已移除。任务详情：${JSON.stringify(task)}`)
             this.removeTaskByKey(task.key)
         }
         else if (reason === TaskFinishReason.NotEnoughResource) {
@@ -98,17 +98,17 @@ export default class RoomTransport extends TaskController<string | number, Trans
 
             // 找到所有已经完成工作的爬
             const slackoffManagers = relatedManagers.filter(([creep, info]) => {
-                const { carry } = info.data
-                if (carry?.length <= 0) return true
+                const { carrying } = info.data
+                if (carrying?.length <= 0) return true
 
                 // 身上还有资源，说明还在运输，这个爬应该继续执行任务
-                const stillWorking = carry.find(carryRes => creep.store[carryRes] > 0)
+                const stillWorking = carrying.find(carryIndex => creep.store[task.requests[carryIndex].resType] > 0)
                 return !stillWorking
             })
 
             // 所有爬手里的活都完成了，结束整个任务
             if (relatedManagers.length === slackoffManagers.length) {
-                this.log.error(`部分资源数量不足 ${JSON.stringify(task.res)}，任务已移除`)
+                this.log.error(`部分资源数量不足，任务已移除。任务详情：${JSON.stringify(task)}`)
                 this.removeTaskByKey(task.key)
                 return
             }

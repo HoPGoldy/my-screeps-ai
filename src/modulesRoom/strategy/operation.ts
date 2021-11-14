@@ -77,7 +77,7 @@ export class OperationStrategy {
         }
         else {
             // 暂时停止升级计划
-            this.room.work.removeTask(WorkTaskType.Upgrade)
+            this.room.work.removeTaskByType(WorkTaskType.Upgrade)
             delayQueue.addDelayTask(DelayTaskType.SpawnUpgrader, { roomName: this.room.name }, 10000)
         }
     }

@@ -25,7 +25,8 @@ type StructureWithStore =
     StructurePowerSpawn |
     StructureLink |
     StructureTerminal |
-    StructureNuker
+    StructureNuker |
+    StructureLab
 
 /**
  * 所有包含 id 字段的游戏对象

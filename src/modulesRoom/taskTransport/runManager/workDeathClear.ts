@@ -23,7 +23,7 @@ export const onDeathClear = (context: TransportWorkContext) => {
         // 转移资源
         manager.goTo(target.pos)
         manager.transfer(target, resourceType as ResourceConstant)
-        
+
         return false
     }
 }

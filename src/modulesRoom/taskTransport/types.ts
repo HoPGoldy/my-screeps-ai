@@ -98,13 +98,9 @@ export type TransportRequestData = TransportRequests & {
  */
 export enum ManagerState {
     /**
-     * 临死之前处理后事
-     */
-    DeathClear = 1,
-    /**
      * 清理身上的无用资源
      */
-    ClearRemains,
+    ClearRemains = 1,
     /**
      * 获取要搬运的资源
      */
@@ -112,7 +108,11 @@ export enum ManagerState {
     /**
      * 将资源搬运到目标
      */
-    PutResource
+    PutResource,
+    /**
+     * 临死之前处理后事
+     */
+    DeathClear,
 }
 
 /**
@@ -129,9 +129,9 @@ export interface ManagerData {
      */
     state: ManagerState
     /**
-     * 当前携带的任务资源
+     * 当前正在处理的运输请求 index
      */
-    carry: ResourceConstant[]
+    carrying: number[]
 }
 
 /**
@@ -154,4 +154,19 @@ export enum TaskFinishReason {
      * 没有找到要搬运到的目标
      */
     CantFindTarget
+}
+
+export type DestinationTarget = Creep | StructureWithStore | PowerCreep
+
+export interface GetTargetReturn<T = DestinationTarget> {
+    /**
+     * 目标
+     * 如果任务指定的目标是一个位置的话，这个值会是 undefined
+     */
+    target: T | undefined
+    /**
+     * 目标位置
+     * 这个值为空说明运输任务找不到目标或者任务完成了
+     */
+    pos: RoomPosition
 }

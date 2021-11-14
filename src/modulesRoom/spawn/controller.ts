@@ -145,8 +145,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
                 this.room.transport.updateTask({
                     type: TransportTaskType.FillExtension,
                     priority: 10,
-                    to: [STRUCTURE_SPAWN, STRUCTURE_EXTENSION],
-                    res: [{ resType: RESOURCE_ENERGY }]
+                    requests: [{ resType: RESOURCE_ENERGY, to: [STRUCTURE_SPAWN, STRUCTURE_EXTENSION] }]
                 }, { dispath: true })
 
                 if (
