@@ -167,7 +167,7 @@ export const useCache = function <T extends ObjectWithId>(initValue: () => T, ca
 
     // 如果有缓存了，就读取缓存
     if (cacheId) {
-        target = Game.getObjectById(cacheId)
+        target = Game.getObjectById<T>(cacheId)
         if (target) return target
 
         // 缓存失效了，移除缓存 id，下面会重新搜索

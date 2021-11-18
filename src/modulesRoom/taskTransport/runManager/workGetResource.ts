@@ -1,10 +1,13 @@
-import { GetTargetReturn, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
+import { findStrategy, getRoomEnergyTarget } from "@/modulesGlobal/energyUtils"
+import { useCache } from "@/utils"
+import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
 
 export const onGetResource = (context: TransportWorkContext) => {
     const { manager, managerData } = context
 
     if (manager.store.getFreeCapacity() <= 0) {
         managerData.state = ManagerState.PutResource
+        delete managerData.cacheSourceId
         return
     }
 
@@ -13,6 +16,7 @@ export const onGetResource = (context: TransportWorkContext) => {
     // 找不到就说明完成了或者自己拿到了最后一批，切换模式
     if (!processingRequest) {
         managerData.state = ManagerState.PutResource
+        delete managerData.cacheSourceId
         return
     }
 
@@ -50,8 +54,8 @@ const getProcessingRequest = function (context: TransportWorkContext) {
     return targetRes ? targetRes : otherUnfinishRequest
 }
 
-const getTarget = function (request: TransportRequestData, context: TransportWorkContext): GetTargetReturn<StructureWithStore> {
-    const { workRoom, requireFinishTask } = context
+const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo<StructureWithStore> {
+    const { manager, managerData, workRoom, requireFinishTask } = context
     let target: StructureWithStore
     let targetPos: RoomPosition
 
@@ -62,26 +66,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 
         // 如果是能量就特判一下，因为能量可以从启动 container 里取到
         if (!targetPos && request.resType === RESOURCE_ENERGY) {
-            for (const source of workRoom.source) {
-                const { pos, energy } = source.getDroppedInfo()
-                console.log('pos, energy', pos, energy?.amount)
-                if (energy?.amount > 0) {
-                    targetPos = pos
-                    break
-                }
-                const energyContainer = source.getContainer()
-                console.log('energyContainer.store[RESOURCE_ENERGY]', energyContainer.store[RESOURCE_ENERGY])
-
-                if (energyContainer.store[RESOURCE_ENERGY] > 0) {
-                    target = energyContainer
-                    targetPos = energyContainer.pos
-                    break
-                }
-            }
-        }
-        if (!targetPos) {
-            requireFinishTask(TaskFinishReason.CantFindSource)
-            return
+            return getEnergyStore(manager, workRoom, managerData)
         }
     }
     // 来源是个位置
@@ -102,7 +87,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 }
 
 const withdrawResource = function (
-    destination: GetTargetReturn<StructureWithStore>,
+    destination: MoveTargetInfo<StructureWithStore>,
     request: TransportRequestData,
     context: TransportWorkContext
 ) {
@@ -127,6 +112,7 @@ const withdrawResource = function (
             // 此时 withdraw 动作还没有真正执行，这里模拟判断一下会不会拿满，可以节省一 tick
             if (manager.store.getFreeCapacity() - withdrawAmount <= 0) {
                 managerData.state = ManagerState.PutResource
+                delete managerData.cacheSourceId
                 return
             }
         }
@@ -141,9 +127,11 @@ const withdrawResource = function (
     // 拿不下了就运过去
     else if (operationResult === ERR_FULL) {
         managerData.state = ManagerState.PutResource
+        delete managerData.cacheSourceId
         return
     }
     else if (operationResult === ERR_NOT_ENOUGH_RESOURCES) {
+        if (request.keep) return
         requireFinishTask(TaskFinishReason.NotEnoughResource)
         manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(request)}`)
     }
@@ -159,4 +147,23 @@ const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
     // 没有指定数里，能拿多少拿多少
     if (res.amount == undefined) return manager.store.getFreeCapacity()
     return Math.max(res.amount - (res.arrivedAmount + manager.store[res.resType] || 0), 0)
+}
+
+/**
+ * 搬运工去房间内获取能量
+ */
+const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: ManagerData): MoveTargetInfo<StructureWithStore> {
+    // 从工作房间查询并缓存能量来源
+    const source = useCache(() => {
+        return getRoomEnergyTarget(workRoom, findStrategy.getClosestTo(manager.pos))
+    }, managerData, 'cacheSourceId')
+
+    // 没有能量，先移动到 source 附件待命
+    if (!source) {
+        delete managerData.cacheSourceId
+        return { pos: workRoom.source[0].pos }
+    }
+
+    const moveTarget = source instanceof Structure ? source : undefined
+    return { target: moveTarget, pos: source.pos }
 }

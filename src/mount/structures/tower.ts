@@ -289,7 +289,7 @@ export default class TowerExtension extends StructureTower {
             this.room.transport.addTask({
                 type: TransportTaskType.FillTower,
                 priority: 9,
-                requests: [{ resType: RESOURCE_ENERGY, to: [STRUCTURE_TOWER] }]
+                requests: [{ resType: RESOURCE_ENERGY, to: [STRUCTURE_TOWER], keep: true }]
             })
         }
     }

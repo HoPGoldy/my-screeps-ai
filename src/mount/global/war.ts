@@ -135,7 +135,8 @@ const warModule = createWarController({
             priority: 10,
             requests: [{
                 resType: RESOURCE_ENERGY,
-                to: [STRUCTURE_EXTENSION, STRUCTURE_SPAWN]
+                to: [STRUCTURE_EXTENSION, STRUCTURE_SPAWN],
+                keep: true
             }]
         }, { dispath: true })
     },

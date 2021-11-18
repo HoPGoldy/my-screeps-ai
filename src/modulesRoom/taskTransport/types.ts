@@ -67,10 +67,10 @@ interface TransportRequests {
      * 支持 id 和位置
      */
     from?: Id<StructureWithStore> | [number, number, string]
-     /**
-      * 资源搬运到哪里
-      * 支持 id、位置、建筑常量
-      */
+    /**
+     * 资源搬运到哪里
+     * 支持 id、位置、建筑常量
+     */
     to?: Id<StructureWithStore | Creep | PowerCreep> | StructureConstant[] | [number, number, string]
     /**
      * 要转移的资源类型
@@ -80,6 +80,12 @@ interface TransportRequests {
      * 要转移的数量，不填的话将会把目标填满或者把来源掏空
      */
     amount?: number
+    /**
+     * 当资源不足导致无法进行任务时，是否继续等待
+     * @danger 置为 true 时将不会在资源不足时主动关闭任务，这会导致有搬运工一直卡在这个任务上
+     * 请确保任务所需资源会尽快补足
+     */
+    keep?: boolean
 }
 
 export type TransportRequestData = TransportRequests & {
@@ -132,6 +138,14 @@ export interface ManagerData {
      * 当前正在处理的运输请求 index
      */
     carrying: number[]
+    /**
+     * 缓存的来源 id
+     */
+    cacheSourceId: Id<StructureWithStore | Resource>
+    /**
+     * 缓存的目标 id
+     */
+    cacheTargetId: Id<StructureWithStore>
 }
 
 /**
@@ -158,12 +172,12 @@ export enum TaskFinishReason {
 
 export type DestinationTarget = Creep | StructureWithStore | PowerCreep
 
-export interface GetTargetReturn<T = DestinationTarget> {
+export interface MoveTargetInfo<T = DestinationTarget> {
     /**
      * 目标
      * 如果任务指定的目标是一个位置的话，这个值会是 undefined
      */
-    target: T | undefined
+    target?: T | undefined
     /**
      * 目标位置
      * 这个值为空说明运输任务找不到目标或者任务完成了

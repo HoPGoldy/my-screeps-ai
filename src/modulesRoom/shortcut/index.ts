@@ -185,7 +185,7 @@ const getStructureWithMemory = function <TargetStructure extends RoomObject>(
     if (!room.memory[memoryKey]) return undefined
     
     // 从 id 获取建筑并缓存
-    const target: TargetStructure = Game.getObjectById(room.memory[memoryKey])
+    const target = Game.getObjectById<TargetStructure>(room.memory[memoryKey])
 
     // 如果保存的 id 失效的话，就移除缓存
     if (!target) {

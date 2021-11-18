@@ -1,10 +1,11 @@
-import { DestinationTarget, GetTargetReturn, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
+import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
 
 export const onPutResource = (context: TransportWorkContext) => {
     const { manager, managerData } = context
 
     if (manager.store.getCapacity() <= 0) {
         managerData.state = ManagerState.PutResource
+        delete managerData.cacheTargetId
         return
     }
 
@@ -33,7 +34,7 @@ export const onPutResource = (context: TransportWorkContext) => {
     transferResource(destination.target, processingRequest, transferAmount, manager)
 }
 
-const getTarget = function (request: TransportRequestData, context: TransportWorkContext): GetTargetReturn {
+const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo {
     const { taskData, workRoom, requireFinishTask, manager } = context
     let target: Creep | StructureWithStore | PowerCreep
     let pos: RoomPosition
@@ -104,7 +105,10 @@ const getProcessingRequest = function (context: TransportWorkContext) {
     if (!targetRes) {
         const allFinished = taskData.requests.every(res => (res.arrivedAmount || 0) <= res.amount)
 
-        if (!allFinished) managerData.state = ManagerState.GetResource
+        if (!allFinished) {
+            managerData.state = ManagerState.GetResource
+            delete managerData.cacheTargetId
+        }
         else requireFinishTask(TaskFinishReason.Complete)
         
         return
