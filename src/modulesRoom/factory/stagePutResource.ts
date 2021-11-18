@@ -1,5 +1,5 @@
 import { setRoomStats } from "@/modulesGlobal/stats"
-import { CenterStructure } from "../taskCenter/types"
+import { TransportTaskType } from '../taskTransport/types'
 import FactoryBase from "./base"
 import { FactoryState } from "./constant"
 
@@ -13,26 +13,26 @@ export default class StagePutResource extends FactoryBase {
     }
 
     public run(): void {
-        if (Game.time % 5 || this.room.centerTransport.hasTask(STRUCTURE_FACTORY)) return 
+        if (Game.time % 5 || this.room.transport.hasTaskWithType(TransportTaskType.FactoryPutResource)) return 
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
         if (!task) return this.setState(FactoryState.Prepare)
 
         // 把所有东西都搬出去，保持工厂存储净空
-        for (const resType in this.factory.store) {
+        const requests = Object.keys(this.factory.store).map((resType: ResourceConstant) => {
             // 是目标产物的话就更新统计信息
-            if (resType === task.target) this.updateStats(resType as ResourceConstant)
+            if (resType === task.target) this.updateStats(resType)
 
-            // 资源不足，发布任务
-            const target = resType === RESOURCE_ENERGY ? CenterStructure.Storage : CenterStructure.Terminal
-            this.room.centerTransport.send(
-                CenterStructure.Factory,
-                target,
-                resType as ResourceConstant,
-                this.factory.store[resType]
-            )
+            const target = resType === RESOURCE_ENERGY ? this.room.storage : this.room.terminal
+            return { from: this.factory.id, to: target.id, resType, amount: this.factory.store[resType] }
+        })
 
+        if (requests.length > 0) {
+            this.room.transport.addTask({
+                type: TransportTaskType.FactoryPutResource,
+                requests
+            })
             return
         }
 

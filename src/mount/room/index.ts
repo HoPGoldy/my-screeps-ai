@@ -5,7 +5,6 @@ import { createGetter } from '@/utils'
 import {
     mountShortcut,
     RoomShareController,
-    RoomCenterTaskController,
     RoomTransportTaskController,
     RoomWorkTaskController,
     RoomSpawnController,
@@ -46,7 +45,6 @@ export default () => {
     // 等待安装的房间插件列表
     const plugins: [ string, AnyRoomPlugin ][] = [
         [ 'share', RoomShareController ],
-        [ 'centerTransport', RoomCenterTaskController ],
         [ 'transport', RoomTransportTaskController ],
         [ 'work', RoomWorkTaskController ],
         [ 'spawner', RoomSpawnController ],
@@ -95,10 +93,6 @@ declare global {
          * 物流任务模块
          */
         transport: RoomTransportTaskController
-        /**
-         * 中央物流任务模块
-         */
-        centerTransport: RoomCenterTaskController
         /**
          * 孵化控制模块
          */

@@ -1,4 +1,4 @@
-import { CenterStructure } from "../taskCenter/types"
+import { TransportTaskType } from '../taskTransport/types'
 import FactoryBase from "./base"
 import { ENERGY_LIMIT, FactoryState } from "./constant"
 
@@ -12,7 +12,7 @@ export default class StageGetResource extends FactoryBase {
     }
 
     public run(): void {
-        if (Game.time % 5 || this.room.centerTransport.hasTask(STRUCTURE_FACTORY)) return 
+        if (Game.time % 5 || this.room.transport.hasTaskWithType(TransportTaskType.FactoryGetResource)) return 
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
@@ -31,8 +31,6 @@ export default class StageGetResource extends FactoryBase {
             // 一次只发布一个搬运任务
             return
         }
-
-        
 
         // 能到这里说明底物都已转移完毕
         this.setState(FactoryState.Working)
@@ -60,11 +58,10 @@ export default class StageGetResource extends FactoryBase {
         else if (!this.hasEnoughEnergy()) return
 
         // 请求资源
-        this.room.centerTransport.send(
-            source.structureType as CenterStructure,
-            CenterStructure.Factory,
-            resType, amount
-        )
+        this.room.transport.addTask({
+            type: TransportTaskType.FactoryGetResource,
+            requests: [{ from: source.id, to: this.factory.id, resType, amount }]
+        })
     }
 
     /**

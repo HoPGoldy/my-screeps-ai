@@ -1,5 +1,5 @@
 import { createHelp } from '@/modulesGlobal/console'
-import { CenterStructure } from '@/modulesRoom/taskCenter/types'
+import { TransportTaskType } from '@/modulesRoom'
 
 /**
  * 中央 link 中能量大于该值时才会发送给 upgrade link
@@ -70,10 +70,6 @@ export class LinkExtension extends StructureLink {
     public asCenter(): string {
         this.clearRegister()
         this.room.memory.centerLinkId = this.id
-
-        // 注册中央 link 的同时发布 processor
-        this.room.spawner.release.processor()
-
         return `${this} 已注册为中央 link，发布 processor 并调整采集单位`
     }
 
@@ -122,17 +118,9 @@ export class LinkExtension extends StructureLink {
          */
         if (this.room.controller.level < 7) this.destroy()
 
-        let sourceType: CenterStructure
-        // 优先用 terminal 里的能量
-        if (this.room.terminal?.store[RESOURCE_ENERGY] > LINK_CAPACITY) {
-            sourceType = CenterStructure.Terminal
-        }
-        // terminal 不能作为能量来源的话就用 storage 里的能量
-        if (!sourceType && this.room.storage?.store[RESOURCE_ENERGY] > LINK_CAPACITY) {
-            sourceType = CenterStructure.Storage
-        }
-        // 实在找不到目标了，放弃治疗
-        if (!sourceType) return
+        const sourceStructure = this.room.myStorage.getResourcePlace(RESOURCE_ENERGY)
+        // 找不到目标了，放弃治疗
+        if (!sourceStructure) return
 
         // 自己和 centerLink 的容量中找最小值
         const amount = Math.min(
@@ -141,7 +129,17 @@ export class LinkExtension extends StructureLink {
         )
 
         // 给 centerLink 填能量
-        this.room.centerTransport.send(sourceType, CenterStructure.Link, RESOURCE_ENERGY, amount, 'upgradeLink')
+        if (!this.room.transport.hasTaskWithType(TransportTaskType.CenterLink)) {
+            this.room.transport.addTask({
+                type: TransportTaskType.CenterLink,
+                requests: [{
+                    from: sourceStructure.id,
+                    to: this.room.centerLink.id,
+                    amount,
+                    resType: RESOURCE_ENERGY
+                }]
+            })
+        }
     }
 
     /**
@@ -159,11 +157,17 @@ export class LinkExtension extends StructureLink {
         // 之前发的转移任务没有处理好的话就先挂机
         if (!this.room.storage) return
 
-        this.room.centerTransport.send(
-            CenterStructure.Link, CenterStructure.Storage,
-            RESOURCE_ENERGY, this.store[RESOURCE_ENERGY],
-            CenterStructure.Link
-        )
+        if (!this.room.transport.hasTaskWithType(TransportTaskType.CenterLink)) {
+            this.room.transport.addTask({
+                type: TransportTaskType.CenterLink,
+                requests: [{
+                    from: this.id,
+                    to: this.room.storage.id,
+                    amount: this.store[RESOURCE_ENERGY],
+                    resType: RESOURCE_ENERGY
+                }]
+            })
+        }
     }
 
     /**

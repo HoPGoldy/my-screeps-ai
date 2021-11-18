@@ -165,23 +165,6 @@ export default class RoomCreepRelease {
     }
 
     /**
-     * 发布中央运输单位
-     */
-    public processor(): OK | ERR_NOT_FOUND {
-        const { room } = this.spawner
-        if (!room.memory.center) return ERR_NOT_FOUND
-
-        const [ x, y ] = room.memory.center 
-        this.spawner.addTask(
-            GetName.processor(room.name),
-            CreepRole.Processor,
-            { x, y }
-        )
-
-        return OK
-    }
-
-    /**
      * 发布外矿采集单位
      * 
      * @param remoteRoomName 要发布 creep 的外矿房间

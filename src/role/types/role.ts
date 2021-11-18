@@ -25,7 +25,6 @@ export enum CreepRole {
     Harvester = 'harvester',
     Worker = 'worker',
     Manager = 'manager',
-    Processor = 'processor',
     Miner = 'miner',
     Claimer = 'claimer',
     Reserver = 'reserver',
@@ -77,7 +76,6 @@ export interface RoleDatas {
     }
     [CreepRole.Worker]: WorkerData
     [CreepRole.Manager]: transporterData
-    [CreepRole.Processor]: ProcessorData
     [CreepRole.Miner]: WorkerData
 
     /**
@@ -209,15 +207,6 @@ interface transporterData {
      * 例如一个外矿搬运者需要知道自己的老家在哪里
      */
     workRoom: string
-}
-
-/**
- * 中央运输者的 data 
- * x y 为其在房间中的固定位置
- */
-interface ProcessorData {
-    x: number
-    y: number
 }
 
 /**

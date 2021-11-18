@@ -6,11 +6,10 @@
 
 import { createHelp, red, yellow, colorful } from '@/modulesGlobal/console'
 import { DEFAULT_FLAG_NAME, ROOM_REMOVE_INTERVAL } from '@/setting'
-import { getName } from '@/utils'
+import { getName, getUniqueKey } from '@/utils'
 import RoomExtension from './extension'
 import { manageStructure, clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
 import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
-import { CenterStructure } from '@/modulesRoom/taskCenter/types'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { CreepRole } from '@/role/types/role'
@@ -35,38 +34,16 @@ export default class RoomConsole extends RoomExtension {
     }
 
     /**
-     * 用户操作：addCenterTask - 添加中央运输任务
-     * 
-     * @param targetId 资源存放建筑类型
-     * @param sourceId 资源来源建筑类型
-     * @param resourceType 要转移的资源类型
-     * @param amount 资源数量
-     */
-    public ctadd(target: CenterStructure, source: CenterStructure, resourceType: ResourceConstant, amount: number): string {
-        const addResult = this.centerTransport.addTask({
-            submit: this.memory.centerTasks.length + new Date().getTime(),
-            target,
-            source,
-            resourceType,
-            amount
-        })
-        return `已向 ${this.name} 中央任务队列推送任务，当前排队位置: ${addResult}`
-    }
-
-    /**
      * 用户操作：将能量从 storage 转移至 terminal 里
      * 
      * @param amount 要转移的能量数量, 默认 100k
      */
     public pute(amount: number = 100000): string {
-        const addResult = this.centerTransport.addTask({
-            submit: this.centerTransport.tasks.length,
-            target: CenterStructure.Terminal,
-            source: CenterStructure.Storage,
-            resourceType: RESOURCE_ENERGY,
-            amount
+        const addResult = this.transport.addTask({
+            type: getUniqueKey(),
+            requests: [{ from: this.storage.id, to: this.terminal.id, resType: RESOURCE_ENERGY, amount }]
         })
-        return `已向 ${this.name} 中央任务队列推送能量转移任务，storage > terminal, 数量 ${amount}，当前排队位置: ${addResult}`
+        return `已向 ${this.name} 物流推送能量转移任务，storage > terminal, 数量 ${amount}，当前排队位置: ${addResult}`
     }
 
     /**
@@ -78,14 +55,11 @@ export default class RoomConsole extends RoomExtension {
         if (!this.terminal) return `未找到 ${this.name} 中的终端`
         if (amount === null) amount = this.terminal.store[RESOURCE_ENERGY]
         
-        const addResult = this.centerTransport.addTask({
-            submit: this.centerTransport.tasks.length,
-            target: CenterStructure.Storage,
-            source: CenterStructure.Terminal,
-            resourceType: RESOURCE_ENERGY,
-            amount
+        const addResult = this.transport.addTask({
+            type: getUniqueKey(),
+            requests: [{ from: this.terminal.id, to: this.storage.id, resType: RESOURCE_ENERGY, amount }]
         })
-        return `已向 ${this.name} 中央任务队列推送能量转移任务，terminal > storage, 数量 ${amount}，当前排队位置: ${addResult}`
+        return `已向 ${this.name} 物流推送能量转移任务，terminal > storage, 数量 ${amount}，当前排队位置: ${addResult}`
     }
 
     /**

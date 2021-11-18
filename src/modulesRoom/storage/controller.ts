@@ -1,6 +1,6 @@
 import { crossMerge } from '@/utils'
+import { TransportTaskType } from '../taskTransport/types'
 import RoomAccessor from '../RoomAccessor'
-import { CenterStructure } from '../taskCenter/types'
 import { BALANCE_CONFIG, DEFAULT_BALANCE_LIMIT, ENERGY_REQUEST_LIMIT, ENERGY_SHARE_LIMIT } from './constant'
 import { BalanceDirection, BalanceResult, ResourceAmount } from './types'
 
@@ -151,12 +151,18 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 按照平衡策略生成对应的中央物流任务
      */
-    private generateCenterTask(tasks: BalanceResult[]): number[] {
-        return tasks.map((task, index) => {
+    private generateCenterTask(tasks: BalanceResult[]) {
+        const requests = tasks.map((task, index) => {
             const { to, from } = task.direction === BalanceDirection.ToStorage ?
-                { to: CenterStructure.Storage, from: CenterStructure.Terminal } :
-                { to: CenterStructure.Terminal, from: CenterStructure.Storage }
-            return this.room.centerTransport.send(from, to, task.resourceType, task.amount, 'balanceTask' + index)
+                { to: this.storage.id, from: this.terminal.id } :
+                { to: this.terminal.id, from: this.storage.id }
+            return { to, from, resType: task.resourceType, amount: task.amount }
+        })
+
+        this.room.transport.removeTaskByType(TransportTaskType.StorageBlance)
+        this.room.transport.addTask({
+            type: TransportTaskType.StorageBlance,
+            requests
         })
     }
 

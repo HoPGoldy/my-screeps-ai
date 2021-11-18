@@ -8,7 +8,7 @@ class CreepMock {
     hits: number = 100
     hitsMax: number = 100
     id: Id<this> = `${new Date().getTime()}${Math.random()}` as Id<this>
-    memory: CreepMemory = { role: 'harvester' , working: false, spawnRoom: 'W1N1' }
+    memory = { role: 'harvester', working: false, spawnRoom: 'W1N1' } as CreepMemory
     my: boolean = true
     name: string = `creep${this.id}`
     owner: Owner = { username: 'hopgoldy' }

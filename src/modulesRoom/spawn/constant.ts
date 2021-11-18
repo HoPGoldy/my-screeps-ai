@@ -2,7 +2,7 @@ import { CreepRole, RoleCreepMemory } from "@/role/types/role"
 import { RoomBaseUnitLimit } from "./types"
 
 // 用于维持房间能量正常运转的重要角色
-export const importantRoles: CreepRole[] = [ CreepRole.Harvester, CreepRole.Manager, CreepRole.Processor ]
+export const importantRoles: CreepRole[] = [ CreepRole.Harvester, CreepRole.Manager ]
 
 // creep 的默认内存
 export const creepDefaultMemory: RoleCreepMemory<CreepRole.Worker> = {

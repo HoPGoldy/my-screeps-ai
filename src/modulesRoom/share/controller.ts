@@ -1,6 +1,6 @@
+import { TransportTaskType } from '../taskTransport/types'
 import RoomAccessor from '../RoomAccessor'
 import { ENERGY_SHARE_LIMIT } from '../storage/constant'
-import { CenterStructure } from '../taskCenter/types'
 import { RoomShareTask, ResourceSourceMap } from './types'
 import { getSendAmount } from './utils'
 
@@ -157,18 +157,20 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         target: string,
         terminal: StructureTerminal
     ) {
+        if (terminal.room.transport.hasTaskWithType(TransportTaskType.ShareGetResource)) return
+
+        // 是否需要转移能量进来
         // 如果要转移能量就需要对路费进行针对检查
-        const costCondition = (resourceType === RESOURCE_ENERGY) ?
+        const needGetEnergy = (resourceType === RESOURCE_ENERGY) ?
             terminal.store[RESOURCE_ENERGY] - sendAmount < cost :
             terminal.store[RESOURCE_ENERGY] < cost
 
         // 如果路费不够的话就继续等
-        if (costCondition) {
-            terminal.room.centerTransport.send(
-                CenterStructure.Storage,
-                CenterStructure.Terminal,
-                RESOURCE_ENERGY, cost, 'share'
-            )
+        if (needGetEnergy) {
+            terminal.room.transport.addTask({
+                type: TransportTaskType.ShareGetResource,
+                requests: [{ from: terminal.room.storage.id, to: terminal.id, resType: RESOURCE_ENERGY, amount: cost }]
+            })
             return
         }
 
@@ -191,28 +193,29 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
      * terminal 里的资源不足，执行资源获取
      */
     private getShareResource(
-        resourceType: ResourceConstant,
+        resType: ResourceConstant,
         sendAmount: number,
         target: string,
         terminal: StructureTerminal
     ) {
-        const { total } = terminal.room.myStorage.getResource(resourceType)
+        if (terminal.room.transport.hasTaskWithType(TransportTaskType.ShareGetResource)) return
+
+        const { total } = terminal.room.myStorage.getResource(resType)
         if (total < sendAmount) {
             this.log.normal(
-                `由于 ${resourceType} 资源不足 ${terminal.store[resourceType] || 0}/${sendAmount}` +
+                `由于 ${resType} 资源不足 ${terminal.store[resType] || 0}/${sendAmount}` +
                 `${target} 的共享任务已被移除`
             )
             this.memory = undefined
             return
         }
 
-        const getAmount = sendAmount - terminal.store[resourceType]
+        const amount = sendAmount - terminal.store[resType]
 
-        terminal.room.centerTransport.send(
-            CenterStructure.Storage,
-            CenterStructure.Terminal,
-            resourceType, getAmount, 'share'
-        )
+        terminal.room.transport.addTask({
+            type: TransportTaskType.ShareGetResource,
+            requests: [{ from: terminal.room.storage.id, to: terminal.id, resType, amount }]
+        })
     }
 
     /**

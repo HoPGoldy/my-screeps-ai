@@ -5,7 +5,7 @@ import { BASE_MINERAL } from '@/setting'
 import RoomAccessor from '../RoomAccessor'
 import { getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask, unstringifyTask } from './utils'
 import { Color, colorful } from '@/modulesGlobal'
-import { CenterStructure } from '../taskCenter/types'
+import { TransportTaskType } from '../taskTransport/types'
 
 /**
  * Terminal 控制器
@@ -72,12 +72,18 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         const targetAmount = Math.min(store[targetRes], MAX_DROP_AMOUNT)
 
         this.log.normal(`剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
-        this.room.centerTransport.send(
-            CenterStructure.Terminal,
-            CenterStructure.Drop,
-            targetRes, targetAmount,
-            CenterStructure.Drop
-        )
+        if (!this.room.transport.hasTaskWithType(TransportTaskType.Terminal)) {
+            const { x, y, roomName } = this.terminal.pos.getFreeSpace()?.[0] || {}
+            this.room.transport.addTask({
+                type: TransportTaskType.Terminal,
+                requests: [{
+                    from: this.terminal.id,
+                    to: [x, y, roomName],
+                    resType: targetRes,
+                    amount: targetAmount
+                }]
+            })
+        }
     }
 
     /**
@@ -163,13 +169,15 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
      */
     public energyCheck(): void {
         if (this.terminal.store[RESOURCE_ENERGY] >= 30000) {
-            this.room.centerTransport.send(
-                CenterStructure.Terminal,
-                CenterStructure.Storage,
-                RESOURCE_ENERGY,
-                this.terminal.store[RESOURCE_ENERGY],
-                CenterStructure.Terminal
-            )
+            this.room.transport.addTask({
+                type: TransportTaskType.Terminal,
+                requests: [{
+                    from: this.terminal.id,
+                    to: this.room.storage.id,
+                    resType: RESOURCE_ENERGY,
+                    amount: this.terminal.store[RESOURCE_ENERGY] - 1000
+                }]
+            })
         }
     }
 
@@ -199,8 +207,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         const cost = Game.market.calcTransactionCost(amount, this.room.name, targetOrder.roomName)
         // 如果路费不够的话就继续等
         if (this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
-            if (this.getEnergy(cost) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 继续处理订单时路费, ${cost}`)
-            // this.getEnergy(cost)
+            this.getEnergy(cost)
             return false
         }
 
@@ -357,8 +364,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         const cost = Game.market.calcTransactionCost(Math.min(amount, targetOrder.amount), this.room.name, targetOrder.roomName)
         // 如果路费不够的话就问 sotrage 要
         if (this.terminal.store.getUsedCapacity(RESOURCE_ENERGY) < cost) {
-            if (this.getEnergy(cost) == -2) Game.notify(`[${this.room.name}] 终端中央物流添加失败 —— 拍单时等待路费, ${cost}`)
-            // this.getEnergy(cost)
+            this.getEnergy(cost)
         }
     }
 
@@ -395,15 +401,18 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
      * 从 storage 获取能量
      * @param amount 需要能量的数量
      */
-    public getEnergy(amount: number): number {
-        // 添加时会自动判断有没有对应的建筑，不会重复添加
-        return this.room.centerTransport.addTask({
-            submit: CenterStructure.Terminal,
-            source: CenterStructure.Storage,
-            target: CenterStructure.Terminal,
-            resourceType: RESOURCE_ENERGY,
-            amount
-        })
+    public getEnergy(amount: number) {
+        if (!this.room.transport.hasTaskWithType(TransportTaskType.Terminal)) {
+            this.room.transport.addTask({
+                type: TransportTaskType.Terminal,
+                requests: [{
+                    from: this.room.storage.id,
+                    to: this.terminal.id,
+                    resType: RESOURCE_ENERGY,
+                    amount
+                }]
+            })
+        }
     }
 
     /**

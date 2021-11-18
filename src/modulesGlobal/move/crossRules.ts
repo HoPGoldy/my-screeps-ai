@@ -41,9 +41,6 @@ const crossRules: CrossRules = {
     // （采集能量都在 source 阶段，也就是 ↓ working 为 false 的时候）
     [CreepRole.Harvester]: noCrossWithWorking,
 
-    // 中央处理单位在携带有资源时不允许对穿
-    [CreepRole.Processor]: noCrossWithWorking,
-
     // pb 治疗单位正在治疗时不允许其他治疗单位对穿
     [CreepRole.PbHealer]: (creep, requireCreep) => {
         if (creep.memory.role !== requireCreep.memory.role) return true

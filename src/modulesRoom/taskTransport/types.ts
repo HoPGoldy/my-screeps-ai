@@ -20,6 +20,12 @@ export enum TransportTaskType {
     LabIn,
     LabOut,
     LabGetEnergy,
+    FactoryGetResource,
+    FactoryPutResource,
+    ShareGetResource,
+    StorageBlance,
+    Terminal,
+    CenterLink
 }
 
 /**
