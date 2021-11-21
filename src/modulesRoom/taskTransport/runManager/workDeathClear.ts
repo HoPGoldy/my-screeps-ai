@@ -1,9 +1,20 @@
-import { TransportWorkContext } from "../types"
+import { ManagerState, TransportWorkContext } from "../types"
+
+/**
+ * manager 触发后事处理的最小生命
+ */
+export const TRANSFER_DEATH_LIMIT = 20
 
 export const onDeathClear = (context: TransportWorkContext) => {
-    const { manager, workRoom } = context
+    const { manager, workRoom, managerData } = context
+
+    if (manager.ticksToLive > TRANSFER_DEATH_LIMIT) {
+        managerData.state = ManagerState.ClearRemains
+        return
+    }
 
     if (manager.store.getUsedCapacity() <= 0) {
+        Object.keys(managerData).forEach(key => delete managerData[key])
         manager.suicide()
         return
     }

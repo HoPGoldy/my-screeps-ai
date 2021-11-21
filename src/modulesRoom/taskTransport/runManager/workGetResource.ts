@@ -25,11 +25,7 @@ export const onGetResource = (context: TransportWorkContext) => {
     if (!destination) return
 
     // 走过去
-    const arrived = destination.target
-        ? manager.pos.isEqualTo(destination.pos)
-        : manager.pos.isNearTo(destination.pos)
-
-    if (!arrived) {
+    if (!manager.pos.isNearTo(destination.pos)) {
         manager.goTo(destination.pos, { range: destination.target ? 1 : 0 })
         return
     }
@@ -45,9 +41,10 @@ const getProcessingRequest = function (context: TransportWorkContext) {
     const targetRes = taskData.requests.find(res => {
         const unfinish = getwithdrawAmount(res, manager) > 0
         const otherProcessing = res.managerName && res.managerName !== manager.name
-
+        console.log('unfinish && otherProcessing', unfinish, otherProcessing)
         // 会同时记录下没有完成但是有其他人正在处理的请求
         if (unfinish && otherProcessing) otherUnfinishRequest = res
+        
         return unfinish
     })
 
@@ -119,9 +116,6 @@ const withdrawResource = function (
     }
 
     if (operationResult === OK) {
-        if (!managerData.carrying) managerData.carrying = []
-        const requestIndex = taskData.requests.findIndex((req => req === request))
-        managerData.carrying.push(requestIndex)
         if (!request.managerName) request.managerName = manager.name
     }
     // 拿不下了就运过去

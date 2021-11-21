@@ -1,5 +1,6 @@
 import TaskController from '../taskBase/controller'
 import { runManager } from './runManager'
+import { TRANSFER_DEATH_LIMIT } from './runManager/workDeathClear'
 import { ManagerData, ManagerState, TaskFinishReason, TransportTask, TransportTaskData } from './types'
 
 /**
@@ -17,10 +18,7 @@ const WORK_PROPORTION_TO_EXPECT = [
     { proportion: 0, expect: -2 }
 ]
 
-/**
- * manager 触发后事处理的最小生命
- */
-const TRANSFER_DEATH_LIMIT = 20
+
 
 /**
  * 期望调整的统计下限
@@ -115,6 +113,7 @@ export default class RoomTransport extends TaskController<string | number, Trans
 
             // 让所有干完活的爬和任务解绑，让其可以重新寻找其他任务
             slackoffManagers.forEach(([creep, info]) => {
+                info.data = { state: ManagerState.ClearRemains }
                 this.removeTaskUnit(this.getTask(info.doing), creep)
             })
         }

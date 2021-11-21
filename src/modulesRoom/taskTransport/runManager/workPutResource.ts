@@ -18,11 +18,7 @@ export const onPutResource = (context: TransportWorkContext) => {
     if (!destination) return
 
     // 走过去
-    const arrived = destination.target
-        ? manager.pos.isEqualTo(destination.pos)
-        : manager.pos.isNearTo(destination.pos)
-
-    if (!arrived) {
+    if (!manager.pos.isNearTo(destination.pos)) {
         manager.goTo(destination.pos, { range: destination.target ? 1 : 0 })
         return
     }
@@ -35,7 +31,7 @@ export const onPutResource = (context: TransportWorkContext) => {
 }
 
 const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo {
-    const { taskData, workRoom, requireFinishTask, manager } = context
+    const { workRoom, requireFinishTask, manager } = context
     let target: Creep | StructureWithStore | PowerCreep
     let pos: RoomPosition
 
@@ -52,7 +48,6 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
         catch (e) {
             for (const type of request.to as StructureConstant[]) {
                 const structures = workRoom[type] as StructureWithStore[]
-                console.log('structures', structures)
 
                 // 不是建筑类型、找不到建筑、不能 store 的建筑都退出
                 if (!structures || structures.length <= 0 || !('store' in structures[0])) {
@@ -60,15 +55,18 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
                     return
                 }
 
+                const needFillStructures = structures.filter(s => s.store.getFreeCapacity(request.resType) > 0)
+
                 // 找最近的
-                if (structures.length > 0) {
-                    target = manager.pos.findClosestByRange(structures)
+                if (needFillStructures.length > 0) {
+                    target = manager.pos.findClosestByRange(needFillStructures)
                     break
                 }
-            }
 
-            requireFinishTask(TaskFinishReason.Complete)
-            return
+                // 找不到，说明要填充的建筑都填满了，完成任务
+                requireFinishTask(TaskFinishReason.Complete)
+                return
+            }
         }
     }
     // 来源是个 id
@@ -87,22 +85,19 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 
 const getProcessingRequest = function (context: TransportWorkContext) {
     const { managerData, manager, taskData, requireFinishTask } = context
-    console.log('managerData', JSON.stringify(managerData))
 
     // 找到要放下的资源
-    let targetRes: TransportRequestData
-    do {
-        const checkingResIndex = managerData.carrying[0]
-        targetRes = taskData.requests[checkingResIndex]
-        if (!targetRes || manager.store[targetRes.resType] <= 0) {
-            managerData.carrying.shift()
-            continue
-        }
-        break
-    } while (managerData.carrying.length > 0)
+    let otherUnfinishRequest: TransportRequestData
+    const targetRes = taskData.requests.find(request => {
+        const hasCarrying = manager.store[request.resType]
+        const isMyRequest = request.managerName && request.managerName === manager.name
+
+        if (!isMyRequest && hasCarrying) otherUnfinishRequest = request
+        return hasCarrying
+    })
 
     // 身上的资源转移完毕，检查下是不是所有资源都完成了
-    if (!targetRes) {
+    if (!targetRes && !otherUnfinishRequest) {
         const allFinished = taskData.requests.every(res => (res.arrivedAmount || 0) <= res.amount)
 
         if (!allFinished) {
@@ -110,11 +105,10 @@ const getProcessingRequest = function (context: TransportWorkContext) {
             delete managerData.cacheTargetId
         }
         else requireFinishTask(TaskFinishReason.Complete)
-        
         return
     }
 
-    return targetRes
+    return targetRes ? targetRes : otherUnfinishRequest
 }
 
 const transferResource = function (
@@ -123,6 +117,8 @@ const transferResource = function (
     transferAmount: number,
     manager: Creep
 ) {
+    console.log('要运输多少资源', targetRes.resType, transferAmount, manager.store[targetRes.resType])
+
     let transferResult: ScreepsReturnCode
     if (!destinationTarget) {
         transferResult = manager.drop(targetRes.resType, transferAmount)
@@ -133,11 +129,12 @@ const transferResource = function (
 
     if (transferResult === OK) {
         targetRes.arrivedAmount = (targetRes.arrivedAmount || 0) + transferAmount
+        // 这一趟运完了就及时删掉名字，方便其他搬运工尽早继续处理对应的请求
         delete targetRes.managerName
     }
     else {
         manager.log(
-            `物流任务获取资源出错！${transferResult} ${destinationTarget} ` +
+            `物流任务存放资源出错！${transferResult} ${destinationTarget} ` +
             `${JSON.stringify(targetRes)} ${transferAmount}`
         )
     }

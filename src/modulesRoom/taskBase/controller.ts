@@ -311,10 +311,8 @@ export default class TaskController<
      */
     public removeTaskByKey(taskKey: number): OK | ERR_NOT_FOUND {
         // 移除任务并收集被移除的任务索引
-        const removeTaskIndex = this.tasks.findIndex(task => task.key !== taskKey)
-        console.log('移除任务！', JSON.stringify(this.memory.tasks))
+        const removeTaskIndex = this.tasks.findIndex(task => task.key === taskKey)
         this.memory.tasks.splice(removeTaskIndex, 1)
-        console.log('移除任务后！', removeTaskIndex, JSON.stringify(this.memory.tasks))
 
         // 给正在干这个活的单位重新分配任务
         this.getUnit(({ doing }) => taskKey === doing)

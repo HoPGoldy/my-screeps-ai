@@ -141,17 +141,13 @@ export interface ManagerData {
      */
     state: ManagerState
     /**
-     * 当前正在处理的运输请求 index
-     */
-    carrying: number[]
-    /**
      * 缓存的来源 id
      */
-    cacheSourceId: Id<StructureWithStore | Resource>
+    cacheSourceId?: Id<StructureWithStore | Resource>
     /**
      * 缓存的目标 id
      */
-    cacheTargetId: Id<StructureWithStore>
+    cacheTargetId?: Id<StructureWithStore>
 }
 
 /**
