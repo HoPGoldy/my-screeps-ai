@@ -1,6 +1,5 @@
 import { EnvMethods } from "@/contextTypes";
-import { RoomTileMap } from "@/utils";
-import { RoomInfo, WarState } from "../types";
+import { WarState } from "../types";
 
 /**
  * 小队成员角色

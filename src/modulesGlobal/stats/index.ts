@@ -1,3 +1,5 @@
+import { RoomStats } from "./types"
+
 /**
  * 更新指定房间的统计数据
  * 

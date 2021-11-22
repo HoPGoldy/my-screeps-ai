@@ -70,7 +70,7 @@ export default class TerminalConsole extends Room {
      * 
      * @param hard 设为 true 来移除其默认值中不包含的监听资源
      */
-    public treset(hard: boolean = false): string {
+    public treset(hard = false): string {
         this.myTerminal.resetConfig(hard);
         return `已重置，当前监听任务如下:\n${this.myTerminal.show()}`
     }
@@ -93,7 +93,7 @@ export default class TerminalConsole extends Room {
         }
         const createResult = Game.market.createOrder(orderConfig)
 
-        let returnString: string = ''
+        let returnString = ''
         // 新创建的订单下个 tick 才能看到，所以这里只能让玩家自行查看
         if (createResult === OK) returnString = `[${this.name}] ${type} 订单创建成功，使用如下命令来查询新订单:\n   JSON.stringify(_.find(Object.values(Game.market.orders),{type:'${type}',resourceType:'${resourceType}',price:${price},roomName:'${this.name}'}), null, 4)`
         else if (createResult === ERR_NOT_ENOUGH_RESOURCES) returnString = `[${this.name}] 您没有足够的 credit 来缴纳费用，当前/需要 ${Game.market.credits}/${price * totalAmount * 0.05}`

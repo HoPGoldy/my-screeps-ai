@@ -8,7 +8,7 @@ export default class TaskController<
     // 该任务模块包含的所有任务
     CostomTask extends RoomTask<TaskType>,
     // 该任务模块包含的单位自定义数据
-    UnitData extends AnyObject = {}
+    UnitData extends AnyObject = Record<string, unknown>
 > extends RoomAccessor<RoomTaskMemory<CostomTask, UnitData>> {
     /**
      * 构造 - 管理指定房间的任务
@@ -43,12 +43,12 @@ export default class TaskController<
     /**
      * 本模块的工人总生命时长
      */
-    protected totalLifeTime: number = 0
+    protected totalLifeTime = 0
 
      /**
       * 本模块的工人总工作时长
       */
-    protected totalWorkTime: number = 0
+    protected totalWorkTime = 0
 
     /**
      * 发布新任务

@@ -77,7 +77,7 @@ declare global {
  * 移除过期的 flag 内存
  */
 export const clearFlag = function (): string {
-    let logs = [ '已清理过期旗帜:' ]
+    const logs = [ '已清理过期旗帜:' ]
     for (const flagName in Memory.flags) {
         if (!Game.flags[flagName]) {
             delete Memory.flags[flagName]
@@ -129,7 +129,7 @@ export const getName = {
  * @param name 访问器的名字
  * @param getter 访问器方法
  */
-export const createGetter = function (target: AnyObject, name: string, getter: () => any) {
+export const createGetter = function (target: Record<string, unknown>, name: string, getter: () => unknown) {
     Object.defineProperty(target.prototype, name, {
         get: getter,
         enumerable: false,
@@ -161,7 +161,11 @@ export const showCost = function (cost: CostMatrix, room: Room): void {
  * @param cachePlace id 存放的对象，一般位于 xxx.memory 上
  * @param cacheKey 要缓存到的键，例如 targetId 之类的字符串
  */
-export const useCache = function <T extends ObjectWithId>(initValue: () => T, cachePlace: AnyObject, cacheKey: string): T {
+export const useCache = function <T extends ObjectWithId>(
+    initValue: () => T,
+    cachePlace: Record<string, T>,
+    cacheKey: string
+): T {
     const cacheId = cachePlace[cacheKey]
     let target: T = undefined
 
@@ -184,13 +188,13 @@ export const useCache = function <T extends ObjectWithId>(initValue: () => T, ca
 /**
  * 数组交叉合并
  */
-export const crossMerge = function<T = any> (a: T[], b: T[]): T[] {
+export const crossMerge = function<T = unknown> (a: T[], b: T[]): T[] {
     return Array.from({ length: a.length + b.length }, (_, index) => {
         return (index % 2 ? b.shift() : a.shift()) || a.shift() || b.shift()
     })
 }
 
-interface CreateCacheOptions<T extends (...args: any[]) => any> {
+interface CreateCacheOptions<T extends (...args: unknown[]) => unknown> {
     /**
      * 获取缓存的 key
      * 入参和 callback 相同，返回一个字符串或者数字，不填则使用 callback 第一个参数作为键
@@ -209,7 +213,7 @@ interface CreateCacheOptions<T extends (...args: any[]) => any> {
  * 
  * @param callback 要缓存返回值的函数
  */
-export const createCache = function <T extends (...args: any[]) => any>(
+export const createCache = function <T extends (...args: unknown[]) => unknown>(
     callback: T,
     opt: CreateCacheOptions<T> = {}
 ): [T, () => void, (key: string| number) => void] {
@@ -220,14 +224,14 @@ export const createCache = function <T extends (...args: any[]) => any>(
      */
     const get = function (...args) {
         // 找到缓存的键
-        const cacheKey = opt.getCacheKey ? opt.getCacheKey(...args as Parameters<T>) : args[0]
+        const cacheKey = opt.getCacheKey ? opt.getCacheKey(...args as Parameters<T>) : args[0] as string
         if (cacheKey in cacheStorage) {
             const cacheData = cacheStorage[cacheKey]
             // 检查一下是否可以重用这个缓存
             const keepReuse = opt.shouldReuse ? opt.shouldReuse(cacheData, ...args as Parameters<T>) : true
             if (keepReuse) return cacheStorage[cacheKey]
         }
-        return cacheStorage[cacheKey] = callback(...args as Parameters<T>)
+        return cacheStorage[cacheKey] = callback(...args) as ReturnType<T>
     } as T
 
     /**

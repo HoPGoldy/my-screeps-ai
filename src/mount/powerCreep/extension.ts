@@ -22,7 +22,7 @@ export default class PowerCreepExtension extends PowerCreep {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content: string, color: Color = undefined, notify: boolean = false): void {
+    log(content: string, color: Color = undefined, notify = false): void {
         // 因为 pc 可能未孵化，所以这里需要特别判断一下
         if (!this.room) log(content, this.name, color, notify)
         else this.room.log(content, this.name, color, notify)
@@ -93,7 +93,7 @@ export default class PowerCreepExtension extends PowerCreep {
      * 
      * @param roomName 要进行生成的房间名
      */
-    public setWorkRoom(roomName: string = 'hideTip'): string {
+    public setWorkRoom(roomName = 'hideTip'): string {
         let result: string = this.memory.workRoom ? 
             `[${this.name}] 已将工作房间从 ${this.memory.workRoom} 重置为 ${roomName}, 将会在老死后复活在目标房间` : 
             `[${this.name}] 已将工作房间设置为 ${roomName}`

@@ -29,46 +29,39 @@ export enum HarvestMode {
 }
 
 /**
- * 采集者
- * 从指定 source 中获取能量 > 将能量存放到身下的 container 中
+ * 移动到 source 旁丢弃能量的位置
+ * @param creep 执行移动的单位
  */
-const harvester: CreepConfig<CreepRole.Harvester> = {
-    prepare: creep => {
-        const { harvestRoom: harvestRoomName, sourceId } = creep.memory.data
-        const harvestRoom = Game.rooms[harvestRoomName]
+const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Source): {
+    // 本次移动的返回值
+    result: ScreepsReturnCode
+    // 移动的目的地（之前没有丢弃位置的话目标就为 source，否则为对应的能量丢弃位置）
+    targetPos: RoomPosition
+    // 要移动到的范围
+    range: number
+} {
+    let targetPos: RoomPosition
+    let range = 0
 
-        if (!harvestRoom) {
-            creep.goTo(new RoomPosition(25, 25, harvestRoomName), { checkTarget: false })
-            return false
-        }
-        const source = Game.getObjectById(sourceId)
+    // 尝试从缓存里读位置
+    const { standPos } = creep.memory.data
+    if (standPos) targetPos = unserializePos(standPos)
+    else {
+        const { pos: droppedPos } = source.getDroppedInfo()
+        // 之前就已经有点位了，自己保存一份
+        if (droppedPos) creep.memory.data.standPos = serializePos(droppedPos)
+        // 没有点位的话就要移动到 source，调整移动范围
+        else range = 1
 
-        // 设置采集模式
-        if (!creep.memory.harvestMode) setHarvestMode(creep, source)
-
-        // 执行各自的准备逻辑
-        return actionStrategy[creep.memory.harvestMode].prepare(creep, source)
-    },
-
-    source: creep => {
-        const source = Game.getObjectById(creep.memory.data.sourceId)
-        return actionStrategy[creep.memory.harvestMode].source(creep, source)
-    },
-
-    target: creep => {
-        return actionStrategy[creep.memory.harvestMode].target(creep)
-    },
-
-    bodys: (room, spawn, data) => {
-        const source = Game.getObjectById(data.sourceId)
-
-        // 如果没视野或者边上没有 Link 的话，就用 harvester 标准的部件
-        const bodyConfig = !source || !source.getLink()
-            ? bodyConfigs.harvester
-            : bodyConfigs.worker
-
-        return createBodyGetter(bodyConfig)(room, spawn)
+        targetPos = droppedPos ? droppedPos : source.pos
     }
+
+    // 到了就不进行移动了
+    if (creep.pos.isEqualTo(targetPos)) return { result: OK, targetPos, range }
+
+    // 执行移动
+    const result = creep.goTo(targetPos, { range, checkTarget: false })
+    return { result, targetPos, range }
 }
 
 /**
@@ -341,40 +334,49 @@ const actionStrategy: ActionStrategy = {
     }
 }
 
+
+
 /**
- * 移动到 source 旁丢弃能量的位置
- * @param creep 执行移动的单位
+ * 采集者
+ * 从指定 source 中获取能量 > 将能量存放到身下的 container 中
  */
-const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Source): {
-    // 本次移动的返回值
-    result: ScreepsReturnCode
-    // 移动的目的地（之前没有丢弃位置的话目标就为 source，否则为对应的能量丢弃位置）
-    targetPos: RoomPosition
-    // 要移动到的范围
-    range: number
-} {
-    let targetPos: RoomPosition
-    let range = 0
+const harvester: CreepConfig<CreepRole.Harvester> = {
+    prepare: creep => {
+        const { harvestRoom: harvestRoomName, sourceId } = creep.memory.data
+        const harvestRoom = Game.rooms[harvestRoomName]
 
-    // 尝试从缓存里读位置
-    const { standPos } = creep.memory.data
-    if (standPos) targetPos = unserializePos(standPos)
-    else {
-        const { pos: droppedPos } = source.getDroppedInfo()
-        // 之前就已经有点位了，自己保存一份
-        if (droppedPos) creep.memory.data.standPos = serializePos(droppedPos)
-        // 没有点位的话就要移动到 source，调整移动范围
-        else range = 1
+        if (!harvestRoom) {
+            creep.goTo(new RoomPosition(25, 25, harvestRoomName), { checkTarget: false })
+            return false
+        }
+        const source = Game.getObjectById(sourceId)
 
-        targetPos = droppedPos ? droppedPos : source.pos
+        // 设置采集模式
+        if (!creep.memory.harvestMode) setHarvestMode(creep, source)
+
+        // 执行各自的准备逻辑
+        return actionStrategy[creep.memory.harvestMode].prepare(creep, source)
+    },
+
+    source: creep => {
+        const source = Game.getObjectById(creep.memory.data.sourceId)
+        return actionStrategy[creep.memory.harvestMode].source(creep, source)
+    },
+
+    target: creep => {
+        return actionStrategy[creep.memory.harvestMode].target(creep)
+    },
+
+    bodys: (room, spawn, data) => {
+        const source = Game.getObjectById(data.sourceId)
+
+        // 如果没视野或者边上没有 Link 的话，就用 harvester 标准的部件
+        const bodyConfig = !source || !source.getLink()
+            ? bodyConfigs.harvester
+            : bodyConfigs.worker
+
+        return createBodyGetter(bodyConfig)(room, spawn)
     }
-
-    // 到了就不进行移动了
-    if (creep.pos.isEqualTo(targetPos)) return { result: OK, targetPos, range }
-
-    // 执行移动
-    const result = creep.goTo(targetPos, { range, checkTarget: false })
-    return { result, targetPos, range }
 }
 
 export default harvester

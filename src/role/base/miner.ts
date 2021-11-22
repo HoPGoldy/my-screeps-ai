@@ -6,6 +6,15 @@ import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 import { CreepConfig, CreepRole } from '../types/role'
 
 /**
+ * 添加 miner 的延迟孵化任务
+ * @param roomName 添加到的房间名
+ * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
+ */
+const addSpawnMinerTask = function (roomName: string, delayTime: number) {
+    delayQueue.addDelayTask(DelayTaskType.SpawnMiner, { roomName }, delayTime + 1)
+}
+
+/**
  * 元素矿采集单位
  * 采集元素矿，然后存到 terminal 中
  */
@@ -70,14 +79,5 @@ delayQueue.addDelayCallback(DelayTaskType.SpawnMiner, room => {
     // 孵化采集单位
     room.spawner.release.miner()
 })
-
-/**
- * 添加 miner 的延迟孵化任务
- * @param roomName 添加到的房间名
- * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
- */
-const addSpawnMinerTask = function (roomName: string, delayTime: number) {
-    delayQueue.addDelayTask(DelayTaskType.SpawnMiner, { roomName }, delayTime + 1)
-}
 
 export default miner

@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { SquadMember, SquadMemory, SquadStrategy, SquadTacticalActions, SquadTypes } from "./squad"
 
 /**
@@ -172,7 +173,7 @@ const squadStrategies: {
     apocalypse4: {
         // 小队组成
         member: {
-            apocalypse: 4
+            // apocalypse: 4
         },
 
         /**

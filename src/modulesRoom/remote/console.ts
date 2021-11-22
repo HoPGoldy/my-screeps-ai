@@ -34,7 +34,7 @@ export default class RemoteConsole extends Room {
     /**
      * 占领新房间
      */
-    public claim(targetRoomName: string, signText: string = ''): string {
+    public claim(targetRoomName: string, signText = ''): string {
         this.remote.claim(targetRoomName, signText)
 
         return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。` +

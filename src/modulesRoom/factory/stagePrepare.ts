@@ -1,4 +1,3 @@
-import { Color } from "@/modulesGlobal"
 import FactoryBase from "./base"
 import { FactoryState } from "./constant"
 

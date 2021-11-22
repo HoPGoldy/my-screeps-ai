@@ -3,6 +3,27 @@ import { calcBodyPart } from '../bodyUtils'
 import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
 
 /**
+ * pbAttacker 移除自身采集小组并自杀的封装
+ * 
+ * @param creep pbAttacker
+ * @param healerName 治疗单位名称
+ * @param spawnRoomName 出生房间名
+ * @returns 是否移除成功
+ */
+const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName: string): boolean {
+    // 移除自己和 heal 的配置项
+    const spawnRoom = Game.rooms[spawnRoomName]
+    if (!spawnRoom) {
+        creep.say('家呢？')
+        return false
+    }
+
+    // 移除角色组
+    removeCreep(creep.name, { immediate: true })
+    removeCreep(healerName, { immediate: true })
+}
+
+/**
  * PowerBank 攻击单位
  * 移动并攻击 powerBank, 请在 8 级时生成
  * @see doc "../doc/PB 采集小组设计案"
@@ -122,27 +143,6 @@ const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
         else if (attackResult === ERR_NOT_IN_RANGE) creep.moveTo(powerbank)
     },
     bodys: () => calcBodyPart([[ATTACK, 20], [MOVE, 20]])
-}
-
-/**
- * pbAttacker 移除自身采集小组并自杀的封装
- * 
- * @param creep pbAttacker
- * @param healerName 治疗单位名称
- * @param spawnRoomName 出生房间名
- * @returns 是否移除成功
- */
-const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName: string): boolean {
-    // 移除自己和 heal 的配置项
-    const spawnRoom = Game.rooms[spawnRoomName]
-    if (!spawnRoom) {
-        creep.say('家呢？')
-        return false
-    }
-
-    // 移除角色组
-    removeCreep(creep.name, { immediate: true })
-    removeCreep(healerName, { immediate: true })
 }
 
 export default pbAttacker

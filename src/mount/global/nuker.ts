@@ -73,7 +73,7 @@ export const cancelNuker = function () {
  * 危险操作 - 确认发射指令
  */
 export const confirmNuker = function () {
-    let logs = []
+    const logs = []
 
     // 确保所有核弹都就绪了
     const hasNotReady = Object.keys(Memory.nukerDirective).find(roomName => {

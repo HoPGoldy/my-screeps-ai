@@ -53,7 +53,7 @@ declare global {
         /**
          * 战争状态
          */
-        war?: { }
+        war?: Record<string, never>
         /**
          * powerSpawn 是否暂停
          */

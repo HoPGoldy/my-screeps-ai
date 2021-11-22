@@ -1,4 +1,4 @@
-import { yellow, colorful, createHelp } from '@/modulesGlobal/console'
+import { yellow, createHelp } from '@/modulesGlobal/console'
 import { BalanceDirection } from './types'
 
 /**
@@ -20,7 +20,7 @@ export default class StorageConsole extends Room {
         _.padRight('TERMINAL', MAX_LENGTH)]
 
         result.map(({ resourceType, amount, direction }) => {
-            let task = direction === BalanceDirection.ToStorage ?
+            const task = direction === BalanceDirection.ToStorage ?
                 _.padRight('<= ' + amount.toString(), MAX_LENGTH - 2) :
                 _.padRight(amount.toString() + ' =>', MAX_LENGTH - 2)
 

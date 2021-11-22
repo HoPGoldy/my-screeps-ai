@@ -84,7 +84,7 @@ export function createBodyGetter(bodyConfig: BodyConfig): BodyPartGenerator {
 const getBodyConfig = function(...bodySets: [
     BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[]
 ]): BodyConfig {
-    let config = { 300: [], 550: [], 800: [], 1300: [], 1800: [], 2300: [], 5600: [], 10000: [] }
+    const config = { 300: [], 550: [], 800: [], 1300: [], 1800: [], 2300: [], 5600: [], 10000: [] }
     // 遍历空配置项，用传入的 bodySet 依次生成配置项
     Object.keys(config).map((level, index) => {
         config[level] = calcBodyPart(bodySets[index])

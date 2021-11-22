@@ -146,11 +146,6 @@ export interface CreepConfig<Role extends CreepRole> {
 }
 
 /**
- * 有些角色不需要 data
- */
-interface EmptyData { }
-
-/**
  * 能量采集单位 data
  */
 interface HarvesterData {
@@ -289,42 +284,6 @@ interface pbAttackerData {
      * 资源要存放到哪个建筑里，外矿采集者必须指定该参数
      */
     healerCreepName: string
-}
-
-/**
- * 战斗单位的 data
- */
-interface WarUnitData {
-    /**
-     * 要攻击的旗帜名
-     */
-    targetFlagName: string
-    /**
-     * 其治疗者名称，战斗单位会尽量保持该单位和自己相邻
-     */
-    healerName?: string
-    /**
-     * 是否持续孵化
-     */
-    keepSpawn: boolean
-}
-
-/**
- * 一体机战斗单位的 data
- */
-interface ApocalypseData {
-    /**
-     * 要攻击的旗帜名
-     */
-    targetFlagName: string
-    /**
-     * 抗几个塔的伤害，由这个参数决定其身体部件组成
-     */
-    bearTowerNum: 0 | 1 | 2 | 3 | 4 | 5 | 6
-    /**
-     * 是否持续孵化
-     */
-    keepSpawn: boolean
 }
 
 /**

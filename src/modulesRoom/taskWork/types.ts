@@ -3,7 +3,7 @@ declare global {
         /**
          * 房间工作任务内存
          */
-        work: RoomTaskMemory<AllRoomWorkTask, {}>
+        work: RoomTaskMemory<AllRoomWorkTask, Record<string, never>>
     }
 }
 

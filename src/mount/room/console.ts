@@ -38,7 +38,7 @@ export default class RoomConsole extends RoomExtension {
      * 
      * @param amount 要转移的能量数量, 默认 100k
      */
-    public pute(amount: number = 100000): string {
+    public pute(amount = 100000): string {
         const addResult = this.transport.addTask({
             type: getUniqueKey(),
             requests: [{ from: this.storage.id, to: this.terminal.id, resType: RESOURCE_ENERGY, amount }]

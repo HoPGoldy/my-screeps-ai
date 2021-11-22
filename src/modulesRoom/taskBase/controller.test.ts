@@ -238,7 +238,7 @@ describe('房间任务核心测试', () => {
         controller.getUnitTask(creep)
 
         // 结束 creep 正在执行的任务并重新获取任务
-        controller.removeTask('6')
+        controller.removeTaskByType('6')
         const newTask = controller.getUnitTask(creep)
 
         // creep 应该被分配到新的任务上

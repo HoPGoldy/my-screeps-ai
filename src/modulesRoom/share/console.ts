@@ -37,7 +37,7 @@ export default class ShareConsole extends Room {
      * @param resourceType 要共享的资源类型
      * @param amount 要发送的数量, 默认 100k
      */
-    public giver(roomName: string, resourceType: ResourceConstant, amount: number = 1000): string {
+    public giver(roomName: string, resourceType: ResourceConstant, amount = 1000): string {
         // 检查资源是否足够
         if (!this.terminal) return `[资源共享] 该房间没有终端`
 
@@ -76,7 +76,7 @@ export default class ShareConsole extends Room {
      * @param roomName 目标房间名
      * @param amount 要发送的数量, 默认 100k
      */
-    public givee(roomName: string, amount: number = 100000): string {
+    public givee(roomName: string, amount = 100000): string {
         return this.giver(roomName, RESOURCE_ENERGY, amount)
     }
 
@@ -86,7 +86,7 @@ export default class ShareConsole extends Room {
      * @param roomName 要发送到的房间名
      * @param amount 发送的数量
      */
-    public givep(roomName: string, amount: number = 5000) {
+    public givep(roomName: string, amount = 5000) {
         return this.giver(roomName, RESOURCE_POWER, amount)
     }
 

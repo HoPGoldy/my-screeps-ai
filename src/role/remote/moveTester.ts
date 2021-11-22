@@ -11,7 +11,7 @@ import { CreepConfig, CreepRole } from "../types/role"
  * @param flagName 目标旗帜名称
  */
 const moveTester: CreepConfig<CreepRole.MoveTester> = {
-    prepare: creep => {
+    prepare: () => {
         // creep.setWayPoint(data.sourceFlagName)
         // creep.memory.fromShard = Game.shard.name as ShardName
         return true
@@ -27,7 +27,7 @@ const moveTester: CreepConfig<CreepRole.MoveTester> = {
         }
         // console.log('移动数据', JSON.stringify(creep.memory._go))
 
-        let cost1 = Game.cpu.getUsed()
+        // let cost1 = Game.cpu.getUsed()
         const result = creep.goTo(targetFlag.pos, {
             // disableCross: true,
             // checkTarget: true,

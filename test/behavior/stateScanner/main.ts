@@ -1,6 +1,6 @@
-import App from '@/modules/framework'
-import { errorMapper } from '@/modules/errorMapper'
-import { stateScannerAppPlugin } from '@/modules/stats'
+import App from '@/modulesGlobal/framework'
+import { errorMapper } from '@/modulesGlobal/errorMapper'
+import { stateScannerAppPlugin } from '@/modulesGlobal/stats'
 
 // 挂载所有的原型拓展
 const app = new App()

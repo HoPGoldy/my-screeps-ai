@@ -18,7 +18,7 @@ export default class RoomExtension extends Room {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content:string, instanceName: string = '', color: Color | undefined = undefined, notify: boolean = false): void {
+    log(content: string, instanceName = '', color: Color | undefined = undefined, notify = false): void {
         // 为房间名添加超链接
         const roomName = createRoomLink(this.name)
         // 生成前缀并打印日志

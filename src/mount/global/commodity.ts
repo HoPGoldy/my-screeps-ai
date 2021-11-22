@@ -5,13 +5,13 @@ import { FactoryLevel } from '@/modulesRoom/factory/types'
 export default function(): string {
     if (!Memory.commodities) return '未启动商品生产线'
 
-    let statsStr = [ ]
+    const logs = []
     // 遍历所有等级的房间
     for (const level in Memory.commodities) {
-        statsStr.push(`[${level} 级工厂]`)
+        logs.push(`[${level} 级工厂]`)
         const nodeNames = Memory.commodities[level]
         if (nodeNames.length <= 0) {
-            statsStr.push('    - 无')
+            logs.push('    - 无')
             continue
         }
 
@@ -20,11 +20,11 @@ export default function(): string {
         // 所有访问不到的房间会被替换成 false
         const currentRoomNames = nodeNames.map(roomName => {
             if (!Game.rooms[roomName] || !Game.rooms[roomName].factory) {
-                statsStr.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
+                logs.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
                 return false
             }
 
-            statsStr.push(getRoomFactoryState(Game.rooms[roomName]))
+            logs.push(getRoomFactoryState(Game.rooms[roomName]))
             return roomName
         })
 
@@ -32,7 +32,7 @@ export default function(): string {
         Memory.commodities[level] = currentRoomNames.filter(roomName => !_.isUndefined(roomName))
     }
 
-    return statsStr.join('\n')
+    return logs.join('\n')
 }
 
 /**
@@ -54,7 +54,7 @@ export default function(): string {
         memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, Color.Yellow) : colorful('工作中', Color.Green)
 
     // 基本信息
-    let logs = [ 
+    const logs = [ 
         prefix + workStats,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`

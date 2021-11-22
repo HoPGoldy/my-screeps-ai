@@ -8,10 +8,10 @@
     "upload": "rollup -cw --environment DEST:main",
     "local": "rollup -cw --environment DEST:local",
     "build": "rollup -c",
-    "test-unit": "jest src/",
+    "lint": "tsc --noEmit & eslint \"src/**/*.ts\"",
+    "test-unit": "jest --coverage src/",
     "test-behavior": "cross-env NODE_ENV=mockup jest --runInBand test/behavior/",
-    "test-integration": "npm run build && cross-env NODE_ENV=mockup jest --runInBand test/integration/",
-    "test-cover": "jest --coverage src/"
+    "test-integration": "npm run build && cross-env NODE_ENV=mockup jest --runInBand test/integration/"
   },
   "repository": {
     "type": "git",
@@ -35,7 +35,13 @@
     "@types/lodash": "3.10.1",
     "@types/node": "^14.0.24",
     "@types/screeps": "^3.2.3",
+    "@typescript-eslint/eslint-plugin": "^5.4.0",
+    "@typescript-eslint/parser": "^5.4.0",
+    "@typescript-eslint/typescript-estree": "^5.4.0",
     "cross-env": "^7.0.3",
+    "eslint": "^7.32.0",
+    "eslint-import-resolver-typescript": "^2.5.0",
+    "eslint-plugin-import": "^2.25.3",
     "fs-extra": "^9.1.0",
     "jest": "^26.6.3",
     "lodash": "3.10.1",

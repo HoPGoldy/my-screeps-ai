@@ -69,7 +69,7 @@ export const UPGRADER_WITH_ENERGY_LEVEL_8 = 700000
 export const ALL_SHARD_NAME: ShardName[] = ['shard0', 'shard1', 'shard2', 'shard3']
 
 // 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
-export const ROOM_REMOVE_INTERVAL: number = 30
+export const ROOM_REMOVE_INTERVAL = 30
 
 /**
  * RCL 分别在几级时放置外墙

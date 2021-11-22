@@ -281,7 +281,7 @@ export default class RoomCreepRelease {
      * @param targetFlagName 要采集的旗帜名
      * @param groupNumber 【可选】发布的采集小组数量
      */
-    public pbHarvesteGroup(targetFlagName: string, groupNumber: number = 2): void {
+    public pbHarvesteGroup(targetFlagName: string, groupNumber = 2): void {
         // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
         for (let i = 0; i < groupNumber; i++) {
             const attackerName = GetName.pbAttacker(targetFlagName, i)
@@ -318,7 +318,7 @@ export default class RoomCreepRelease {
      * @param sourceFlagName 要搜刮的建筑上插好的旗帜名
      * @param targetStructureId 要把资源存放到的建筑 id
      */
-    public reiver(sourceFlagName: string = '', targetStructureId: Id<StructureWithStore> = undefined): string {
+    public reiver(sourceFlagName = '', targetStructureId: Id<StructureWithStore> = undefined): string {
         const { room } = this.spawner
         if (!targetStructureId && !room.terminal) return `[${room.name}] 发布失败，请填写要存放到的建筑 id`
 

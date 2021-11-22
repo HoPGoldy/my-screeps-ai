@@ -238,7 +238,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
             return `[${this.roomName} observer] 未启用，使用 .obhelp() 来查看更多用法`
         }
 
-        let logs = [ `[${this.roomName} observer] 当前状态`, this.showList() ]
+        const logs = [ `[${this.roomName} observer] 当前状态`, this.showList() ]
 
         // 更新旗帜列表，保证显示最新数据
         this.updateFlagList()

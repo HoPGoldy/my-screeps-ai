@@ -1,4 +1,4 @@
-interface StatsMemory {
+export interface StatsMemory {
     /**
      * GCl/GPL 升级百分比
      */
@@ -30,7 +30,7 @@ interface StatsMemory {
 /**
  * 房间的统计数据
  */
-interface RoomStats {
+export interface RoomStats {
     /**
      * 终端中的 power 数量
      */
@@ -65,9 +65,11 @@ interface RoomStats {
     energyGetRate?: number
 }
 
-interface Memory {
-    /**
-     * 全局统计信息
-     */
-    stats: StatsMemory
+declare global {
+    interface Memory {
+        /**
+         * 全局统计信息
+         */
+        stats: StatsMemory
+    }
 }

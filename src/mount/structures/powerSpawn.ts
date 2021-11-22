@@ -85,7 +85,7 @@ export class PowerSpawnConsole extends PowerSpawnExtension {
      * 用户操作 - 查看 ps 运行状态
      */
     public stats(): string {
-        let stats: string[] = []
+        const stats = []
         // 生成状态
         const working = this.store[RESOURCE_POWER] > 1 && this.store[RESOURCE_ENERGY] > 50
         const prefix = [

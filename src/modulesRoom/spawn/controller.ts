@@ -1,4 +1,4 @@
-import { BASE_ROLE_LIMIT, creepDefaultMemory, importantRoles } from './constant'
+import { creepDefaultMemory, importantRoles } from './constant'
 import RoomAccessor from '../RoomAccessor'
 import roles from '@/role'
 import RoomCreepRelease from './creepRelease'
@@ -6,7 +6,6 @@ import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
 import { TransportTaskType } from '../taskTransport/types'
 import { CreepConfig, CreepData, CreepRole, RoleDatas } from '@/role/types/role'
-import { GetName } from './nameGetter'
 
 /**
  * 房间孵化管理模块
@@ -55,7 +54,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * @returns 有则返回 true
      */
     public hasTask(creepName: string): boolean {
-        return !!this.memory.find(({ name, role }) => name === creepName)
+        return !!this.memory.find(({ name }) => name === creepName)
     }
 
     /**

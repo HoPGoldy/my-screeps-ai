@@ -58,7 +58,7 @@ export const seeres = function (resourceName: ResourceConstant): string {
  * @param content 要欢呼的内容
  * @param toPublic 是否对其他人可见
  */
-export const hail = function (content: string = '', toPublic: boolean = true): string {
+export const hail = function (content = '', toPublic = true): string {
     Object.values(Game.creeps).forEach(creep => creep.say(`${content}!`, toPublic))
 
     return content ? content : 'yeah!'

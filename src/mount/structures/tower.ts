@@ -38,13 +38,14 @@ export default class TowerExtension extends StructureTower {
      * 日常的 tower 工作
      */
     private dailyWork(): void {
-        // 先攻击敌人
-        if (this.dailyAlert()) { }
-        // 找不到敌人再维修建筑
-        else if (this.commandRepair()) { }
-
         // 如果能量低了就发布填充任务
         this.requireEnergy(600)
+
+        // 先攻击敌人
+        if (this.dailyAlert()) return
+
+        // 找不到敌人再维修建筑
+        this.commandRepair()
     }
 
     /**
@@ -249,7 +250,7 @@ export default class TowerExtension extends StructureTower {
      * 
      * @param searchInterval 搜索间隔，每隔多久进行一次搜索
      */
-    private findEnemy(searchInterval: number = 1): (Creep|PowerCreep)[] {
+    private findEnemy(searchInterval = 1): (Creep|PowerCreep)[] {
         if (Game.time % searchInterval) return []
         // 有其他 tower 搜索好的缓存就直接返回
         if (this.room._enemys) return this.room._enemys
@@ -281,7 +282,7 @@ export default class TowerExtension extends StructureTower {
      * 
      * @param lowerLimit 能量下限，当自己能量低于该值时将发起请求
      */
-    private requireEnergy(lowerLimit: number = 900): void {
+    private requireEnergy(lowerLimit = 900): void {
         if (
             this.store[RESOURCE_ENERGY] <= lowerLimit &&
             !this.room.transport.hasTaskWithType(TransportTaskType.FillTower)

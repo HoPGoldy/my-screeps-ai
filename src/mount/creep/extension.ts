@@ -2,7 +2,7 @@ import { repairSetting, MIN_WALL_HITS } from '@/setting'
 import roles from '@/role'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
-import { onEdge, useCache } from '@/utils'
+import { useCache } from '@/utils'
 import { getNearSite } from '@/modulesGlobal/construction'
 import { Color } from '@/modulesGlobal'
 import { CreepConfig, CreepRole, RoleCreep } from '@/role/types/role'
@@ -42,7 +42,7 @@ export default class CreepExtension extends Creep {
             else this.memory.ready = true
         }
 
-        //　如果执行了 prepare 还没有 ready，就返回等下个 tick 再执行
+        // 如果执行了 prepare 还没有 ready，就返回等下个 tick 再执行
         if (!this.memory.ready) return 
 
         // 获取是否工作，没有 source 的话直接执行 target
@@ -73,7 +73,7 @@ export default class CreepExtension extends Creep {
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content: string, color: Color = undefined, notify: boolean = false): void {
+    log(content: string, color: Color = undefined, notify = false): void {
         this.room.log(content, this.name, color, notify)
     }
 

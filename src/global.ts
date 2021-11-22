@@ -1,4 +1,4 @@
-declare module NodeJS {
+declare namespace NodeJS {
     interface Global {
         InterShardMemory: InterShardMemory
         Game: Game
@@ -6,11 +6,6 @@ declare module NodeJS {
         _: _.LoDashStatic
     }
 }
-
-/**
- * 包含任意键值对的对象
- */
-type AnyObject = { [key: string]: any }
 
 /**
  * 包含 store 属性的建筑
@@ -31,7 +26,7 @@ type StructureWithStore =
 /**
  * 所有包含 id 字段的游戏对象
  */
-interface ObjectWithId<T extends unknown = unknown> extends RoomObject {
+interface ObjectWithId<T = unknown> extends RoomObject {
     id: Id<T>
 }
 
