@@ -62,7 +62,7 @@ export default class RoomTransport extends TaskController<string | number, Trans
             workRoom: this.room,
             taskData: task,
             managerData,
-            requireFinishTask: reason => this.requireFinishTask(task, reason)
+            requireFinishTask: reason => this.requireFinishTask(task, reason, creep)
         })
     }
 
@@ -72,13 +72,13 @@ export default class RoomTransport extends TaskController<string | number, Trans
 
     /**
      * 申请结束任务
-     * 由于可能存在多个爬一起做一个任务，所以会出现某个爬觉得任务完成了，但是其他爬正在做的情况
-     * 所以搬运爬应该调用这个方法申请结束任务，由本方法统一检查是否可以结束
+     * 搬运爬应该调用这个方法申请结束任务，由本方法统一检查是否可以结束
      * 
      * @param task 要结束的任务
      * @param reason 结束的理由
+     * @param requestCreep 申请结束的爬
      */
-    public requireFinishTask(task: TransportTaskData, reason: TaskFinishReason) {
+    public requireFinishTask(task: TransportTaskData, reason: TaskFinishReason, requestCreep: Creep) {
         if (reason === TaskFinishReason.Complete) this.removeTaskByKey(task.key)
         else if (reason === TaskFinishReason.CantFindSource) {
             this.log.error(`找不到资源来源，任务已移除。任务详情：${JSON.stringify(task)}`)
@@ -88,34 +88,25 @@ export default class RoomTransport extends TaskController<string | number, Trans
             this.log.error(`找不到存放目标，任务已移除。任务详情：${JSON.stringify(task)}`)
             this.removeTaskByKey(task.key)
         }
+        // 有可能一个爬发现资源不足了，是因为另一个爬已经拿着资源去搬运了
+        // 所以这里会判断一下，只有这个任务的所有搬运爬都说资源不足，才会判断是真的资源不足了
         else if (reason === TaskFinishReason.NotEnoughResource) {
-            // 找到所有还活着正在从事该任务的搬运工
+            // 解绑请求爬和这个任务，让他去做其他任务
+            const requestCreepInfo = this.creeps[requestCreep.name]
+            requestCreepInfo.data = { state: ManagerState.ClearRemains }
+            this.removeTaskUnit(task, requestCreep)
+
+            // 找到其他正在从事该任务的爬
             const relatedManagers = Object.entries(this.creeps)
                 .map<[Creep, TaskUnitInfo<ManagerData>]>(([creepName, info]) => [Game.creeps[creepName], info])
-                .filter(([creep, info]) => creep && info.doing === task.key)
+                .filter(([creep, info]) => {
+                    return creep && info.doing === task.key && creep.name !== requestCreep.name
+                })
 
-            // 找到所有已经完成工作的爬
-            const slackoffManagers = relatedManagers.filter(([creep, info]) => {
-                const { carrying } = info.data
-                if (carrying?.length <= 0) return true
-
-                // 身上还有资源，说明还在运输，这个爬应该继续执行任务
-                const stillWorking = carrying.find(carryIndex => creep.store[task.requests[carryIndex].resType] > 0)
-                return !stillWorking
-            })
-
-            // 所有爬手里的活都完成了，结束整个任务
-            if (relatedManagers.length === slackoffManagers.length) {
+            if (relatedManagers.length <= 0) {
                 this.log.error(`部分资源数量不足，任务已移除。任务详情：${JSON.stringify(task)}`)
                 this.removeTaskByKey(task.key)
-                return
             }
-
-            // 让所有干完活的爬和任务解绑，让其可以重新寻找其他任务
-            slackoffManagers.forEach(([creep, info]) => {
-                info.data = { state: ManagerState.ClearRemains }
-                this.removeTaskUnit(this.getTask(info.doing), creep)
-            })
         }
     }
 

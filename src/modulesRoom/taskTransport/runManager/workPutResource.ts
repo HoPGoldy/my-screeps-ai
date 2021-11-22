@@ -62,8 +62,10 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
                     target = manager.pos.findClosestByRange(needFillStructures)
                     break
                 }
+            }
 
-                // 找不到，说明要填充的建筑都填满了，完成任务
+            // // 找不到，说明要填充的建筑都填满了，完成任务
+            if (!target) {
                 requireFinishTask(TaskFinishReason.Complete)
                 return
             }
@@ -79,7 +81,6 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
     }
 
     if (target) pos = target.pos
-
     return { target, pos }
 }
 

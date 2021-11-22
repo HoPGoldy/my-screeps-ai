@@ -24,7 +24,6 @@ export type AutoBodyRole =
     CreepRole.Harvester |
     CreepRole.Worker |
     CreepRole.Manager |
-    CreepRole.Processor |
     CreepRole.Reserver |
     CreepRole.RemoteHarvester
 
