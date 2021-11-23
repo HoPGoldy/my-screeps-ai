@@ -1,7 +1,7 @@
-import { BattleCore, SquadType } from "../squadManager/types";
-import { runMonomer } from "./monomer";
-import { runDismantle2 } from './dismantle2';
-import { runAttack2 } from './attack2';
+import { BattleCore, SquadType } from '../squadManager/types'
+import { runMonomer } from './monomer'
+import { runDismantle2 } from './dismantle2'
+import { runAttack2 } from './attack2'
 
 /**
  * 所有可用的战斗核心

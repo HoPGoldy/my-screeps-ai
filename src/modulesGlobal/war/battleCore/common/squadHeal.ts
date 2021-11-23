@@ -1,4 +1,4 @@
-import { getNextHeal } from "./calculator";
+import { getNextHeal } from './calculator'
 
 /**
  * 受伤单位信息
@@ -52,29 +52,29 @@ export const squadHealMember = function (members: Creep[]) {
         .sort((a, b) => b.heal - a.heal)
 
     // 没人掉血就继续往前走
-    if (wounded.length == 0) return false
+    if (wounded.length === 0) return false
 
     // 下个 tick 奶不满了就撤退
-    const needFlee = _.sum(wounded.map(c => c.damage)) - _.sum(doctors.map(c => c.heal)) > 0;
+    const needFlee = _.sum(wounded.map(c => c.damage)) - _.sum(doctors.map(c => c.heal)) > 0
 
     for (const woundedInfo of wounded) {
         const { creep: injuredCreep, damage } = woundedInfo
 
         // n 平方找最优治疗方案
         for (let i = 0; i < doctors.length; i++) {
-            if (damage == 0) continue;
+            if (damage === 0) continue
 
             let healerInfo: DoctorInfo
             for (const doctorInfo of doctors) {
                 const { creep: healCreep, heal, usedHeal } = doctorInfo
 
                 // 奶够了不奶
-                if (damage <=0 || heal == 0 || usedHeal) continue
+                if (damage <= 0 || heal === 0 || usedHeal) continue
                 // 如果摸不到就不奶
-                if (injuredCreep != healCreep && !healCreep.pos.isNearTo(injuredCreep)) continue
+                if (injuredCreep !== healCreep && !healCreep.pos.isNearTo(injuredCreep)) continue
 
-                healerInfo = doctorInfo;
-                if (damage < heal) break;
+                healerInfo = doctorInfo
+                if (damage < heal) break
             }
             if (healerInfo) {
                 healerInfo.creep.heal(injuredCreep)

@@ -33,7 +33,7 @@ interface ObjectWithId<T = unknown> extends RoomObject {
 /**
  * 允许引入 html 文件
  */
-declare module "*.html" {
-    const content: string;
-    export default content;
+declare module '*.html' {
+    const content: string
+    export default content
 }

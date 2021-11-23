@@ -1,6 +1,6 @@
 /**
  * 其他 shard 发来的请求的处理策略
- * 
+ *
  * 每种请求都必须存在对应的策略
  */
 const requestHandleStrategies: CrossShardRequestStrategies = {

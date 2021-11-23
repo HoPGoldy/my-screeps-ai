@@ -18,7 +18,7 @@ interface TickLog {
     /**
      * 该 tick 的 Memory 完整拷贝
      */
-    memory?: AnyObject
+    memory?: Record<string, unknown>
 }
 
 const now = new Date()

@@ -19,7 +19,7 @@ const selfShardName: ShardName = Game.shard.name as ShardName
 
 /**
  * 工作入口 - 检查并处理其他 shard 的消息
- * 
+ *
  * 静默状态（完全没有跨 shard 信息）下的基础消耗为 0.03 - 0.01
  */
 export const execShard = function () {
@@ -38,13 +38,15 @@ const initShardData = function () {
     // 获取所有 shard 的 InterShardMemory
     ALL_SHARD_NAME.forEach(name => {
         // 缓存消失时才会重新获取
-        if (selfShardName === name && selfData) return selfData = JSON.parse(InterShardMemory.getLocal()) || {}
+        if (selfShardName === name && selfData) {
+            selfData = JSON.parse(InterShardMemory.getLocal()) || {}
+            return
+        }
 
         // 重建其他 shard 的数据
         otherShardData[name] = JSON.parse(InterShardMemory.getRemote(name)) || {}
     })
 }
-
 
 /**
  * 检查自身消息
@@ -79,7 +81,6 @@ const handleSelfMessage = function () {
     }
 }
 
-
 /**
  * 处理其他 shard 的请求
  */
@@ -91,7 +92,7 @@ const handleOtherMessage = function () {
             // 该信息是响应
             if (isReply(msgName)) {
                 const { source, name: requestName } = getRequestInfo(msgName)
-                
+
                 // 如果是自己请求的响应的话，关闭对应请求
                 if (source === selfShardName) {
                     delete selfData[requestName]
@@ -114,10 +115,9 @@ const handleOtherMessage = function () {
     }
 }
 
-
 /**
  * 检查一个消息是否为响应
- * 
+ *
  * @param msgName 消息名称
  * @returns 是否为响应
  */
@@ -125,24 +125,22 @@ const isReply = function (msgName: string): boolean {
     return msgName.startsWith('shard')
 }
 
-
 /**
  * 解析该响应对应的请求信息
- * 
+ *
  * @param replyName 响应的名字
  */
 const getRequestInfo = function (replyName: string): CrossShardRequestInfo {
     // 我们规定使用响应的名称为 请求shard名:请求名，所以分隔后就可以取出对应的值
-    const [ source, name ] = replyName.split(':')
+    const [source, name] = replyName.split(':')
 
     // 检查目标 shard 是否存在该请求
     return { source: source as ShardName, name }
 }
 
-
 /**
  * 检查某个请求是否有对应的响应
- * 
+ *
  * @param sourceShard 请求来自于哪个 shard
  * @param requestName 请求名
  * @param request 请求信息
@@ -159,20 +157,18 @@ const checkReply = function (sourceShard: ShardName, requestName: string, reques
     }
 }
 
-
 /**
  * 获取指定请求的响应名称
- * 
+ *
  * @param request 要获取响应名的请求
  */
 const getReplyName = function (requestName: string, sourceShard: ShardName): string {
     return `${sourceShard}:${requestName}`
 }
 
-
 /**
  * 响应请求
- * 
+ *
  * @param requestName 请求名
  * @param sourceShard 请求的发起 shard
  * @param result 请求处理结果
@@ -185,10 +181,9 @@ const reply = function (requestName: string, sourceShard: ShardName, result: Scr
     Game._needSaveInterShardData = true
 }
 
-
 /**
  * 保存消息到 InterShardMemory
- * 
+ *
  * @param msgName 消息名称
  * @param msgContent 消息内容
  */
@@ -198,16 +193,15 @@ export const saveShardData = function () {
     InterShardMemory.setLocal(JSON.stringify(selfData))
 }
 
-
 /**
  * 发布新的跨 shard 请求
- * 
+ *
  * @param name 请求的名字，要保证唯一性
  * @param to 要发送到的 shard 名称
  * @param type 跨 shard 请求的类型
  * @param data 跨 shard 请求携带的数据
  */
-export const addCrossShardRequest = function <K extends CrossShardRequestType>(
+export const addCrossShardRequest = function <K extends CrossShardRequestType> (
     name: string,
     to: ShardName,
     type: K,
@@ -219,9 +213,9 @@ export const addCrossShardRequest = function <K extends CrossShardRequestType>(
 
 /**
  * 从跨 shard 内存暂存区取出 creep 内存
- * 
+ *
  * 会直接把 creep 内存放到 Memory.creeps 里
- * 
+ *
  * @param creepName 要取出内存的 creep 名字
  */
 export const getMemoryFromCrossShard = function (creepName: string): CreepMemory {
@@ -234,7 +228,7 @@ export const getMemoryFromCrossShard = function (creepName: string): CreepMemory
     // 返回并设置到 Memory.creeps
     if (!Memory.creeps) Memory.creeps = {}
     if (assertCreepMemory(creepMemory)) {
-        return Memory.creeps[creepName] = creepMemory
+        Memory.creeps[creepName] = creepMemory
     }
 }
 

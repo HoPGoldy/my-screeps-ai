@@ -1,4 +1,4 @@
-import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
+import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onPutResource = (context: TransportWorkContext) => {
     const { manager, managerData } = context
@@ -109,7 +109,7 @@ const getProcessingRequest = function (context: TransportWorkContext) {
         return
     }
 
-    return targetRes ? targetRes : otherUnfinishRequest
+    return targetRes || otherUnfinishRequest
 }
 
 const transferResource = function (
@@ -143,18 +143,18 @@ const transferResource = function (
 
 /**
  * 查找本次应该放下多少该资源
- * 
+ *
  * 注意这里计算搬运量没有考虑目标建筑，因为考虑了也没什么意义
  * 比如目标建筑存储可以放得下，皆大欢喜
  * 如果目标建筑放不下，而任务里指定了要运输多少资源，怎么办，指标完不成也不能让任务一直卡着
  * 最多报个放不下了的 log 然后关闭任务，而这个报错恰好可以通过 transfer 的返回值拿到
- * 
+ *
  * @param managerStore 搬运工的存储
  * @param targetRes 要转移的资源
  */
 const getTransferAmount = function (managerStore: StoreDefinition, targetRes: TransportRequestData): number {
     // 返回 undefeind，让 transfer 自己找到合适的最大转移数量
-    if (targetRes.amount == undefined) return undefined
+    if (targetRes.amount === undefined) return undefined
 
     const remainingTransferAmount = targetRes.amount - (targetRes.arrivedAmount || 0)
     return Math.min(managerStore[targetRes.resType], remainingTransferAmount)

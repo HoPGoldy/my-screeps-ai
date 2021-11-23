@@ -1,6 +1,6 @@
 /**
  * Room 控制台交互
- * 
+ *
  * 本文件包含了 Room 中用于控制台交互的方法
  */
 
@@ -18,7 +18,7 @@ export default class RoomConsole extends RoomExtension {
     /**
      * 有手动摆放工地时可以调用这个方法进行建造
      */
-    public build(): string {
+    public build (): string {
         this.work.updateTask({
             type: WorkTaskType.Build,
             priority: WORK_TASK_PRIOIRY.BUILD
@@ -35,10 +35,10 @@ export default class RoomConsole extends RoomExtension {
 
     /**
      * 用户操作：将能量从 storage 转移至 terminal 里
-     * 
+     *
      * @param amount 要转移的能量数量, 默认 100k
      */
-    public pute(amount = 100000): string {
+    public pute (amount = 100000): string {
         const addResult = this.transport.addTask({
             type: getUniqueKey(),
             requests: [{ from: this.storage.id, to: this.terminal.id, resType: RESOURCE_ENERGY, amount }]
@@ -48,13 +48,13 @@ export default class RoomConsole extends RoomExtension {
 
     /**
      * 用户操作：将能量从 terminal 转移至 storage 里
-     * 
+     *
      * @param amount 要转移的能量数量, 默认全部转回来
      */
-    public gete(amount: number = null): string {
+    public gete (amount: number = null): string {
         if (!this.terminal) return `未找到 ${this.name} 中的终端`
         if (amount === null) amount = this.terminal.store[RESOURCE_ENERGY]
-        
+
         const addResult = this.transport.addTask({
             type: getUniqueKey(),
             requests: [{ from: this.terminal.id, to: this.storage.id, resType: RESOURCE_ENERGY, amount }]
@@ -67,15 +67,15 @@ export default class RoomConsole extends RoomExtension {
      * 第一次执行时将会弹出警告
      * 玩家需要在指定时间内重新执行该 api 才会真正执行移除
      */
-    public remove(): string {
+    public remove (): string {
         let log = '完成移除'
         // 没有发起过移除或者移除过期了，都视为第一次发起移除
         if (!this.memory.removeTime || Game.time > this.memory.removeTime + ROOM_REMOVE_INTERVAL) {
             log = [
                 `${red('警告!', true)} 你正在试图移除房间 ${this.name}，这将会导致以下行为的发生：\n`,
-                `- 移除所有建筑（不包括 wall、rempart、terminal 和 storage）`,
+                '- 移除所有建筑（不包括 wall、rempart、terminal 和 storage）',
                 `- 移除所有相关 creep 及配置项（以 ${this.name} 作为名称前缀的 creep）`,
-                `- 移除所有相关 memory（工作内存及统计内存）`,
+                '- 移除所有相关 memory（工作内存及统计内存）',
                 `- ${colorful('不会', undefined, true)}转移房间中存放的资源，需要提前手动转移`,
                 `\n在 ${ROOM_REMOVE_INTERVAL.toString()} tick 内重新执行 ${red(this.name + '.remove()')} 以确认移除，执行 ${yellow(this.name + '.cancelremove()')} 来取消操作`
             ].join('\n')
@@ -88,15 +88,15 @@ export default class RoomConsole extends RoomExtension {
     /**
      * 取消移除房间
      */
-    public cancelremove(): string {
+    public cancelremove (): string {
         delete this.memory.removeTime
-        return `移除操作已取消`
+        return '移除操作已取消'
     }
 
     /**
      * 用户操作 - 执行自动建筑规划
      */
-    public planlayout(): string {
+    public planlayout (): string {
         return this.planLayout()
     }
 
@@ -104,7 +104,7 @@ export default class RoomConsole extends RoomExtension {
      * 用户操作 - 设置中心点
      * @param flagName 中心点旗帜名
      */
-    public setcenter(flagName: string): string {
+    public setcenter (flagName: string): string {
         if (!flagName) flagName = getName.flagBaseCenter(this.name)
         const flag = Game.flags[flagName]
 
@@ -124,7 +124,7 @@ export default class RoomConsole extends RoomExtension {
     /**
      * 移除所有不属于自己的墙壁
      */
-    public clearwall(): string {
+    public clearwall (): string {
         // 找到所有不是自己的墙壁
         const wall = [...this[STRUCTURE_WALL], ...this[STRUCTURE_RAMPART]].filter(s => !s.my)
         if (wall.length <= 0) return `[${this.name}] 未找到墙壁`
@@ -132,11 +132,11 @@ export default class RoomConsole extends RoomExtension {
         wall.forEach(w => w.destroy())
         return `[${this.name}] 墙壁清理完成`
     }
-    
+
     /**
      * 用户操作 - 房间操作帮助
      */
-    public help(): string {
+    public help (): string {
         const moduleList: ModuleDescribe[] = [
             {
                 name: '资源调配 API',
@@ -152,7 +152,7 @@ export default class RoomConsole extends RoomExtension {
                         params: [
                             { name: 'resourceType', desc: '要购买的资源类型' },
                             { name: 'price', desc: '单价' },
-                            { name: 'totalAmount', desc: '总量' },
+                            { name: 'totalAmount', desc: '总量' }
                         ],
                         functionName: 'buy'
                     },
@@ -162,7 +162,7 @@ export default class RoomConsole extends RoomExtension {
                         params: [
                             { name: 'resourceType', desc: '要卖出的资源类型' },
                             { name: 'price', desc: '单价' },
-                            { name: 'totalAmount', desc: '总量' },
+                            { name: 'totalAmount', desc: '总量' }
                         ],
                         functionName: 'sell'
                     },
@@ -178,7 +178,7 @@ export default class RoomConsole extends RoomExtension {
                         title: '孵化掠夺者',
                         params: [
                             { name: 'sourceFlagName', desc: `[可选] 要搜刮的建筑上插好的旗帜名，默认为 ${DEFAULT_FLAG_NAME.REIVER}` },
-                            { name: 'targetStructureId', desc: `[可选] 要把资源存放到的建筑 id，默认为房间终端` }
+                            { name: 'targetStructureId', desc: '[可选] 要把资源存放到的建筑 id，默认为房间终端' }
                         ],
                         functionName: 'release.reiver'
                     }
@@ -207,7 +207,7 @@ export default class RoomConsole extends RoomExtension {
                     {
                         title: '👁️ 查看 Observer 管理模块帮助',
                         functionName: 'obhelp'
-                    },
+                    }
                 ]
             },
             {

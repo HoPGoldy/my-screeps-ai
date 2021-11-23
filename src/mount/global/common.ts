@@ -1,9 +1,9 @@
-import { baseLayout } from "@/modulesGlobal/autoPlanning/constant"
-import { findBaseCenterPos } from "@/modulesGlobal/autoPlanning/planBasePos"
+import { baseLayout } from '@/modulesGlobal/autoPlanning/constant'
+import { findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
 
 /**
  * Game.market.extendOrder 的别名
- * 
+ *
  * @param orderId 订单的 id
  * @param amount 要追加的数量
  */
@@ -24,13 +24,13 @@ export const orderExtend = function (orderId: string, amount: number) {
 */
 export const roomAlias = Object.keys(Memory.rooms || {}).reduce((getters, roomName) => {
     // 大写房间名和小写房间名都挂一下
-    getters[roomName] = getters[roomName.toLowerCase()] = (() => Game.rooms[roomName])
+    getters[roomName] = getters[roomName.toLowerCase()] = () => Game.rooms[roomName]
     return getters
 }, {})
 
 /**
  * 查询指定资源在各个房间中的数量
- * 
+ *
  * @param resourceName 要查询的资源名
  */
 export const seeres = function (resourceName: ResourceConstant): string {
@@ -54,19 +54,19 @@ export const seeres = function (resourceName: ResourceConstant): string {
 
 /**
  * 所有 creep 欢呼
- * 
+ *
  * @param content 要欢呼的内容
  * @param toPublic 是否对其他人可见
  */
 export const hail = function (content = '', toPublic = true): string {
     Object.values(Game.creeps).forEach(creep => creep.say(`${content}!`, toPublic))
 
-    return content ? content : 'yeah!'
+    return content || 'yeah!'
 }
 
 /**
  * 对指定房间运行基地查找
- * 
+ *
  * @param roomName 房间名
  */
 export const base = function (roomName: string): string {
@@ -84,13 +84,13 @@ export const base = function (roomName: string): string {
 /**
  * 全局发送资源到指定房间
  * 会检查哪个房间包含指定资源，并调用 Room.giver 方法发送资源
- * 
+ *
  * @param roomName 房间名
  * @param resourceType 资源类型
  * @param amount 发送数量
  */
 export const give = function (roomName: string, resourceType: ResourceConstant, amount: number): string {
-    const logs: string[] = [ '已启动全局资源调配' ]
+    const logs: string[] = ['已启动全局资源调配']
     let sendAmount = 0
 
     // 遍历所有房间进行查找

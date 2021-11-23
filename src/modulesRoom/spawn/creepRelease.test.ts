@@ -1,3 +1,10 @@
+import { CreepRole } from '@/role/types/role'
+import { getMockRoom } from '@test/mock'
+import { getMockSource } from '@test/mock/Source'
+import RoomSpawnController from './controller'
+import RoomCreepRelease from './creepRelease'
+import { GetName } from './nameGetter'
+
 const mockRemoveCreep = jest.fn()
 const mockAddTask = jest.fn()
 
@@ -17,13 +24,6 @@ jest.mock('@/setting', () => ({
     }
 }))
 jest.mock('@/utils', () => ({ log: () => {} }))
-
-import { CreepRole } from '@/role/types/role'
-import { getMockRoom } from '@test/mock'
-import { getMockSource } from '@test/mock/Source'
-import RoomSpawnController from './controller'
-import RoomCreepRelease from './creepRelease'
-import { GetName } from './nameGetter'
 
 let room: Room
 let release: RoomCreepRelease
@@ -48,14 +48,14 @@ it('harvester 发布测试', () => {
     // 有两个 source，所以应该发布两个孵化任务
     expect(mockAddTask).toBeCalledTimes(2)
     // 两个孵化任务的 data 里应该正确包含 soure 的 id
-    expect(mockAddTask.mock.calls.map(([ spawnTask ]) => spawnTask.data.sourceId)).toEqual(['1', '2'])
+    expect(mockAddTask.mock.calls.map(([spawnTask]) => spawnTask.data.sourceId)).toEqual(['1', '2'])
 })
 
 it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
     // 从零开始新增工人
     release.changeBaseUnit(CreepRole.Worker, 4)
     // 会新增四个工人
-    expect(mockAddTask.mock.calls.map(([ spawnTask ]) => spawnTask.name)).toEqual([
+    expect(mockAddTask.mock.calls.map(([spawnTask]) => spawnTask.name)).toEqual([
         GetName.worker('W1N1', 0),
         GetName.worker('W1N1', 1),
         GetName.worker('W1N1', 2),
@@ -71,7 +71,7 @@ it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
     release.changeBaseUnit(CreepRole.Worker, -1)
     expect(mockAddTask).not.toHaveBeenCalled()
     // 从末尾减少了一个 worker
-    expect(mockRemoveCreep.mock.calls.map(([ creepName ]) => creepName)).toEqual([
+    expect(mockRemoveCreep.mock.calls.map(([creepName]) => creepName)).toEqual([
         GetName.worker('W1N1', 3)
     ])
 
@@ -81,7 +81,7 @@ it('changeBaseUnit 可以正常增减，并保证最小单位数量', () => {
     // 减少三个，由于这次修正超限了（每个房间最低 1 个单位），所以会只移除最后两个 worker
     release.changeBaseUnit(CreepRole.Worker, -3)
     expect(mockAddTask).not.toHaveBeenCalled()
-    expect(mockRemoveCreep.mock.calls.map(([ creepName ]) => creepName)).toEqual([
+    expect(mockRemoveCreep.mock.calls.map(([creepName]) => creepName)).toEqual([
         GetName.worker('W1N1', 2),
         GetName.worker('W1N1', 1)
     ])

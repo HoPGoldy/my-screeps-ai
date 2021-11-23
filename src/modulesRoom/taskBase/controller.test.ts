@@ -1,4 +1,4 @@
-import baseTaskController from './controller'
+import BaseTaskController from './controller'
 import { getMockCreep, getMockRoom, mockGetObjectById } from '@test/mock'
 import { SepicalBodyType } from '../taskWork/types'
 
@@ -13,7 +13,7 @@ describe('房间任务核心测试', () => {
     })
     // 获取指定类型的特殊工人
     const getSpecialCreep = (specialType: string): Creep => {
-        return getMockCreep({ memory: { bodyType: specialType as SepicalBodyType } as CreepMemory})
+        return getMockCreep({ memory: { bodyType: specialType as SepicalBodyType } as CreepMemory })
     }
 
     it('可以从 Memory 中初始化任务', () => {
@@ -28,14 +28,14 @@ describe('房间任务核心测试', () => {
         const roomMemory = {
             transport: {
                 tasks: [task],
-                creeps: { [creep.name]: { doing: taskKey }}
+                creeps: { [creep.name]: { doing: taskKey } }
             }
         } as unknown as RoomMemory
         Memory.rooms = { [roomName]: roomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName, memory: roomMemory })
 
         // 从控制器获取该工人的任务
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         const doingTask = controller.getUnitTask(creep)
 
         // 可以获取到已关联的目标任务
@@ -51,7 +51,7 @@ describe('房间任务核心测试', () => {
         Memory.rooms = { [roomName]: {} as RoomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName })
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         // 先添加任务，并让新工人去获取任务
         controller.addTask(task)
         const doingTask = controller.getUnitTask(creep)
@@ -66,7 +66,7 @@ describe('房间任务核心测试', () => {
         Memory.rooms = { [roomName]: {} as RoomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName })
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         // 乱序添加任务
         controller.addTask(getTask(5))
         controller.addTask(getTask(10))
@@ -82,7 +82,7 @@ describe('房间任务核心测试', () => {
 
         controller.addTask(getTask(undefined))
         controller.addTask(getTask(11))
-        
+
         doingTask = controller.getUnitTask(getMockCreep())
         expect(doingTask.type).toEqual('11')
         doingTask = controller.getUnitTask(getMockCreep())
@@ -94,7 +94,7 @@ describe('房间任务核心测试', () => {
         Memory.rooms = { [roomName]: {} as RoomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName })
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         // 乱序添加任务
         controller.addTask(getTask(5))
         controller.addTask(getTask(10))
@@ -124,7 +124,7 @@ describe('房间任务核心测试', () => {
         const specialTaskA = getSpecialTask(5, specialTypeA)
         const specialTaskB = getSpecialTask(6, specialTypeB)
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         controller.addTask(normalTask)
         controller.addTask(specialTaskA)
         controller.addTask(specialTaskB)
@@ -147,7 +147,7 @@ describe('房间任务核心测试', () => {
         Memory.rooms = { [roomName]: {} as RoomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName })
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         // 添加两个特殊任务
         controller.addTask(getSpecialTask(5, specialTypeA))
         controller.addTask(getSpecialTask(10, specialTypeB))
@@ -166,9 +166,9 @@ describe('房间任务核心测试', () => {
         Memory.rooms = { [roomName]: {} as RoomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName })
         // 因为模块内部会访问 Game.creeps 来获取工人，所以这里需要伪造下
-        Game.creeps[normalCreep.name] = normalCreep;
+        Game.creeps[normalCreep.name] = normalCreep
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         // 添加一个特殊任务
         controller.addTask(getSpecialTask(5, specialType))
         // 让普通工人先干着
@@ -197,7 +197,7 @@ describe('房间任务核心测试', () => {
         normalTaskA.need = taskBNeed
         const normalTaskB = getTask(3)
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         // 添加任务
         controller.addTask(specialTaskA)
         controller.addTask(normalTaskA)
@@ -229,7 +229,7 @@ describe('房间任务核心测试', () => {
         Memory.rooms = { [roomName]: {} as RoomMemory }
         Game.rooms[roomName] = getMockRoom({ name: roomName })
 
-        const controller = new baseTaskController(roomName, 'transport')
+        const controller = new BaseTaskController(roomName, 'transport')
         const creep = getMockCreep()
         mockGetObjectById([creep])
         // 添加任务，并分配一个工人

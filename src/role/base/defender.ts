@@ -38,7 +38,7 @@ const defender: CreepConfig<CreepRole.Defender> = {
 
         // 从缓存中获取敌人
         const enemy = creep.pos.findClosestByRange(creep.room._enemys)
-        creep.say(`💢`)
+        creep.say('💢')
         // 防止一不小心出房间了
         if ((enemy.pos.x !== 0 && enemy.pos.x !== 49 && enemy.pos.y !== 0 && enemy.pos.y !== 49) && !creep.pos.isNearTo(enemy.pos)) creep.moveTo(enemy.pos)
 

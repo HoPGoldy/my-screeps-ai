@@ -1,27 +1,23 @@
-import FactoryBase from "./base"
-import { FactoryState } from "./constant"
+import FactoryBase from './base'
+import { FactoryState } from './constant'
 
 /**
  * 准备阶段
  * 该阶段会对队列中的任务进行新增（没有任务）或分解（任务无法完成）操作，一旦发现可以生成的任务，则进入下个阶段。
  */
 export default class StagePrepare extends FactoryBase {
-    constructor(roomName: string) {
-        super(roomName)
-    }
-
-    public run(): void {
+    public run (): void {
         if (Game.time % 5) return
 
         // 如果存在废弃进程，则移除所有配置
         if (this.memory.remove) {
             this.memory = undefined
-            return this.log.success(`工厂已废弃，重新初始化以开始生产`)
+            return this.log.success('工厂已废弃，重新初始化以开始生产')
         }
 
         if (!this.room.terminal) {
             this.gotoBed(10000, '未找到 terminal')
-            return this.log.error(`prepare 阶段未找到 terminal，已暂停`)
+            return this.log.error('prepare 阶段未找到 terminal，已暂停')
         }
 
         // 获取当前任务，没有任务就新增顶级合成任务

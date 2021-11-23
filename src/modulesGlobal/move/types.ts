@@ -1,4 +1,4 @@
-import { CreepRole } from "@/role/types/role"
+import { CreepRole } from '@/role/types/role'
 
 /**
  * 自定义移动的选项
@@ -76,7 +76,7 @@ export interface MoveInfo {
 
 /**
  * 是否允许对穿
- * 
+ *
  * @param creep 被对穿的 creep
  * @param requireCreep 发起对穿的 creep
  * @return 为 true 时允许对穿
@@ -85,7 +85,7 @@ export type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep
 
 /**
  * 对穿请求的规则集合
- * 
+ *
  * 键为 creep 的角色类型，值为一个返回 boolean 的方法
  * 该方法用于判断有其他 creep 向该 creep 发起对穿时是否同意对穿，在寻路时也会使用该方法确定是否要绕过一个 creep
  * 该方法为空则使用默认规则（键为 default）

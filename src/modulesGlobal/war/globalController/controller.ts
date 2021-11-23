@@ -68,7 +68,7 @@ export const createWarController = function (context: WarModuleContext) {
 
     /**
      * 启动新战争
-     * 
+     *
      * @param spawnRoomName 孵化单位的房间名
      * @param warCode 战争代号
      */
@@ -104,7 +104,7 @@ export const createWarController = function (context: WarModuleContext) {
 
     /**
      * 设置新战争默认发布小队
-     * 
+     *
      * @param squadType 要发布的小队类型
      * @param needBoost 是否需要强化
      * @param squadCode 小队代号（为空则默认为战争代号）
@@ -118,7 +118,7 @@ export const createWarController = function (context: WarModuleContext) {
      */
     const showState = function () {
         const logs = warCluster.showState()
-        const [squadType, needBoost, squadCode] = db.queryDefaultSquad() || [];
+        const [squadType, needBoost, squadCode] = db.queryDefaultSquad() || []
 
         if (!squadType) logs.push('\n未配置默认小队')
         else logs.push(`\n默认小队：[小队类型] ${SquadTypeName[squadType]} [是否 boost] ${needBoost} [小队代号] ${squadCode || '自动分配'}`)

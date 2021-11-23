@@ -1,19 +1,15 @@
-import { setRoomStats } from "@/modulesGlobal/stats"
+import { setRoomStats } from '@/modulesGlobal/stats'
 import { TransportTaskType } from '../taskTransport/types'
-import FactoryBase from "./base"
-import { FactoryState } from "./constant"
+import FactoryBase from './base'
+import { FactoryState } from './constant'
 
 /**
  * 移出资源阶段
  * 将自己存储里的所有资源都移动到其他建筑里
  */
 export default class StagePutResource extends FactoryBase {
-    constructor(roomName: string) {
-        super(roomName)
-    }
-
-    public run(): void {
-        if (Game.time % 5 || this.room.transport.hasTaskWithType(TransportTaskType.FactoryPutResource)) return 
+    public run (): void {
+        if (Game.time % 5 || this.room.transport.hasTaskWithType(TransportTaskType.FactoryPutResource)) return
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
@@ -47,10 +43,10 @@ export default class StagePutResource extends FactoryBase {
     /**
      * 更新对应产物的统计信息
      * 会将刚刚造出来的产物和 terminal 已经存在的产物数量加起来更新到 stats 中
-     * 
+     *
      * @param res 要更新数量的资源
      */
-    private updateStats(res: ResourceConstant) {
+    private updateStats (res: ResourceConstant) {
         setRoomStats(this.roomName, () => ({
             [res]: (this.factory.store[res] + this.room.terminal?.store[res]) || 0
         }))

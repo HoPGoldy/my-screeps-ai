@@ -2,7 +2,7 @@ import { Color, colorful, createRoomLink } from '@/modulesGlobal'
 import { TOP_TARGET } from '@/modulesRoom/factory/constant'
 import { FactoryLevel } from '@/modulesRoom/factory/types'
 
-export default function(): string {
+export default function (): string {
     if (!Memory.commodities) return '未启动商品生产线'
 
     const logs = []
@@ -39,22 +39,23 @@ export default function(): string {
  * 获取指定房间的工厂状态
  * 获取的信息包括：
  * 顶级产物数量，当前状态，任务数量，当前任务信息
- * 
+ *
  * @param room 要获取工厂状态的房间
  */
- function getRoomFactoryState(room: Room): string {
+function getRoomFactoryState (room: Room): string {
     const memory = room.memory.factory
     // 给房间名添加跳转链接
     const prefix = colorful(`  - [${createRoomLink(room.name)}] `, null, true)
 
-    if (!memory) return prefix + `工厂未设置等级`
-    if (!memory.depositTypes) return prefix + `工厂未设置生产线`
+    if (!memory) return prefix + '工厂未设置等级'
+    if (!memory.depositTypes) return prefix + '工厂未设置生产线'
 
-    const workStats = memory.pause ? colorful('暂停中', Color.Yellow) :
-        memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, Color.Yellow) : colorful('工作中', Color.Green)
+    const workStats = memory.pause
+        ? colorful('暂停中', Color.Yellow)
+        : memory.sleep ? colorful(`${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t`, Color.Yellow) : colorful('工作中', Color.Green)
 
     // 基本信息
-    const logs = [ 
+    const logs = [
         prefix + workStats,
         `[当前状态] ${memory.state}`,
         `[任务数量] ${memory.taskList.length}`

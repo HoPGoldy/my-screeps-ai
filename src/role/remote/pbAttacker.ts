@@ -4,13 +4,13 @@ import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
 
 /**
  * pbAttacker 移除自身采集小组并自杀的封装
- * 
+ *
  * @param creep pbAttacker
  * @param healerName 治疗单位名称
  * @param spawnRoomName 出生房间名
  * @returns 是否移除成功
  */
-const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName: string): boolean {
+const removeSelfGroup = function (creep: Creep, healerName: string, spawnRoomName: string): boolean {
     // 移除自己和 heal 的配置项
     const spawnRoom = Game.rooms[spawnRoomName]
     if (!spawnRoom) {
@@ -27,7 +27,7 @@ const removeSelfGroup = function(creep: Creep, healerName: string, spawnRoomName
  * PowerBank 攻击单位
  * 移动并攻击 powerBank, 请在 8 级时生成
  * @see doc "../doc/PB 采集小组设计案"
- * 
+ *
  * @property {} sourceFlagName 旗帜名，要插在 powerBank 上
  */
 const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
@@ -91,7 +91,7 @@ const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
         }
 
         // 获取 pb
-        let powerbank: StructurePowerBank = undefined
+        let powerbank: StructurePowerBank
         if (targetFlag.memory.sourceId) powerbank = Game.getObjectById(targetFlag.memory.sourceId as Id<StructurePowerBank>)
         else {
             // 没有缓存就进行查找
@@ -123,7 +123,7 @@ const pbAttacker: CreepConfig<CreepRole.PbAttacker> = {
              * 下面这个 150 是 pbCarrier 的孵化时间，50 为冗余时间，600 是 attacker 的攻击力，2 代表两组同时攻击
              */
             if (
-                (targetFlag.memory.state != PbHarvestState.Prepare) && 
+                (targetFlag.memory.state !== PbHarvestState.Prepare) &&
                 (powerbank.hits <= (targetFlag.memory.travelTime + 150 + 50) * 600 * 2)
             ) {
                 // 发布运输小组

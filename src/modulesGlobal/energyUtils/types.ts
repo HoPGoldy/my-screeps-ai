@@ -20,7 +20,7 @@ interface Room {
 
 /**
  * 所有能量来源
- * 
+ *
  * creep 将会从这些地方获取能量
  */
 type AllEnergySource = Source | Resource<RESOURCE_ENERGY> | EnergySourceStructure

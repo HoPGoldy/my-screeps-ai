@@ -6,7 +6,7 @@ import { ManagerData, ManagerState, TaskFinishReason, TransportTask, TransportTa
 /**
  * 搬运工工作时长占比到调整期望的 map
  * 例如工作时长占比为 0.71（71% 的时间都在工作），就会触发 proportion 为 0.7 时对应的 expect 字段
- * 
+ *
  * @property {} proportion 工作时长占比
  * @property {} expect 对应的期望
  */
@@ -17,8 +17,6 @@ const WORK_PROPORTION_TO_EXPECT = [
     { proportion: 0.3, expect: -1 },
     { proportion: 0, expect: -2 }
 ]
-
-
 
 /**
  * 期望调整的统计下限
@@ -31,17 +29,17 @@ const REGULATE_LIMIT = 500
 export default class RoomTransport extends TaskController<string | number, TransportTaskData, ManagerData> {
     /**
      * 构造- 管理指定房间的工作任务
-     * 
+     *
      * @param roomName 要管理任务的房间名
      */
-    constructor(roomName: string) {
+    constructor (roomName: string) {
         super(roomName, 'transport')
     }
 
     /**
      * 让该爬执行搬运工任务
      */
-    public doManagerWork(creep: Creep): void {
+    public doManagerWork (creep: Creep): void {
         this.totalLifeTime += 1
         const task = this.getUnitTask(creep)
         if (!task) {
@@ -66,19 +64,19 @@ export default class RoomTransport extends TaskController<string | number, Trans
         })
     }
 
-    public addTask(task: RoomTask & TransportTask, opt?: AddTaskOpt) {
+    public addTask (task: RoomTask & TransportTask, opt?: AddTaskOpt) {
         return super.addTask(task, opt)
     }
 
     /**
      * 申请结束任务
      * 搬运爬应该调用这个方法申请结束任务，由本方法统一检查是否可以结束
-     * 
+     *
      * @param task 要结束的任务
      * @param reason 结束的理由
      * @param requestCreep 申请结束的爬
      */
-    public requireFinishTask(task: TransportTaskData, reason: TaskFinishReason, requestCreep: Creep) {
+    public requireFinishTask (task: TransportTaskData, reason: TaskFinishReason, requestCreep: Creep) {
         if (reason === TaskFinishReason.Complete) this.removeTaskByKey(task.key)
         else if (reason === TaskFinishReason.CantFindSource) {
             this.log.error(`找不到资源来源，任务已移除。任务详情：${JSON.stringify(task)}`)
@@ -115,7 +113,7 @@ export default class RoomTransport extends TaskController<string | number, Trans
      * 返回的整数值代表希望增加（正值）/ 减少（负值）多少搬运工
      * 返回 0 代表不需要调整搬运工数量
      */
-    public getExpect(): number {
+    public getExpect (): number {
         // 统计数据还太少，不具备参考性，暂时不调整搬运工数量
         if (this.totalLifeTime < REGULATE_LIMIT) return 0
 

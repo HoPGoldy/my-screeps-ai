@@ -4,11 +4,11 @@ import { createHelp } from '@/modulesGlobal/console'
  * Factory 上的用户控制接口
  */
 export default class TaskConsole extends Room {
-    public taskshow(): string {
+    public taskshow (): string {
         return ''
     }
 
-    public taskhelp(): string {
+    public taskhelp (): string {
         return createHelp({
             name: '任务控制台',
             describe: '管理房间物流任务、中央物流任务以及工作任务三大运维模块',

@@ -1,30 +1,29 @@
-import { FactoryMemory } from './types';
-import RoomAccessor from '../RoomAccessor';
-import { FactoryState, TOP_TARGET, BLACK_LIST, COMMODITY_MAX, FACTORY_LOCK_AMOUNT } from './constant';
-import { FactoryTask } from './types';
+import { FactoryMemory, FactoryTask } from './types'
+import RoomAccessor from '../RoomAccessor'
+import { FactoryState, TOP_TARGET, BLACK_LIST, COMMODITY_MAX, FACTORY_LOCK_AMOUNT } from './constant'
 
 /**
  * 工厂基础管理 api
  */
 export default class FactoryBase extends RoomAccessor<FactoryMemory> {
-    constructor(roomName: string) {
+    constructor (roomName: string) {
         super('factory', roomName, 'factory', undefined)
     }
 
     /**
      * 快捷访问 - 本房价内工厂
      */
-    get factory() {
+    get factory () {
         return this.room[STRUCTURE_FACTORY]
     }
 
     /**
      * 进入待机状态
-     * 
+     *
      * @param time 待机的时长
      * @param reason 待机的理由
      */
-    public gotoBed(time: number, reason: string): OK | ERR_NOT_FOUND {
+    public gotoBed (time: number, reason: string): OK | ERR_NOT_FOUND {
         if (!this.memory) return ERR_NOT_FOUND
 
         this.memory.sleep = Game.time + time
@@ -35,7 +34,7 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
     /**
      * 从休眠中唤醒
      */
-    public wakeup(): OK | ERR_NOT_FOUND{
+    public wakeup (): OK | ERR_NOT_FOUND {
         if (!this.memory) return ERR_NOT_FOUND
 
         delete this.memory.sleep
@@ -45,12 +44,12 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
     /**
      * 计算合成指定目标产物需要多少材料
      * 没有对对应关系进行验证，请保证产物和材料之间存在合成关系
-     * 
+     *
      * @param targetResource 要合成的目标产物类型
      * @param targetAmount 要合成的目标产物数量
      * @param subResource 要查询的合成材料类型
      */
-    protected clacSubResourceAmount(targetResource: CommodityConstant, targetAmount: number, subResource: ResourceConstant): number {
+    protected clacSubResourceAmount (targetResource: CommodityConstant, targetAmount: number, subResource: ResourceConstant): number {
         const subResources = COMMODITIES[targetResource].components
         // 目标数量除于单次合成数量，向上取整后乘以单次合成所需的材料数量
         return subResources[subResource] * Math.ceil(targetAmount / COMMODITIES[targetResource].amount)
@@ -58,22 +57,22 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
 
     /**
      * 检查资源是否位于黑名单中
-     * 
+     *
      * 因为有些基础资源也是有合成任务的，而自动任务规划里就需要避开这些任务
      * 不然就会自动拆分出很多重复的任务，比如：发现需要能量 > 添加电池合成任务 > 添加能量合成任务 > ...
      */
-    protected inBlacklist(resType: ResourceConstant): boolean {
+    protected inBlacklist (resType: ResourceConstant): boolean {
         return BLACK_LIST.includes(resType as MineralConstant) || !(resType in COMMODITIES)
     }
 
     /**
      * 处理数量不足的资源
      * 如果该资源自己可以合成的话，就会自动添加新任务
-     * 
+     *
      * @param resType 数量不足的资源
      * @param amount 需要的数量
      */
-    protected handleInsufficientResource(resType: ResourceConstant, amount: number) {
+    protected handleInsufficientResource (resType: ResourceConstant, amount: number) {
         // 如果自己的等级无法合成该产品
         if ('level' in COMMODITIES[resType] && COMMODITIES[resType].level !== this.memory.level) {
             const requestAmount = amount - this.room.terminal.store[resType]
@@ -84,16 +83,18 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
             if (this.memory.taskList.length <= 1) this.gotoBed(50, `等待共享 ${resType}*${requestAmount}`)
         }
         // 能合成的话就添加新任务，数量为需要数量 - 已存在数量
-        else this.addTask({
-            target: resType as CommodityConstant,
-            amount: amount - this.room.terminal.store[resType]
-        })
+        else {
+            this.addTask({
+                target: resType as CommodityConstant,
+                amount: amount - this.room.terminal.store[resType]
+            })
+        }
     }
 
     /**
      * 获取当前合成任务
      */
-    protected getCurrentTask(): FactoryTask | undefined {
+    protected getCurrentTask (): FactoryTask | undefined {
         return this.memory.taskList[0]
     }
 
@@ -101,18 +102,18 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
      * 移除当前任务
      * 任务完成或者出错时调用
      */
-    protected deleteCurrentTask(): void {
+    protected deleteCurrentTask (): void {
         this.memory.taskList.shift()
     }
 
     /**
      * 添加新的合成任务
      * 该方法会自行决策应该合成什么顶级产物
-     * 
+     *
      * @param task 如果指定则将其添加为新任务，否则新增顶级产物合成任务
      * @returns 新任务在队列中的位置，第一个为 1
      */
-    protected addTask(task: FactoryTask = undefined): number {
+    protected addTask (task: FactoryTask = undefined): number {
         if (task) return this.memory.taskList.push(task)
 
         // 如果有用户指定的目标的话就直接生成
@@ -136,7 +137,7 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
         // 遍历自己内存中的所有生产线类型，从 factoryTopTargets 取出对应的顶级产物，然后展平为一维数组
         const depositTypes = this.memory.depositTypes || []
         const topTargets: CommodityConstant[] = _.flatten(depositTypes.map(type => TOP_TARGET[type][this.memory.level]))
-        
+
         // 如果房间有共享任务并且任务目标需要自己生产的话
         if (shareTask && topTargets.includes(shareTask.resourceType as CommodityConstant)) {
             // 将其添加为新任务
@@ -151,7 +152,7 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
         if (!this.memory.targetIndex || this.memory.targetIndex >= topTargets.length) {
             this.memory.targetIndex = 0
         }
-        
+
         // 获取预定目标
         let topTarget = topTargets[this.memory.targetIndex]
 
@@ -166,15 +167,18 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
                     return true
                 }
             })
-            
+
             // 遍历了还没找到的话就休眠
             if (!topTarget) {
                 this.gotoBed(100, '达到上限')
                 return 0
             }
             // 找到了，按照其索引更新下次预定索引
-            else this.room.memory.factory.targetIndex = (targetIndex + 1 >= topTargets.length) ?
-                0 : targetIndex + 1
+            else {
+                this.room.memory.factory.targetIndex = (targetIndex + 1 >= topTargets.length)
+                    ? 0
+                    : targetIndex + 1
+            }
         }
         // 没有到达上限，按原计划更新索引
         else this.memory.targetIndex = this.memory.targetIndex + 1 % topTargets.length
@@ -191,21 +195,21 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
      * 挂起合成任务
      * 在任务无法进行时调用，将会把任务移动至队列末尾
      */
-    protected hangTask(): void {
+    protected hangTask (): void {
         this.memory.taskList.push(this.memory.taskList.shift())
     }
 
     /**
      * 危险 - 清空当前任务队列
      */
-    public clearTask(): void {
+    public clearTask (): void {
         this.memory.taskList = []
     }
 
     /**
      * 设置工厂工作状态
      */
-    protected setState(newState: FactoryState): void {
+    protected setState (newState: FactoryState): void {
         this.memory.state = newState
     }
 }

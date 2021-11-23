@@ -1,4 +1,4 @@
-import { createHelp } from "@/modulesGlobal/console"
+import { createHelp } from '@/modulesGlobal/console'
 
 /**
  * 掠夺配置 api
@@ -7,24 +7,24 @@ import { createHelp } from "@/modulesGlobal/console"
 export default {
     /**
      * 添加要掠夺的资源
-     * 
+     *
      * @param resources 要掠夺的资源
      */
-    add(...resources: ResourceConstant[]): string {
+    add (...resources: ResourceConstant[]): string {
         if (!Memory.reiveList) Memory.reiveList = []
 
         // 确保新增的资源不会重复
-        Memory.reiveList = _.uniq([ ...Memory.reiveList, ...resources])
+        Memory.reiveList = _.uniq([...Memory.reiveList, ...resources])
         return `[reiver] 添加成功，${this.show()}`
     },
 
     /**
      * 移除要掠夺的资源
      * 参数为空时移除所有
-     * 
+     *
      * @param resources 要移除的掠夺资源
      */
-    remove(...resources: ResourceConstant[]): string {
+    remove (...resources: ResourceConstant[]): string {
         if (!Memory.reiveList) Memory.reiveList = []
 
         // 更新列表
@@ -37,15 +37,15 @@ export default {
     /**
      * 显示所有掠夺资源
      */
-    show(): string {
-        if (!Memory.reiveList || Memory.reiveList.length <= 0) return `暂无特指，将掠夺所有资源`
+    show (): string {
+        if (!Memory.reiveList || Memory.reiveList.length <= 0) return '暂无特指，将掠夺所有资源'
         return `当前仅会掠夺如下资源：${Memory.reiveList.join(' ')}`
     },
 
     /**
      * 帮助信息
      */
-    help() {
+    help () {
         return createHelp({
             name: '资源掠夺模块',
             describe: '该模块会影响 reiver 单位的行为，如果不添加的话，reiver 将会掠夺目标建筑内的所有资源',

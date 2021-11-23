@@ -1,8 +1,8 @@
-import { BoostState } from "@/modulesRoom/lab/types";
-import { getBodyBoostResource } from "@/role/bodyUtils";
-import { contextOutside } from "../context";
-import { createSpawnInfo } from "./getBodyPart";
-import { RunMobilizeStateFunc, MobilizeState } from "./types";
+import { BoostState } from '@/modulesRoom/lab/types'
+import { getBodyBoostResource } from '@/role/bodyUtils'
+import { contextOutside } from '../context'
+import { createSpawnInfo } from './getBodyPart'
+import { RunMobilizeStateFunc, MobilizeState } from './types'
 
 /**
  * 等待强化材料就绪阶段

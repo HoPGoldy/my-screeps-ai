@@ -1,4 +1,4 @@
-import { FactoryState } from "./constant"
+import { FactoryState } from './constant'
 
 declare global {
     interface RoomMemory {

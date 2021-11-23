@@ -1,4 +1,4 @@
-import { red, blue, yellow } from "@/modulesGlobal"
+import { red, blue, yellow } from '@/modulesGlobal'
 
 /**
  * 格式化输出当前的资源提供房间
@@ -24,7 +24,7 @@ export const showResourceSource = function (): string {
 /**
  * 共享任务的数量可能大于终端的当前可用容量
  * 这个方法会获取到可以发送的资源容量
- * 
+ *
  * @param amount 期望的发送数量
  * @param targetRoom 要发送到的目标房间
  * @param sourceRoom 要执行发送的房间
@@ -44,14 +44,14 @@ export const getSendAmount = function (
     const cost = Game.market.calcTransactionCost(amount, targetRoom, sourceRoom)
 
     // 需要从外边搬进来的资源数量，是能量的话要区别计算一下
-    const needTransferAmount = resourceType === RESOURCE_ENERGY ?
-        Math.max(amount + cost - existEnergy, 0) :
-        Math.max(amount - existResource, 0) + Math.max(cost - existEnergy, 0)
+    const needTransferAmount = resourceType === RESOURCE_ENERGY
+        ? Math.max(amount + cost - existEnergy, 0)
+        : Math.max(amount - existResource, 0) + Math.max(cost - existEnergy, 0)
 
     if (needTransferAmount <= terminalFree) return { amount, cost }
     // 剩余空间不足，拒绝发送
     if (needTransferAmount > 0 && terminalFree <= 0) return { amount: 0, cost: 0 }
 
     // 二分之后递归尝试
-    return getSendAmount(Math.floor(amount / 2), resourceType,targetRoom, sourceRoom, terminalFree, existResource, existEnergy)
+    return getSendAmount(Math.floor(amount / 2), resourceType, targetRoom, sourceRoom, terminalFree, existResource, existEnergy)
 }

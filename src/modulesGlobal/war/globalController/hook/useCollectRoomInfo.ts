@@ -1,5 +1,5 @@
-import { createCache } from "@/utils"
-import { RoomInfo } from "../../types"
+import { createCache } from '@/utils'
+import { RoomInfo } from '../../types'
 
 /**
  * 创建获取房间单位信息功能
@@ -22,10 +22,27 @@ export const useCollectRoomInfo = function (getRoomByName: (roomName: string) =>
         const structureGroup = _.groupBy(structures, s => s.structureType)
 
         const defaultStructures = {
-            [STRUCTURE_CONTROLLER]: [], [STRUCTURE_EXTENSION]: [], [STRUCTURE_EXTRACTOR]: [], [STRUCTURE_FACTORY]: [], [STRUCTURE_INVADER_CORE]: [],
-            [STRUCTURE_KEEPER_LAIR]: [], [STRUCTURE_LAB]: [], [STRUCTURE_LINK]: [], [STRUCTURE_NUKER]: [], [STRUCTURE_OBSERVER]: [],
-            [STRUCTURE_POWER_SPAWN]: [], [STRUCTURE_POWER_BANK]: [], [STRUCTURE_RAMPART]: [], [STRUCTURE_SPAWN]: [], [STRUCTURE_STORAGE]: [],
-            [STRUCTURE_TERMINAL]: [], [STRUCTURE_TOWER]: [], [STRUCTURE_CONTAINER]: [], [STRUCTURE_PORTAL]: [], [STRUCTURE_ROAD]: [], [STRUCTURE_WALL]: [],
+            [STRUCTURE_CONTROLLER]: [],
+            [STRUCTURE_EXTENSION]: [],
+            [STRUCTURE_EXTRACTOR]: [],
+            [STRUCTURE_FACTORY]: [],
+            [STRUCTURE_INVADER_CORE]: [],
+            [STRUCTURE_KEEPER_LAIR]: [],
+            [STRUCTURE_LAB]: [],
+            [STRUCTURE_LINK]: [],
+            [STRUCTURE_NUKER]: [],
+            [STRUCTURE_OBSERVER]: [],
+            [STRUCTURE_POWER_SPAWN]: [],
+            [STRUCTURE_POWER_BANK]: [],
+            [STRUCTURE_RAMPART]: [],
+            [STRUCTURE_SPAWN]: [],
+            [STRUCTURE_STORAGE]: [],
+            [STRUCTURE_TERMINAL]: [],
+            [STRUCTURE_TOWER]: [],
+            [STRUCTURE_CONTAINER]: [],
+            [STRUCTURE_PORTAL]: [],
+            [STRUCTURE_ROAD]: [],
+            [STRUCTURE_WALL]: []
         }
 
         return {

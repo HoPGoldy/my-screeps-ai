@@ -6,16 +6,16 @@ import { Color } from '@/modulesGlobal'
  * Controller 拓展
  */
 export default class ControllerExtension extends StructureController {
-    public onWork(): void {
+    public onWork (): void {
         this.drawEnergyHarvestInfo()
         if (Game.time % 20) return
 
         // 如果等级发生变化了就运行 creep 规划
-        if (this.stateScanner())  this.onLevelChange(this.level)
+        if (this.stateScanner()) this.onLevelChange(this.level)
 
         // 二级之后再开始调整，不然有可能会影响固定开局
         if (this.level >= 2 && !(Game.time % 500)) {
-             // 调整运营 creep 数量
+            // 调整运营 creep 数量
             this.room.strategy.operation.adjustBaseUnit()
             // 并在日常事情执行任务调整（防御时期任务由 tower 接管）
             if (this.level === 8 && !this.room.memory.defenseMode) {
@@ -27,7 +27,7 @@ export default class ControllerExtension extends StructureController {
     /**
      * 临时 - 显示能量获取速率
      */
-    private drawEnergyHarvestInfo() {
+    private drawEnergyHarvestInfo () {
         const { energyGetRate } = getRoomStats(this.room.name)
         const { x, y } = this.pos
         this.room.visual.text(`能量获取速率 ${energyGetRate || 0}`, x + 1, y + 0.25, { align: 'left', opacity: 0.5 })
@@ -35,10 +35,10 @@ export default class ControllerExtension extends StructureController {
 
     /**
      * 当等级发生变化时的回调函数
-     * 
+     *
      * @param level 当前的等级
      */
-    public onLevelChange(level: number): void {
+    public onLevelChange (level: number): void {
         // 刚占领，添加工作单位
         if (level === 1) this.room.strategy.operation.initRoomUnit()
         else if (level === 8) {
@@ -52,10 +52,10 @@ export default class ControllerExtension extends StructureController {
 
     /**
      * 统计自己的等级信息
-     * 
+     *
      * @returns 为 true 时说明自己等级发生了变化
      */
-    public stateScanner(): boolean {
+    public stateScanner (): boolean {
         let hasLevelChange = false
         setRoomStats(this.room.name, stats => {
             hasLevelChange = stats.controllerLevel !== this.level
@@ -73,10 +73,10 @@ export default class ControllerExtension extends StructureController {
     /**
      * 检查敌人威胁
      * 检查房间内所有敌人的身体部件情况确认是否可以造成威胁
-     * 
+     *
      * @returns 是否可以造成威胁（是否启用主动防御模式）
      */
-    public checkEnemyThreat(): boolean {
+    public checkEnemyThreat (): boolean {
         // 这里并没有搜索 PC，因为 PC 不是敌人主力
         const enemy = this.room._enemys || this.room.find(FIND_HOSTILE_CREEPS, { filter: whiteListFilter })
         if (enemy.length <= 0) return false

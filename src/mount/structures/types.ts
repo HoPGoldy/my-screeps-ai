@@ -1,4 +1,4 @@
-import { Color } from "@/modulesGlobal";
+import { Color } from '@/modulesGlobal'
 
 declare global {
     /**
@@ -9,7 +9,7 @@ declare global {
         my?: boolean
         /**
          * 发送日志
-         * 
+         *
          * @param content 日志内容
          * @param instanceName 发送日志的实例名
          * @param color 日志前缀颜色

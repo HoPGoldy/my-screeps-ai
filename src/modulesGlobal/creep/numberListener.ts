@@ -6,7 +6,7 @@ import { log } from '../console'
 /**
  * creep 的数量控制器
  * 负责发现死去的 creep 并检查其是否需要再次孵化
- * 
+ *
  * @param intrval 搜索间隔
  */
 export const creepNumberListener = function (): void {
@@ -54,7 +54,7 @@ const assertRoleMemory = function (memory: CreepMemory): memory is RoleCreepMemo
 /**
  * 处理去世的 creep
  * 会检查其是否需要再次孵化
- * 
+ *
  * @param creepName creep 名字
  * @param creepMemory creep 死时的内存
  */

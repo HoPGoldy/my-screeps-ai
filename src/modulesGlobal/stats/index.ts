@@ -1,8 +1,8 @@
-import { RoomStats } from "./types"
+import { RoomStats } from './types'
 
 /**
  * 更新指定房间的统计数据
- * 
+ *
  * @param roomName 要保持
  * @param getNewStats 统计数据的获取回调，该方法提供房间现存的状态作为参数，且返回的值将被合并到房间的统计数据中
  */
@@ -28,7 +28,7 @@ export const setRoomStats = function (roomName: string, getNewStats: (stats: Roo
 
 /**
  * 清理指定房间的统计数据
- * 
+ *
  * @param roomName 要清理统计的房间名
  */
 export const clearRoomStats = function (roomName: string): void {
@@ -37,7 +37,7 @@ export const clearRoomStats = function (roomName: string): void {
 
 /**
  * 获取指定房间的统计数据
- * 
+ *
  * @param roomName 要获取统计的房间名
  */
 export const getRoomStats = function (roomName: string): RoomStats {
@@ -58,15 +58,15 @@ export const initGlobalStats = function (): void {
  * 详情见 ./doc/Grafana 统计信息.md
  */
 export const stateScanner = function (): void {
-    if (Game.time % 20) return 
-    
+    if (Game.time % 20) return
+
     // 统计 GCL / GPL 的升级百分比和等级
-    Memory.stats.gcl = (Game.gcl.progress / Game.gcl.progressTotal) * 100,
-    Memory.stats.gclLevel = Game.gcl.level,
-    Memory.stats.gpl = (Game.gpl.progress / Game.gpl.progressTotal) * 100,
-    Memory.stats.gplLevel = Game.gpl.level,
+    Memory.stats.gcl = (Game.gcl.progress / Game.gcl.progressTotal) * 100
+    Memory.stats.gclLevel = Game.gcl.level
+    Memory.stats.gpl = (Game.gpl.progress / Game.gpl.progressTotal) * 100
+    Memory.stats.gplLevel = Game.gpl.level
     // CPU 的当前使用量
-    Memory.stats.cpu = Game.cpu.getUsed(),
+    Memory.stats.cpu = Game.cpu.getUsed()
     // bucket 当前剩余量
     Memory.stats.bucket = Game.cpu.bucket
     // 统计剩余钱数

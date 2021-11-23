@@ -8,7 +8,7 @@ declare global {
         [STRUCTURE_NUKER]?: StructureNuker
         [STRUCTURE_OBSERVER]?: StructureObserver
         [STRUCTURE_EXTRACTOR]?: StructureExtractor
-    
+
         [STRUCTURE_SPAWN]?: StructureSpawn[]
         [STRUCTURE_EXTENSION]?: StructureExtension[]
         [STRUCTURE_ROAD]?: StructureRoad[]
@@ -20,7 +20,7 @@ declare global {
         [STRUCTURE_TOWER]?: StructureTower[]
         [STRUCTURE_LAB]?: StructureLab[]
         [STRUCTURE_CONTAINER]?: StructureContainer[]
-    
+
         mineral?: Mineral
         source?: Source[]
         centerLink?: StructureLink
@@ -31,9 +31,9 @@ declare global {
 /**
  * 所有被添加到 Room 上的快捷访问键
  */
-export type AllRoomShortcut = STRUCTURE_OBSERVER | STRUCTURE_POWER_SPAWN | STRUCTURE_EXTRACTOR | 
-    STRUCTURE_NUKER | STRUCTURE_FACTORY | STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_ROAD | 
-    STRUCTURE_WALL | STRUCTURE_RAMPART | STRUCTURE_KEEPER_LAIR | STRUCTURE_PORTAL | STRUCTURE_LINK | 
+export type AllRoomShortcut = STRUCTURE_OBSERVER | STRUCTURE_POWER_SPAWN | STRUCTURE_EXTRACTOR |
+    STRUCTURE_NUKER | STRUCTURE_FACTORY | STRUCTURE_SPAWN | STRUCTURE_EXTENSION | STRUCTURE_ROAD |
+    STRUCTURE_WALL | STRUCTURE_RAMPART | STRUCTURE_KEEPER_LAIR | STRUCTURE_PORTAL | STRUCTURE_LINK |
     STRUCTURE_TOWER | STRUCTURE_LAB | STRUCTURE_CONTAINER | 'mineral' | 'source'
 
 /**

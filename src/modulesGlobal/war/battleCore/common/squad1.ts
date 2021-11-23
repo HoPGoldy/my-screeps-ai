@@ -1,6 +1,6 @@
-import { contextEnemyDamage, contextOutside } from "../../context"
-import { getMaxEndure } from "./calculator"
-import { searchPath, shiftNextMoveDirection } from "./move"
+import { contextEnemyDamage, contextOutside } from '../../context'
+import { getMaxEndure } from './calculator'
+import { searchPath, shiftNextMoveDirection } from './move'
 
 /**
  * 一体机通用逻辑
@@ -28,9 +28,10 @@ export const execSquadMove = function (context: SquadMoveContext) {
             const maxEndure = getMaxEndure(creep)
 
             enemyDamage.map((x, y, value) => {
-                if (value === -1) return
+                if (value === -1) return false
                 // 可以打穿自己的防御，这里不能走
                 if (value >= maxEndure) costs.set(x, y, 255)
+                return true
             })
 
             return costs
@@ -41,7 +42,7 @@ export const execSquadMove = function (context: SquadMoveContext) {
     if (creep.room?.controller?.my && pathResult.incomplete) {
         goTo(creep, targetFlag.pos)
         return
-    } 
+    }
 
     if (creep.fatigue !== 0) return
     const nextMove = shiftNextMoveDirection(creep.pos, pathResult.path)

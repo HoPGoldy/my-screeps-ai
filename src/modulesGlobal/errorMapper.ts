@@ -1,21 +1,22 @@
 /**
  * 校正异常的堆栈信息
- * 
+ *
  * 由于 rollup 会打包所有代码到一个文件，所以异常的调用栈定位和源码的位置是不同的
  * 本模块就是用来将异常的调用栈映射至源代码位置
- * 
+ *
  * @see https://github.com/screepers/screeps-typescript-starter/blob/master/src/utils/ErrorMapper.ts
  */
 
-import { SourceMapConsumer } from "source-map"
-import { red } from "./console/utils"
+import { SourceMapConsumer } from 'source-map'
+import { red } from './console/utils'
 
 // 缓存 SourceMap
 let consumer = null
 
 // 第一次报错时创建 sourceMap
 const getConsumer = function (): SourceMapConsumer {
-    if (consumer == null) consumer = new SourceMapConsumer(require("main.js.map"))
+    // eslint-disable-next-line @typescript-eslint/no-var-requires
+    if (consumer == null) consumer = new SourceMapConsumer(require('main.js.map'))
     return consumer
 }
 
@@ -33,16 +34,18 @@ const cache: { [key: string]: string } = {}
 const sourceMappedStackTrace = function (error: Error | string): string {
     const stack: string = error instanceof Error ? (error.stack as string) : error
     // 有缓存直接用
+    // eslint-disable-next-line no-prototype-builtins
     if (cache.hasOwnProperty(stack)) return cache[stack]
 
+    // eslint-disable-next-line no-useless-escape
     const re = /^\s+at\s+(.+?\s+)?\(?([0-z._\-\\\/]+):(\d+):(\d+)\)?$/gm
     let match: RegExpExecArray | null
     let outStack = error.toString()
-    console.log("ErrorMapper -> sourceMappedStackTrace -> outStack", outStack)
+    console.log('ErrorMapper -> sourceMappedStackTrace -> outStack', outStack)
 
     while ((match = re.exec(stack))) {
         // 解析完成
-        if (match[2] !== "main") break
+        if (match[2] !== 'main') break
 
         // 获取追踪定位
         const pos = getConsumer().originalPositionFor({
@@ -71,7 +74,7 @@ const sourceMappedStackTrace = function (error: Error | string): string {
  * 错误追踪包装器
  * 用于把报错信息通过 source-map 解析成源代码的错误位置
  * 和原本 wrapLoop 的区别是，wrapLoop 会返回一个新函数，而这个会直接执行
- * 
+ *
  * @param next 玩家代码
  */
 export const errorMapper = function (next: () => any): void {
@@ -82,10 +85,10 @@ export const errorMapper = function (next: () => any): void {
     catch (e) {
         if (e instanceof Error) {
             // 渲染报错调用栈，沙盒模式用不了这个
-            const errorMessage = Game.rooms.sim ?
-                `沙盒模式无法使用 source-map - 显示原始追踪栈<br>${_.escape(e.stack)}` :
-                `${_.escape(sourceMappedStackTrace(e))}`
-            
+            const errorMessage = Game.rooms.sim
+                ? `沙盒模式无法使用 source-map - 显示原始追踪栈<br>${_.escape(e.stack)}`
+                : `${_.escape(sourceMappedStackTrace(e))}`
+
             console.log(red(errorMessage))
         }
         // 处理不了，直接抛出

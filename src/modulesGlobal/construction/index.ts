@@ -7,24 +7,28 @@ import { createConstructionManager } from './constructionManager'
  * 建造的优先级
  * 越靠前建造优先级越高
  */
-const BUILD_PRIORITY = [ STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK ]
+const BUILD_PRIORITY = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK]
 
 const effects: CreateOptions = {
     getGameSites: () => Game.constructionSites,
     getWaitingSites: () => (Memory.waitingSites || []),
-    setWaitingSites: (newList) => Memory.waitingSites = newList,
+    setWaitingSites: newList => {
+        Memory.waitingSites = newList
+    },
     getBuildSites: () => (Memory.buildingSites || {}),
-    setBuildingSites: (newList) => Memory.buildingSites = newList,
+    setBuildingSites: newList => {
+        Memory.buildingSites = newList
+    },
     log,
     updateStructure
 }
 
-const { addConstructionSite, planSite, handleCompleteSite } = createConstructionManager(effects);
+const { addConstructionSite, planSite, handleCompleteSite } = createConstructionManager(effects)
 
 /**
  * 获取最近的待建造工地
  * 使用前请确保该位置有视野
- * 
+ *
  * @param pos 获取本房间内距离该位置最近且优先级最高的工地
  */
 const getNearSite = function (pos: RoomPosition): ConstructionSite {

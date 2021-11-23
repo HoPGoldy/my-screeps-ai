@@ -11,7 +11,7 @@ const remoteUpgrader: CreepConfig<CreepRole.RemoteUpgrader> = {
     isNeed: (room, preMemory) => {
         const target = Game.rooms[preMemory.data.targetRoomName]
         // 目标房间到 6 了就算任务完成
-        return remoteHelperIsNeed(room, target, () =>  target.controller.level >= 6)
+        return remoteHelperIsNeed(room, target, () => target.controller.level >= 6)
     },
     // 向指定房间移动
     prepare: creep => {

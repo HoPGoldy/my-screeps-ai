@@ -3,7 +3,7 @@ import { blue, yellow, createHelp, createLink } from '@/modulesGlobal/console'
 /**
  * 帮助文档中的标题
  */
- export const PROJECT_TITLE = [
+export const PROJECT_TITLE = [
     String.raw`        __  __      ____  ______      __    __         _____                               `,
     String.raw`       / / / /___  / __ \/ ____/___  / /___/ /_  __   / ___/_____________  ___  ____  _____`,
     String.raw`      / /_/ / __ \/ /_/ / / __/ __ \/ / __  / / / /   \__ \/ ___/ ___/ _ \/ _ \/ __ \/ ___/`,
@@ -99,7 +99,7 @@ export default (): string => [
                     params: [
                         { name: 'roomName', desc: '要发送到的房间名' },
                         { name: 'resourceType', desc: '资源类型' },
-                        { name: 'amount', desc: '发送数量' },
+                        { name: 'amount', desc: '发送数量' }
                     ],
                     functionName: 'give'
                 },
@@ -107,7 +107,7 @@ export default (): string => [
                     title: '欢呼',
                     params: [
                         { name: 'content', desc: '欢呼内容' },
-                        { name: 'toPublic', desc: '[可选] 其他人是否可见，默认为 true' },
+                        { name: 'toPublic', desc: '[可选] 其他人是否可见，默认为 true' }
                     ],
                     functionName: 'hail'
                 }

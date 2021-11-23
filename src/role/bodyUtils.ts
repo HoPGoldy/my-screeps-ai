@@ -9,13 +9,13 @@ import { BodyConfig, BodyConfigs, BodyPartGenerator, BodyRepeat } from './types/
 /**
  * 根据身体配置生成完成的身体数组
  * cpu 消耗: 0.028 左右
- * 
+ *
  * @param bodySet 身体部件配置对象
  */
-export function calcBodyPart(bodySets: BodyRepeat[]): BodyPartConstant[] {
+export function calcBodyPart (bodySets: BodyRepeat[]): BodyPartConstant[] {
     // 把身体配置项拓展成如下形式的二维数组
     // [ [ TOUGH ], [ WORK, WORK ], [ MOVE, MOVE, MOVE ] ]
-    const bodys = bodySets.map(([ bodyPart, length ]) => Array(length).fill(bodyPart))
+    const bodys = bodySets.map(([bodyPart, length]) => Array(length).fill(bodyPart))
     // 把二维数组展平
     return [].concat(...bodys)
 }
@@ -51,23 +51,23 @@ export const getBodyBoostResource = function (bodys: BodyPartConstant[]): BoostR
 
 /**
  * 生成通用身体部件获取函数
- * 
+ *
  * @param bodyConfig 该 creep 对应的身体配置项
  */
-export function createBodyGetter(bodyConfig: BodyConfig): BodyPartGenerator {
+export function createBodyGetter (bodyConfig: BodyConfig): BodyPartGenerator {
     /**
      * 获取身体部件数组
      * 根据房间中现存的能量选择给定好的体型
      */
-    return function(room: Room, spawn: StructureSpawn): BodyPartConstant[] {
+    return function (room: Room, spawn: StructureSpawn): BodyPartConstant[] {
         const targetLevel = Object.keys(bodyConfig).reverse().find(level => {
             // 先通过等级粗略判断，再加上 dryRun 精确验证
             const availableEnergyCheck = (Number(level) <= room.energyAvailable)
-            const dryCheck = (spawn.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) == OK)
+            const dryCheck = (spawn.spawnCreep(bodyConfig[level], 'bodyTester', { dryRun: true }) === OK)
 
             return availableEnergyCheck && dryCheck
         })
-        if (!targetLevel) return [ ]
+        if (!targetLevel) return []
 
         // 获取身体部件
         const bodys: BodyPartConstant[] = bodyConfig[targetLevel]
@@ -78,15 +78,15 @@ export function createBodyGetter(bodyConfig: BodyConfig): BodyPartGenerator {
 
 /**
  * 快速生成 creep 身体部件配置项
- * 
+ *
  * @param bodySets 1 - 8 级时对应的身体部件配置
  */
-const getBodyConfig = function(...bodySets: [
+const getBodyConfig = function (...bodySets: [
     BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[], BodyRepeat[]
 ]): BodyConfig {
     const config = { 300: [], 550: [], 800: [], 1300: [], 1800: [], 2300: [], 5600: [], 10000: [] }
     // 遍历空配置项，用传入的 bodySet 依次生成配置项
-    Object.keys(config).map((level, index) => {
+    Object.keys(config).forEach((level, index) => {
         config[level] = calcBodyPart(bodySets[index])
     })
 

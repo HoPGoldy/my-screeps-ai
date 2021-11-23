@@ -1,6 +1,6 @@
-import { EnvContext, EnvMethods } from "@/contextTypes";
-import { SquadType } from "../squadManager/types";
-import { SquadSpawnInfo } from "./getBodyPart";
+import { EnvContext, EnvMethods } from '@/contextTypes'
+import { SquadType } from '../squadManager/types'
+import { SquadSpawnInfo } from './getBodyPart'
 
 export type UpdateMobilizeStateFunc = (newState: MobilizeState) => void
 

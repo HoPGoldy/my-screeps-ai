@@ -10,7 +10,7 @@ const getPos = (target: { pos: RoomPosition }): RoomPosition => target.pos
 /**
  * 评价该房间
  * 该房间是否有威胁之类的
- * 
+ *
  * @param room 要评价的房间
  * @returns 评价等级
  */
@@ -22,7 +22,7 @@ const getRoomAppraisal = function (room: Room): AppraisalTypes {
 
 /**
  * 记录指定房间
- * 
+ *
  * @param room 要扫描的房间
  * @returns 扫描得到的结果
  */
@@ -43,7 +43,14 @@ export const recordRoom = function (room: Room): LibRoomDetail {
     const appraisal = getRoomAppraisal(room)
 
     const detail: LibRoomDetail = {
-        structure, player, rcl, controller, source, mineral, site, appraisal,
+        structure,
+        player,
+        rcl,
+        controller,
+        source,
+        mineral,
+        site,
+        appraisal,
         time: Game.time
     }
 
@@ -60,7 +67,7 @@ export const recordRoom = function (room: Room): LibRoomDetail {
 /**
  * 移除指定房间的信息
  * 一般用于房间信息过期之后
- * 
+ *
  * @param roomName 要清空的房间名
  */
 export const clearRoom = function (roomName: string): OK | ERR_NOT_FOUND {
@@ -72,7 +79,7 @@ export const clearRoom = function (roomName: string): OK | ERR_NOT_FOUND {
 
 /**
  * 获取指定房间的详情数据
- * 
+ *
  * @param roomName 要读取的房间名
  * @returns 该房间的数据，如果没有记录过则返回 undefined
  */

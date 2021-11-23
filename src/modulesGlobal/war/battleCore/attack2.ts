@@ -1,7 +1,7 @@
-import { contextRoomInfo } from "../context"
-import { BattleCore } from "../squadManager/types"
-import { RoomInfo } from "../types"
-import { execSquadHeal, execSquadMove, getNamedMember, SquadMemberMemory } from "./common/cooperateSquad2"
+import { contextRoomInfo } from '../context'
+import { BattleCore } from '../squadManager/types'
+import { RoomInfo } from '../types'
+import { execSquadHeal, execSquadMove, getNamedMember, SquadMemberMemory } from './common/cooperateSquad2'
 
 type SquadMemory = SquadMemberMemory & {
     cacheAttackTargetId: Id<Creep | PowerCreep | AnyStructure>
@@ -26,7 +26,7 @@ export const runAttack2: BattleCore<[Creep, Creep], SquadMemory> = function (con
 
 /**
  * 执行小队功击
- * 
+ *
  * @param attacker 进攻手
  * @param target 进攻目标
  */

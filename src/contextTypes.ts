@@ -1,4 +1,4 @@
-import { createLog, green, red, yellow, blue } from "./modulesGlobal/console";
+import { createLog, green, red, yellow, blue } from './modulesGlobal/console'
 
 export interface EnvMethods {
     getGame: () => Game

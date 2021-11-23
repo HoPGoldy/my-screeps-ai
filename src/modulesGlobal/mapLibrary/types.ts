@@ -64,7 +64,7 @@ export type LibRoomDetail<T extends RoomPosition | string = RoomPosition> = {
 
 /**
  * 对房间的评价
- * 
+ *
  * - safety：安全，可以同行
  * - danger：危险，不可以通行
  */

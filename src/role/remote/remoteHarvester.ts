@@ -68,14 +68,14 @@ const remoteHarvester: CreepConfig<CreepRole.RemoteHarvester> = {
         // 一旦被 core 占领就不再生成
         else if (harvestResult === ERR_NOT_OWNER && !(Game.time % 20)) {
             const core = creep.room.find(FIND_STRUCTURES, {
-                filter: s => s.structureType == STRUCTURE_INVADER_CORE
+                filter: s => s.structureType === STRUCTURE_INVADER_CORE
             })
 
             // 发现入侵者 core
             if (core.length > 0) {
-                const collapseTimerEffect = core[0].effects.find(e => e.effect == EFFECT_COLLAPSE_TIMER)
+                const collapseTimerEffect = core[0].effects.find(e => e.effect === EFFECT_COLLAPSE_TIMER)
                 // 将重生时间设置为 core 消失之后
-                // 再加 5000 是因为 core 消失之后控制器还会有 5000 tick 的被预定时间 
+                // 再加 5000 是因为 core 消失之后控制器还会有 5000 tick 的被预定时间
                 Game.rooms[spawnRoom]?.remote.disableRemote(
                     roomName, sourceId,
                     collapseTimerEffect.ticksRemaining + 5000
@@ -89,7 +89,7 @@ const remoteHarvester: CreepConfig<CreepRole.RemoteHarvester> = {
     },
     target: creep => {
         const { spawnRoom: spawnRoomName, data: { sourceId, roomName } } = creep.memory
-        const spawnRoom =  Game.rooms[spawnRoomName]
+        const spawnRoom = Game.rooms[spawnRoomName]
         const target = spawnRoom?.remote.getRemoteEnergyStore(roomName, sourceId)
         if (!target) {
             spawnRoom?.remote.remove(roomName, sourceId)
@@ -102,7 +102,7 @@ const remoteHarvester: CreepConfig<CreepRole.RemoteHarvester> = {
             // 没有可建造的工地后就再也不建造
             const buildResult = creep.buildStructure()
 
-            if (buildResult === ERR_NOT_FOUND)  creep.memory.dontBuild = true
+            if (buildResult === ERR_NOT_FOUND) creep.memory.dontBuild = true
             // 能量不足了就去 source 阶段，同时释放掉禁止通行点位
             else if (buildResult === ERR_NOT_ENOUGH_ENERGY) {
                 delete creep.memory.stand

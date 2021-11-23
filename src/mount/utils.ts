@@ -1,5 +1,5 @@
-import { EnvMethods } from "@/contextTypes";
-import { green, red, yellow, blue, createLog } from "@/modulesGlobal/console";
+import { EnvMethods } from '@/contextTypes'
+import { green, red, yellow, blue, createLog } from '@/modulesGlobal/console'
 
 /**
  * 创建环境上下文

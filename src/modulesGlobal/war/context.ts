@@ -1,5 +1,5 @@
-import { createContext, RoomTileMap } from "@/utils";
-import { OutsideContext, RoomInfo } from "./types";
+import { createContext, RoomTileMap } from '@/utils'
+import { OutsideContext, RoomInfo } from './types'
 
 export const contextRoomInfo = createContext<(roomName: string) => RoomInfo | undefined>()
 

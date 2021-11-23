@@ -1,4 +1,4 @@
-import { LabTarget, ReactionSource } from "./types";
+import { LabTarget, ReactionSource } from './types'
 
 /**
  * 从反应目标产物获取其底物的对应表
@@ -41,7 +41,7 @@ export const REACTION_SOURCE: ReactionSource = {
     // 基础化合物
     [RESOURCE_ZYNTHIUM_KEANITE]: [RESOURCE_ZYNTHIUM, RESOURCE_KEANIUM],
     [RESOURCE_UTRIUM_LEMERGITE]: [RESOURCE_UTRIUM, RESOURCE_LEMERGIUM],
-    [RESOURCE_HYDROXIDE]: [RESOURCE_HYDROGEN, RESOURCE_OXYGEN],
+    [RESOURCE_HYDROXIDE]: [RESOURCE_HYDROGEN, RESOURCE_OXYGEN]
 }
 
 /**
@@ -78,5 +78,5 @@ export const LAB_TARGETS: LabTarget[] = [
     // XGH20 生产线，强化 controller 升级
     { target: RESOURCE_GHODIUM_HYDRIDE, number: 500 },
     { target: RESOURCE_GHODIUM_ACID, number: 1500 },
-    { target: RESOURCE_CATALYZED_GHODIUM_ACID, number: 3000 },
+    { target: RESOURCE_CATALYZED_GHODIUM_ACID, number: 3000 }
 ]

@@ -1,4 +1,4 @@
-import { red, yellow } from "@/modulesGlobal"
+import { red, yellow } from '@/modulesGlobal'
 
 /**
  * 规划与确认发射指令
@@ -11,13 +11,13 @@ export const nuker = function () {
     const nukerDirective = {}
     // 搜索目标
     const targetFlags = Object.keys(Game.flags).filter(name => name.includes(TARGET_FLAGE_NAME))
-    if (targetFlags.length <= 0) return `未找到目标，请新建名称包含 nuker 的旗帜`
+    if (targetFlags.length <= 0) return '未找到目标，请新建名称包含 nuker 的旗帜'
     // 搜索所有核弹（填充完毕且冷却完毕）
-    let hasNukerRoom = Object.values(Game.rooms).filter(({ nuker }) => nuker && !nuker.cooldown && 
-        nuker.store[RESOURCE_ENERGY] >= NUKER_ENERGY_CAPACITY && 
+    let hasNukerRoom = Object.values(Game.rooms).filter(({ nuker }) => nuker && !nuker.cooldown &&
+        nuker.store[RESOURCE_ENERGY] >= NUKER_ENERGY_CAPACITY &&
         nuker.store[RESOURCE_GHODIUM] >= NUKER_GHODIUM_CAPACITY
     ).map(room => room.name)
-    if (hasNukerRoom.length <= 0) return `未找到 nuker，请确保有装填完成的 nuker`
+    if (hasNukerRoom.length <= 0) return '未找到 nuker，请确保有装填完成的 nuker'
 
     logs.push(`[打击目标] ${targetFlags.join(' ')}`)
     logs.push(`[发射房间] ${hasNukerRoom.join(' ')}`)
@@ -39,7 +39,7 @@ export const nuker = function () {
             // 加入指令表
             nukerDirective[sourceRoomName] = target
             // 从发射源中移除
-            hasNukerRoom = _.difference(hasNukerRoom, [ sourceRoomName ])
+            hasNukerRoom = _.difference(hasNukerRoom, [sourceRoomName])
         }
         else logs.push(`未找到适合攻击 ${target} 的发射点 - 距离过远`)
     }
@@ -62,11 +62,11 @@ export const nuker = function () {
  * 取消发射指令
  */
 export const cancelNuker = function () {
-    if (!Memory.nukerLock) return `没有已存在的 nuker 发射指令`
+    if (!Memory.nukerLock) return '没有已存在的 nuker 发射指令'
 
     delete Memory.nukerLock
     delete Memory.nukerDirective
-    return `nuker 发射指令已取消`
+    return 'nuker 发射指令已取消'
 }
 
 /**
@@ -88,7 +88,7 @@ export const confirmNuker = function () {
     if (hasNotReady) {
         delete Memory.nukerLock
         delete Memory.nukerDirective
-        return `存在 Nuker 未装填完成，请执行 nuker 命令重新规划`
+        return '存在 Nuker 未装填完成，请执行 nuker 命令重新规划'
     }
 
     // 遍历执行所有发射指令

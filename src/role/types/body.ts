@@ -1,8 +1,8 @@
-import { CreepRole } from "./role"
+import { CreepRole } from './role'
 
 /**
  * 简写版本的 bodyPart[]，格式如下：
- * 
+ *
  * @example [[TOUGH, 3], [WORK, 4], [MOVE, 7]]
  */
 export type BodyRepeat = [BodyPartConstant, number]
@@ -20,7 +20,7 @@ export type BodyConfig = {
 /**
  * 包含身体部件自动调整的角色
  */
-export type AutoBodyRole = 
+export type AutoBodyRole =
     CreepRole.Harvester |
     CreepRole.Worker |
     CreepRole.Manager |
@@ -39,4 +39,4 @@ export type BodyConfigs = {
  * 身体部件生成函数
  * 接受房间和要执行孵化的 spawn 信息，返回可以生成的身体部件数组
  */
- export type BodyPartGenerator = (room: Room, spawn: StructureSpawn) => BodyPartConstant[]
+export type BodyPartGenerator = (room: Room, spawn: StructureSpawn) => BodyPartConstant[]

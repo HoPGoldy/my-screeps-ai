@@ -1,5 +1,5 @@
-import { CreepData } from "@/role/types/role"
-import { green, yellow, red } from "../console/utils"
+import { CreepData } from '@/role/types/role'
+import { green, yellow, red } from '../console/utils'
 
 /**
  * creep 移除配置项
@@ -18,7 +18,7 @@ export interface RemoveCreepOptions {
 /**
  * 移除指定 creep
  * 会移除名字中包含第一个参数的 creep
- * 
+ *
  * @param creepNamePart 要移除的 creep 名称部分
  * @param opts 移除配置项
  */
@@ -31,7 +31,8 @@ export const removeCreep = function (creepNamePart: string, opts: Partial<Remove
         if (options.immediate) {
             // 要删除内存再杀掉，不然会重新孵化
             delete Memory.creeps[creepName]
-            Game.creeps[creepName]!.suicide()
+            const creep = Game.creeps[creepName]
+            creep && creep.suicide()
         }
         else Memory.creeps[creepName].cantRespawn = true
 
@@ -60,18 +61,18 @@ export const removeCreep = function (creepNamePart: string, opts: Partial<Remove
  */
 export const showCreep = function (): string {
     const allCreeps = Object.values(Game.creeps)
-    if (allCreeps.length === 0) return `暂无 creep 配置`
+    if (allCreeps.length === 0) return '暂无 creep 配置'
 
     // 将 creep 的配置进行格式化
-    let format: { [roomName: string]: string[] } = {}
+    const format: Record<string, string[]> = {}
 
     // 遍历所有配置项并格式化
     for (const { name, spawning, ticksToLive, memory } of allCreeps) {
         // 兜底，创建输出中的房间标题
-        if (!(memory.spawnRoom in format)) format[memory.spawnRoom] = [ `${memory.spawnRoom} 下属 creep：` ]
-        
+        if (!(memory.spawnRoom in format)) format[memory.spawnRoom] = [`${memory.spawnRoom} 下属 creep：`]
+
         // 检查该单位的存活状态
-        let liveStats: string = ''
+        let liveStats = ''
         if (spawning) liveStats = yellow('孵化中')
         else liveStats = `${green('存活')} 剩余生命 ${ticksToLive}`
 
@@ -79,12 +80,12 @@ export const showCreep = function (): string {
     }
 
     // 显示所有还没有孵化的 creep
-    Object.entries(Memory.waitSpawnCreeps).map(([creepName, spawnRoomName]) => {
-        if (!(spawnRoomName in format)) format[spawnRoomName] = [ `${spawnRoomName} 下属 creep：` ]
+    Object.entries(Memory.waitSpawnCreeps).forEach(([creepName, spawnRoomName]) => {
+        if (!(spawnRoomName in format)) format[spawnRoomName] = [`${spawnRoomName} 下属 creep：`]
         format[spawnRoomName].push(`  - [${creepName}] [当前状态] ${red('待孵化')}}`)
     })
 
-    let logs = []
+    const logs = []
     Object.values(format).forEach(roomCreeps => logs.push(...roomCreeps))
     logs.unshift(`当前共有 creep  ${allCreeps.length} 只`)
     return logs.join('\n')
@@ -92,7 +93,7 @@ export const showCreep = function (): string {
 
 /**
  * 是否存在指定 creep
- * 
+ *
  * @param creepName 要检查是否存在的 creep 名称
  */
 export const hasCreep = function (creepName: string): boolean {
@@ -111,7 +112,7 @@ export const removeCreepCantRespawn = function (creep: Creep): OK | ERR_NOT_FOUN
 /**
  * 更新 creep data
  * 由于下一代 creep 的初始 data 数据继承自上一代 creep，所以在需要更新 data 时可以使用这个方法
- * 
+ *
  * @param creepName 要更新 data 的 creep 名称
  * @param newData 新的 data
  */

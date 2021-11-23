@@ -1,12 +1,12 @@
-import { contextRoomInfo } from "../context";
-import { BattleCore } from "../squadManager/types";
-import { getMaxDamageCreep } from "./common/calculator";
-import { execSquadMove } from "./common/squad1";
+import { contextRoomInfo } from '../context'
+import { BattleCore } from '../squadManager/types'
+import { getMaxDamageCreep } from './common/calculator'
+import { execSquadMove } from './common/squad1'
 
 /**
  * 一体机战斗核心
  * 会一直治疗自己
- * 
+ *
  * 未进入房间时：治疗 + 移动
  * 进入房间：
  * - 移动：血量是否不满，不满则逃跑，满则向 flag 移动

@@ -1,4 +1,4 @@
-import { DealRatios } from "./types";
+import { DealRatios } from './types'
 
 /**
  * 交易时的购买区间限制

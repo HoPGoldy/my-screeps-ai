@@ -1,9 +1,9 @@
-import { createCache } from "@/utils"
-import { contextCostMatrix, contextRoomInfo } from "../../context"
+import { createCache } from '@/utils'
+import { contextCostMatrix, contextRoomInfo } from '../../context'
 
 /**
  * 获取小队路径缓存索引
- * 
+ *
  * @param squadCode 小队代号
  * @param flee 是否逃跑
  */

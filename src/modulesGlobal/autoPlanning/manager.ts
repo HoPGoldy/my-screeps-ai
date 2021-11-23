@@ -6,17 +6,17 @@ import { addConstructionSite } from '@/modulesGlobal/construction'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 import { ConstructInfo } from '../construction/types'
 
-let planningCaches: StructurePlanningCache = {}
+const planningCaches: StructurePlanningCache = {}
 
 /**
  * 对指定房间执行建筑规划
- * 
+ *
  * @param room 要执行规划的房间
  * @return 所有需要放置工地的位置
  */
 const planStructure = function (room: Room, centerPos: RoomPosition): ERR_NOT_FOUND | StructurePlanningResult {
     // 计算基地内的静态建筑点位
-    let result: StructurePlanningResult = planBase(room, centerPos)
+    const result = planBase(room, centerPos)
 
     // 执行自动墙壁规划，获取 rampart 位置
     const wallsPos = planWall(room, centerPos)
@@ -43,7 +43,7 @@ const planStructure = function (room: Room, centerPos: RoomPosition): ERR_NOT_FO
 /**
  * 对指定房间进行建筑管理
  * 会自动添加、删除房间中的建筑及工地，并完成诸如发布 builder 之类的副作用
- * 
+ *
  * @param room 要管理建筑的房间
  */
 export const manageStructure = function (room: Room, centerPos: RoomPosition): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
@@ -55,7 +55,7 @@ export const manageStructure = function (room: Room, centerPos: RoomPosition): O
     // 缓存没有就新建
     if (!structurePlacePlan) {
         const planResult = planStructure(room, centerPos)
-        if (planResult == ERR_NOT_FOUND) return ERR_NOT_FOUND
+        if (planResult === ERR_NOT_FOUND) return ERR_NOT_FOUND
         planningCaches[room.name] = structurePlacePlan = planResult
     }
 
@@ -63,7 +63,7 @@ export const manageStructure = function (room: Room, centerPos: RoomPosition): O
 
     // 一直从 1 级放置到房间当前的等级
     // 这个阶段会把之前阶段里应该放置但是出现问题（放了工地但是被踩了、建筑被摧毁了...）的建筑重新放下
-    for (let i = 0; i < room.controller.level; i ++) {
+    for (let i = 0; i < room.controller.level; i++) {
         const currentLevelLayout = structurePlacePlan[i]
 
         // 遍历布局中所有建筑类型
@@ -77,7 +77,7 @@ export const manageStructure = function (room: Room, centerPos: RoomPosition): O
                     (structureType === STRUCTURE_FACTORY && isNotMy) ||
                     // storage 和 terminal 要看里边有没有能量
                     (isNotMy && structure.store[RESOURCE_ENERGY] <= 100)
-                )  structure.destroy()
+                ) structure.destroy()
             }
 
             // 遍历该建筑下的所有预放置点位
@@ -97,7 +97,7 @@ export const manageStructure = function (room: Room, centerPos: RoomPosition): O
 /**
  * 清理房间中的非己方建筑
  * 会保留非空的 Terminal、Storage 以及 factory
- * 
+ *
  * @param room 要执行清理的房间
  * @returns OK 清理完成
  * @returns ERR_NOT_FOUND 未找到建筑
@@ -129,7 +129,7 @@ export const clearStructure = function (room: Room): OK | ERR_NOT_FOUND {
 
 /**
  * 将新的建筑位置合并到现有的规划方案
- * 
+ *
  * @param origin 要合并到的原始规划方案
  * @param newData 要进行合并的新位置数据
  * @param level 要合并到的等级
@@ -139,7 +139,7 @@ const mergeStructurePlan = function (origin: StructurePlanningResult, newData: R
     // 先取出已经存在的道路
     const targetStructurePos = origin[level - 1][type] || []
     // 然后把新道路追加进去
-    origin[level - 1][type] = [ ...targetStructurePos, ...newData ]
+    origin[level - 1][type] = [...targetStructurePos, ...newData]
 
     return OK
 }

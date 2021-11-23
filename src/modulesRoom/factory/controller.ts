@@ -1,10 +1,10 @@
-import { green, yellow } from '@/modulesGlobal';
-import FactoryBase from './base';
-import { FactoryState, InteractAction, TOP_TARGET } from './constant';
-import StageGetResource from './stageGetResource';
-import StagePrepare from './stagePrepare';
-import StagePutResource from './stagePutResource';
-import StageWorking from './stageWorking';
+import { green, yellow } from '@/modulesGlobal'
+import FactoryBase from './base'
+import { FactoryState, InteractAction, TOP_TARGET } from './constant'
+import StageGetResource from './stageGetResource'
+import StagePrepare from './stagePrepare'
+import StagePutResource from './stagePutResource'
+import StageWorking from './stageWorking'
 
 /**
  * 阶段构造器
@@ -12,7 +12,6 @@ import StageWorking from './stageWorking';
 type StageConstructors = {
     [state in FactoryState]: new (roomName: string) => { run: () => void }
 }
-
 
 type FactoryStages = {
     [state in FactoryState]?: { run: () => void }
@@ -34,17 +33,13 @@ export default class RoomFactoryController extends FactoryBase {
      */
     private stages: FactoryStages = {}
 
-    constructor(roomName: string) {
-        super(roomName)
-    }
-
     /**
      * 工厂执行工作入口
      */
-    public runFactory(): void {
+    public runFactory (): void {
         // 没有启用或没有 factory 则跳过
         if (!this.memory || !this.room[STRUCTURE_FACTORY]) return
-    
+
         const { state, sleep, pause } = this.memory
         // 暂停了，跳过
         if (pause) return
@@ -62,12 +57,12 @@ export default class RoomFactoryController extends FactoryBase {
 
     /**
      * 设置工厂等级
-     * 
+     *
      * @param level 等级
      * @returns ERR_INVALID_ARGS 生产线类型异常或者等级小于 1 或者大于 5
      * @returns ERR_NAME_EXISTS 工厂已经被 Power 强化，无法修改等级
      */
-    public setLevel(level: 1 | 2 | 3 | 4 | 5): OK | ERR_INVALID_ARGS | ERR_NAME_EXISTS {
+    public setLevel (level: 1 | 2 | 3 | 4 | 5): OK | ERR_INVALID_ARGS | ERR_NAME_EXISTS {
         if (!this.memory) this.initMemory()
 
         // 等级异常就返回错误
@@ -99,14 +94,14 @@ export default class RoomFactoryController extends FactoryBase {
      * @param depositTypes 要生成的生产线类型
      * @returns ERR_INVALID_TARGET 尚未等级工厂等级
      */
-    public setChain(...depositTypes: DepositConstant[]): ERR_INVALID_TARGET | OK {
+    public setChain (...depositTypes: DepositConstant[]): ERR_INVALID_TARGET | OK {
         if (!this.memory || !this.memory.level) return ERR_INVALID_TARGET
-        
+
         // 移除老的注册
         this.interactWithOutside(InteractAction.Unregister, this.memory.depositTypes, this.memory.level)
         // 进行新的注册
         this.interactWithOutside(InteractAction.Register, depositTypes, this.memory.level)
-        
+
         this.memory.depositTypes = depositTypes
         return OK
     }
@@ -114,18 +109,18 @@ export default class RoomFactoryController extends FactoryBase {
     /**
      * 与外界交互
      * 包含了对 Memory.commodities 和资源共享协议的注册与取消注册
-     * 
+     *
      * @param action register 执行注册，unregister 取消注册
      * @param depositTypes 生产线类型，可以为 undefined
      * @param level 工厂等级
      */
-    private interactWithOutside(action: InteractAction, depositTypes: DepositConstant[], level: 1 | 2 | 3 | 4 | 5) {
+    private interactWithOutside (action: InteractAction, depositTypes: DepositConstant[], level: 1 | 2 | 3 | 4 | 5) {
         // 兜个底
         if (!Memory.commodities) Memory.commodities = { 1: [], 2: [], 3: [], 4: [], 5: [] }
         // 与 Memory.commodities 交互
         if (action === InteractAction.Register) Memory.commodities[level].push(this.room.name)
         else _.pull(Memory.commodities[level], this.room.name)
-        
+
         // 与资源共享协议交互
         depositTypes = depositTypes || []
         depositTypes.forEach(type => {
@@ -140,7 +135,7 @@ export default class RoomFactoryController extends FactoryBase {
      * 移除当前工厂配置
      * 工厂将进入闲置状态并净空存储
      */
-    public remove(): OK | ERR_NOT_FOUND {
+    public remove (): OK | ERR_NOT_FOUND {
         if (!this.memory) return ERR_NOT_FOUND
 
         // 进入废弃进程
@@ -149,15 +144,15 @@ export default class RoomFactoryController extends FactoryBase {
         this.memory.state = FactoryState.PutResource
         // 移除队列中的后续任务
         const task = this.getCurrentTask()
-        this.memory.taskList = [ task ]
+        this.memory.taskList = [task]
 
-        return OK 
+        return OK
     }
 
     /**
      * 初始化工厂内存
      */
-    public initMemory(): void {
+    public initMemory (): void {
         this.memory = {
             targetIndex: 0,
             state: FactoryState.Prepare,
@@ -168,18 +163,19 @@ export default class RoomFactoryController extends FactoryBase {
     /**
      * 输出当前工厂的状态
      */
-    public stats(): string {
+    public stats (): string {
         if (!this.memory) return `[${this.room.name} factory] 工厂未启用`
         const memory = this.memory
 
-        const workStats = memory.pause ? yellow('[暂停中]') :
-        memory.sleep ? yellow(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`) : green('工作中')
+        const workStats = memory.pause
+            ? yellow('[暂停中]')
+            : memory.sleep ? yellow(`[${memory.sleepReason} 休眠中 剩余${memory.sleep - Game.time}t]`) : green('工作中')
 
         // 自己加入的生产线
         const joinedChain = memory.depositTypes ? memory.depositTypes.join(', ') : '未指定'
 
         // 工厂基本信息
-        let logs = [
+        const logs = [
             `生产线类型: ${joinedChain} 工厂等级: ${memory.level || '未指定'} ${memory.specialTraget ? '持续生产：' + memory.specialTraget : ''}`,
             `生产状态: ${workStats} 当前工作阶段: ${memory.state}`,
             `现存任务数量: ${memory.taskList.length} 任务队列详情:`
@@ -188,9 +184,8 @@ export default class RoomFactoryController extends FactoryBase {
         // 工厂任务队列详情
         if (memory.taskList.length <= 0) logs.push('无任务')
         else logs.push(...memory.taskList.map((task, index) => `  - [任务 ${index}] 任务目标: ${task.target} 任务数量: ${task.amount}`))
-        
+
         // 组装返回
         return logs.join('\n')
     }
 }
-

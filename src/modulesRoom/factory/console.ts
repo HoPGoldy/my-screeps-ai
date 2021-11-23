@@ -6,10 +6,10 @@ import { yellow, createHelp } from '@/modulesGlobal/console'
 export default class FactoryConsole extends Room {
     /**
      * 用户操作：设置工厂等级
-     * 
+     *
      * @param level 等级
      */
-    public fsetlevel(level: 1 | 2 | 3 | 4 | 5): string {
+    public fsetlevel (level: 1 | 2 | 3 | 4 | 5): string {
         const result = this.myFactory.setLevel(level)
 
         if (result === OK) return `[${this.name} factory] 已成功设置为 ${level} 级`
@@ -19,10 +19,10 @@ export default class FactoryConsole extends Room {
 
     /**
      * 用户操作 - 批量设置生产线
-     * 
+     *
      * @param depositTypes 要设置的生产线类型
      */
-    public fsetchain(...depositTypes: DepositConstant[]): string {
+    public fsetchain (...depositTypes: DepositConstant[]): string {
         const result = this.myFactory.setChain(...depositTypes)
 
         if (result === OK) {
@@ -39,7 +39,7 @@ export default class FactoryConsole extends Room {
     /**
      * 用户操作 - 移除当前工厂配置
      */
-    public fremove(): string {
+    public fremove (): string {
         const actionResult = this.myFactory.remove()
 
         if (actionResult === ERR_NOT_FOUND) return `[${this.name} factory] 尚未启用`
@@ -52,7 +52,7 @@ export default class FactoryConsole extends Room {
     /**
      * 用户操作 - 暂停 factory
      */
-    public foff(): string {
+    public foff (): string {
         if (!this.memory.factory) return `[${this.name} factory] 未启用`
         this.memory.factory.pause = true
         return `[${this.name} factory] 已暂停`
@@ -61,7 +61,7 @@ export default class FactoryConsole extends Room {
     /**
      * 用户操作 - 查看房间工作状态
      */
-    public fs(): string {
+    public fs (): string {
         if (!this.factory) return `[${this.name}] 未建造工厂`
         return this.myFactory.stats()
     }
@@ -70,7 +70,7 @@ export default class FactoryConsole extends Room {
      * 用户操作 - 重启 factory
      * 会同时将工厂从停工中唤醒
      */
-    public fon(): string {
+    public fon (): string {
         if (!this.memory.factory) return `[${this.name} factory] 未启用`
         delete this.memory.factory.pause
         this.myFactory.wakeup()
@@ -79,11 +79,11 @@ export default class FactoryConsole extends Room {
 
     /**
      * 用户操作 - 手动指定生产目标
-     * 
+     *
      * @param target 要生产的目标
      * @param clear 是否同时清理工厂之前的合成任务
      */
-    public fset(target: CommodityConstant, clear: boolean = true): string {
+    public fset (target: CommodityConstant, clear = true): string {
         if (!this.memory.factory) this.myFactory.initMemory()
         this.memory.factory.specialTraget = target
         // 让工厂从暂停中恢复
@@ -97,16 +97,16 @@ export default class FactoryConsole extends Room {
      * 用户操作 - 清除上面设置的特定目标
      * 如果之前设置过工厂状态的话（setlevel），将会恢复到对应的自动生产状态
      */
-    public fclear(): string {
+    public fclear (): string {
         if (!this.memory.factory) return `[${this.name} factory] 未启用`
-        const logs = [ `[${this.name} factory] 已移除目标 ${this.memory.factory.specialTraget}，开始托管生产。当前生产状态：` ]
+        const logs = [`[${this.name} factory] 已移除目标 ${this.memory.factory.specialTraget}，开始托管生产。当前生产状态：`]
         delete this.memory.factory.specialTraget
         logs.push(this.myFactory.stats())
 
         return logs.join('\n')
     }
 
-    public fhelp(): string {
+    public fhelp (): string {
         return createHelp({
             name: 'Factory 控制台',
             describe: `工厂分为自动运行模式和手动运行模式，自动运行模式下会根据设置的目标 ${yellow('.setlevel')}() 和生产线 ${yellow('.setchain')}() 自行安排生产任务，手动运行模式下将一直生产指定 ${yellow('.set')}() 的目标。`,
@@ -116,7 +116,7 @@ export default class FactoryConsole extends Room {
                     describe: '初始化方法，新工厂设置自动化请首先执行该方法，一旦工厂被 power 后将无法修改',
                     params: [
                         { name: 'depositType', desc: '生产线类型，必须为 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON 之一' },
-                        { name: 'level', desc: '该工厂的生产等级， 1~5 之一'}
+                        { name: 'level', desc: '该工厂的生产等级， 1~5 之一' }
                     ],
                     functionName: 'fsetlevel'
                 },
@@ -124,7 +124,7 @@ export default class FactoryConsole extends Room {
                     title: '设置生产线',
                     describe: '初始化方法，需要先执行 .setlevel，会覆盖之前的设置',
                     params: [
-                        { name: '...depositTypes', desc: '生产线类型，必须为下列常量 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON，可以指定多个' },
+                        { name: '...depositTypes', desc: '生产线类型，必须为下列常量 RESOURCE_MIST RESOURCE_BIOMASS RESOURCE_METAL RESOURCE_SILICON，可以指定多个' }
                     ],
                     functionName: 'fsetchain'
                 },
@@ -136,8 +136,8 @@ export default class FactoryConsole extends Room {
                     title: '指定生产目标',
                     describe: '工厂将无视 setLevel 的配置，一直生产该目标',
                     params: [
-                        { name: 'target', desc: '要生产的目标产物'},
-                        { name: 'clear', desc: '[可选] 是否清理工厂之前的遗留任务，默认为 true'}
+                        { name: 'target', desc: '要生产的目标产物' },
+                        { name: 'clear', desc: '[可选] 是否清理工厂之前的遗留任务，默认为 true' }
                     ],
                     functionName: 'fset'
                 },

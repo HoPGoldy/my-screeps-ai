@@ -6,7 +6,7 @@ export default class ShareConsole extends Room {
     /**
      * 显示共享任务详情
      */
-    public shares(): string {
+    public shares (): string {
         const { terminal, storage } = this
         if (!terminal) return '该房间暂无 terminal，无法执行共享任务'
         if (!this.share.task) return '暂无共享任务'
@@ -21,25 +21,28 @@ export default class ShareConsole extends Room {
             `[能量数量] ${terminal.store[RESOURCE_ENERGY]}`
         ]
 
-        if (storage) logs.push(
-            '当前 Storage 状态：',
-            `[剩余空间] ${storage.store.getFreeCapacity()} ` + 
+        if (storage) {
+            logs.push(
+                '当前 Storage 状态：',
+                `[剩余空间] ${storage.store.getFreeCapacity()} ` +
             `[${resourceType} 数量] ${storage.store[resourceType]} ` +
-            `[能量数量] ${storage.store[RESOURCE_ENERGY]}`,
-        )
+            `[能量数量] ${storage.store[RESOURCE_ENERGY]}`
+            )
+        }
 
         return logs.join('\n')
     }
+
     /**
      * 向指定房间发送资源
-     * 
+     *
      * @param roomName 目标房间名
      * @param resourceType 要共享的资源类型
      * @param amount 要发送的数量, 默认 100k
      */
-    public giver(roomName: string, resourceType: ResourceConstant, amount = 1000): string {
+    public giver (roomName: string, resourceType: ResourceConstant, amount = 1000): string {
         // 检查资源是否足够
-        if (!this.terminal) return `[资源共享] 该房间没有终端`
+        if (!this.terminal) return '[资源共享] 该房间没有终端'
 
         const logs = []
         // 如果在执行其他任务则将其覆盖，因为相对于用户操作来说，其他模块发布的资源共享任务优先级肯定要低
@@ -50,7 +53,7 @@ export default class ShareConsole extends Room {
         }
 
         const { total } = this.myStorage.getResource(resourceType)
-        if (! total || total < amount) return `[资源共享] 数量不足 ${resourceType} 剩余 ${total | 0}`
+        if (!total || total < amount) return `[资源共享] 数量不足 ${resourceType} 剩余 ${total | 0}`
 
         // 计算路费，防止出现路费 + 资源超过终端上限的问题出现
         const cost = Game.market.calcTransactionCost(amount, this.name, roomName)
@@ -72,25 +75,25 @@ export default class ShareConsole extends Room {
     /**
      * 向指定房间发送能量
      * 该操作会自动从 storage 里取出能量
-     * 
+     *
      * @param roomName 目标房间名
      * @param amount 要发送的数量, 默认 100k
      */
-    public givee(roomName: string, amount = 100000): string {
+    public givee (roomName: string, amount = 100000): string {
         return this.giver(roomName, RESOURCE_ENERGY, amount)
     }
 
     /**
      * 向指定房间发送 power
-     * 
+     *
      * @param roomName 要发送到的房间名
      * @param amount 发送的数量
      */
-    public givep(roomName: string, amount = 5000) {
+    public givep (roomName: string, amount = 5000) {
         return this.giver(roomName, RESOURCE_POWER, amount)
     }
 
-    public sharehelp() {
+    public sharehelp () {
         return createHelp({
             name: '资源共享模块',
             describe: '用于向其他房间调配资源',

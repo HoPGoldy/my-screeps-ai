@@ -8,22 +8,22 @@ import { BalanceDirection, BalanceResult, ResourceAmount } from './types'
  * storage 控制器
  */
 export default class StorageController extends RoomAccessor<undefined> {
-    constructor(roomName: string) {
+    constructor (roomName: string) {
         super('storage', roomName, 'storage', undefined)
     }
 
-    private get storage() {
+    private get storage () {
         return this.room.storage
     }
 
-    private get terminal() {
+    private get terminal () {
         return this.room.terminal
     }
 
     /**
      * storage 主要入口
      */
-    public run(): void {
+    public run (): void {
         if (Game.time % 900) return
         this.requestEnergyCheck()
         this.requestPower()
@@ -35,7 +35,7 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 检查是否需要请求能量支援
      */
-    public requestEnergyCheck() {
+    public requestEnergyCheck () {
         const energyAmount = this.storage.store[RESOURCE_ENERGY]
 
         // 能量太少了，请求资源共享
@@ -52,7 +52,7 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 检查是否需要 power 强化
      */
-    private requestPower() {
+    private requestPower () {
         // 存储还够或者房间没有开启 power 就不发布强化任务
         if (
             this.storage.store.getFreeCapacity() > 50000 ||
@@ -65,7 +65,7 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 检查是否可以提供能量支援
      */
-    public shareEnergyCheck() {
+    public shareEnergyCheck () {
         const energyAmount = this.storage.store[RESOURCE_ENERGY]
 
         // 能量太多就提供资源共享
@@ -76,7 +76,7 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 在 terminal 和 storage 之间平衡资源
      */
-    public balanceResource(targetResource?: ResourceConstant): BalanceResult[] | ERR_NOT_FOUND {
+    public balanceResource (targetResource?: ResourceConstant): BalanceResult[] | ERR_NOT_FOUND {
         if (!this.storage || !this.terminal) return ERR_NOT_FOUND
 
         // 要传递到 terminal 的任务和要传递到 storage 的任务分开放
@@ -97,7 +97,7 @@ export default class StorageController extends RoomAccessor<undefined> {
             const balanceTask = _.cloneDeep(BALANCE_CONFIG)
 
             // 检查终端资源是否需要平衡
-            Object.entries(this.terminal.store).map((
+            Object.entries(this.terminal.store).forEach((
                 [resourceType, terminalAmount]: [ResourceConstant, number]
             ) => {
                 this.checkAndGenerateTask(resourceType, terminalAmount, toStorageTasks, toTerminalTasks)
@@ -107,12 +107,12 @@ export default class StorageController extends RoomAccessor<undefined> {
 
             // 检查终端里没有，但是规则里提到的资源
             // 上面只会检查终端里还有的资源，如果数量为空就不会检查了，这里会把这些资源检查补上
-            Object.entries(balanceTask).map((
+            Object.entries(balanceTask).forEach((
                 [resourceType, amountLimit]: [ResourceConstant, number]
             ) => {
                 const storageAmount = this.storage.store[resourceType] || 0
                 if (storageAmount <= 0) return
-                
+
                 toTerminalTasks.push({
                     resourceType,
                     amount: Math.min(amountLimit, storageAmount),
@@ -134,7 +134,7 @@ export default class StorageController extends RoomAccessor<undefined> {
      * @param toStorageTasks 要把资源运到 storage 的任务数组
      * @param toTerminalTasks 要把资源运到终端的任务数组
      */
-    private mergeTasks(
+    private mergeTasks (
         toStorageTasks: BalanceResult<BalanceDirection.ToStorage>[],
         toTerminalTasks: BalanceResult<BalanceDirection.ToTerminal>[]
     ) {
@@ -143,19 +143,19 @@ export default class StorageController extends RoomAccessor<undefined> {
         const sortedToTerminalTasks = _.sortBy(toTerminalTasks, ({ amount }) => amount)
 
         // storage 和 terminal 哪个剩的地方大就先往哪挪，两个方向的任务交叉执行
-        return this.storage.store.getFreeCapacity() > this.terminal.store.getFreeCapacity() ?
-            crossMerge<BalanceResult>(sortedToStorageTasks, sortedToTerminalTasks) :
-            crossMerge<BalanceResult>(sortedToTerminalTasks, sortedToStorageTasks)
+        return this.storage.store.getFreeCapacity() > this.terminal.store.getFreeCapacity()
+            ? crossMerge<BalanceResult>(sortedToStorageTasks, sortedToTerminalTasks)
+            : crossMerge<BalanceResult>(sortedToTerminalTasks, sortedToStorageTasks)
     }
 
     /**
      * 按照平衡策略生成对应的中央物流任务
      */
-    private generateCenterTask(tasks: BalanceResult[]) {
+    private generateCenterTask (tasks: BalanceResult[]) {
         const requests = tasks.map((task, index) => {
-            const { to, from } = task.direction === BalanceDirection.ToStorage ?
-                { to: this.storage.id, from: this.terminal.id } :
-                { to: this.terminal.id, from: this.storage.id }
+            const { to, from } = task.direction === BalanceDirection.ToStorage
+                ? { to: this.storage.id, from: this.terminal.id }
+                : { to: this.terminal.id, from: this.storage.id }
             return { to, from, resType: task.resourceType, amount: task.amount }
         })
 
@@ -169,13 +169,13 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 检查一种 terminal 里有的资源是否需要平衡
      * 如果需要的话会把任务存放到第三个和第四个参数对应的数组里
-     * 
+     *
      * @param resourceType 要检查的资源
      * @param terminalAmount 该资源在 terminal 里的数量
      * @param toStorageTasks 要把资源运到 storage 的任务数组
      * @param toTerminalTasks 要把资源运到终端的任务数组
      */
-    private checkAndGenerateTask(
+    private checkAndGenerateTask (
         resourceType: ResourceConstant,
         terminalAmount: number,
         toStorageTasks: BalanceResult<BalanceDirection.ToStorage>[],
@@ -208,10 +208,10 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 查询房间内指定资源的数量
      * 目前会检查 storage 和 terminal 的 storage
-     * 
+     *
      * @param resourceType 要查询的资源
      */
-    public getResource(res: ResourceConstant): ResourceAmount {
+    public getResource (res: ResourceConstant): ResourceAmount {
         const storageAmount = this.storage?.store[res] || 0
         const terminalAmount = this.terminal?.store[res] || 0
 
@@ -225,11 +225,11 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 获取资源的存放处
      * 向这个方法传入资源和数量，会返回应该去 storage 还是 terminal 里取
-     * 
+     *
      * @param res 要获取的资源
      * @param amount 资源类型
      */
-    public getResourcePlace(res: ResourceConstant, amount: number = 1): StructureTerminal | StructureStorage | undefined {
+    public getResourcePlace (res: ResourceConstant, amount = 1): StructureTerminal | StructureStorage | undefined {
         // 优先取用 storage 里的
         const storageAmount = this.storage?.store[res] || 0
         if (storageAmount >= amount) return this.room.storage
@@ -244,7 +244,7 @@ export default class StorageController extends RoomAccessor<undefined> {
     /**
      * 获取一个资源应该存放在哪里
      */
-    public getStorePlace(res: ResourceConstant): StructureTerminal | StructureStorage | undefined {
+    public getStorePlace (res: ResourceConstant): StructureTerminal | StructureStorage | undefined {
         if (!this.terminal) return this.storage
         if (!this.storage) return undefined
 

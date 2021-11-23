@@ -1,4 +1,4 @@
-import { CreepRole, RoleDatas } from "@/role/types/role"
+import { CreepRole, RoleDatas } from '@/role/types/role'
 
 declare global {
     interface RoomMemory {
@@ -39,7 +39,7 @@ export interface SpawnTask<Role extends CreepRole = CreepRole> {
 /**
  * 当 creep 不需要生成时 mySpawnCreep 返回的值
  */
- export type CREEP_DONT_NEED_SPAWN = -101
+export type CREEP_DONT_NEED_SPAWN = -101
 
 /**
  * spawn.mySpawnCreep 方法的返回值集合

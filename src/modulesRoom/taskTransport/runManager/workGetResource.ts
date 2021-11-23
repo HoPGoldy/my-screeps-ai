@@ -1,6 +1,6 @@
-import { findStrategy, getRoomEnergyTarget } from "@/modulesGlobal/energyUtils"
-import { useCache } from "@/utils"
-import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from "../types"
+import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
+import { useCache } from '@/utils'
+import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onGetResource = (context: TransportWorkContext) => {
     const { manager, managerData } = context
@@ -44,11 +44,11 @@ const getProcessingRequest = function (context: TransportWorkContext) {
         console.log('unfinish && otherProcessing', unfinish, otherProcessing)
         // 会同时记录下没有完成但是有其他人正在处理的请求
         if (unfinish && otherProcessing) otherUnfinishRequest = res
-        
+
         return unfinish
     })
 
-    return targetRes ? targetRes : otherUnfinishRequest
+    return targetRes || otherUnfinishRequest
 }
 
 const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo<StructureWithStore> {
@@ -122,7 +122,6 @@ const withdrawResource = function (
     else if (operationResult === ERR_FULL) {
         managerData.state = ManagerState.PutResource
         delete managerData.cacheSourceId
-        return
     }
     else if (operationResult === ERR_NOT_ENOUGH_RESOURCES) {
         if (request.keep) return
@@ -139,7 +138,7 @@ const withdrawResource = function (
  */
 const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
     // 没有指定数里，能拿多少拿多少
-    if (res.amount == undefined) return manager.store.getFreeCapacity()
+    if (res.amount === undefined) return manager.store.getFreeCapacity()
     return Math.max(res.amount - (res.arrivedAmount + manager.store[res.resType] || 0), 0)
 }
 

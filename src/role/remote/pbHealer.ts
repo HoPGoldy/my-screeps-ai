@@ -7,7 +7,7 @@ import { CreepConfig, CreepRole } from '../types/role'
  * PowerBank 治疗单位
  * 移动并治疗 pbAttacker, 请在 8 级时生成
  * @see doc "../doc/PB 采集小组设计案"
- * 
+ *
  * @property {} creepName 要治疗的 pbAttacker 的名字
  */
 const pbHealer: CreepConfig<CreepRole.PbHealer> = {

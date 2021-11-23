@@ -1,6 +1,6 @@
-import { CreepRole } from "@/role/types/role"
-import { WorkTaskType } from "../taskWork/types"
-import RoomStrategyController from "./controller"
+import { CreepRole } from '@/role/types/role'
+import { WorkTaskType } from '../taskWork/types'
+import RoomStrategyController from './controller'
 
 /**
  * 运维策略
@@ -9,24 +9,24 @@ import RoomStrategyController from "./controller"
 export class DefenseStrategy {
     controller: RoomStrategyController
 
-    constructor(strategyController: RoomStrategyController) {
+    constructor (strategyController: RoomStrategyController) {
         this.controller = strategyController
     }
 
     /**
      * 所在房间快捷访问
      */
-    get room() {
+    get room () {
         return this.controller.room
     }
 
     /**
      * 将房间的运维角色配置调整为防御模式
      */
-    useUnitSetting() {
+    useUnitSetting () {
         // 小于七级的话无法生成 defender，所以会孵化更多的 repairer
         const newWorkerNumber = this.room.controller.level >= 7 ? 3 : 8
-        
+
         this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 1, MAX: newWorkerNumber })
         this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, { MIN: 2, MAX: 3 })
 

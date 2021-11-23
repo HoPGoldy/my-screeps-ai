@@ -1,9 +1,9 @@
-import { contextOutside } from "../context";
-import { SquadTypeName } from "../squadManager/types";
-import { runBoosting } from "./stateBoosting";
-import { runSpawning } from "./stateSpawning";
-import { runWaitBoostPrepare } from "./stateWaitBoostPrepare";
-import { MobilizeContext, MobilizeState, MobilizeStateName, RunMobilizeStateFunc } from "./types";
+import { contextOutside } from '../context'
+import { SquadTypeName } from '../squadManager/types'
+import { runBoosting } from './stateBoosting'
+import { runSpawning } from './stateSpawning'
+import { runWaitBoostPrepare } from './stateWaitBoostPrepare'
+import { MobilizeContext, MobilizeState, MobilizeStateName, RunMobilizeStateFunc } from './types'
 
 /**
  * 动员任务中不同阶段到逻辑的映射
@@ -32,7 +32,9 @@ export const createMobilizeManager = function (context: MobilizeContext) {
         runState[task.state]({
             task,
             room,
-            updateState: newState => task.state = newState,
+            updateState: newState => {
+                task.state = newState
+            },
             finishTask,
             abandonTask
         }, env)
@@ -54,7 +56,7 @@ export const createMobilizeManager = function (context: MobilizeContext) {
      */
     const showState = function () {
         const { state, squadCode, squadType } = getMemory() || {}
-        if (!state) return `暂无动员任务`
+        if (!state) return '暂无动员任务'
 
         return `[${squadCode} 小队] [当前阶段] ${MobilizeStateName[state]} [小队类型] ${SquadTypeName[squadType]}`
     }

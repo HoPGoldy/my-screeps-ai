@@ -1,16 +1,15 @@
-import { CreepRole } from "@/role/types/role"
-import { AllowCrossRuleFunc, CrossRules } from "./types"
+import { CreepRole } from '@/role/types/role'
+import { AllowCrossRuleFunc, CrossRules } from './types'
 
 /**
  * 默认的对穿规则
- * 
+ *
  * 当自己正在站定工作，并且请求对穿的和自己是相同角色时拒绝对穿
- * 
+ *
  * @param creep 被对穿的 creep
  * @param requireCreep 发起对穿的 creep
  */
 const defaultRule: AllowCrossRuleFunc = (creep, requireCreep) => !(creep.memory.stand && requireCreep.memory.role === creep.memory.role)
-
 
 /**
  * 站定时不允许对穿
@@ -24,10 +23,9 @@ const noCrossWithStanding: AllowCrossRuleFunc = creep => !creep.memory.stand
  */
 const noCrossWithWorking: AllowCrossRuleFunc = creep => !creep.memory.working
 
-
 /**
  * 对穿规则合集
- * 
+ *
  * 返回值代表了 creep 是否允许 requireCreep 对穿
  */
 const crossRules: CrossRules = {

@@ -1,5 +1,5 @@
-import { contextOutside } from "../context";
-import { RunMobilizeStateFunc } from "./types";
+import { contextOutside } from '../context'
+import { RunMobilizeStateFunc } from './types'
 
 /**
  * 强化执行阶段
@@ -38,7 +38,9 @@ export const runBoosting: RunMobilizeStateFunc = function ({ task, room, finishT
     }
     else {
         task.data.boostNote = {}
-        members.forEach(creep => task.data.boostNote[creep.name] = false)
+        members.forEach(creep => {
+            task.data.boostNote[creep.name] = false
+        })
     }
 
     // 没有完成 boost 的单位继续执行 boost

@@ -1,8 +1,8 @@
-import { Color } from "@/modulesGlobal";
-import { MoveInfo, MoveOpt } from "@/modulesGlobal/move/types";
-import { SepicalBodyType } from "@/modulesRoom/taskWork/types";
-import { HarvestMode } from "@/role/base/harvester";
-import { CreepRole, RoleDatas } from "@/role/types/role";
+import { Color } from '@/modulesGlobal'
+import { MoveInfo, MoveOpt } from '@/modulesGlobal/move/types'
+import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
+import { HarvestMode } from '@/role/base/harvester'
+import { CreepRole, RoleDatas } from '@/role/types/role'
 
 declare global {
     /**
@@ -68,7 +68,7 @@ declare global {
          */
         depositType?: DepositConstant
         /**
-         * 要填充的墙 id 
+         * 要填充的墙 id
          */
         fillWallId?: Id<StructureWall | StructureRampart>
         /**
@@ -137,7 +137,7 @@ declare global {
         buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
         fillDefenseStructure(expectHits?: number): boolean
         getEngryFrom(target: AllEnergySource): ScreepsReturnCode
-        transferTo(target:  AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
+        transferTo(target: AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
         backToGetEnergy(): true
         steadyWall(): OK | ERR_NOT_FOUND
     }

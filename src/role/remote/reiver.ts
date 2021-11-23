@@ -7,14 +7,14 @@ import { CreepConfig, CreepRole } from '../types/role'
  * 暂不支持从 ruin 中获取资源
  * 从指定房间的目标建筑（由旗帜指定）中搬运物品到指定建筑
  * 在目标建筑搬空后将会移除旗帜并自杀
- * 
+ *
  * data:
  * @param flagName 目标建筑上的旗帜名称
  * @param targetStructureId 要搬运到的建筑 id
  */
 const reiver: CreepConfig<CreepRole.Reiver> = {
     // 要搬运资源的目标旗帜消失了就不再生成
-    isNeed: (room, preMemory) => preMemory.data.flagName in Game.flags, 
+    isNeed: (room, preMemory) => preMemory.data.flagName in Game.flags,
     // 如果已经统计了移动
     prepare: creep => {
         const { flagName } = creep.memory.data
@@ -32,7 +32,7 @@ const reiver: CreepConfig<CreepRole.Reiver> = {
             if (!flag.memory.sourceId) {
                 // 搜索包含存储的目标建筑并存储
                 let targetStructure: StructureWithStore | Ruin = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s) as StructureWithStore
-                
+
                 if (!targetStructure) {
                     // 查找废墟，如果有包含 store 的废墟就设为目标
                     const ruins = flag.pos.lookFor(LOOK_RUINS)
@@ -95,7 +95,7 @@ const reiver: CreepConfig<CreepRole.Reiver> = {
                     else if (withdrawResult === ERR_NOT_IN_RANGE) {
                         creep.goTo(targetStructure.pos, { checkTarget: false })
                     }
-                    
+
                     // 等到下个 tick 重新遍历来继续搬
                     return false
                 }
@@ -129,12 +129,12 @@ const reiver: CreepConfig<CreepRole.Reiver> = {
             }
 
             // 上面的遍历完了就说明放完了，检查生命值，如果还够搬一趟的就过去，否则自杀
-            const flag = Game.flags[flagName] 
+            const flag = Game.flags[flagName]
             if (!flag) {
                 creep.suicide()
                 return false
             }
-            
+
             // 乘以 3 是去一趟，回来的时候走的慢需要两倍的时间再加上沼泽可能更慢，40 是冗余
             if (creep.ticksToLive >= flag.memory.travelTime * 3 + 40) return true
             else {

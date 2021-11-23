@@ -19,7 +19,7 @@ import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { showResourceSource } from '@/modulesRoom/share/utils'
 
 // 全局拓展操作
-const extensions =  {
+const extensions = {
     // Game.getObjectById 别名
     get: Game.getObjectById,
     // 挂单别名
@@ -62,9 +62,12 @@ const alias = {
     // 显示路径缓存
     route,
     // 挂载 nuker 相关
-    nuker, cancelnuker, confirmnuker,
+    nuker,
+    cancelnuker,
+    confirmnuker,
     // 挂载全局建筑状态查看
-    ps, ob,
+    ps,
+    ob,
     // 所有房间的存储容量查看
     storage: showStorageAmountOverview,
     // 控制台表单示例

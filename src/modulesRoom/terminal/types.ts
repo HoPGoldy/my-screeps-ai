@@ -1,4 +1,4 @@
-import { TerminalChannel, TerminalMode } from "./constant"
+import { TerminalChannel, TerminalMode } from './constant'
 
 declare global {
     interface RoomMemory {

@@ -1,19 +1,19 @@
 
 /**
  * 获取身体部件提供的威力
- * 
+ *
  * @param body 要计算的身体部件
  * @param methodName 执行的方法名称
  * @param basePower 基础威力
  * @returns 该身体部件提供的威力
  */
- const calcBodyEffectiveness = function (body: BodyPartDefinition, methodName: string, basePower: number) {
+const calcBodyEffectiveness = function (body: BodyPartDefinition, methodName: string, basePower: number) {
     return (BOOSTS[body.type][body.boost]?.[methodName] || 0) * basePower + basePower
 }
 
 /**
  * 获取身体部件提供的治疗量
- * 
+ *
  * @returns [贴脸可以恢复的治疗量，三格之内可以恢复的治疗量]
  */
 const getBodyHeal = function (body: BodyPartDefinition<HEAL>): [number, number] {
@@ -25,7 +25,7 @@ const getBodyHeal = function (body: BodyPartDefinition<HEAL>): [number, number] 
 
 /**
  * 获取身体部件提供的伤害
- * 
+ *
  * @returns [贴脸可以造成的输出，三格之内可以造成的输出]
  */
 const getBodyDamage = function (body: BodyPartDefinition<ATTACK | RANGED_ATTACK>): [number, number] {
@@ -37,7 +37,7 @@ const getBodyDamage = function (body: BodyPartDefinition<ATTACK | RANGED_ATTACK>
 
 /**
  * 计算 bodys 可以提供的治疗量
- * 
+ *
  * @returns [贴脸可以恢复的治疗量，三格之内可以恢复的治疗量]
  */
 export const getCreepHeal = function (bodys: BodyPartDefinition[]): [number, number] {
@@ -53,7 +53,7 @@ export const getCreepHeal = function (bodys: BodyPartDefinition[]): [number, num
 
 /**
  * 计算 bodys 可以提供的伤害
- * 
+ *
  * @returns [贴脸伤害，三格之内的伤害]
  */
 export const getCreepDamage = function (bodys: BodyPartDefinition[]): [number, number] {
@@ -101,7 +101,7 @@ export const getMaxEndure = function (creep: Creep): number {
 /**
  * 获取一个 creep 下个 tick 的治疗量
  */
- export const getNextHeal = function (creep: Creep) {
+export const getNextHeal = function (creep: Creep) {
     // 这里用 compose 写会更好的...但是不确定 screeps 里用函数式库会不会有啥性能问题
     return getCreepHeal(getRemainingBodyByHits(creep, getRemainingHitsByDamage(creep, getRealDamage(creep))))
 }
@@ -126,8 +126,9 @@ export const getRemainingHitsByDamage = function (creep: Creep, damage: number) 
     for (const { hits, boost, type } of creep.body) {
         if (hits <= 0) continue
 
-        const damageCarry = (type === TOUGH && boost) ?
-            hits / (BOOSTS[TOUGH][boost]?.damage || 1) : hits
+        const damageCarry = (type === TOUGH && boost)
+            ? hits / (BOOSTS[TOUGH][boost]?.damage || 1)
+            : hits
 
         remainingDamage -= damageCarry
         remainingHits -= damageCarry
@@ -156,12 +157,14 @@ export const getRealDamage = function (creep: Creep) {
     for (const item of creep.body) {
         if (item.hits >= 100) continue
 
-        if (item.type == TOUGH && item.boost) {
+        if (item.type === TOUGH && item.boost) {
             getRealHealNumber += ((100 - item.hits) / (BOOSTS[TOUGH][item.boost]?.damage || 1))
-        } else {
+        }
+        else {
             getRealHealNumber += (100 - item.hits)
         }
     }
 
-    return creep._realDamage = getRealHealNumber
+    creep._realDamage = getRealHealNumber
+    return getRealHealNumber
 }

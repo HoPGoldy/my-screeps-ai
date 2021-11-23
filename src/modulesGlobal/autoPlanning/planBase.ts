@@ -2,9 +2,9 @@ import { baseLayout } from './constant'
 
 /**
  * 规划集中式布局的建筑摆放
- * 
+ *
  * 负责确定房间中的固定建筑位置
- * 
+ *
  * @param room 要执行规划的房间
  * @param centerPos 基地中心位置
  */
@@ -35,9 +35,9 @@ export default function (room: Room, centerPos: RoomPosition): StructurePlanning
 
 /**
  * 放置集中布局之外的 link
- * 
+ *
  * 默认有三个，分别位于两个 source 和一个 controller 旁边
- * 
+ *
  * @param room 要放置工地的房间
  */
 const getOutLinkPos = function (room: Room): RoomPosition[] {
@@ -47,12 +47,12 @@ const getOutLinkPos = function (room: Room): RoomPosition[] {
 
     for (const target of targets) {
         // 旁边已经造好了 link 或者有工地了，就直接返回对应位置
-        const existLink = target.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK})
+        const existLink = target.pos.findInRange(FIND_MY_STRUCTURES, 2, { filter: s => s.structureType === STRUCTURE_LINK })
         if (existLink.length > 0) {
             result.push(existLink[0].pos)
             continue
         }
-        const existLinkSite = target.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK})
+        const existLinkSite = target.pos.findInRange(FIND_MY_CONSTRUCTION_SITES, 2, { filter: s => s.structureType === STRUCTURE_LINK })
         if (existLinkSite.length > 0) {
             result.push(existLinkSite[0].pos)
             continue

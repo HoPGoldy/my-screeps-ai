@@ -1,7 +1,7 @@
-import { allBattleCore } from "../battleCore"
-import { SquadMemory, WarState } from "../types"
-import { EnvContext } from "@/contextTypes"
-import { contextCostMatrix, contextEnemyDamage, contextRoomInfo } from "../context"
+import { allBattleCore } from '../battleCore'
+import { SquadMemory, WarState } from '../types'
+import { EnvContext } from '@/contextTypes'
+import { contextCostMatrix, contextEnemyDamage, contextRoomInfo } from '../context'
 
 type SquadContext = {
     warCode: string
@@ -20,7 +20,7 @@ export const createSquadManager = function (context: SquadContext) {
      * 执行小队行动
      */
     const run = function () {
-        const { memberNames, type, data }= getMemory()
+        const { memberNames, type, data } = getMemory()
         const warState = getWarState()
 
         // 获取本小队的所有成员

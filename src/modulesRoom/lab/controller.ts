@@ -9,7 +9,7 @@ import { BoostState, LabMemory, LabState, BoostTask, BoostResourceConfig, LabTyp
  * lab 集群拓展
  */
 export default class LabController extends RoomAccessor<LabMemory> {
-    constructor(roomName: string) {
+    constructor (roomName: string) {
         super('lab', roomName, 'lab', {
             boostTasks: [],
             boostingNote: {}
@@ -25,14 +25,14 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * 底物存放 lab
      */
-    get inLabs(): StructureLab[] {
+    get inLabs (): StructureLab[] {
         return this.getLabByType(LabType.Base)
     }
 
     /**
      * 正在执行强化任务的 lab
      */
-    get boostLabs(): StructureLab[] {
+    get boostLabs (): StructureLab[] {
         return this.getLabByType(LabType.Boost)
     }
 
@@ -40,18 +40,18 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 正在参与反应的 lab
      * 注意！这些 lab 中不包含 inLab
      */
-    get reactionLabs(): StructureLab[] {
+    get reactionLabs (): StructureLab[] {
         return this.getLabByType(LabType.Reaction)
     }
 
-    private getLabByType(labType: LabType): StructureLab[] {
+    private getLabByType (labType: LabType): StructureLab[] {
         return Object.entries(this.labInfos)
             .filter(([id, { type }]) => type === labType)
             .map(([id]) => Game.getObjectById(id))
     }
 
     // 根据当前房间情况重新设置 lab 状态信息
-    private initLabInfo() {
+    private initLabInfo () {
         // 所有 lab 都默认为反应 lab
         this.labInfos = this.room[STRUCTURE_LAB].map(lab => lab.id).reduce((result, id) => {
             result[id] = { type: LabType.Reaction }
@@ -59,8 +59,10 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }, {})
 
         // 设置 boost lab
-        this.memory.boostTasks.map(({ res }) => {
-            res.map(({ lab }) => this.labInfos[lab] = { type: LabType.Boost })
+        this.memory.boostTasks.forEach(({ res }) => {
+            res.forEach(({ lab }) => {
+                this.labInfos[lab] = { type: LabType.Boost }
+            })
         });
 
         // 设置 inLab，如果 inLab 参加强化了就先保持原样
@@ -70,7 +72,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 this.log.error(`找不到 lab [${id}]，集群已暂停运行`)
                 return this.off()
             }
-            if (this.labInfos[id].type != LabType.Boost) this.labInfos[id].type = LabType.Base
+            if (this.labInfos[id].type !== LabType.Boost) this.labInfos[id].type = LabType.Base
         })
     }
 
@@ -79,13 +81,13 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @param id 要更新类型的 lab id
      * @param toType 更新到的类型
      */
-    private changeLabType(id: Id<StructureLab>, toType: LabType.Boost | LabType.Reaction) {
+    private changeLabType (id: Id<StructureLab>, toType: LabType.Boost | LabType.Reaction) {
         const info = this.labInfos[id]
         if (!info) return
         info.type = toType
     }
 
-    public runReactionController(): void {
+    public runReactionController (): void {
         // lab 集群被暂停，停止执行合成
         if (this.memory.pause) return
         if (!this.room._hasRunLab) {
@@ -97,32 +99,32 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * 反应流程控制器
      */
-    private reactionController(): void {
+    private reactionController (): void {
         switch (this.memory.reactionState) {
-            case LabState.GetTarget:
-                if (Game.time % 10 || this.inLabs.length < 2) return
-                this.labGetTarget()
+        case LabState.GetTarget:
+            if (Game.time % 10 || this.inLabs.length < 2) return
+            this.labGetTarget()
             break
-            case LabState.GetResource:
-                if (Game.time % 15) return
-                this.labGetResource()
+        case LabState.GetResource:
+            if (Game.time % 15) return
+            this.labGetResource()
             break
-            case LabState.Working:
-                if (Game.time % 2) return
-                this.labWorking()
+        case LabState.Working:
+            if (Game.time % 2) return
+            this.labWorking()
             break
-            case LabState.PutResource:
-                if (Game.time % 15) return
-                this.labPutResource()
+        case LabState.PutResource:
+            if (Game.time % 15) return
+            this.labPutResource()
             break
-            default:
-                if (Game.time % 10 || this.inLabs.length < 2) return
-                this.memory.reactionState = LabState.GetTarget
-                this.labGetTarget()
+        default:
+            if (Game.time % 10 || this.inLabs.length < 2) return
+            this.memory.reactionState = LabState.GetTarget
+            this.labGetTarget()
         }
     }
 
-    public runBoostController(): void {
+    public runBoostController (): void {
         if (Game.time % 10) return
         if (this.room._hasRunBoost) return
         if (this.memory.boostTasks.length <= 0) return
@@ -135,34 +137,35 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * 强化流程控制器
      */
-    private boostController(task: BoostTask): void {
+    private boostController (task: BoostTask): void {
         switch (task.state) {
-            case BoostState.GetLab:
-                this.boostGetLab(task)
-            case BoostState.GetResource:
-                this.boostGetResource(task)
+        case BoostState.GetLab:
+            this.boostGetLab(task)
             break
-            case BoostState.GetEnergy:
-                this.boostGetEnergy(task)
+        case BoostState.GetResource:
+            this.boostGetResource(task)
             break
-            case BoostState.WaitBoost:
-                // 感受宁静
+        case BoostState.GetEnergy:
+            this.boostGetEnergy(task)
             break
-            case BoostState.ClearResource:
-                this.boostClear(task)
+        case BoostState.WaitBoost:
+            // 感受宁静
             break
-            default:
-                this.boostGetLab(task)
+        case BoostState.ClearResource:
+            this.boostClear(task)
+            break
+        default:
+            this.boostGetLab(task)
         }
     }
 
     /**
      * 新增强化任务
-     * 
+     *
      * @param resConfig 该任务的强化材料配置
      * @return 该任务的唯一 id
      */
-    public addBoostTask(resConfig: BoostResourceConfig[]): number | undefined {
+    public addBoostTask (resConfig: BoostResourceConfig[]): number | undefined {
         // 强化任务需要的 lab 大于当前房间里的 lab 数量，无法完成强化
         if (resConfig.length > this.room[STRUCTURE_LAB].length) return
 
@@ -183,7 +186,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 重新装填某个 boost 任务的资源
      * @param taskId 要重新装填的 boost 任务
      */
-    public reloadBoostTask(taskId: number): ERR_NOT_FOUND | OK {
+    public reloadBoostTask (taskId: number): ERR_NOT_FOUND | OK {
         const boostTask = this.memory.boostTasks.find(task => task.id === taskId)
         if (!boostTask) return ERR_NOT_FOUND
 
@@ -203,7 +206,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * 移除强化任务
      * @param taskId 要移除的任务索引
      */
-    public removeBoostTask(taskId: number) {
+    public removeBoostTask (taskId: number) {
         const removeIndex = this.memory.boostTasks.findIndex(task => task.id === taskId)
         this.memory.boostTasks.splice(removeIndex, 1)
     }
@@ -212,7 +215,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * boost 阶段：获取强化 lab
      * 进入这个阶段是因为有 lab 正在执行反应，需要等待其净空
      */
-    private boostGetLab(task: BoostTask): void {
+    private boostGetLab (task: BoostTask): void {
         // 检查是否已经有正在执行的移出任务
         if (this.room.transport.hasTaskWithType(TransportTaskType.LabOut)) return
 
@@ -275,9 +278,9 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * boost 阶段：获取强化材料
      */
-    private boostGetResource(task: BoostTask): void {    
+    private boostGetResource (task: BoostTask): void {
         if (this.room.transport.hasTaskWithType(TransportTaskType.LabIn)) return
-    
+
         // 遍历检查资源是否到位
         const allResourceReady = task.res.every(res => {
             const lab = Game.getObjectById(res.lab)
@@ -313,7 +316,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * boost 阶段：获取能量
      */
-    private boostGetEnergy(task: BoostTask): void {
+    private boostGetEnergy (task: BoostTask): void {
         if (this.room.transport.hasTaskWithType(TransportTaskType.LabGetEnergy)) return
 
         const needFillLabs = task.res
@@ -321,7 +324,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             .filter(lab => lab.store[RESOURCE_ENERGY] < 1000)
 
         if (needFillLabs.length > 0) {
-            this.log.normal(`正在填充 boost 能量`)
+            this.log.normal('正在填充 boost 能量')
             this.room.transport.addTask({
                 type: TransportTaskType.LabGetEnergy,
                 requests: needFillLabs.map(lab => ({
@@ -333,7 +336,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         else {
             // 能循环完说明能量都填好了
             task.state = BoostState.WaitBoost
-            this.log.success(`boost 任务准备就绪，正在等待强化`)
+            this.log.success('boost 任务准备就绪，正在等待强化')
         }
     }
 
@@ -343,7 +346,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @param boostTaskId 要执行的强化任务
      * @returns 强化是否完成（因出现问题导致无法正常完成强化也会返回 true，比如任务里有 HEAL 强化，但是 creep 没有 HEAL 身体）
      */
-    public boostCreep(creep: Creep, taskId: number): boolean {
+    public boostCreep (creep: Creep, taskId: number): boolean {
         const task = this.memory.boostTasks.find(task => task.id === taskId)
         if (!task) return true
 
@@ -357,7 +360,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         const boostingNote = this.memory.boostingNote[creep.name]
         // 掏出来所有清单上还没强化过的 lab，挨个执行强化
-        boostingNote.filter(({ boosted }) => !boosted).map((notBoostLab, index) => {
+        boostingNote.filter(({ boosted }) => !boosted).forEach((notBoostLab, index) => {
             const lab = Game.getObjectById(notBoostLab.labId)
             if (!lab || !lab.mineralType) {
                 notBoostLab.boosted = true
@@ -376,13 +379,13 @@ export default class LabController extends RoomAccessor<LabMemory> {
         return allBoost
     }
 
-    public getBoostState(taskId: number): ERR_NOT_FOUND | BoostState {
+    public getBoostState (taskId: number): ERR_NOT_FOUND | BoostState {
         const task = this.memory.boostTasks.find(task => task.id === taskId)
         if (!task) return ERR_NOT_FOUND
         return task.state
     }
 
-    public finishBoost(taskId: number): void {
+    public finishBoost (taskId: number): void {
         const task = this.memory.boostTasks.find(task => task.id === taskId)
         if (!task) return
         task.state = BoostState.ClearResource
@@ -392,7 +395,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * boost 阶段：回收材料
      * 将强化用剩下的材料从 lab 中转移到 terminal 中
      */
-    private boostClear(task: BoostTask): void {
+    private boostClear (task: BoostTask): void {
         if (this.room.transport.hasTaskWithType(TransportTaskType.LabOut)) return
 
         const needCleanLabs = task.res
@@ -413,13 +416,13 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
         this.removeBoostTask(task.id)
         this.initLabInfo()
-        this.log.success(`强化任务已完成`)
+        this.log.success('强化任务已完成')
     }
 
     /**
      * lab 阶段：获取反应目标
      */
-    private labGetTarget(): void {
+    private labGetTarget (): void {
         const resource = LAB_TARGETS[this.memory.reactionIndex || 0]
 
         // 如果 targetIndex 没有找到对应资源的话，就更新索引再试一次
@@ -463,7 +466,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * lab 阶段：获取底物
      */
-    private labGetResource(): void {
+    private labGetResource (): void {
         if (this.inLabs.length < 2) {
             this.memory.reactionState = LabState.PutResource
             return
@@ -495,7 +498,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * lab 阶段：进行反应
      */
-    private labWorking(): void {
+    private labWorking (): void {
         const { cooldownTime } = this.memory
         const inLabs = this.inLabs
 
@@ -533,7 +536,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * lab 阶段：移出产物
      */
-    private labPutResource(): void {
+    private labPutResource (): void {
         // 检查是否已经有正在执行的移出任务
         if (this.room.transport.hasTaskWithType(TransportTaskType.LabOut)) return
 
@@ -560,21 +563,21 @@ export default class LabController extends RoomAccessor<LabMemory> {
 
     /**
      * 将 lab.targetIndex 设置到下一个目标
-     * 
+     *
      * @returns 当前的目标索引
      */
-    private setNextIndex(): number {
+    private setNextIndex (): number {
         this.memory.reactionIndex = ((this.memory.reactionIndex || 0) + 1) % LAB_TARGETS.length
         return this.memory.reactionIndex
     }
 
     /**
      * 查询目标资源可以合成的数量
-     * 
+     *
      * @param resourceType 要查询的资源类型
      * @returns 可以合成的数量，为 0 代表无法合成
      */
-    private getReactionAmount(resourceType: ResourceConstant): number {
+    private getReactionAmount (resourceType: ResourceConstant): number {
         // 获取资源及其数量
         const needResourcesName = REACTION_SOURCE[resourceType]
         if (!needResourcesName) {
@@ -594,7 +597,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * 获取当前合成需要的底物
      */
-    private getReactionResource(): void {
+    private getReactionResource (): void {
         // 获取目标产物
         const targetResource = LAB_TARGETS[this.memory.reactionIndex].target
         // 获取底物及其数量
@@ -613,7 +616,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      * @param labA 第一个底物存放 lab
      * @param labB 第二个底物存放 lab
      */
-    public setBaseLab(labA: StructureLab, labB: StructureLab): void {
+    public setBaseLab (labA: StructureLab, labB: StructureLab): void {
         this.memory.inLab = [labA.id, labB.id]
         this.initLabInfo()
         this.on()
@@ -622,20 +625,20 @@ export default class LabController extends RoomAccessor<LabMemory> {
     /**
      * 暂停 lab 反应
      */
-    public off(): void {
+    public off (): void {
         this.memory.pause = true
     }
 
     /**
      * 重启 lab 反应
      */
-    public on(): void {
+    public on (): void {
         delete this.memory.pause
     }
 
-    public stats(): string {
+    public stats (): string {
         const { reactionState, reactionIndex, pause, reactionAmount, boostTasks, inLab: inLabIds = [] } = this.memory
-        const logs = [ `[化合物合成]` ]
+        const logs = ['[化合物合成]']
 
         const reactionLogs = []
         if (this.inLabs.length < 2) {
@@ -659,7 +662,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             }
             else if (reactionState === LabState.GetResource) {
                 const res = LAB_TARGETS[reactionIndex]
-                logs.push(`- [正在获取资源] ${blue(res.target)} 目标合成数量 ${reactionAmount}`) 
+                logs.push(`- [正在获取资源] ${blue(res.target)} 目标合成数量 ${reactionAmount}`)
             }
             // 在工作就显示工作状态
             else if (reactionState === LabState.Working) {
@@ -673,14 +676,14 @@ export default class LabController extends RoomAccessor<LabMemory> {
             }
             else if (reactionState === LabState.PutResource) {
                 const res = LAB_TARGETS[reactionIndex]
-                logs.push(`- [正在移出资源] ${blue(res.target)}`) 
+                logs.push(`- [正在移出资源] ${blue(res.target)}`)
             }
         }
         logs.push(reactionLogs.join(' '))
 
         logs.push('[强化任务]')
 
-        if (boostTasks.length == 0) logs.push('- 暂无任务')
+        if (boostTasks.length === 0) logs.push('- 暂无任务')
         else {
             const taskLogs = boostTasks.map(task => {
                 const info = `- [${task.id}] [当前阶段] ${task.state} `

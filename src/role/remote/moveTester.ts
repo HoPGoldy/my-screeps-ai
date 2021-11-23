@@ -1,13 +1,13 @@
-import { Color } from "@/modulesGlobal/console"
-import { CreepConfig, CreepRole } from "../types/role"
+import { Color } from '@/modulesGlobal/console'
+import { CreepConfig, CreepRole } from '../types/role'
 
 /**
  * 移动测试单位
- * 
+ *
  * 一直朝着旗帜移动
  * 添加：creepApi.add('happyCreep0', 'moveTester', { sourceFlagName: 'p' }, 'W49S9')
  * 删除：creepApi.remove('happyCreep0')
- * 
+ *
  * @param flagName 目标旗帜名称
  */
 const moveTester: CreepConfig<CreepRole.MoveTester> = {
@@ -40,7 +40,7 @@ const moveTester: CreepConfig<CreepRole.MoveTester> = {
 
         return false
     },
-    bodys: () => [ MOVE ]
+    bodys: () => [MOVE]
 }
 
 export default moveTester

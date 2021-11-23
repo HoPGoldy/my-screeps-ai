@@ -53,7 +53,7 @@ const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Sou
         // 没有点位的话就要移动到 source，调整移动范围
         else range = 1
 
-        targetPos = droppedPos ? droppedPos : source.pos
+        targetPos = droppedPos || source.pos
     }
 
     // 到了就不进行移动了
@@ -66,7 +66,7 @@ const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Sou
 
 /**
  * 从工作房间获取当前应有的采集状态
- * 
+ *
  * @param room 要获取工作状态的房间
  */
 const setHarvestMode = function (creep: RoleCreep<CreepRole.Harvester>, source: Source): void {
@@ -118,7 +118,7 @@ type ActionStrategy = {
 const actionStrategy: ActionStrategy = {
     /**
      * 启动模式
-     * 
+     *
      * 当房间内没有搬运工时，采集能量，填充 spawn 跟 extension
      * 当有搬运工时，无脑采集能量
      */
@@ -189,7 +189,7 @@ const actionStrategy: ActionStrategy = {
 
     /**
      * 简单模式
-     * 
+     *
      * 在 container 不存在时切换为启动模式
      * 往 container 移动 > 检查 container 状态 > 无脑采集
      */
@@ -263,7 +263,7 @@ const actionStrategy: ActionStrategy = {
 
     /**
      * 转移模式
-     * 
+     *
      * 在 link 不存在时切换为启动模式
      * 采集能量 > 存放到指定建筑（在 memory.data.targetId 未指定是为 link）
      */
@@ -333,8 +333,6 @@ const actionStrategy: ActionStrategy = {
         }
     }
 }
-
-
 
 /**
  * 采集者

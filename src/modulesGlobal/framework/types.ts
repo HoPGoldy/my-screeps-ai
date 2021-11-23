@@ -73,7 +73,7 @@ type ErrorCatcher = (next: () => any) => any
  */
 type MemoryCacher = (next: () => any) => any
 
-declare module NodeJS {
+declare namespace NodeJS {
     interface Global {
         /**
          * 是否已经完成挂载

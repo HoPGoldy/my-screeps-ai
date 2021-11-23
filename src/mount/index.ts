@@ -1,6 +1,6 @@
 import mountCreep, { CreepExtension } from './creep'
 import { PowerCreepExtension, mountPowerToRoom } from './powerCreep'
-import mountRoom, { RoomExtension, RoomConsole} from './room'
+import mountRoom, { RoomExtension, RoomConsole } from './room'
 import RoomPostionExtension from './roomPosition/extension'
 import mountGlobal from './global'
 import {
@@ -23,45 +23,45 @@ import { Color, log } from '@/modulesGlobal'
  * 所有需要挂载的原型拓展
  */
 export const mountList: [ AnyClass, AnyClass ][] = [
-    [ Room, RoomExtension ],
+    [Room, RoomExtension],
     // 挂载各个模块的手操接口
-    [ Room, RoomConsole ],
-    [ Room, FactoryConsole ],
-    [ Room, TerminalConsole ],
-    [ Room, StorageConsole ],
-    [ Room, ShareConsole ],
-    [ Room, ObserverConsole ],
-    [ Room, RemoteConsole ],
-    [ Room, LabConsole ],
+    [Room, RoomConsole],
+    [Room, FactoryConsole],
+    [Room, TerminalConsole],
+    [Room, StorageConsole],
+    [Room, ShareConsole],
+    [Room, ObserverConsole],
+    [Room, RemoteConsole],
+    [Room, LabConsole],
     // 业务模块拓展挂载
-    [ RoomPosition, RoomPostionExtension ],
-    [ Source, SourceExtension ],
-    [ Creep, CreepExtension ],
-    [ PowerCreep, PowerCreepExtension ],
-    [ Structure, StructuresExtension ],
-    [ StructureController, ControllerExtension ],
-    [ StructureSpawn, SpawnExtension ],
-    [ StructureTower, TowerExtension ],
-    [ StructureLink, LinkExtension ],
-    [ StructureLink, LinkConsole ],
-    [ StructureFactory, FactoryExtension ],
-    [ StructureTerminal, TerminalExtension ],
-    [ StructureExtractor, ExtractorExtension ],
-    [ StructureStorage, StorageExtension ],
-    [ StructureLab, LabExtension ],
-    [ StructureNuker, NukerExtension ],
-    [ StructurePowerSpawn, PowerSpawnExtension ],
-    [ StructurePowerSpawn, PowerSpawnConsole ],
-    [ StructureObserver, ObserverExtension ],
-    [ StructureWall, WallExtension ],
-    [ StructureRampart, RampartExtension ],
-    [ StructureContainer, ContainerExtension ]
+    [RoomPosition, RoomPostionExtension],
+    [Source, SourceExtension],
+    [Creep, CreepExtension],
+    [PowerCreep, PowerCreepExtension],
+    [Structure, StructuresExtension],
+    [StructureController, ControllerExtension],
+    [StructureSpawn, SpawnExtension],
+    [StructureTower, TowerExtension],
+    [StructureLink, LinkExtension],
+    [StructureLink, LinkConsole],
+    [StructureFactory, FactoryExtension],
+    [StructureTerminal, TerminalExtension],
+    [StructureExtractor, ExtractorExtension],
+    [StructureStorage, StorageExtension],
+    [StructureLab, LabExtension],
+    [StructureNuker, NukerExtension],
+    [StructurePowerSpawn, PowerSpawnExtension],
+    [StructurePowerSpawn, PowerSpawnConsole],
+    [StructureObserver, ObserverExtension],
+    [StructureWall, WallExtension],
+    [StructureRampart, RampartExtension],
+    [StructureContainer, ContainerExtension]
 ]
 
 /**
  * 初始化存储
  */
-function initStorage() {
+function initStorage () {
     if (!Memory.rooms) Memory.rooms = {}
     else delete Memory.rooms.undefined
 
@@ -76,7 +76,7 @@ export const extensionAppPlugin: AppLifecycleCallbacks = {
     born: () => {
         const spawns = Object.values(Game.spawns)
         if (spawns.length > 1) return
-    
+
         log('欢迎来到 Screeps 的世界!\n', 'hopgoldy bot', Color.Green)
         // 设置中心点位并执行初始化配置
         setBornCenter(spawns[0])

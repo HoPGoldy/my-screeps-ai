@@ -1,9 +1,9 @@
-import { TopTargetConfig } from "./types"
+import { TopTargetConfig } from './types'
 
 /**
  * 工厂的不同阶段
  */
- export enum FactoryState {
+export enum FactoryState {
     Prepare = 'prepare',
     GetResource = 'getResource',
     Working = 'working',
@@ -53,35 +53,35 @@ export const TOP_TARGET: {
 } = {
     // 机械产业
     [RESOURCE_METAL]: {
-        1: [ RESOURCE_COMPOSITE, RESOURCE_TUBE ],
-        2: [ RESOURCE_FIXTURES ],
-        3: [ RESOURCE_LIQUID, RESOURCE_FRAME ],
-        4: [ RESOURCE_HYDRAULICS ],
-        5: [ RESOURCE_MACHINE ]
+        1: [RESOURCE_COMPOSITE, RESOURCE_TUBE],
+        2: [RESOURCE_FIXTURES],
+        3: [RESOURCE_LIQUID, RESOURCE_FRAME],
+        4: [RESOURCE_HYDRAULICS],
+        5: [RESOURCE_MACHINE]
     },
     // 生物产业
     [RESOURCE_BIOMASS]: {
-        1: [ RESOURCE_PHLEGM ],
-        2: [ RESOURCE_TISSUE ],
-        3: [ RESOURCE_LIQUID, RESOURCE_MUSCLE ],
-        4: [ RESOURCE_ORGANOID ],
-        5: [ RESOURCE_ORGANISM ]
+        1: [RESOURCE_PHLEGM],
+        2: [RESOURCE_TISSUE],
+        3: [RESOURCE_LIQUID, RESOURCE_MUSCLE],
+        4: [RESOURCE_ORGANOID],
+        5: [RESOURCE_ORGANISM]
     },
     // 电子产业
     [RESOURCE_SILICON]: {
-        1: [ RESOURCE_COMPOSITE, RESOURCE_SWITCH ],
-        2: [ RESOURCE_CRYSTAL, RESOURCE_TRANSISTOR ],
-        3: [ RESOURCE_MICROCHIP ],
-        4: [ RESOURCE_CIRCUIT ],
-        5: [ RESOURCE_DEVICE ]
+        1: [RESOURCE_COMPOSITE, RESOURCE_SWITCH],
+        2: [RESOURCE_CRYSTAL, RESOURCE_TRANSISTOR],
+        3: [RESOURCE_MICROCHIP],
+        4: [RESOURCE_CIRCUIT],
+        5: [RESOURCE_DEVICE]
     },
     // 奥秘产业
     [RESOURCE_MIST]: {
-        1: [ RESOURCE_CONCENTRATE ],
-        2: [ RESOURCE_CRYSTAL, RESOURCE_EXTRACT ],
-        3: [ RESOURCE_SPIRIT ],
-        4: [ RESOURCE_EMANATION ],
-        5: [ RESOURCE_ESSENCE ]
+        1: [RESOURCE_CONCENTRATE],
+        2: [RESOURCE_CRYSTAL, RESOURCE_EXTRACT],
+        3: [RESOURCE_SPIRIT],
+        4: [RESOURCE_EMANATION],
+        5: [RESOURCE_ESSENCE]
     }
 }
 
@@ -115,7 +115,6 @@ export const COMMODITY_MAX = {
     [RESOURCE_SPIRIT]: 200,
     [RESOURCE_EMANATION]: 50
 }
-
 
 /**
  * factory 会优先保证底物的数量超过下面的限制之后才会进行生产

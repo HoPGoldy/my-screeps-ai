@@ -68,7 +68,7 @@ export const transportActions: {
 
             const source = Game.getObjectById(task.sourceId)
             if (!source || source.getContainer()) {
-                if (!source) creep.log(`找不到 source，container 建造任务移除`, Color.Yellow)
+                if (!source) creep.log('找不到 source，container 建造任务移除', Color.Yellow)
                 workController.removeTaskByKey(task.key)
                 return false
             }
@@ -96,7 +96,7 @@ export const transportActions: {
                 const source = Game.getObjectById(task.sourceId)
 
                 if (!source) {
-                    creep.log(`找不到 source，container 建造任务移除`, Color.Yellow)
+                    creep.log('找不到 source，container 建造任务移除', Color.Yellow)
                     workController.removeTaskByKey(task.key)
                     return
                 }
@@ -162,8 +162,8 @@ export const transportActions: {
                 const damagedStructures = room.find(FIND_STRUCTURES, {
                     filter: s => s.hits < s.hitsMax &&
                         // 墙壁在刷墙任务里维护
-                        s.structureType != STRUCTURE_RAMPART &&
-                        s.structureType != STRUCTURE_WALL
+                        s.structureType !== STRUCTURE_RAMPART &&
+                        s.structureType !== STRUCTURE_WALL
                 })
 
                 // 找到最近的受损建筑并更新缓存
@@ -213,7 +213,7 @@ export const transportActions: {
 
 /**
  * creep 去房间内获取能量
- * 
+ *
  * @param creep 要获取能量的 creep
  * @returns 身上是否已经有足够的能量了
  */

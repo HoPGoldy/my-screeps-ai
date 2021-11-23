@@ -1,7 +1,7 @@
-import { EnvContext } from "@/contextTypes"
-import { BoostResourceConfig, BoostState } from "@/modulesRoom/lab/types"
-import { MobilizeTask } from "./mobilizeManager/types"
-import { SquadType } from "./squadManager/types"
+import { EnvContext } from '@/contextTypes'
+import { BoostResourceConfig, BoostState } from '@/modulesRoom/lab/types'
+import { MobilizeTask } from './mobilizeManager/types'
+import { SquadType } from './squadManager/types'
 
 /**
  * **重要** 该战争模块对于外界模块的依赖
@@ -44,7 +44,7 @@ export interface OutsideContext {
      * 获取一个房间的资源总量
      */
     getResource: (room: Room, resource: ResourceConstant) => number
-    
+
     /**
      * 获取房间内的 lab
      * 用于接入房间快捷访问
@@ -96,7 +96,7 @@ export interface SquadMemory {
     /**
      * 小队保存的数据
      */
-    data: AnyObject
+    data: Record<string, unknown>
 }
 
 /**

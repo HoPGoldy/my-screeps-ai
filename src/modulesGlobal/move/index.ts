@@ -5,7 +5,7 @@ import { MoveOpt } from './types'
 
 /**
  * 房间移动成本缓存
- * 
+ *
  * 会缓存房间内的静态地形、道路、建筑等短时间内不会移动的对象
  * 如果出现了撞墙等情况，说明缓存过期，会在撞墙时移除缓存以便下次重新搜索
  */
@@ -13,7 +13,7 @@ export const costCache: { [roomName: string]: CostMatrix } = {}
 
 /**
  * 路径缓存
- * 
+ *
  * Creep 在执行远程寻路时会优先检查该缓存
  * 键为路径的起点和终点名，例如："12/32/W1N1 23/12/W2N2"，值是使用 serializeFarPath 序列化后的路径
  */
@@ -21,19 +21,18 @@ export let routeCache: { [routeKey: string]: string } = {}
 
 /**
  * 路径点缓存
- * 
+ *
  * Creep 会把自己下一个路径点对应的位置缓存在这里，这样就不用每 tick 都从内存中的路径点字符串重建位置
  * 不过这么做会导致 creep 无法立刻感知到位置的变化
- * 
+ *
  * 其键为 creep 的名字，值为下一个路径目标
  */
 const wayPointCache: { [creepName: string]: RoomPosition } = {}
 
-
 /**
  * 移动 creep
  * 平均执行消耗 0.220 ~ 0.232（不包含寻路消耗）
- * 
+ *
  * @param creep 要进行移动的 creep
  * @param target 要移动到的目标位置
  * @param moveOpt 移动参数
@@ -45,7 +44,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
     if (!creep.memory._go) creep.memory._go = {}
     const moveMemory = creep.memory._go
     // 如果没有指定目标的话则默认为路径模式
-    let target: RoomPosition = targetPos || getTarget(creep)
+    const target = targetPos || getTarget(creep)
     if (!target) return ERR_INVALID_ARGS
 
     const currentPos = `${creep.pos.x}/${creep.pos.y}`
@@ -65,7 +64,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
     // （因为上一步的移动结果在这一 tick 开始时才会更新，所以要先检查之前移动是否成功，然后再决定是否要继续移动）
     if (moveMemory.lastMove) {
         // 如果和之前位置重复了就分析撞上了啥
-        if (moveMemory.prePos && currentPos == moveMemory.prePos) {
+        if (moveMemory.prePos && currentPos === moveMemory.prePos) {
             // creep.log('发现撞停!')
             // 获取前方位置上的 creep（fontCreep）
             const fontPos = creep.pos.directionToPos(moveMemory.lastMove)
@@ -108,7 +107,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
 
             // 对穿失败，需要重新寻路，不需要往下继续执行
             // 对穿成功，相当于重新执行了上一步，也不需要继续往下执行
-            return crossResult 
+            return crossResult
         }
 
         // 验证通过，没有撞停，继续下一步
@@ -136,10 +135,10 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
      * 这里没办法直接通过判断当前位置在不在传送门上来确定是不是要跨 shard
      * 因为在 screeps 声明周期的创建阶段中：位置变更到传送门上后会立刻把 creep 转移到新 shard
      * 而这时还没有到代码执行阶段，即：
-     * 
+     *
      * - tick1: 执行 move > 判断当前位置 > 不是传送门
      * - tick2: 更新位置 > 发现新位置在传送门上 > 发送到新 shard > 执行代码（creep 到了新 shard，当前位置依旧不在传送门上）
-     * 
+     *
      * 所以要在路径还有一格时判断前方是不是传送门
      */
     if (creep.memory.fromShard && moveMemory.path && moveMemory.path.length === 1) {
@@ -170,7 +169,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
     }
 
     // 移动成功，更新路径
-    if (goResult == OK) {
+    if (goResult === OK) {
         // 移动到终点了，不需要再检查位置是否重复
         if (moveMemory.path.length === 0) {
             delete moveMemory.lastMove
@@ -181,7 +180,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
         }
     }
     // 其他异常直接报告
-    else if (goResult != ERR_TIRED && goResult != ERR_BUSY) creep.say(`寻路 ${goResult}`)
+    else if (goResult !== ERR_TIRED && goResult !== ERR_BUSY) creep.say(`寻路 ${goResult}`)
 
     // 更新最后位置
     moveMemory.prePos = currentPos
@@ -189,10 +188,9 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
     return goResult
 }
 
-
 /**
  * 路径模式下获取要移动到的目标
- * 
+ *
  * 会进行缓存
  * 如果内存中没有设置的话则返回 undefined
  */
@@ -211,7 +209,7 @@ const getTarget = function (creep: Creep | PowerCreep): RoomPosition {
     }
     // 没有🚩就找找路径数组
     else if (memroy.wayPoints && memroy.wayPoints.length > 0) {
-        const [ x, y, roomName ] = memroy.wayPoints[0].split(' ')
+        const [x, y, roomName] = memroy.wayPoints[0].split(' ')
         if (!x || !y || !roomName) {
             creep.log(`错误的路径点 ${memroy.wayPoints[0]}`)
         }
@@ -226,12 +224,11 @@ const getTarget = function (creep: Creep | PowerCreep): RoomPosition {
     return target
 }
 
-
 /**
  * 给 Creep 设置路径点目标
- * 
+ *
  * target 是一个路径数组或者路径旗帜
- * 
+ *
  * @param target 路径点目标
  */
 export const setWayPoint = function (creep: Creep | PowerCreep, target: string[] | string) {
@@ -251,10 +248,9 @@ export const setWayPoint = function (creep: Creep | PowerCreep, target: string[]
     return OK
 }
 
-
 /**
  * 更新路径点
- * 
+ *
  * 当抵达当前路径点后就需要更新内存数据以移动到下一个路径点
  */
 const updateWayPoint = function (creep: Creep | PowerCreep) {
@@ -267,7 +263,7 @@ const updateWayPoint = function (creep: Creep | PowerCreep) {
     }
     else if (memory.wayPointFlag) {
         const preFlag = Game.flags[memory.wayPointFlag]
-        
+
         // 如果旗帜内存里指定了下一个路径点名称的话就直接使用
         if (preFlag && preFlag.memory && preFlag.memory.next) {
             memory.wayPointFlag = preFlag.memory.next
@@ -288,20 +284,19 @@ const updateWayPoint = function (creep: Creep | PowerCreep) {
     delete wayPointCache[creep.name]
 }
 
-
 /**
  * 向指定方向发起对穿
- * 
+ *
  * @param creep 发起对穿的 creep
  * @param direction 要进行对穿的方向
  * @param fontCreep 要被对穿的 creep
- * 
+ *
  * @returns OK 成功对穿
  * @returns ERR_BUSY 对方拒绝对穿
  * @returns ERR_INVALID_TARGET 前方没有 creep
  */
 const mutualCross = function (creep: Creep | PowerCreep, direction: DirectionConstant, fontCreep: Creep | PowerCreep): OK | ERR_BUSY | ERR_INVALID_TARGET {
-    creep.say(`👉`)
+    creep.say('👉')
     // creep.log('发起对穿！' + fontCreep.pos)
 
     // 如果前面的 creep 同意对穿了，自己就朝前移动
@@ -313,11 +308,10 @@ const mutualCross = function (creep: Creep | PowerCreep, direction: DirectionCon
     return (selfMoveResult === OK && fontMoveResult === OK) ? OK : ERR_BUSY
 }
 
-
 /**
  * 请求对穿
  * 自己内存中 stand 为 true 时将拒绝对穿
- * 
+ *
  * @param creep 被请求对穿的 creep
  * @param direction 请求该 creep 进行对穿
  * @param requireCreep 发起请求的 creep
@@ -345,10 +339,9 @@ const requireCross = function (creep: Creep | PowerCreep, direction: DirectionCo
     return moveResult
 }
 
-
 /**
  * 远程寻路
- * 
+ *
  * @param target 目标位置
  * @param range 搜索范围 默认为 1
  * @returns PathFinder.search 的返回值
@@ -377,30 +370,31 @@ const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, move
             // 尝试从缓存中读取，没有缓存就进行查找
             let costs = (roomName in costCache) ? costCache[roomName].clone() : undefined
             if (!costs) {
-                costs = new PathFinder.CostMatrix
+                costs = new PathFinder.CostMatrix()
                 const terrain = new Room.Terrain(roomName)
 
                 // 设置基础地形 cost
-                for (let x = 0; x < 50; x ++) for (let y = 0; y < 50; y ++) {
-                    const tile = terrain.get(x, y);
-                    const weight =
-                        tile === TERRAIN_MASK_WALL ? 255 : 
-                        tile === TERRAIN_MASK_SWAMP ? 10 : 4
+                for (let x = 0; x < 50; x++) {
+                    for (let y = 0; y < 50; y++) {
+                        const tile = terrain.get(x, y)
+                        const weight =
+                        tile === TERRAIN_MASK_WALL
+                            ? 255
+                            : tile === TERRAIN_MASK_SWAMP ? 10 : 4
 
-                    costs.set(x, y, weight)
+                        costs.set(x, y, weight)
+                    }
                 }
 
                 const addCost = (item: Structure | ConstructionSite) => {
                     // 更倾向走道路
                     if (item.structureType === STRUCTURE_ROAD) {
-                        // 造好的路可以走
+                        // 造好的路可以走，路的工地保持原有 cost
                         if (item instanceof Structure) costs.set(item.pos.x, item.pos.y, 1)
-                        // 路的工地保持原有 cost
-                        else return
                     }
                     // 不能穿过无法行走的建筑
                     else if (item.structureType !== STRUCTURE_CONTAINER &&
-                        (item.structureType !== STRUCTURE_RAMPART || !item.my) 
+                        (item.structureType !== STRUCTURE_RAMPART || !item.my)
                     ) {
                         costs.set(item.pos.x, item.pos.y, 255)
                     }
@@ -456,15 +450,14 @@ const findPath = function (creep: Creep | PowerCreep, target: RoomPosition, move
     return moveOpt.reusePath ? route.slice(0, moveOpt.reusePath) : route
 }
 
-
 /**
  * 压缩 PathFinder 返回的路径数组
- * 
+ *
  * @param positions 房间位置对象数组，必须连续
  * @returns 压缩好的路径
  */
 const serializeFarPath = function (creep: Creep | PowerCreep, positions: RoomPosition[]): string {
-    if (positions.length == 0) return ''
+    if (positions.length === 0) return ''
     // 确保路径的第一个位置是自己的当前位置
     if (!positions[0].isEqualTo(creep.pos)) positions.splice(0, 0, creep.pos)
 
@@ -472,12 +465,11 @@ const serializeFarPath = function (creep: Creep | PowerCreep, positions: RoomPos
         // 最后一个位置就不用再移动
         if (index >= positions.length - 1) return null
         // 由于房间边缘地块会有重叠，所以这里筛除掉重叠的步骤
-        if (pos.roomName != positions[index + 1].roomName) return null
+        if (pos.roomName !== positions[index + 1].roomName) return null
         // 获取到下个位置的方向
         return pos.getDirectionTo(positions[index + 1])
     }).join('')
 }
-
 
 /**
  * 显示所有 creep 的移动轨迹
@@ -486,11 +478,11 @@ export const visualAllCreepPath = function () {
     Object.values(Game.creeps).forEach(creep => {
         if (!creep.memory._go || !creep.memory._go.path) return
 
-        const directions: (string | RoomPosition)[] =  creep.memory._go.path.split('')
+        const directions: (string | RoomPosition)[] = creep.memory._go.path.split('')
         directions.unshift(creep.pos)
         directions.reduce((pre: RoomPosition, next: string) => {
             const nextPos = (pre as RoomPosition).directionToPos(Number(next) as DirectionConstant)
-            new RoomVisual(pre.roomName).line(pre, nextPos, {color: '#a9b7c6' })
+            new RoomVisual(pre.roomName).line(pre, nextPos, { color: '#a9b7c6' })
 
             return nextPos
         })
@@ -500,9 +492,9 @@ export const visualAllCreepPath = function () {
 /**
  * 显示当前所有的路径缓存
  */
-export const showRouteChche = function(): string {
+export const showRouteChche = function (): string {
     const routeNames = Object.keys(routeCache)
-    if (routeNames.length <= 0) return `暂无路径缓存`
+    if (routeNames.length <= 0) return '暂无路径缓存'
 
     const logs = routeNames.map(routeKey => {
         return `[${routeKey.split(' ').join(' > ')}] ${routeCache[routeKey]}`
@@ -511,7 +503,7 @@ export const showRouteChche = function(): string {
     if (logs.length > 0) {
         logs.unshift(`当前共缓存路径 ${routeNames.length} 条`)
     }
-    else return `暂无路径缓存`
+    else return '暂无路径缓存'
 
     return logs.join('\n')
 }

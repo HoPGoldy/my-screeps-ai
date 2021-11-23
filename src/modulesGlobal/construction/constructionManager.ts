@@ -5,14 +5,14 @@ export const createConstructionManager = function (effects: CreateOptions) {
     /**
      * 向队列里新增建造任务
      */
-     const addConstructionSite = function (sites: ConstructInfo[]) {
+    const addConstructionSite = function (sites: ConstructInfo[]) {
         const waitingSites = effects.getWaitingSites()
         effects.setWaitingSites([...waitingSites, ...sites])
     }
 
     /**
      * 检查一个建筑工地是否建造完成
-     * 
+     *
      * @param site 建筑工地
      * @returns 若建造完成则返回对应的建筑
      */
@@ -26,7 +26,7 @@ export const createConstructionManager = function (effects: CreateOptions) {
         }
         catch (e) {
             // 上面代码如果没有视野的话就会报错
-            return
+
         }
     }
 
@@ -106,6 +106,8 @@ export const createConstructionManager = function (effects: CreateOptions) {
                 effects.updateStructure(structure.room.name, structure.structureType, structure.id)
                 // 如果有的话就执行回调
                 if (structure.onBuildComplete) structure.onBuildComplete()
+
+                return false
             })
 
             // 把处理好的工地丢弃，防止下次调用时重复触发

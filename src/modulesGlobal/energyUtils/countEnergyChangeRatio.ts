@@ -3,12 +3,12 @@ import { ENERGY_USE_LIMIT } from './findStrategy'
 
 /**
  * 统计指定房间的能量状态（包括可用能量总量、能量获取速率）
- * 
+ *
  * @param room 要统计的房间
  * @param withLimit 是否剔除需要保留的能量（用在孵化上的能量）
  * @returns 该房间的能量获取速率，单位（点/tick）
  */
-export const countEnergyChangeRatio = function (room: Room, withLimit: boolean = false) {
+export const countEnergyChangeRatio = function (room: Room, withLimit = false) {
     // 收集房间建筑内的可用总能量
     const structureEnergy = [room.terminal, room.storage, ...room[STRUCTURE_CONTAINER]]
         .filter(Boolean)
@@ -37,12 +37,13 @@ export const countEnergyChangeRatio = function (room: Room, withLimit: boolean =
         })
 
     // 计算能量总数
-    const totalEnergy = [ ...structureEnergy, ...droppedEnergy ].reduce((pre, next) => pre + next, 0)
+    const totalEnergy = [...structureEnergy, ...droppedEnergy].reduce((pre, next) => pre + next, 0)
 
     let energyGetRate: number
     setRoomStats(room.name, oldStats => {
         // 计算能量获取速率，如果 energyGetRate 为 NaN 的话代表之前还未进行过统计，先设置为 0
-        energyGetRate = _.isNaN(oldStats.energyGetRate) ? 0
+        energyGetRate = _.isNaN(oldStats.energyGetRate)
+            ? 0
             : (totalEnergy - oldStats.totalEnergy) / (Game.time - oldStats.energyCalcTime)
 
         return {
@@ -52,5 +53,5 @@ export const countEnergyChangeRatio = function (room: Room, withLimit: boolean =
         }
     })
 
-    return { totalEnergy, energyGetRate }   
+    return { totalEnergy, energyGetRate }
 }

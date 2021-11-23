@@ -16,7 +16,7 @@ interface PowerTaskConfigs {
 interface PowerTaskConfig {
     /**
      * power 的资源获取逻辑
-     * 
+     *
      * @returns OK 任务完成，将会执行下面的 target 方法
      * @returns ERR_NOT_ENOUGH_RESOURCES 资源不足，将会强制切入 ops 生成任务
      * @returns ERR_BUSY 任务未完成，保留工作状态，后续继续执行
@@ -24,7 +24,7 @@ interface PowerTaskConfig {
     source?: (creep: PowerCreep, controller: RoomPowerController) => OK | ERR_NOT_ENOUGH_RESOURCES | ERR_BUSY
     /**
      * power 的具体工作逻辑
-     * 
+     *
      * @returns OK 任务完成，将会继续检查后续 power
      * @returns ERR_NOT_ENOUGH_RESOURCES 资源不足，将会执行上面的 source 方法，如果没有 source 的话就强制切入 ops 生成任务
      * @returns ERR_BUSY 任务未完成，保留工作状态，后续继续执行
@@ -34,7 +34,7 @@ interface PowerTaskConfig {
 
 /**
  * 所有 power 的任务检查逻辑及工作逻辑
- * 
+ *
  * @property PWR_* 常量之一，代表对应的任务
  * @value power 任务的具体配置项
  */
@@ -84,12 +84,12 @@ export const PowerTasks: PowerTaskConfigs = {
             const result = creep.transfer(creep.room.terminal, RESOURCE_OPS)
 
             // 够不到就移动
-            if (result == ERR_NOT_IN_RANGE) {
+            if (result === ERR_NOT_IN_RANGE) {
                 creep.goTo(creep.room.terminal.pos)
                 return ERR_BUSY
             }
             // ops 不足就继续生成
-            else if (result == ERR_NOT_ENOUGH_RESOURCES){
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 return ERR_NOT_ENOUGH_RESOURCES
             }
         }
@@ -194,7 +194,7 @@ export const PowerTasks: PowerTaskConfigs = {
             else target = creep.room.source[creep.memory.sourceIndex]
             // 两个 source 都有 regen_source 时将获取不到 target
             if (!target) return ERR_BUSY
-            
+
             const actionResult = creep.usePower(PWR_REGEN_SOURCE, target)
 
             if (actionResult === OK) {

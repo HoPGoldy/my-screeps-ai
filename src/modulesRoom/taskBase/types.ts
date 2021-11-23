@@ -1,4 +1,4 @@
-interface RoomTaskMemory<Task extends RoomTask, UnitData extends AnyObject> {
+interface RoomTaskMemory<Task extends RoomTask, UnitData extends Record<string, any>> {
     tasks: Task[]
     creeps: { [creepName: string]: TaskUnitInfo<UnitData> }
 }

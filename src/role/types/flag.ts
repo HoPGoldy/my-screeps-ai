@@ -1,4 +1,4 @@
-import { PbHarvestState } from "./role";
+import { PbHarvestState } from './role'
 
 declare global {
     interface FlagMemory {

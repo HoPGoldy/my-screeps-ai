@@ -1,11 +1,11 @@
-import { getBodySpawnEnergy } from "@/utils";
-import { contextOutside } from "../context";
-import { createSpawnInfo } from "./getBodyPart";
-import { MobilizeState, RunMobilizeStateFunc } from "./types";
+import { getBodySpawnEnergy } from '@/utils'
+import { contextOutside } from '../context'
+import { createSpawnInfo } from './getBodyPart'
+import { MobilizeState, RunMobilizeStateFunc } from './types'
 
 /**
  * 动员任务孵化阶段
- * 
+ *
  * @todo 孵化四人小队的生命对齐功能
  */
 export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateState, abandonTask }, env) {
@@ -62,10 +62,10 @@ export const runSpawning: RunMobilizeStateFunc = function ({ task, room, updateS
 
     // 开始执行孵化，这里不会判断是否孵化成功
     // 因为返回 OK 也有可能会被别人覆盖，等待下次执行本阶段时会检查是否存在未孵化成员
-    freeSpawn.map((spawn, index) => {
+    freeSpawn.forEach((spawn, index) => {
         // spawn 比未孵化单位多
         const [creepName, { role, bodys }] = unSpawnMembers[index] || ['', {}]
         if (!creepName) return
-        spawn.spawnCreep(bodys, creepName, { memory: { soliderRole: role } as unknown as CreepMemory})
+        spawn.spawnCreep(bodys, creepName, { memory: { soliderRole: role } as unknown as CreepMemory })
     })
 }

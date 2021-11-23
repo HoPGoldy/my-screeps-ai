@@ -32,14 +32,28 @@ const creepWork: CreepWork = {
      * 房间运维角色组
      * 包括了维持房间正常运行所需的单位
      */
-    harvester, worker, manager, miner, defender,
+    harvester,
+    worker,
+    manager,
+    miner,
+    defender,
 
     /**
      * 外派角色组
      * 本角色组包括了多房间拓展所需要的角色
      */
-    claimer, depositHarvester, moveTester, pbAttacker, pbCarrier, pbHealer, reiver, remoteBuilder, remoteHarvester, remoteUpgrader,
-    reserver, signer,
+    claimer,
+    depositHarvester,
+    moveTester,
+    pbAttacker,
+    pbCarrier,
+    pbHealer,
+    reiver,
+    remoteBuilder,
+    remoteHarvester,
+    remoteUpgrader,
+    reserver,
+    signer
 }
 
 /**

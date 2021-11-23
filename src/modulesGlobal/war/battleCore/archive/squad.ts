@@ -1,4 +1,4 @@
-import { CreepRole } from "@/role/types/role"
+import { CreepRole } from '@/role/types/role'
 
 /**
  * 战斗小队的基础信息
@@ -36,7 +36,7 @@ export type SquadMemory = SquadBase<true>
  * @type back 掉头，后队变前队
  * @type left 左转（逆时针）
  * @type right 右转（顺时针）
- * @type cross 对穿（左上到右下，右上到左下） 
+ * @type cross 对穿（左上到右下，右上到左下）
  */
 export enum SquadTacticalActions {
     Back = 1,

@@ -13,7 +13,7 @@ export default class CreepExtension extends Creep {
     /**
      * creep 主要工作
      */
-    public onWork(): void {
+    public onWork (): void {
         if (!this.memory.role) return
 
         // 检查 creep 内存中的角色是否存在
@@ -22,7 +22,7 @@ export default class CreepExtension extends Creep {
             const memory = getMemoryFromCrossShard(this.name)
             // console.log(`${this.name} 从暂存区获取了内存`, memory)
             if (!memory) {
-                this.log(`找不到对应内存`, Color.Yellow)
+                this.log('找不到对应内存', Color.Yellow)
                 this.say('我凉了！')
                 return
             }
@@ -43,7 +43,7 @@ export default class CreepExtension extends Creep {
         }
 
         // 如果执行了 prepare 还没有 ready，就返回等下个 tick 再执行
-        if (!this.memory.ready) return 
+        if (!this.memory.ready) return
 
         // 获取是否工作，没有 source 的话直接执行 target
         const working = creepConfig.source ? this.memory.working : true
@@ -67,24 +67,24 @@ export default class CreepExtension extends Creep {
 
     /**
      * 发送日志
-     * 
+     *
      * @param content 日志内容
      * @param instanceName 发送日志的实例名
      * @param color 日志前缀颜色
      * @param notify 是否发送邮件
      */
-    log(content: string, color: Color = undefined, notify = false): void {
+    log (content: string, color: Color = undefined, notify = false): void {
         this.room.log(content, this.name, color, notify)
     }
 
     /**
      * 切换为能量获取状态
      * 应在 target 阶段能量不足时调用
-     * 
+     *
      * @param creep 需要获取能量的 creep
      * @returns true
      */
-    backToGetEnergy(): true {
+    backToGetEnergy (): true {
         // 移除能量来源缓存，便于重新查找最近的
         delete this.memory.sourceId
         return true
@@ -92,27 +92,27 @@ export default class CreepExtension extends Creep {
 
     /**
      * 无视 Creep 的寻路
-     * 
+     *
      * @param target 要移动到的位置
      */
-    public goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode {
+    public goTo (target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode {
         return goTo(this, target, moveOpt)
     }
 
     /**
      * 设置路径点
-     * 
+     *
      * @see doc/移动及寻路设计案
      * @param target 要进行设置的目标，位置字符串数组或者是路径名前缀
      */
-    public setWayPoint(target: string[] | string): ScreepsReturnCode {
+    public setWayPoint (target: string[] | string): ScreepsReturnCode {
         return setWayPoint(this, target)
     }
 
     /**
      * 填充指定房间的 controller
      */
-    public upgradeRoom(roomName: string): ScreepsReturnCode {
+    public upgradeRoom (roomName: string): ScreepsReturnCode {
         const workRoom = Game.rooms[roomName]
         if (!workRoom) {
             this.goTo(new RoomPosition(25, 25, roomName), { checkTarget: false })
@@ -120,16 +120,16 @@ export default class CreepExtension extends Creep {
         }
         const result = this.upgradeController(workRoom.controller)
 
-        if (result == ERR_NOT_IN_RANGE) this.goTo(workRoom.controller.pos)
+        if (result === ERR_NOT_IN_RANGE) this.goTo(workRoom.controller.pos)
         return result
     }
 
     /**
      * 建设房间内存在的建筑工地
-     * 
+     *
      * @param targetConstruction 要建造的目标工地，该参数无效的话将自行挑选工地
      */
-    public buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
+    public buildStructure (targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
         // 新建目标建筑工地
         const target = this.getBuildTarget(targetConstruction)
 
@@ -141,7 +141,7 @@ export default class CreepExtension extends Creep {
         // 建设
         const buildResult = this.build(target)
 
-        if (buildResult == ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 3 })
+        if (buildResult === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 3 })
         return buildResult
     }
 
@@ -149,7 +149,7 @@ export default class CreepExtension extends Creep {
      * 建筑目标获取
      * 优先级：指定的目标 > 自己保存的目标 > 房间内保存的目标
      */
-    private getBuildTarget(target?: ConstructionSite): ConstructionSite | undefined {
+    private getBuildTarget (target?: ConstructionSite): ConstructionSite | undefined {
         // 指定了目标，直接用，并且把 id 备份一下
         if (target) {
             this.memory.constructionSiteId = target.id
@@ -170,7 +170,7 @@ export default class CreepExtension extends Creep {
             this.memory.constructionSiteId = this.room.memory.constructionSiteId
             return roomKeepTarget
         }
-        
+
         // 房间内存也没有缓存，重新搜索并缓存到房间
         delete this.room.memory.constructionSiteId
         const newTarget = useCache(() => getNearSite(this.pos), this.room.memory, 'constructionSiteId')
@@ -183,13 +183,13 @@ export default class CreepExtension extends Creep {
      * 稳定新墙
      * 会把内存中 fillWallId 标注的墙声明值刷到定值以上
      */
-    public steadyWall(): OK | ERR_NOT_FOUND {
+    public steadyWall (): OK | ERR_NOT_FOUND {
         const wall = Game.getObjectById(this.memory.fillWallId)
         if (!wall) return ERR_NOT_FOUND
 
         if (wall.hits < MIN_WALL_HITS) {
             const result = this.repair(wall)
-            if (result == ERR_NOT_IN_RANGE) this.goTo(wall.pos, { range: 3 })
+            if (result === ERR_NOT_IN_RANGE) this.goTo(wall.pos, { range: 3 })
         }
         else delete this.memory.fillWallId
 
@@ -201,7 +201,7 @@ export default class CreepExtension extends Creep {
      * 包括 wall 和 rempart
      * @returns 当没有墙需要刷时返回 false，否则返回 true
      */
-    public fillDefenseStructure(): boolean {
+    public fillDefenseStructure (): boolean {
         const focusWall = this.room.memory.focusWall
         let targetWall: StructureWall | StructureRampart = null
         // 该属性不存在 或者 当前时间已经大于关注时间 就刷新
@@ -233,17 +233,17 @@ export default class CreepExtension extends Creep {
 
         // 填充墙壁
         const result = this.repair(targetWall)
-        if (result == ERR_NOT_IN_RANGE) this.goTo(targetWall.pos, { range: 3 })
+        if (result === ERR_NOT_IN_RANGE) this.goTo(targetWall.pos, { range: 3 })
         return true
     }
 
     /**
      * 从目标结构获取能量
-     * 
+     *
      * @param target 提供能量的结构
      * @returns 执行 harvest 或 withdraw 后的返回值
      */
-    public getEngryFrom(target: AllEnergySource): ScreepsReturnCode {
+    public getEngryFrom (target: AllEnergySource): ScreepsReturnCode {
         let result: ScreepsReturnCode
         // 是建筑就用 withdraw
         if (target instanceof Structure) {
@@ -263,11 +263,11 @@ export default class CreepExtension extends Creep {
     /**
      * 转移资源到建筑
      * 包含移动逻辑
-     * 
+     *
      * @param target 要转移到的目标
      * @param RESOURCE 要转移的资源类型
      */
-    public transferTo(target: AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt: MoveOpt = {}): ScreepsReturnCode {
+    public transferTo (target: AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt: MoveOpt = {}): ScreepsReturnCode {
         this.goTo(target.pos, moveOpt)
         return this.transfer(target, RESOURCE)
     }
@@ -275,12 +275,12 @@ export default class CreepExtension extends Creep {
     /**
      * 手操 - 给 harvester 设置存放建筑
      * 将会在下次孵化后生效
-     * 
+     *
      * @param targetId 要存放的建筑 id
      */
-    public storeTo(targetId: Id<StructureWithStore>): string {
+    public storeTo (targetId: Id<StructureWithStore>): string {
         const isHarvester = (creep: Creep): creep is RoleCreep<CreepRole.Harvester> => {
-            return creep.memory.role == CreepRole.Harvester
+            return creep.memory.role === CreepRole.Harvester
         }
 
         const target = Game.getObjectById(targetId)

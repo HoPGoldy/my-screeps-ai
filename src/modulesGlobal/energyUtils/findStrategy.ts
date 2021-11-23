@@ -34,7 +34,7 @@ export const getMax: EnergyTargetFinder = targets => _.max(targets, getEnergyAmo
 
 /**
  * 生成查找器 - 找到离目标位置最近的能量来源
- * 
+ *
  * @param pos 目标位置
  */
 export const getClosestTo: (pos: RoomPosition) => EnergyTargetFinder = pos => {

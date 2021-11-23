@@ -23,4 +23,3 @@ export const ENERGY_SHARE_LIMIT = 600000
  * 仅在房间有 terminal 时生效
  */
 export const ENERGY_REQUEST_LIMIT = 200000
-

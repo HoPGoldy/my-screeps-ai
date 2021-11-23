@@ -81,7 +81,7 @@ export enum DelayTaskType {
 
 /**
  * 延迟任务的回调
- * 
+ *
  * @param data 任务的数据
  * @param room 该任务对应的房间对象，由数据中的 roomName 获取
  */

@@ -8,7 +8,7 @@ import { ObserverMemory } from './types'
  * 定期搜索给定列表中的房间并插旗
  */
 export default class ObservserController extends RoomAccessor<ObserverMemory> {
-    constructor(roomName: string) {
+    constructor (roomName: string) {
         super('observer', roomName, 'observer', {
             watchIndex: 0,
             watchRooms: [],
@@ -24,11 +24,11 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     readonly depoFlagPrefix = 'depo'
 
     /** 本房间内的 observer */
-    get observer() {
+    get observer () {
         return this.room[STRUCTURE_OBSERVER]
     }
 
-    public run(): void {
+    public run (): void {
         // 没有初始化或者暂停了就不执行工作
         if (!this.observer) return
 
@@ -53,9 +53,9 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 绘制 ob 检查范围
      */
-    private drawMap() {
+    private drawMap () {
         const { watchRooms, checkRoomName } = this.memory
-        watchRooms.map(roomName => {
+        watchRooms.forEach(roomName => {
             const style: MapPolyStyle = { stroke: '#49a64d', strokeWidth: 1 }
             // 高亮显示当前正在检查的房间
             if (roomName === checkRoomName) style.stroke = '#fffa00'
@@ -68,7 +68,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
      * 在房间内执行搜索
      * 该方法会搜索房间中的 deposits 和 power bank，一旦发现自动插旗
      */
-    private searchRoom(): void {
+    private searchRoom (): void {
         const { checkRoomName, depoList, pbList } = this.memory
         // 从内存中获取要搜索的房间
         const room = Game.rooms[checkRoomName]
@@ -99,16 +99,17 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
         if (pbList.length < OBSERVER_POWERBANK_MAX) {
             // pb 的存活时间大于 3000 / power 足够大的才去采集
             const powerBanks = room.find<StructurePowerBank>(FIND_STRUCTURES, {
-                filter: s => s.structureType == STRUCTURE_POWER_BANK && s.ticksToDecay >= 3000 && s.power >= 2000
+                filter: s => s.structureType === STRUCTURE_POWER_BANK &&
+                    s.ticksToDecay >= 3000 && s.power >= 2000
             })
             // 对找到的 pb 进行归档
             powerBanks.forEach(powerBank => {
                 const flags = powerBank.pos.lookFor(LOOK_FLAGS)
                 if (flags.length > 0) return
-    
+
                 // 确认完成，插旗
                 this.harvestPowerBank(powerBank)
-                this.log.success(`${checkRoomName} 检测到新 pb, 已插旗`)  
+                this.log.success(`${checkRoomName} 检测到新 pb, 已插旗`)
             })
         }
 
@@ -136,7 +137,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 发布 pb 采集任务
      */
-    private harvestPowerBank(target: StructurePowerBank) {
+    private harvestPowerBank (target: StructurePowerBank) {
         const targetFlagName = `${this.pbFlagPrefix} ${this.room.name} ${Game.time}`
         target.pos.createFlag(targetFlagName)
 
@@ -151,7 +152,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 发布 depo 采集任务
      */
-    private harvestDeposit(target: Deposit) {
+    private harvestDeposit (target: Deposit) {
         const targetFlagName = `${this.depoFlagPrefix} ${this.room.name} ${Game.time}`
         target.pos.createFlag(targetFlagName)
 
@@ -164,7 +165,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 获取指定房间视野
      */
-    private obRoom(): void {
+    private obRoom (): void {
         const { watchIndex, watchRooms } = this.memory
         // 执行视野获取
         const roomName = watchRooms[watchIndex]
@@ -181,7 +182,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 初始化 observer
      */
-    protected init(): void {
+    protected init (): void {
         this.room.memory.observer = {
             watchIndex: 0,
             watchRooms: [],
@@ -194,7 +195,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
      * 检查当前 depo 和 bp 旗帜是否失效
      * 会更新内存中的两个资源对应的 List 字段
      */
-    public updateFlagList(): OK | ERR_NOT_FOUND {
+    public updateFlagList (): OK | ERR_NOT_FOUND {
         const { pbList, depoList } = this.memory
 
         this.memory.pbList = pbList.filter(this.checkAliveFlag)
@@ -206,10 +207,10 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 检查旗帜是否失效
      * 会完成失效后的释放操作
-     * 
+     *
      * @param flagName 要检查的旗帜名称
      */
-    private checkAliveFlag(flagName): boolean {
+    private checkAliveFlag (flagName): boolean {
         if (flagName in Game.flags) return true
 
         Memory.flags && delete Memory.flags[flagName]
@@ -220,7 +221,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
      * 显示当前监听的房间列表
      * 会高亮显示当前正在检查的房间
      */
-    public showList(): string {
+    public showList (): string {
         const roomList = this.memory.watchRooms.map((room, index) => {
             if (index === this.memory.watchIndex) return green(room)
             else return room
@@ -232,13 +233,13 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
     /**
      * 查看状态
      */
-    public show(): string {
+    public show (): string {
         const { watchRooms, pbList, depoList } = this.memory
         if (watchRooms.length === 0) {
             return `[${this.roomName} observer] 未启用，使用 .obhelp() 来查看更多用法`
         }
 
-        const logs = [ `[${this.roomName} observer] 当前状态`, this.showList() ]
+        const logs = [`[${this.roomName} observer] 当前状态`, this.showList()]
 
         // 更新旗帜列表，保证显示最新数据
         this.updateFlagList()
@@ -259,41 +260,41 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
 
     /**
      * 新增监听房间
-     * 
+     *
      * @param roomNames 要进行监听的房间名称
      */
-     public addWatchRoom(...roomNames: string[]) {
+    public addWatchRoom (...roomNames: string[]) {
         // 确保新增的房间名不会重复
-        this.memory.watchRooms = _.uniq([ ...this.memory.watchRooms, ...roomNames])
+        this.memory.watchRooms = _.uniq([...this.memory.watchRooms, ...roomNames])
     }
 
     /**
      * 移除监听房间
-     * 
+     *
      * @param roomNames 不再监听的房间名
      */
-    public removeWatchRoom(...roomNames: string[]) {
+    public removeWatchRoom (...roomNames: string[]) {
         this.memory.watchRooms = _.difference(this.memory.watchRooms, roomNames)
     }
 
     /**
      * 清空监听房间列表
      */
-     public clearWatchRoom() {
+    public clearWatchRoom () {
         this.memory.watchRooms = []
     }
 
     /**
      * 暂停 observer
      */
-    public off() {
+    public off () {
         this.memory.pause = true
     }
 
     /**
      * 重启 observer
      */
-    public on() {
+    public on () {
         delete this.memory.pause
     }
 }

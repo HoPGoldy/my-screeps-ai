@@ -16,7 +16,7 @@ describe('延迟任务队列测试', () => {
 
         // 把数据装进Memory，并添加对应的 room
         Memory.delayTasks = JSON.stringify({ 1: [mockTask] })
-        Game.rooms['W1N1'] = getMockRoom({ name: 'W1N1' })
+        Game.rooms.W1N1 = getMockRoom({ name: 'W1N1' })
         Game.time = 1
 
         // 初始化模块并加载回调
@@ -28,12 +28,12 @@ describe('延迟任务队列测试', () => {
 
         // 注册的回调应该被调用一次
         expect(mockCallback).toBeCalled()
-        
+
         // 回调传入的参数应该是对应的 room 和 data
         const callbackArgs = mockCallback.mock.calls[0]
         expect(callbackArgs[0]).not.toBeUndefined()
         expect(callbackArgs[1]).toEqual(mockData)
-     })
+    })
 
     it('可以添加新任务', () => {
         const { manageDelayTask, addDelayCallback, addDelayTask } = CreateDelayQueue()

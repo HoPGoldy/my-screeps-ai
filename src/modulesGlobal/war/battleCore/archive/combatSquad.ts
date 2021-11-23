@@ -1,5 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { SquadMember, SquadMemory, SquadStrategy, SquadTacticalActions, SquadTypes } from "./squad"
+import { SquadMember, SquadMemory, SquadStrategy, SquadTacticalActions, SquadTypes } from './squad'
 
 /**
  * 战斗小队模块
@@ -33,86 +33,85 @@ export class Squad4 {
      * 执行指定小队逻辑
      * @param squadName 小队名称
      */
-    static main(squadName: string) {
+    static main (squadName: string) {
 
     }
 
     /**
      * 建立小队
-     * 
+     *
      * @param roomName 在哪个房间里查找队友
      */
-    static buildSquad(roomName: string) {
-        
+    static buildSquad (roomName: string) {
+
     }
 
     /**
      * 搜索路径
-     * 
+     *
      * @param squad 小队成员
      * @param pathLength 要搜索的路径长度
      * @param flee 是否逃跑
      */
-    static getPath(squad: SquadMember, pathLength: number, flee: boolean) {
+    static getPath (squad: SquadMember, pathLength: number, flee: boolean) {
 
     }
 
     /**
      * 按路径移动
-     * 
+     *
      * @param squad 小队成员
      * @param squadMemory 小队内存
      */
-    static moveByPath(squad: SquadMember, squadMemory: SquadMemory) {
+    static moveByPath (squad: SquadMember, squadMemory: SquadMemory) {
 
     }
 
     /**
      * 检查小队方向和当前方向是否一致
-     * 
+     *
      * @param squadMemory 小队内存
      * @param direction 当前方向
      */
-    static checkDirection(squadMemory: SquadMemory, direction: DirectionConstant) {
+    static checkDirection (squadMemory: SquadMemory, direction: DirectionConstant) {
 
     }
 
     /**
      * 执行战术动作
-     * 
+     *
      * @param action 要执行的战术动作
      */
-    static tacticalAction(action: SquadTacticalActions) {
+    static tacticalAction (action: SquadTacticalActions) {
 
     }
 
     /**
      * 解散小队
-     * 
+     *
      * @param squad 小队成员
      * @param squadMemory 小队内存
      */
-    static dismiss(squad: SquadMember, squadMemory: SquadMemory) {
+    static dismiss (squad: SquadMember, squadMemory: SquadMemory) {
 
     }
 
     /**
      * 小队前进至指定房间
-     * 
+     *
      * @param squad 小队成员
      */
-    static moveToRoom(squad: SquadMember) {
+    static moveToRoom (squad: SquadMember) {
 
     }
 
-
     /**
      * 检查队形
-     * 
+     *
      * @param squad 小队成员
      * @returns 是否需要重整队伍
      */
-    static checkFormation(squad: SquadMember): boolean {
+    static checkFormation (squad: SquadMember): boolean {
         const leaderPos = squad['↖'].pos
 
         // 遍历所有队友位置进行检查
@@ -133,11 +132,11 @@ export class Squad4 {
 
     /**
      * 重新整队
-     * 
+     *
      * @param squad 小队成员
      * @returns 是否集结完成
      */
-    static regroup(squad: SquadMember): boolean {
+    static regroup (squad: SquadMember): boolean {
         const leaderPos = squad['↖'].pos
         // 是否集结完成
         let complete = true
@@ -179,17 +178,17 @@ const squadStrategies: {
         /**
          * 小队进行治疗
          * 会计算血量最低的队员需要多少个队员治疗才能奶满，剩下的队友会自己奶自己
-         * 
+         *
          * @param squad 小队成员
          * @returns OK 小队可以奶回自己
          * @returns ERR_FULL 小队已经无法拉回自己的血量了
          */
-        heal(squad: SquadMember): OK | ERR_FULL {
+        heal (squad: SquadMember): OK | ERR_FULL {
             // 进行血量降序排列
             const hitsSortedSquad = _.sortBy(Object.values(squad), creep => -creep.hits)
             // 计算每个队员能造成的治疗量，后面 * 3 是默认 HEAL 被 T3 强化过了
             const healValue = hitsSortedSquad[0].getActiveBodyparts(HEAL) * 12 * 3
-            
+
             // 计算一下血量最少的队员需要多少个队友治疗才能奶满
             const needHealNumber = Math.ceil((5000 - hitsSortedSquad[0].hits) / healValue)
 
@@ -207,10 +206,10 @@ const squadStrategies: {
 
         /**
          * 小队攻击敌方单位
-         * 
+         *
          * @param squad 小队成员
          */
-        attackCreep(squad: SquadMember): OK | ERR_NOT_FOUND {
+        attackCreep (squad: SquadMember): OK | ERR_NOT_FOUND {
             const leader = squad['↖']
 
             /**
@@ -230,7 +229,7 @@ const squadStrategies: {
             const hostileCreeps = nearCreeps.filter(item => !item.creep.my).map(item => item.creep)
 
             if (hostileCreeps.length <= 0) return ERR_NOT_FOUND
-            
+
             // 找到血量最低且不在 rampart 里的敌方 creep
             const target = _.max(hostileCreeps, creep => {
                 // 该 creep 是否在 rampart 中
@@ -258,12 +257,12 @@ const squadStrategies: {
 
         /**
          * 小队攻击敌方建筑
-         * 
+         *
          * @param squad 小队成员
          * @returns OK 攻击敌方建筑
          * @returns ERR_NOT_FOUND 未找到建筑
          */
-        attackStructure(squad: SquadMember, memory: SquadMemory): OK | ERR_NOT_FOUND {
+        attackStructure (squad: SquadMember, memory: SquadMemory): OK | ERR_NOT_FOUND {
             // 从内存中加载缓存建筑
             let targets = memory.targetStructures.map(id => Game.getObjectById(id))
             targets = targets.filter(Boolean)
@@ -294,23 +293,23 @@ const squadStrategies: {
 
         /**
          * 寻路回调
-         * 
+         *
          * @param roomName 所在房间
          * @param costs 该房间的 costs
          */
-        findPathCallback(roomName: string, costs: CostMatrix): CostMatrix {
+        findPathCallback (roomName: string, costs: CostMatrix): CostMatrix {
             return costs
         },
 
         /**
          * 决定移动方向
-         * 
+         *
          * @param healResult heal 方法的执行结果
          * @param attackCreepResult attackCreep 方法的执行结果
          * @param attackStructureResult attackStructure 方法的执行结果
          * @returns 是否继续前进（为 false 则后撤）
          */
-        getMoveStrategy(healResult: any, attackCreepResult: any, attackStructureResult: any): boolean {
+        getMoveStrategy (healResult: any, attackCreepResult: any, attackStructureResult: any): boolean {
             return true
         }
     }
@@ -318,11 +317,11 @@ const squadStrategies: {
 
 /**
  * RA 攻击最近的敌方单位
- * 
+ *
  * @param creep 执行攻击的 creep
  * @param hostils 地方目标
  */
-function rangedAttackNearHostile(creep: Creep, hostils: Creep[]): OK {
+function rangedAttackNearHostile (creep: Creep, hostils: Creep[]): OK {
     const targets = creep.pos.findInRange(hostils, 3)
 
     if (targets.length > 0) creep.rangedAttack(targets[0])

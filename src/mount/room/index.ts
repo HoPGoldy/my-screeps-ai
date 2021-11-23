@@ -1,6 +1,3 @@
-export { default as RoomExtension } from './extension'
-export { default as RoomConsole } from './console'
-
 import { createGetter } from '@/utils'
 import {
     mountShortcut,
@@ -17,6 +14,9 @@ import {
     RemoteChontroller,
     LabChontroller
 } from '@/modulesRoom'
+
+export { default as RoomExtension } from './extension'
+export { default as RoomConsole } from './console'
 
 /**
  * 房间插件
@@ -44,18 +44,18 @@ export default () => {
 
     // 等待安装的房间插件列表
     const plugins: [ string, AnyRoomPlugin ][] = [
-        [ 'share', RoomShareController ],
-        [ 'transport', RoomTransportTaskController ],
-        [ 'work', RoomWorkTaskController ],
-        [ 'spawner', RoomSpawnController ],
-        [ 'power', RoomPowerController ],
-        [ 'strategy', RoomStrategyController ],
-        [ 'myFactory', FactoryController ],
-        [ 'myTerminal', TerminalController ],
-        [ 'myStorage', StorageController ],
-        [ 'myObserver', ObserverController ],
-        [ 'myLab', LabChontroller],
-        [ 'remote', RemoteChontroller ]
+        ['share', RoomShareController],
+        ['transport', RoomTransportTaskController],
+        ['work', RoomWorkTaskController],
+        ['spawner', RoomSpawnController],
+        ['power', RoomPowerController],
+        ['strategy', RoomStrategyController],
+        ['myFactory', FactoryController],
+        ['myTerminal', TerminalController],
+        ['myStorage', StorageController],
+        ['myObserver', ObserverController],
+        ['myLab', LabChontroller],
+        ['remote', RemoteChontroller]
     ]
 
     // 房间插件实例化后会被分类保存到这里
@@ -88,7 +88,7 @@ declare global {
         /**
          * 工作任务模块
          */
-        work: RoomWorkTaskController 
+        work: RoomWorkTaskController
         /**
          * 物流任务模块
          */

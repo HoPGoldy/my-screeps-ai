@@ -35,7 +35,7 @@ delayQueue.addDelayCallback(DelayTaskType.AddBuildTask, (room, task) => {
 
 /**
  * 给指定房间添加刷墙工的延迟孵化任务
- * 
+ *
  * @param roomName 添加到的房间名
  */
 export const addSpawnRepairerTask = function (roomName: string) {
@@ -46,7 +46,7 @@ export const addSpawnRepairerTask = function (roomName: string) {
  * 添加工地建造任务
  * 因为工地在下个 tick 才能被发现，所以需要延迟任务
  * 如果下个 tick 没有发现的话就会重新放置并再次发布任务尝试添加
- * 
+ *
  * @param handleRoomName 建筑任务要发布到那个房间，默认为 pos 所在房间
  */
 export const addBuildTask = function (handleRoomName: string) {

@@ -7,17 +7,17 @@ export const onEdge = function (pos: RoomPosition): boolean {
 
 /**
 * 获取指定方向的相反方向
-* 
+*
 * @param direction 目标方向
 */
 export const getOppositeDirection = function (direction: DirectionConstant): DirectionConstant {
-   return <DirectionConstant>((direction + 3) % 8 + 1)
+    return <DirectionConstant>((direction + 3) % 8 + 1)
 }
 
 /**
  * 将指定位置序列化为字符串
  * 形如: 12/32/E1N2
- * 
+ *
  * @param pos 要进行压缩的位置
  */
 export const serializePos = function (pos: RoomPosition): string {
@@ -27,7 +27,7 @@ export const serializePos = function (pos: RoomPosition): string {
 /**
  * 将位置序列化字符串转换为位置
  * 位置序列化字符串形如: 12/32/E1N2
- * 
+ *
  * @param posStr 要进行转换的字符串
  */
 export const unserializePos = function (posStr: string): RoomPosition | undefined {
@@ -61,7 +61,8 @@ declare global {
  * 获取全局唯一索引
  */
 export const getUniqueKey = function (): number {
-    return Game._uniqueKey = Game._uniqueKey ? Game._uniqueKey + 0.1 : Game.time
+    Game._uniqueKey = Game._uniqueKey ? Game._uniqueKey + 0.1 : Game.time
+    return Game._uniqueKey
 }
 
 declare global {
@@ -77,7 +78,7 @@ declare global {
  * 移除过期的 flag 内存
  */
 export const clearFlag = function (): string {
-    const logs = [ '已清理过期旗帜:' ]
+    const logs = ['已清理过期旗帜:']
     for (const flagName in Memory.flags) {
         if (!Game.flags[flagName]) {
             delete Memory.flags[flagName]
@@ -90,7 +91,7 @@ export const clearFlag = function (): string {
 
 /**
  * 判断是否为白名单玩家
- * 
+ *
  * @param creep 要检查的 creep
  * @returns 是否为白名单玩家
  */
@@ -124,12 +125,12 @@ export const getName = {
 
 /**
  * 给指定对象设置访问器
- * 
+ *
  * @param target 要设置访问器的对象
  * @param name 访问器的名字
  * @param getter 访问器方法
  */
-export const createGetter = function (target: Record<string, unknown>, name: string, getter: () => unknown) {
+export const createGetter = function (target: Record<string, any>, name: string, getter: () => unknown) {
     Object.defineProperty(target.prototype, name, {
         get: getter,
         enumerable: false,
@@ -139,35 +140,37 @@ export const createGetter = function (target: Record<string, unknown>, name: str
 
 /**
  * 在指定房间显示 cost
- * 
+ *
  * @param cost 要显示的 cost
  * @param room 要显示到的房间
  */
 export const showCost = function (cost: CostMatrix, room: Room): void {
-    for (let x = 1; x < 49; x ++) for (let y = 1; y < 49; y ++) {
-        room.visual.text(cost.get(x, y).toString(), x, y, {
-            color: '#a9b7c6',
-            font: 0.5,
-            opacity: 0.7
-        })
+    for (let x = 1; x < 49; x++) {
+        for (let y = 1; y < 49; y++) {
+            room.visual.text(cost.get(x, y).toString(), x, y, {
+                color: '#a9b7c6',
+                font: 0.5,
+                opacity: 0.7
+            })
+        }
     }
 }
 
 /**
  * 获取指定对象并缓存
  * 会将初始化回调的返回值进行缓存，该返回值 **必须拥有 id 字段**
- * 
+ *
  * @param initValue 初始化该值的回调，在没有找到缓存 id 时将会调用该方法获取要缓存的初始值
  * @param cachePlace id 存放的对象，一般位于 xxx.memory 上
  * @param cacheKey 要缓存到的键，例如 targetId 之类的字符串
  */
-export const useCache = function <T extends ObjectWithId>(
+export const useCache = function <T extends ObjectWithId> (
     initValue: () => T,
-    cachePlace: Record<string, T>,
+    cachePlace: Record<string, any>,
     cacheKey: string
 ): T {
     const cacheId = cachePlace[cacheKey]
-    let target: T = undefined
+    let target: T
 
     // 如果有缓存了，就读取缓存
     if (cacheId) {
@@ -209,12 +212,12 @@ interface CreateCacheOptions<T extends (...args: unknown[]) => unknown> {
 
 /**
  * 创建缓存
- * 当 callback 第一个参数不为数字、字符串时需务必指定 getCacheKey！
- * 
- * @param callback 要缓存返回值的函数
+ * 当 getResultCallback 第一个参数不为数字、字符串时需务必指定 getCacheKey！
+ *
+ * @param getResultCallback 要缓存返回值的函数
  */
 export const createCache = function <T extends (...args: unknown[]) => unknown>(
-    callback: T,
+    getResultCallback: T,
     opt: CreateCacheOptions<T> = {}
 ): [T, () => void, (key: string| number) => void] {
     let cacheStorage: { [key: string]: ReturnType<T> } = {}
@@ -231,7 +234,8 @@ export const createCache = function <T extends (...args: unknown[]) => unknown>(
             const keepReuse = opt.shouldReuse ? opt.shouldReuse(cacheData, ...args as Parameters<T>) : true
             if (keepReuse) return cacheStorage[cacheKey]
         }
-        return cacheStorage[cacheKey] = callback(...args) as ReturnType<T>
+        cacheStorage[cacheKey] = getResultCallback(...args) as ReturnType<T>
+        return cacheStorage[cacheKey]
     } as T
 
     /**
@@ -254,7 +258,7 @@ export const createCache = function <T extends (...args: unknown[]) => unknown>(
 /**
  * 将 array 转换为 kv 形式
  */
-export const arrayToObject = function <T>(array: [string, T][]): { [key: string]: T } {
+export const arrayToObject = function <T> (array: [string, T][]): { [key: string]: T } {
     return array.reduce((result, [key, process]) => {
         result[key] = process
         return result
@@ -269,10 +273,10 @@ type ObjectWithRun = {
 /**
  * 创建共享上下文
  * 类似于 react 的 createContext
- * 
+ *
  * @param defaultValue 默认值
  */
-export const createContext = function <T>(defaultValue?: T) {
+export const createContext = function <T> (defaultValue?: T) {
     let context = defaultValue
 
     /**
@@ -286,14 +290,14 @@ export const createContext = function <T>(defaultValue?: T) {
     /**
      * 提供上下文
      */
-    const provide = function(value: T) {
+    const provide = function (value: T) {
         context = value
     }
 
     return { use, provide }
 }
 
-export const createCluster = function <T extends ObjectWithRun>(
+export const createCluster = function <T extends ObjectWithRun> (
     getInitial?: () => { [key: string]: T }
 ) {
     let cluster: { [key: string]: T } = getInitial ? getInitial() : {}
@@ -314,7 +318,7 @@ export const createCluster = function <T extends ObjectWithRun>(
         Object.values(cluster).map(process => process.run())
     }
 
-    const map = function <R>(func: (process: T, name: string) => R) {
+    const map = function <R> (func: (process: T, name: string) => R) {
         return Object.entries(cluster).map(([key, process]) => func(process, key))
     }
 
@@ -331,7 +335,7 @@ export const createCluster = function <T extends ObjectWithRun>(
 
 /**
  * 计算身体孵化要消耗的能量
- * 
+ *
  * @param bodys 要计算的身体数组
  * @returns 孵化要消耗的数量
  */
@@ -343,7 +347,7 @@ export const getBodySpawnEnergy = function (bodys: BodyPartConstant[]): number {
  * 创建坐标值数组
  * 一般用于范围计算时获取周围的 x, y 轴坐标
  * 例如 center=30, range=2，会返回 [28, 29, 30, 31, 32]
- * 
+ *
  * @param center 中心点的坐标值
  * @param range 左右延申的范围
  * @returns 以 center 为中心，已 range 为范围的坐标值数组
@@ -368,7 +372,7 @@ export interface RoomTileMap<T> {
 /**
  * 创建 RoomTileMap
  */
-export const createTileMap = function <T = true>(initialCallback?: (x: number, y: number) => T): RoomTileMap<T> {
+export const createTileMap = function <T = true> (initialCallback?: (x: number, y: number) => T): RoomTileMap<T> {
     let data: T[][]
 
     // 没有初始化函数的话就默认填充为 true
@@ -397,7 +401,7 @@ export const createTileMap = function <T = true>(initialCallback?: (x: number, y
         }
     }
 
-    const map = function <R>(callback: (x: number, y: number, value: T) => R): R[][] {
+    const map = function <R> (callback: (x: number, y: number, value: T) => R): R[][] {
         return Array.from({ length: 50 }).map((_, x) => {
             return Array.from({ length: 50 }).map((_, y) => {
                 return callback(x, y, data[x][y])

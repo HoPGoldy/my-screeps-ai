@@ -1,19 +1,19 @@
 /**
  * 自动规划墙壁
  * @see /doc/墙壁自动规划.md
- * 
+ *
  * @param room 要规划墙壁的房间
  * @param centerPos 基地中心点位置
  * @param distanceToCenter 外层墙壁到中心点的距离
  * @param thickness 墙壁的厚度
- * 
+ *
  * @returns 需要建墙的位置
  */
-export default function (room: Room, centerPos: RoomPosition, distanceToCenter: number = 7, thickness: number = 2): RoomPosition[][] {
+export default function (room: Room, centerPos: RoomPosition, distanceToCenter = 7, thickness = 2): RoomPosition[][] {
     const cost = getImpassableCostMatrix(room)
 
     const outWall = getOutWalls(cost, centerPos, distanceToCenter)
-    const [ neededWall, safeCost ] = getNeededWalls(room, cost, outWall)
+    const [neededWall, safeCost] = getNeededWalls(room, cost, outWall)
     const targetWall = getThickerWalls(safeCost, neededWall, thickness)
 
     return targetWall
@@ -22,13 +22,13 @@ export default function (room: Room, centerPos: RoomPosition, distanceToCenter: 
 /**
  * 获取目标房间中无法通行位置的 CostMatrix
  * 无法通行位置包括 wall，cwall，不属于自己的 rempart
- * 
+ *
  * @param room 目标房间
  * @return 无法通行位置的 CostMatrix
  */
 const getImpassableCostMatrix = function (room: Room): CostMatrix {
     const terrain = new Room.Terrain(room.name)
-    const matrix = new PathFinder.CostMatrix
+    const matrix = new PathFinder.CostMatrix()
 
     // 用默认地形成本填充 cost
     for (let y = 0; y < 50; y++) {
@@ -50,7 +50,7 @@ const getImpassableCostMatrix = function (room: Room): CostMatrix {
 
 /**
  * 获取计划中要放置的最外层墙壁
- * 
+ *
  * @param impassableCostMatrix 房间的无法通行位置
  * @param centerPos 基地的中心位置
  * @param distanceToCenter 最外层墙壁到中心位置的距离
@@ -76,12 +76,12 @@ const getOutWalls = function (impassableCostMatrix: CostMatrix, centerPos: RoomP
 /**
  * 从计划放置位置中筛选出需要的墙壁
  * 这个筛选是为了剔除那些从房间入口处无法抵达的墙壁
- * 
+ *
  * @param room 房间实例
  * @param impassableCostMatrix 无法通行位置
  * @param outWalls 计划中要放置的位置
  */
-const getNeededWalls = function (room: Room, impassableCostMatrix: CostMatrix, outWalls: RoomPosition[]): [ RoomPosition[], CostMatrix  ] {
+const getNeededWalls = function (room: Room, impassableCostMatrix: CostMatrix, outWalls: RoomPosition[]): [ RoomPosition[], CostMatrix ] {
     // 生成字符串标记，用于后面进行对比
     const outWallTags = outWalls.map(wall => getShortPosName(wall))
     // 安全区域 cost，下面会逐步把不安全的位置（连通块外区）设置成 255
@@ -93,7 +93,7 @@ const getNeededWalls = function (room: Room, impassableCostMatrix: CostMatrix, o
 
     // 把所有入口位置加入待检查队列
     enters.forEach(enter => walkedTile.set(getShortPosName(enter), enter))
-    
+
     // 开始蔓延，会走遍所有没有被外墙包裹的地块
     walkedTile.forEach(spread(impassableCostMatrix, (pos, posName) => {
         // 踩到了之前计划中的墙壁，证明这个墙是需要的，加入最终结果
@@ -107,12 +107,12 @@ const getNeededWalls = function (room: Room, impassableCostMatrix: CostMatrix, o
         }
     }))
 
-    return [ resultPos, safeCost ]
+    return [resultPos, safeCost]
 }
 
 /**
  * 把需要的墙壁加厚指定厚度
- * 
+ *
  * @param impassableCostMatrix 无法通行位置（需要把墙壁外侧区域置为 255，不然墙也会向外侧加厚）
  * @param neededWalls 从入口可以抵达的墙壁数组
  * @param thickness 要加厚的厚度，这个值的大小等于返回数组的长度
@@ -122,7 +122,7 @@ const getThickerWalls = function (impassableCostMatrix: CostMatrix, neededWalls:
     // 已经存在的墙壁标识，会在下面使用避免重复
     const existWallTags = neededWalls.map(wall => getShortPosName(wall))
     // 最终的结果，肯定会包含之前筛查出来的墙
-    const result = [ neededWalls ]
+    const result = [neededWalls]
 
     // 计算迭代器，用该数组的长度控制蔓延了“几轮”，两轮就是加厚两层
     // 下面这个 +1 是因为需要在第一个元素放置蔓延起始墙壁
@@ -153,7 +153,7 @@ const getThickerWalls = function (impassableCostMatrix: CostMatrix, neededWalls:
 /**
  * 向周围八个方向进行蔓延
  * 该函数会返回一个可以用于迭代的函数，用于为 spreadWork 回调包装上蔓延功能
- * 
+ *
  * @param impassableCostMatrix 包含无法通行位置的 CostMatrix（无法通行位置需要标注为 255）
  * @param spreadWork 在蔓延到位置上执行的回调
  * @return {(RoomPosition) => undefined} 一个方法，输入对应的位置就可以在其可以蔓延的位置上触发 spreadWork 回调

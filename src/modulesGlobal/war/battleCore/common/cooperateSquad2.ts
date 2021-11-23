@@ -1,7 +1,8 @@
-import { onEdge } from "@/utils"
-import { contextEnemyDamage, contextOutside } from "../../context"
-import { getMaxEndure, getNextHeal } from "./calculator"
-import { searchPath, shiftNextMoveDirection, dropPath, getPathCacheKey } from "./move"
+/* eslint-disable array-callback-return */
+import { onEdge } from '@/utils'
+import { contextEnemyDamage, contextOutside } from '../../context'
+import { getMaxEndure, getNextHeal } from './calculator'
+import { searchPath, shiftNextMoveDirection, dropPath, getPathCacheKey } from './move'
 
 /**
  * 双人主从小队的通用逻辑
@@ -24,7 +25,7 @@ export interface SquadMemberMemory {
 
 /**
  * 将成员标记为功击者和治疗者
- * 
+ *
  * @param attackerBody 有这个 body 的将被视为功击单位
  * @param memory 要保存到的内存
  * @param members 小队成员
@@ -49,7 +50,7 @@ export const getNamedMember = function (attackerBody: BodyPartConstant, memory: 
 
 /**
  * 执行小队治疗
- * 
+ *
  * @param attacker 小队功击手
  * @param healer 小队治疗手
  * @returns 是否需要撤退
@@ -61,7 +62,7 @@ export const execSquadHeal = function (attacker: Creep, healer: Creep): boolean 
     // 俩人都满血，自动治疗并继续往前走
     if (attackerDamage === 0 && healerDamage === 0) {
         const healResult = healer.heal(attacker)
-        if (healResult == ERR_NOT_IN_RANGE) healer.rangedHeal(attacker)
+        if (healResult === ERR_NOT_IN_RANGE) healer.rangedHeal(attacker)
 
         return false
     }
@@ -69,7 +70,7 @@ export const execSquadHeal = function (attacker: Creep, healer: Creep): boolean 
     // 谁掉血多奶谁
     const target = attackerDamage >= healerDamage ? attacker : healer
     const healResult = healer.heal(target)
-    if (healResult == ERR_NOT_IN_RANGE) healer.rangedHeal(target)
+    if (healResult === ERR_NOT_IN_RANGE) healer.rangedHeal(target)
 
     // 如果下个 tick 奶不回来了就后撤
     return attackerDamage + healerDamage >= getNextHeal(healer)[0]
@@ -131,7 +132,7 @@ export const execSquadMove = function (conetxt: SquadMoveContext) {
         goTo(header, targetFlag.pos)
         goTo(tailer, targetFlag.pos)
         return
-    } 
+    }
 
     // 没冷却好就不进行移动
     if (header.fatigue !== 0 || tailer.fatigue !== 0) return

@@ -4,7 +4,7 @@ import { createEnvContext } from '../utils'
 import { createHelp } from '@/modulesGlobal/console'
 import { WarManager } from '@/modulesGlobal/war/warManager/warManager'
 import { goTo } from '@/modulesGlobal/move'
-import { TransportTaskType } from "@/modulesRoom/taskTransport/types";
+import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { CreepRole } from '@/role/types/role'
 
 declare global {
@@ -38,7 +38,7 @@ const showGlobalWarHelp = () => createHelp({
             params: [
                 { name: 'squadType', desc: '小队类型' },
                 { name: 'needBoost', desc: '是否需要强化' },
-                { name: 'squadCode', desc: '小队代号' },
+                { name: 'squadCode', desc: '小队代号' }
             ],
             functionName: 'setdefault'
         },
@@ -75,14 +75,14 @@ const showWarHelp = () => createHelp({
             params: [
                 { name: 'squadType', desc: '小队类型' },
                 { name: 'needBoost', desc: '是否需要强化' },
-                { name: 'squadCode', desc: '小队代号' },
+                { name: 'squadCode', desc: '小队代号' }
             ],
             functionName: 'continue'
         },
         {
             title: '显示战争状态',
             functionName: 'show'
-        },
+        }
     ]
 })
 
@@ -164,7 +164,7 @@ export const consoleWarModule = {
         if (warFlagName in global) return `无法使用 ${warFlagName} 作为旗帜名，已存在同名的 global 属性`
 
         const warManager = startWar(...args)
-        if (!warManager) return `战争未启动`
+        if (!warManager) return '战争未启动'
 
         mountToGlobal(warpConsoleFunc(warManager))
         return `战争已启动，输入 ${warFlagName}.help() 来查看详细操作`

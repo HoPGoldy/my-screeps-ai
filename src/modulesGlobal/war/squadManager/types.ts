@@ -1,5 +1,5 @@
-import { EnvMethods } from "@/contextTypes";
-import { WarState } from "../types";
+import { EnvMethods } from '@/contextTypes'
+import { WarState } from '../types'
 
 /**
  * 小队成员角色
@@ -34,7 +34,7 @@ export const SquadTypeName: { [type in SquadType]: string } = {
     [SquadType.Attack2]: '红绿球二人组'
 }
 
-export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject = AnyObject> {
+export interface BattleContext<T extends Creep[] = Creep[], M extends Record<string, any> = Record<string, any>> {
     /**
      * 小队成员
      * 应当将泛型 T 设置为 Creep 元组来指定小队人数
@@ -68,5 +68,5 @@ export interface BattleContext<T extends Creep[] = Creep[], M extends AnyObject 
  */
 export type BattleCore<
     T extends Creep[] = Creep[],
-    M extends AnyObject = AnyObject
+    M extends Record<string, any> = Record<string, any>
 > = (context: BattleContext<T, M>) => void

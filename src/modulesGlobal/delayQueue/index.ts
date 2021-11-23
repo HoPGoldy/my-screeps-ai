@@ -21,12 +21,12 @@ export const CreateDelayQueue = function () {
     /**
      * 添加新的延迟任务
      * call tick 后将触发通过 addDelayCallback 方法绑定的回调
-     * 
+     *
      * @param name 要添加的任务名
      * @param data 该任务调用时接受的数据
      * @param call 任务在多少 tick 后调用
      */
-    const addDelayTask = function <K extends DelayTaskType>(
+    const addDelayTask = function <K extends DelayTaskType> (
         name: K,
         data: DelayTaskDatas[K],
         call: number
@@ -35,7 +35,7 @@ export const CreateDelayQueue = function () {
         // 不能添加过去的延迟任务
         if (callTick < Game.time) return
         // 当前 tick 的任务，直接触发
-        else if (callTick == Game.time) execDelayTask({ name, data })
+        else if (callTick === Game.time) execDelayTask({ name, data })
 
         // 保存到对应的队列里
         if (delayTasks[callTick]) delayTasks[callTick].push({ name, data })
@@ -63,20 +63,20 @@ export const CreateDelayQueue = function () {
             delete Memory[SAVE_KEY]
             return
         }
-        
+
         Memory[SAVE_KEY] = JSON.stringify(delayTasks)
     }
 
     /**
      * 添加延迟任务回调
-     * 
+     *
      * 需要在 loop 之外调用（在任务触发前添加好对应的任务回调即可）
      * 新添加的回调会覆盖旧的回调
-     * 
+     *
      * @param name 要分配回调的任务名
      * @param callback 任务触发时要执行的回调
      */
-    const addDelayCallback = function <K extends DelayTaskType>(
+    const addDelayCallback = function <K extends DelayTaskType> (
         name: K,
         callback: DelayTaskCallback<K>
     ): void {
@@ -85,7 +85,7 @@ export const CreateDelayQueue = function () {
 
     /**
      * 管理延迟任务
-     * 
+     *
      * 用于执行那些需要在指定时间才会触发的任务
      * 必须在 loop 中调用该方法，不然无法正常触发回调
      */
@@ -103,7 +103,7 @@ export const CreateDelayQueue = function () {
 
     /**
      * 执行指定延迟任务
-     * 
+     *
      * @param param0 要执行的任务数据
      */
     const execDelayTask = function ({ name, data }: DelayTask) {

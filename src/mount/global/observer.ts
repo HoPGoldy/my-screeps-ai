@@ -1,9 +1,9 @@
-import { red, yellow, green, createRoomLink } from "@/modulesGlobal"
+import { red, yellow, green, createRoomLink } from '@/modulesGlobal'
 
 /**
  * 查看所有 observer 的运行状态
  */
-export default function(): string {
+export default function (): string {
     // 获取旗帜所在房间的访问链接
     const getFlagRoomLink = flagName => createRoomLink(Game.flags[flagName].pos.roomName)
 
@@ -25,7 +25,7 @@ export default function(): string {
         const pbPos = memory.pbList.map(getFlagRoomLink).join(' ')
         const depoPos = memory.depoList.map(getFlagRoomLink).join(' ')
 
-        let stats = [ green('●', true), obName ]
+        const stats = [green('●', true), obName]
         stats.push(`[开采中 PB] ${pbNumber ? pbPos : '无'}`)
         stats.push(`[开采中 DEPO] ${depoNumber ? depoPos : '无'}`)
 

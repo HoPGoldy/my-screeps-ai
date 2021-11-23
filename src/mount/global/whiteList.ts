@@ -1,4 +1,4 @@
-import { createHelp } from "@/modulesGlobal/console"
+import { createHelp } from '@/modulesGlobal/console'
 
 /**
  * 白名单控制 api
@@ -9,10 +9,10 @@ export default {
     /**
      * 添加用户到白名单
      * 重复添加会清空监控记录
-     * 
+     *
      * @param userName 要加入白名单的用户名
      */
-    add(userName: string): string {
+    add (userName: string): string {
         if (!Memory.whiteList) Memory.whiteList = {}
 
         Memory.whiteList[userName] = 0
@@ -21,11 +21,11 @@ export default {
 
     /**
      * 从白名单中移除玩家
-     * 
+     *
      * @param userName 要移除的用户名
      */
-    remove(userName: string): string {
-        if (!(userName in Memory.whiteList)) return `[白名单] 该玩家未加入白名单`
+    remove (userName: string): string {
+        if (!(userName in Memory.whiteList)) return '[白名单] 该玩家未加入白名单'
 
         const enterTicks = Memory.whiteList[userName]
         delete Memory.whiteList[userName]
@@ -38,9 +38,9 @@ export default {
     /**
      * 显示所有白名单玩家及其活跃时长
      */
-    show() {
-        if (!Memory.whiteList) return `[白名单] 未发现玩家`
-        const logs = [ `[白名单] 玩家名称 > 该玩家的单位在自己房间中的活跃总 tick 时长` ]
+    show () {
+        if (!Memory.whiteList) return '[白名单] 未发现玩家'
+        const logs = ['[白名单] 玩家名称 > 该玩家的单位在自己房间中的活跃总 tick 时长']
 
         // 绘制所有的白名单玩家信息
         logs.push(...Object.keys(Memory.whiteList).map(userName => `[${userName}] > ${Memory.whiteList[userName]}`))
@@ -50,7 +50,7 @@ export default {
     /**
      * 帮助
      */
-    help() {
+    help () {
         return createHelp({
             name: '白名单模块',
             describe: '白名单中的玩家不会被房间的 tower 所攻击，但是会记录其访问次数',

@@ -1,4 +1,4 @@
-import { ManagerState, TransportWorkContext } from "../types"
+import { ManagerState, TransportWorkContext } from '../types'
 import { onDeathClear } from './workDeathClear'
 import { onClearRemains } from './workClearRemains'
 import { onGetResource } from './workGetResource'

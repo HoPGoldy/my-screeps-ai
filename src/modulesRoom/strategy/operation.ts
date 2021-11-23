@@ -1,11 +1,11 @@
-import { UPGRADER_WITH_ENERGY_LEVEL_8 } from "@/setting"
-import { delayQueue } from "@/modulesGlobal/delayQueue"
-import { countEnergyChangeRatio } from "@/modulesGlobal/energyUtils"
-import { WORK_TASK_PRIOIRY } from "@/modulesRoom/taskWork/constant"
-import RoomStrategyController from "./controller"
-import { DelayTaskType } from "@/modulesGlobal/delayQueue/types"
-import { WorkTaskType } from "../taskWork/types"
-import { CreepRole } from "@/role/types/role"
+import { UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
+import { delayQueue } from '@/modulesGlobal/delayQueue'
+import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+import RoomStrategyController from './controller'
+import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
+import { WorkTaskType } from '../taskWork/types'
+import { CreepRole } from '@/role/types/role'
 
 /**
  * 运维策略
@@ -14,14 +14,14 @@ import { CreepRole } from "@/role/types/role"
 export class OperationStrategy {
     controller: RoomStrategyController
 
-    constructor(strategyController: RoomStrategyController) {
+    constructor (strategyController: RoomStrategyController) {
         this.controller = strategyController
     }
 
     /**
      * 所在房间快捷访问
      */
-    get room() {
+    get room () {
         return this.controller.room
     }
 
@@ -29,7 +29,7 @@ export class OperationStrategy {
      * 初始化房间的运营单位
      * 应在房间刚占领时调用
      */
-    initRoomUnit() {
+    initRoomUnit () {
         this.room.spawner.release.harvester()
         this.room.spawner.release.changeBaseUnit(CreepRole.Manager, 1)
         this.room.spawner.release.changeBaseUnit(CreepRole.Worker, 2)
@@ -39,7 +39,7 @@ export class OperationStrategy {
      * 调整房间的基础运营单位数量
      * 定期执行即可，推荐 500 tick 一次
      */
-    adjustBaseUnit() {
+    adjustBaseUnit () {
         this.room.spawner.release.changeBaseUnit(CreepRole.Manager, this.room.transport.getExpect())
 
         // 先更新房间能量使用情况，然后根据情况调整期望
@@ -53,12 +53,13 @@ export class OperationStrategy {
      * 八级之后的任务调整策略
      * 定期执行即可，推荐 500 - 1000 tick 一次
      */
-    adjustTaskWhenRCL8() {
+    adjustTaskWhenRCL8 () {
         const controller = this.room.work
 
         // 控制器掉到一半了再开始刷级，否则就刷墙
-        const [upgradePriority, fillWallPriority] = this.room.controller.ticksToDowngrade < 100000 ?
-            [WORK_TASK_PRIOIRY.UPGRADE, undefined] : [undefined, WORK_TASK_PRIOIRY.UPGRADE]
+        const [upgradePriority, fillWallPriority] = this.room.controller.ticksToDowngrade < 100000
+            ? [WORK_TASK_PRIOIRY.UPGRADE, undefined]
+            : [undefined, WORK_TASK_PRIOIRY.UPGRADE]
 
         controller.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: upgradePriority })
         controller.updateTask({ type: WorkTaskType.FillWall, priority: fillWallPriority })
@@ -69,7 +70,7 @@ export class OperationStrategy {
     /**
      * 设置房间 8 级之后的升级任务
      */
-    setUpgraderWhenRCL8() {
+    setUpgraderWhenRCL8 () {
         // 需要继续升级控制器
         if (needContinueUpgrade(this.room)) {
             // 限制只需要一个单位升级
@@ -85,29 +86,31 @@ export class OperationStrategy {
     /**
      * 将房间的运维角色配置设置为日常模式
      */
-    useUnitSetting() {
+    useUnitSetting () {
         if (this.room.controller.level >= 8) {
             // 如果本 shard 的 cpu 较少，8 级之后就限制只要一个 worker
             const MAX = (
-                Game.cpu.shardLimits && 
+                Game.cpu.shardLimits &&
                 Game.cpu.shardLimits[Game.shard.name] <= 20 &&
                 this.room.controller.level >= 8
-            ) ? 1 : 20;
+            )
+                ? 1
+                : 20
             // 允许没有 worker
-            this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 0, MAX });
-            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, { MIN: 1, MAX: 2 });
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 0, MAX })
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager, { MIN: 1, MAX: 2 })
         }
         else {
             // 没到 8 级前不需要特殊限制
-            this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker);
-            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager);
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Worker)
+            this.room.spawner.release.setBaseUnitLimit(CreepRole.Manager)
         }
     }
 
     /**
      * 启动 container 造好后进行的运营单位变更
      */
-    changeForStartContainer() {
+    changeForStartContainer () {
         // 每个 container 发布四个 worker
         this.room.spawner.release.changeBaseUnit(CreepRole.Worker, 4)
         this.room.work.updateTask({ type: WorkTaskType.Upgrade, priority: WORK_TASK_PRIOIRY.UPGRADE })
@@ -116,7 +119,7 @@ export class OperationStrategy {
 
 /**
  * 判断指定房间是否需要继续升级
- * 
+ *
  * @param room 要判断的房间
  * @returns 是否需要继续升级
  */

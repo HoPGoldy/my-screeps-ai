@@ -6,7 +6,7 @@ import { CreepConfig, CreepRole } from '../types/role'
 /**
  * deposit 采集者
  * 从指定矿中挖 deposit > 将挖出来的资源转移到建筑中
- * 
+ *
  * @property {} sourceFlagName 旗帜名，要插在 deposit 上
  */
 const depositHarvester: CreepConfig<CreepRole.DepositHarvester> = {
@@ -42,9 +42,9 @@ const depositHarvester: CreepConfig<CreepRole.DepositHarvester> = {
         // 还没到就继续走
         if (!targetFlag.pos.isNearTo(creep.pos)) {
             // 边走边记录抵达时间
-            if (targetFlag.memory.travelTime == undefined) targetFlag.memory.travelTime = 0 // 初始化
+            if (targetFlag.memory.travelTime === undefined) targetFlag.memory.travelTime = 0 // 初始化
             // 旅途时间还没有计算完成
-            else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime ++ // 增量
+            else if (!targetFlag.memory.travelComplete) targetFlag.memory.travelTime++ // 增量
 
             creep.goTo(targetFlag.pos, { range: 1, checkTarget: false })
 
@@ -58,7 +58,7 @@ const depositHarvester: CreepConfig<CreepRole.DepositHarvester> = {
         if (targetFlag.memory.sourceId) target = Game.getObjectById(targetFlag.memory.sourceId as Id<Deposit>)
         else {
             target = targetFlag.pos.lookFor(LOOK_DEPOSITS)[0]
-            
+
             // 找到了就赋值并缓存
             if (target) targetFlag.memory.sourceId = target.id
             // 找不到就失去了存在的意义
@@ -73,7 +73,7 @@ const depositHarvester: CreepConfig<CreepRole.DepositHarvester> = {
 
         const harvestResult = creep.harvest(target)
         // 采集成功更新冷却时间及资源类型
-        if (harvestResult == OK) {
+        if (harvestResult === OK) {
             targetFlag.memory.depositCooldown = target.lastCooldown
             if (!creep.memory.depositType) creep.memory.depositType = target.depositType
         }

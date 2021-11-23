@@ -1,4 +1,4 @@
-import { ManagerState, TransportWorkContext } from "../types"
+import { ManagerState, TransportWorkContext } from '../types'
 
 /**
  * manager 触发后事处理的最小生命
@@ -19,22 +19,19 @@ export const onDeathClear = (context: TransportWorkContext) => {
         return
     }
 
-    for (const resourceType in manager.store) {
-        let target: StructureWithStore
+    const firstResource = Object.keys(manager.store)[0] as ResourceConstant
+    let target: StructureWithStore
 
-        // 不是能量就放到 terminal 里
-        if (resourceType != RESOURCE_ENERGY && resourceType != RESOURCE_POWER && workRoom.terminal) {
-            target = workRoom.terminal
-        }
-        // 否则就放到 storage
-        else target = workRoom.storage
-        // 刚开新房的时候可能会没有存放的目标
-        if (!target) return false
-
-        // 转移资源
-        manager.goTo(target.pos)
-        manager.transfer(target, resourceType as ResourceConstant)
-
-        return false
+    // 不是能量就放到 terminal 里
+    if (firstResource !== RESOURCE_ENERGY && firstResource !== RESOURCE_POWER && workRoom.terminal) {
+        target = workRoom.terminal
     }
+    // 否则就放到 storage
+    else target = workRoom.storage
+    // 刚开新房的时候可能会没有存放的目标
+    if (!target) return false
+
+    // 转移资源
+    manager.goTo(target.pos)
+    manager.transfer(target, firstResource)
 }

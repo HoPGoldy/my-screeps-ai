@@ -25,7 +25,6 @@ export interface ObserverMemory {
     pause?: boolean
 }
 
-
 declare global {
     interface RoomMemory {
         /**

@@ -5,10 +5,10 @@ import { CreepConfig, CreepRole } from '../types/role'
 /**
  * 新房占领单位
  * target: 占领指定房间
- * 
+ *
  * data:
  * @param targetRoomName 要占领的目标房间
- */ 
+ */
 const claimer: CreepConfig<CreepRole.Claimer> = {
     // 该 creep 死了不会再次孵化
     isNeed: () => false,
@@ -41,7 +41,7 @@ const claimer: CreepConfig<CreepRole.Claimer> = {
 
         // 如果控制器不是自己或者被人预定的话就进行攻击
         if ((controller.owner && controller.owner.username !== creep.owner.username) || controller.reservation !== undefined) {
-            if (creep.attackController(controller) == ERR_NOT_IN_RANGE) creep.moveTo(controller)
+            if (creep.attackController(controller) === ERR_NOT_IN_RANGE) creep.moveTo(controller)
             return false
         }
 
@@ -75,7 +75,7 @@ const claimer: CreepConfig<CreepRole.Claimer> = {
                 }
                 else {
                     const result = creep.room.confirmBaseCenter()
-                    if (result === ERR_NOT_FOUND) creep.log(`新的基地中心点确认失败，请手动指定`, Color.Yellow)
+                    if (result === ERR_NOT_FOUND) creep.log('新的基地中心点确认失败，请手动指定', Color.Yellow)
                     else creep.log(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`, Color.Green)
                 }
             }
@@ -83,7 +83,7 @@ const claimer: CreepConfig<CreepRole.Claimer> = {
             // 任务完成，一路顺风
             creep.suicide()
         }
-        else if (claimResult === ERR_GCL_NOT_ENOUGH) creep.log(`CCL 不足，无法占领`)
+        else if (claimResult === ERR_GCL_NOT_ENOUGH) creep.log('CCL 不足，无法占领')
         else creep.say(`占领 ${claimResult}`)
     },
     bodys: () => [MOVE, CLAIM]

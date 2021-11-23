@@ -1,13 +1,13 @@
-import { WarMemory, WarState } from "../types"
-import { createMobilizeManager } from "../mobilizeManager/mobilizeManager"
-import { createMemoryAccessor } from "./memoryAccessor"
-import { createSquadManager, hasMyCreep } from "../squadManager/squadManager"
-import { EnvContext } from "@/contextTypes"
-import { arrayToObject, createCluster, getBodySpawnEnergy } from "@/utils"
-import { SquadType, SquadTypeName } from "../squadManager/types"
-import { DEFAULT_SQUAD_CODE } from "../utils"
-import { getBodyBoostResource } from "@/role/bodyUtils"
-import { createSpawnInfo } from "../mobilizeManager/getBodyPart"
+import { WarMemory, WarState } from '../types'
+import { createMobilizeManager } from '../mobilizeManager/mobilizeManager'
+import { createMemoryAccessor } from './memoryAccessor'
+import { createSquadManager, hasMyCreep } from '../squadManager/squadManager'
+import { EnvContext } from '@/contextTypes'
+import { arrayToObject, createCluster, getBodySpawnEnergy } from '@/utils'
+import { SquadType, SquadTypeName } from '../squadManager/types'
+import { DEFAULT_SQUAD_CODE } from '../utils'
+import { getBodyBoostResource } from '@/role/bodyUtils'
+import { createSpawnInfo } from '../mobilizeManager/getBodyPart'
 
 export type WarContext = {
     warCode: string
@@ -57,7 +57,7 @@ export const createWarManager = function (context: WarContext) {
 
     /**
      * 新建小队
-     * 
+     *
      * @param type 小队类型
      * @param members 小队成员
      * @param targetFlagName 要进攻的旗帜名
@@ -80,7 +80,7 @@ export const createWarManager = function (context: WarContext) {
 
     /**
      * 解散指定小队
-     * 
+     *
      * @param squadCode 要解散的小队代号
      * @param aliveCreeps 剩余的小队成员
      */
@@ -92,7 +92,7 @@ export const createWarManager = function (context: WarContext) {
 
     /**
      * 检查房间是否具有足够孵化该小队的能力
-     * 
+     *
      * @param room 孵化房间
      * @param needBoost 是否需要 boost
      * @param type 小队类型
@@ -133,13 +133,13 @@ export const createWarManager = function (context: WarContext) {
 
     /**
      * 新增动员任务
-     * 
+     *
      * @param type 要孵化的小队类型
      * @param needBoost 是否需要 boost
      * @param targetFlagName 要进攻的旗帜名
      * @param squadCode 小队代号
      */
-    const addMobilize = function (type: SquadType, needBoost: boolean = true, targetFlagName?: string, squadCode?: string): boolean {
+    const addMobilize = function (type: SquadType, needBoost = true, targetFlagName?: string, squadCode?: string): boolean {
         if (!checkMobilizeAbility(env.getRoomByName(spawnRoomName), needBoost, type)) return false
 
         let confirmSquadCode = squadCode
@@ -204,13 +204,13 @@ export const createWarManager = function (context: WarContext) {
         }
         else logs.push(env.colorful.yellow('暂无动员任务'))
 
-        return logs.join('\n');
+        return logs.join('\n')
     }
 
     /**
      * 终止战争
      * 当战争进行中时会切换至终止模式，当战争处于其他模式时会彻底删除战争
-     * 
+     *
      * @returns [是否真正关闭, 输出日志]
      */
     const closeWar = function (): [boolean, string] {

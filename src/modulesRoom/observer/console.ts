@@ -1,17 +1,17 @@
-import { createHelp } from "@/modulesGlobal"
+import { createHelp } from '@/modulesGlobal'
 
 export default class ObserverConsole extends Room {
     /**
      * 显示 ob 状态
      */
-    public obshow() {
+    public obshow () {
         return this.myObserver.show()
     }
 
     /**
      * 新增监听房间
      */
-    public obadd(...roomNames: string[]): string {
+    public obadd (...roomNames: string[]): string {
         this.myObserver.addWatchRoom(...roomNames)
         return `[${this.name} observer] 已添加，${this.myObserver.showList()}`
     }
@@ -19,7 +19,7 @@ export default class ObserverConsole extends Room {
     /**
      * 移除监听房间
      */
-    public obremove(...roomNames: string[]): string {
+    public obremove (...roomNames: string[]): string {
         this.myObserver.removeWatchRoom(...roomNames)
         return `[${this.name} observer] 已移除，${this.myObserver.showList()}`
     }
@@ -27,7 +27,7 @@ export default class ObserverConsole extends Room {
     /**
      * 暂停 observer
      */
-    public oboff(): string {
+    public oboff (): string {
         this.myObserver.off()
         return `[${this.name} observer] 已暂停`
     }
@@ -35,7 +35,7 @@ export default class ObserverConsole extends Room {
     /**
      * 重启 observer
      */
-    public obon(): string {
+    public obon (): string {
         this.myObserver.on()
         return `[${this.name} observer] 已恢复, ${this.myObserver.showList()}`
     }
@@ -43,14 +43,15 @@ export default class ObserverConsole extends Room {
     /**
      * 清空房间列表
      */
-    public obclear(): string {
+    public obclear (): string {
         this.myObserver.clearWatchRoom()
         return `[${this.name} observer] 已清空监听房间`
     }
+
     /**
      * 帮助
      */
-    public obhelp(): string {
+    public obhelp (): string {
         return createHelp({
             name: 'Observer 控制台',
             describe: 'Observer 默认关闭，新增监听房间后将会启动，在监听房间中发现 pb 或者 deposit 时将会自动发布采集单位。',

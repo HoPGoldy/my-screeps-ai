@@ -8,7 +8,7 @@ export default class RemoteConsole extends Room {
     /**
      * 拓展新外矿
      */
-    public radd(remoteRoomName: string, sourceId: Id<Source>, targetId?: Id<StructureWithStore>): string {
+    public radd (remoteRoomName: string, sourceId: Id<Source>, targetId?: Id<StructureWithStore>): string {
         let logs = `[${this.name} 外矿] `
 
         const result = this.remote.add(remoteRoomName, sourceId, targetId)
@@ -21,20 +21,20 @@ export default class RemoteConsole extends Room {
     /**
      * 移除外矿
      */
-    public rremove(remoteRoomName: string, sourceId: Id<Source>): string {
+    public rremove (remoteRoomName: string, sourceId: Id<Source>): string {
         let logs = `[${this.name} 外矿] `
 
         const result = this.remote.remove(remoteRoomName, sourceId)
         if (result === OK) logs += '外矿及对应采集单位已移除'
         else if (result === ERR_NOT_FOUND) logs += '未找到对应外矿'
-        
+
         return logs
     }
 
     /**
      * 占领新房间
      */
-    public claim(targetRoomName: string, signText = ''): string {
+    public claim (targetRoomName: string, signText = ''): string {
         this.remote.claim(targetRoomName, signText)
 
         return `[${this.name} 拓展] 已发布 claimer，请保持关注，支援单位会在占领成功后自动发布。` +
@@ -45,7 +45,7 @@ export default class RemoteConsole extends Room {
     /**
      * 查看外矿状态
      */
-    public rshow(): string {
+    public rshow (): string {
         const remoteList = this.remote.remoteList
         if (remoteList.length <= 0) return `[${this.name} 拓展] 暂无外矿`
 
@@ -59,7 +59,7 @@ export default class RemoteConsole extends Room {
         return logs.join('\n')
     }
 
-    public rhelp(): string {
+    public rhelp (): string {
         return createHelp({
             name: '房间扩展控制台',
             describe: '外矿管理及新房间扩张',
@@ -93,7 +93,7 @@ export default class RemoteConsole extends Room {
                 {
                     title: '查看本房间的外矿采集情况',
                     functionName: 'rshow'
-                },
+                }
             ]
         })
     }

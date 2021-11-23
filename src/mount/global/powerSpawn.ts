@@ -1,8 +1,8 @@
-import { red, createRoomLink } from "@/modulesGlobal"
+import { red, createRoomLink } from '@/modulesGlobal'
 
 // 查看当前启用的 powerSpawn 工作状态
-export default function(): string {
-    if (!Memory.psRooms || Memory.psRooms.length <= 0) return `没有正在工作的 powerSpawn，在 powerSpawn 对象实例上执行 .on() 方法来进行激活。`
+export default function (): string {
+    if (!Memory.psRooms || Memory.psRooms.length <= 0) return '没有正在工作的 powerSpawn，在 powerSpawn 对象实例上执行 .on() 方法来进行激活。'
     // 下面遍历是会把正常的房间名放在这里面
     const workingPowerSpawn = []
 

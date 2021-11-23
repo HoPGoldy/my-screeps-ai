@@ -1,26 +1,30 @@
 module.exports = {
+    env: {
+        browser: true,
+        es2021: true
+    },
     extends: [
+        'standard',
         'eslint:recommended',
         'plugin:@typescript-eslint/recommended'
     ],
     parser: '@typescript-eslint/parser',
-    plugins: ['@typescript-eslint'],
+    parserOptions: {
+        ecmaVersion: 12,
+        sourceType: 'module'
+    },
+    plugins: [
+        '@typescript-eslint'
+    ],
     rules: {
-        "@typescript-eslint/no-explicit-any": "off",
+        indent: ['error', 4],
+        'brace-style': ['error', 'stroustrup'],
         'import/extensions': 'off',
         'no-use-before-define': 'off',
         'import/prefer-default-export': 'off',
-        "@typescript-eslint/no-empty-function": "off"
-    },
-    settings: {
-        'import/resolver': {
-            node: {
-                extensions: ['.js', '.ts'],
-                moduleDirectory: ['node_modules', './src'],
-            },
-        },
-    },
-    parserOptions: {
-        project: './tsconfig.json',
-    },
+        '@typescript-eslint/no-explicit-any': 'off',
+        '@typescript-eslint/no-namespace': 'off',
+        '@typescript-eslint/no-empty-function': 'off',
+        '@typescript-eslint/no-unused-vars': 'off'
+    }
 }

@@ -1,18 +1,14 @@
 import { TransportTaskType } from '../taskTransport/types'
-import FactoryBase from "./base"
-import { ENERGY_LIMIT, FactoryState } from "./constant"
+import FactoryBase from './base'
+import { ENERGY_LIMIT, FactoryState } from './constant'
 
 /**
  * 获取资源
  * 会从其他建筑里获取资源填充到自己存储
  */
 export default class StageGetResource extends FactoryBase {
-    constructor(roomName: string) {
-        super(roomName)
-    }
-
-    public run(): void {
-        if (Game.time % 5 || this.room.transport.hasTaskWithType(TransportTaskType.FactoryGetResource)) return 
+    public run (): void {
+        if (Game.time % 5 || this.room.transport.hasTaskWithType(TransportTaskType.FactoryGetResource)) return
 
         const task = this.getCurrentTask()
         // 一般到这一步是不会产生没有任务的问题
@@ -36,7 +32,7 @@ export default class StageGetResource extends FactoryBase {
         this.setState(FactoryState.Working)
     }
 
-    private getResource(resType: ResourceConstant, amount: number): void {
+    private getResource (resType: ResourceConstant, amount: number): void {
         const source = this.room.myStorage.getResourcePlace(resType, amount)
         // 这里如果 terminal 中的资源也不足的话会把 factory 卡在这个位置
         // 这里不能挂起任务，因为它之后有更高级的任务以他为原料，如果它没有合成的话
@@ -67,7 +63,7 @@ export default class StageGetResource extends FactoryBase {
     /**
      * 检查工作所需能量是否充足
      */
-    private hasEnoughEnergy(): boolean {
+    private hasEnoughEnergy (): boolean {
         const { total } = this.room.myStorage.getResource(RESOURCE_ENERGY)
         if (total >= ENERGY_LIMIT) return true
 

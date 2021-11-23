@@ -1,4 +1,4 @@
-import { Color } from "@/modulesGlobal";
+import { Color } from '@/modulesGlobal'
 
 declare global {
     /**
@@ -7,7 +7,7 @@ declare global {
     interface RoomMemory {
         /**
          * 该房间发起移除操作的时间
-         * 执行移除时会检查该时间，如果已经过期的话将不会执行移除操作 
+         * 执行移除时会检查该时间，如果已经过期的话将不会执行移除操作
          */
         removeTime?: number
         /**
@@ -67,7 +67,7 @@ declare global {
     interface Room {
         /**
          * 发送日志
-         * 
+         *
          * @param content 日志内容
          * @param instanceName 发送日志的实例名
          * @param color 日志前缀颜色

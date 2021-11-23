@@ -21,20 +21,20 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 实例化房间孵化管理
      * @param roomName 要管理的房间名
      */
-    constructor(roomName: string) {
+    constructor (roomName: string) {
         super('roomSpawn', roomName, 'spawnList', [])
         this.release = new RoomCreepRelease(this)
     }
 
     /**
      * 向生产队列里推送一个生产任务
-     * 
+     *
      * @param name 要孵化的 creep 名字
      * @param role 该 creep 的角色
      * @param data 该 creep 的自定义数据
      * @returns 当前任务在队列中的排名
      */
-    public addTask<T extends CreepRole>(name: string, role: T, data: RoleDatas[T]): number | ERR_NAME_EXISTS {
+    public addTask<T extends CreepRole> (name: string, role: T, data: RoleDatas[T]): number | ERR_NAME_EXISTS {
         // 先检查下任务是不是已经在队列里了
         if (!this.hasTask(name)) {
             // 任务加入队列
@@ -49,18 +49,18 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
 
     /**
      * 检查生产队列中是否包含指定任务
-     * 
+     *
      * @param creepName 要检查的任务名
      * @returns 有则返回 true
      */
-    public hasTask(creepName: string): boolean {
+    public hasTask (creepName: string): boolean {
         return !!this.memory.find(({ name }) => name === creepName)
     }
 
     /**
      * 使用角色名获取孵化任务
      */
-    public getTaskByRole(creepRole: CreepRole): SpawnTask[] {
+    public getTaskByRole (creepRole: CreepRole): SpawnTask[] {
         return this.memory.filter(({ role }) => role === creepRole)
     }
 
@@ -68,7 +68,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 清空任务队列
      * @danger 非测试情况下不要调用！
      */
-    public clearTask(): void {
+    public clearTask (): void {
         Game.rooms[this.roomName][this.memoryKey] = []
     }
 
@@ -76,14 +76,14 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 将当前任务挂起
      * 任务会被移动至队列末尾
      */
-    public hangTask(): void {
+    public hangTask (): void {
         this.memory.push(this.memory.shift())
     }
 
     /**
      * 移除第一个孵化任务
      */
-    public removeCurrentTask(): void {
+    public removeCurrentTask (): void {
         const removeCreepNmae = this.memory[0]?.name
         // 从全局待孵化队列中移除
         if (removeCreepNmae && removeCreepNmae in Memory.waitSpawnCreeps) {
@@ -96,15 +96,13 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
 
     /**
      * 更新指定孵化任务的数据
-     * 
+     *
      * @param creepName 要更新的孵化 creep 名称
-     * @param taskData 新的孵化 data
+     * @param newTeskData 新的孵化 data
      */
-    public updateSpawnTaskData(creepName: string, taskData: CreepData): void {
-        this.memory.find(task => {
-            if (task.name !== creepName) return false
-            task.data === taskData
-        })
+    public updateSpawnTaskData (creepName: string, newTeskData: CreepData): void {
+        const task = this.memory.find(task => task.name === creepName)
+        task.data = newTeskData
     }
 
     /**
@@ -112,7 +110,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 借出之后 spawn 将不会执行任何工作，完全交给对方模块
      * 借 spawn 的模块需要做好房间运维能力的检查，如果填能量的单位死掉了可以先归还 spawn，待孵化完成后再借走。
      */
-    public lendSpawn(): boolean {
+    public lendSpawn (): boolean {
         if (this.room.memory.lendSpawn) return false
         this.room.memory.lendSpawn = true
         return true
@@ -122,25 +120,25 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
      * 归还 spawn
      * 借出之后可以通过该方法归还之前借出的 spawn
      */
-    public remandSpawn(): void {
+    public remandSpawn (): void {
         delete this.room.memory.lendSpawn
     }
 
-    public runSpawn(spawn: StructureSpawn): void {
+    public runSpawn (spawn: StructureSpawn): void {
         // spawn 被外借了，不再处理孵化工作
         if (this.room.memory.lendSpawn) return
 
         if (spawn.spawning) {
             /**
              * 开始孵化后向物流队列推送能量填充任务
-             * 
+             *
              * 不在 mySpawnCreep 返回 OK 时判断是因为：
              * 由于孵化是在 tick 末的行动执行阶段进行的，所以能量在 tick 末期才会从 extension 中扣除
              * 如果返回 OK 就推送任务的话，就会出现任务已经存在了，而 extension 还是满的
              * 而 creep 恰好就是在这段时间里执行的物流任务，就会出现如下错误逻辑：
              * mySpawnCreep 返回 OK > 推送填充任务 > creep 执行任务 > 发现能量都是满的 > **移除任务** > tick 末期开始孵化 > extension 扣除能量
              */
-            if (spawn.spawning.needTime - spawn.spawning.remainingTime == 1) {
+            if (spawn.spawning.needTime - spawn.spawning.remainingTime === 1) {
                 this.room.transport.updateTask({
                     type: TransportTaskType.FillExtension,
                     priority: 10,
@@ -158,7 +156,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         }
 
         // 生成中 / 生产队列为空 就啥都不干
-        if (spawn.spawning || this.memory.length == 0) return 
+        if (spawn.spawning || this.memory.length === 0) return
 
         const task = this.memory[0]
         // 这个任务被其他模块移除了，不再孵化
@@ -184,12 +182,12 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
 
     /**
      * 从 spawn 生产 creep
-     * 
+     *
      * @param spawn 要执行孵化的 spawn
      * @param task 要孵化的任务
      * @returns Spawn.spawnCreep 的返回值
      */
-    private spawnCreep(spawn: StructureSpawn, { name, role, data }: SpawnTask): MySpawnReturnCode {
+    private spawnCreep (spawn: StructureSpawn, { name, role, data }: SpawnTask): MySpawnReturnCode {
         // 找不到他的工作逻辑的话直接移除任务
         const creepWork: CreepConfig<CreepRole> = roles[role]
         if (!creepWork) return OK
@@ -203,10 +201,10 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
 
         const spawnResult: ScreepsReturnCode = spawn.spawnCreep(bodys, name, { memory })
         // 检查是否生成成功
-        if (spawnResult == OK) {
+        if (spawnResult === OK) {
             return OK
         }
-        else if (spawnResult == ERR_NAME_EXISTS) {
+        else if (spawnResult === ERR_NAME_EXISTS) {
             this.log.normal(`${name} 已经存在 ${this.roomName} 将不再生成`)
             // creep 已经存在，把数据直接更新给他
             updateCreepData(name, data)

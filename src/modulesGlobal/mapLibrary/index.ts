@@ -1,5 +1,5 @@
-export { recordRoom, clearRoom, getDetail } from './controller'
 import { initMapLibrary, saveMapLibrary } from './library'
+export { recordRoom, clearRoom, getDetail } from './controller'
 
 /**
  * 地图库注册插件

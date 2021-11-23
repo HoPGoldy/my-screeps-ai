@@ -1,17 +1,17 @@
-export { default as CreepExtension } from "./extension"
+export { default as CreepExtension } from './extension'
 
 /**
  * 挂载 creep 拓展
  */
-export default () => standWrapper([ 'harvest', 'build', 'dismantle', 'repair', 'upgradeController' ])
+export default () => standWrapper(['harvest', 'build', 'dismantle', 'repair', 'upgradeController'])
 
 /**
  * 给指定方法包装“站定”功能
- * 
+ *
  * 站定是指 creep 停在原地开始进行工作，例如：开始升级控制器，开始刷墙，开始建造建筑...
  * 而这个功能的目的是用于判断是否可以对穿，在 stand == true 时，creep 开始工作，此时是不允许其他同类型的 creep 进行对穿的
  * stand 会在阶段切换时（target > source）被其他方法清除
- * 
+ *
  * @param funcNames 要进行包装的方法名
  */
 const standWrapper = function (funcNames: string[]) {

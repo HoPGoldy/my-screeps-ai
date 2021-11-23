@@ -9,7 +9,7 @@ export default class StorageConsole extends Room {
      * 在 storage 和 terminal 之间进行资源平衡
      * 以及 sb 是 storage balance 的缩写
      */
-    sb(): string {
+    sb (): string {
         const result = this.myStorage.balanceResource()
         if (result === ERR_NOT_FOUND) return 'storage 或 termianl 不存在'
         const MAX_LENGTH = 15
@@ -19,10 +19,10 @@ export default class StorageConsole extends Room {
         _.padRight('TASK', MAX_LENGTH) +
         _.padRight('TERMINAL', MAX_LENGTH)]
 
-        result.map(({ resourceType, amount, direction }) => {
-            const task = direction === BalanceDirection.ToStorage ?
-                _.padRight('<= ' + amount.toString(), MAX_LENGTH - 2) :
-                _.padRight(amount.toString() + ' =>', MAX_LENGTH - 2)
+        result.forEach(({ resourceType, amount, direction }) => {
+            const task = direction === BalanceDirection.ToStorage
+                ? _.padRight('<= ' + amount.toString(), MAX_LENGTH - 2)
+                : _.padRight(amount.toString() + ' =>', MAX_LENGTH - 2)
 
             const log = _.padRight(yellow(resourceType), MAX_LENGTH) +
                 _.padRight(this.storage.store[resourceType].toString(), MAX_LENGTH) +
@@ -38,11 +38,11 @@ export default class StorageConsole extends Room {
     /**
      * 手动请求能量
      */
-    getenergy(): void {
+    getenergy (): void {
         this.myStorage.requestEnergyCheck()
     }
 
-    public shelp(): string {
+    public shelp (): string {
         return createHelp({
             name: 'Storage 控制台',
             describe: '在多房间之间共享能量，维持 terminal 中的资源储量',

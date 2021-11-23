@@ -6,7 +6,7 @@ import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
  * PowerBank 运输单位
  * 搬运 PowerBank Ruin 中的 power, 请在 8 级时生成
  * @see doc "../doc/PB 采集小组设计案"
- * 
+ *
  * @param sourceFlagName 旗帜的名称 (插在 PowerBank 上)
  */
 const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
@@ -62,7 +62,7 @@ const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
         // 获取资源运输目标房间并兜底
         const room = Game.rooms[spawnRoomName]
         if (!room || !room.terminal) {
-            creep.log(`找不到 terminal`, Color.Yellow)
+            creep.log('找不到 terminal', Color.Yellow)
             return false
         }
 

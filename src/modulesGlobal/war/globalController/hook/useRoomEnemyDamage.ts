@@ -1,6 +1,7 @@
-import { createCache, createTileMap, RoomTileMap, getRangeIndex } from "@/utils"
-import { RoomInfo } from "../../types"
-import { getCreepDamage } from "../../battleCore/common/calculator"
+/* eslint-disable array-callback-return */
+import { createCache, createTileMap, RoomTileMap, getRangeIndex } from '@/utils'
+import { RoomInfo } from '../../types'
+import { getCreepDamage } from '../../battleCore/common/calculator'
 
 /**
  * 创建房间敌方伤害值
@@ -11,7 +12,7 @@ export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => R
         const { tower } = getRoomInfo(roomName) || {}
         if (!tower) return undefined
 
-        const terrain = new Room.Terrain(roomName);
+        const terrain = new Room.Terrain(roomName)
 
         return createTileMap((x, y) => {
             if (terrain.get(x, y) === TERRAIN_MASK_WALL) return -1
@@ -40,7 +41,7 @@ export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => R
         // 深拷贝一下，防止修改了缓存内容
         const enemyDamage = getTowerDamage(roomName).clone()
 
-        hostileCreeps.map(creep => {
+        hostileCreeps.forEach(creep => {
             const [nearDamage, rangeDamage] = getCreepDamage(creep.body)
 
             const xs = getRangeIndex(creep.pos.x, 4)
@@ -63,7 +64,7 @@ export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => R
             new RoomVisual(roomName).text(value.toString(), x, y, { font: 0.3 })
         })
 
-        return enemyDamage;
+        return enemyDamage
     }
 
     return createCache(createRoomEnemyDamage)
@@ -72,30 +73,32 @@ export const useRoomEnemyDamage = function (getRoomInfo: (roomName: string) => R
 /**
  * 计算 tower 伤害
  * @author fangxm
- * 
+ *
  * @param dist 点到 tower 的距离
  */
 const calTowerDamage = function (dist: number) {
-    if (dist <= 5) return 600;
-    else if (dist <= 20) return 600 - (dist - 5) * 30;
-    else return 150;
+    if (dist <= 5) return 600
+    else if (dist <= 20) return 600 - (dist - 5) * 30
+    else return 150
 }
 
 /**
  * 计算在一个房间内一个点的tower伤害总值
  * 这里并没有添加 isActive 检查，因为比较耗性能
  * @author fangxm
- * 
+ *
  * @param {Room} room tower所在房间
  * @param {RoomPosition} pos 要计算伤害的点
  */
 const getAllTowerDamage = function (towers: StructureTower[], pos: RoomPosition) {
     return _.sum(towers, tower => {
-        if (tower.store.energy < 10) return 0;
-        let ratio = 1;
-        if (tower.effects && tower.effects.length) tower.effects.forEach(effect => {
-            if (effect.effect == PWR_OPERATE_TOWER) ratio = POWER_INFO[effect.effect].effect[effect.level];
-        });
-        return calTowerDamage(tower.pos.getRangeTo(pos)) * ratio;
-    });
+        if (tower.store.energy < 10) return 0
+        let ratio = 1
+        if (tower.effects && tower.effects.length) {
+            tower.effects.forEach(effect => {
+                if (effect.effect === PWR_OPERATE_TOWER) ratio = POWER_INFO[effect.effect].effect[effect.level]
+            })
+        }
+        return calTowerDamage(tower.pos.getRangeTo(pos)) * ratio
+    })
 }
