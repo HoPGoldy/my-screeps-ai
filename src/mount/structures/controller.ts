@@ -6,7 +6,7 @@ import { Color } from '@/modulesGlobal'
  * Controller 拓展
  */
 export default class ControllerExtension extends StructureController {
-    public onWork (): void {
+    public run (): void {
         this.drawEnergyHarvestInfo()
         if (Game.time % 20) return
 

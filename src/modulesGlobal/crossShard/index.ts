@@ -6,6 +6,7 @@
 
 import { ALL_SHARD_NAME } from '@/setting'
 import { Color, log } from '../console'
+import { AppLifecycleCallbacks } from '../framework/types'
 import requestHandleStrategies, { assertCreepMemory } from './handleStrategies'
 
 // 其他 shard 的数据

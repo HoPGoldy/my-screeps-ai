@@ -3,7 +3,7 @@ import { TransportTaskType } from '@/modulesRoom'
 
 // nuker 拓展
 export default class NukerExtension extends StructureNuker {
-    public onWork (): void {
+    public run (): void {
         this.stateScanner()
 
         if (Game.time % 30) return

@@ -1,25 +1,27 @@
 import {
-    App,
-    errorMapper,
+    createApp,
+    runCreep,
+    runPowerCreep,
     stateScannerAppPlugin,
     creepNumberControlAppPlugin,
     crossShardAppPlugin,
     delayQueueAppPlugin,
-    constructionAppPlugin,
-    mapLibraryAppPlugin
+    constructionAppPlugin
 } from './modulesGlobal'
+import { runRoom } from './modulesRoom'
 import { generatePixelAppPlugin } from './utils'
-import { mountList, extensionAppPlugin } from './mount'
+import { createGlobalExtension } from './mount'
 import { warAppPlugin } from './mount/global/war'
 
-// 挂载所有的原型拓展
-const app = new App({ mountList })
+const app = createApp()
 
-// 使用 sourceMap 校正报错信息
-app.catcher = errorMapper
+// 设置运行器
+app.setRoomRunner(runRoom)
+app.setCreepRunner(runCreep)
+app.setPowerCreepRunner(runPowerCreep)
 
-// 注册主拓展模块
-app.on(extensionAppPlugin)
+// 挂载全部拓展
+app.on(createGlobalExtension())
 
 // 注册跨 shard 模块
 app.on(crossShardAppPlugin)
@@ -33,9 +35,6 @@ app.on(constructionAppPlugin)
 // 注册延迟任务管理模块
 app.on(delayQueueAppPlugin)
 
-// 注册地图库插件
-app.on(mapLibraryAppPlugin)
-
 // 注册全局战争运行模块
 app.on(warAppPlugin)
 
@@ -45,5 +44,4 @@ app.on(generatePixelAppPlugin)
 // 注册全局资源统计模块
 app.on(stateScannerAppPlugin)
 
-// 运行 bot
-export const loop = () => app.run()
+export const loop = app.run

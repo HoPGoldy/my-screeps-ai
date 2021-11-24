@@ -8,7 +8,8 @@
  */
 
 import { SourceMapConsumer } from 'source-map'
-import { red } from './console/utils'
+import { red } from '../console/utils'
+import { ErrorCatcher } from './types'
 
 // 缓存 SourceMap
 let consumer = null
@@ -77,10 +78,10 @@ const sourceMappedStackTrace = function (error: Error | string): string {
  *
  * @param next 玩家代码
  */
-export const errorMapper = function (next: () => any): void {
+export const errorMapper: ErrorCatcher = function (next, ...args) {
     try {
         // 执行玩家代码
-        next()
+        next(...args)
     }
     catch (e) {
         if (e instanceof Error) {

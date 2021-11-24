@@ -6,6 +6,7 @@ import { WarManager } from '@/modulesGlobal/war/warManager/warManager'
 import { goTo } from '@/modulesGlobal/move'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { CreepRole } from '@/role/types/role'
+import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
 
 declare global {
     interface Memory {

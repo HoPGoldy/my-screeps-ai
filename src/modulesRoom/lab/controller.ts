@@ -87,7 +87,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         info.type = toType
     }
 
-    public runReactionController (): void {
+    public runReaction (): void {
         // lab 集群被暂停，停止执行合成
         if (this.memory.pause) return
         if (!this.room._hasRunLab) {
@@ -124,7 +124,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
     }
 
-    public runBoostController (): void {
+    public runBoost (): void {
         if (Game.time % 10) return
         if (this.room._hasRunBoost) return
         if (this.memory.boostTasks.length <= 0) return

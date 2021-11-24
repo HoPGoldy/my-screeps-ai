@@ -2,6 +2,7 @@ import { updateStructure } from '@/modulesRoom/shortcut'
 import { CreateOptions } from './types'
 import { Color, log } from '../console'
 import { createConstructionManager } from './constructionManager'
+import { AppLifecycleCallbacks } from '../framework/types'
 
 /**
  * 建造的优先级

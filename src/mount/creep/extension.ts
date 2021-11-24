@@ -1,70 +1,13 @@
 import { repairSetting, MIN_WALL_HITS } from '@/setting'
-import roles from '@/role'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
-import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
 import { useCache } from '@/utils'
 import { getNearSite } from '@/modulesGlobal/construction'
 import { Color } from '@/modulesGlobal'
-import { CreepConfig, CreepRole, RoleCreep } from '@/role/types/role'
+import { CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
-    /**
-     * creep 主要工作
-     */
-    public onWork (): void {
-        if (!this.memory.role) return
-
-        // 检查 creep 内存中的角色是否存在
-        if (!(this.memory.role in roles)) {
-            // 没有的话可能是放在跨 shard 暂存区了
-            const memory = getMemoryFromCrossShard(this.name)
-            // console.log(`${this.name} 从暂存区获取了内存`, memory)
-            if (!memory) {
-                this.log('找不到对应内存', Color.Yellow)
-                this.say('我凉了！')
-                return
-            }
-        }
-
-        // 还没出生就啥都不干
-        if (this.spawning) return
-
-        // 获取对应配置项
-        const creepConfig: CreepConfig<CreepRole> = roles[this.memory.role]
-
-        // 没准备的时候就执行准备阶段
-        if (!this.memory.ready) {
-            // 有准备阶段配置则执行
-            if (creepConfig.prepare) this.memory.ready = creepConfig.prepare(this)
-            // 没有就直接准备完成
-            else this.memory.ready = true
-        }
-
-        // 如果执行了 prepare 还没有 ready，就返回等下个 tick 再执行
-        if (!this.memory.ready) return
-
-        // 获取是否工作，没有 source 的话直接执行 target
-        const working = creepConfig.source ? this.memory.working : true
-
-        let stateChange = false
-        // 执行对应阶段
-        // 阶段执行结果返回 true 就说明需要更换 working 状态
-        if (working) {
-            if (creepConfig.target && creepConfig.target(this)) stateChange = true
-        }
-        else {
-            if (creepConfig.source && creepConfig.source(this)) stateChange = true
-        }
-
-        // 状态变化了就释放工作位置
-        if (stateChange) {
-            this.memory.working = !this.memory.working
-            if (this.memory.stand) delete this.memory.stand
-        }
-    }
-
     /**
      * 发送日志
      *

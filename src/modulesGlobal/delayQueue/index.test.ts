@@ -1,4 +1,4 @@
-import { CreateDelayQueue } from './index'
+import { createDelayQueue } from './index'
 import { getMockRoom } from '@test/mock'
 import { DelayTask, DelayTaskData, DelayTaskType } from './types'
 
@@ -11,7 +11,7 @@ describe('延迟任务队列测试', () => {
     }
 
     it('可以从 Memory 中初始化任务', () => {
-        const { initDelayTasks, manageDelayTask, addDelayCallback } = CreateDelayQueue()
+        const { initDelayTasks, manageDelayTask, addDelayCallback } = createDelayQueue()
         const mockCallback = jest.fn()
 
         // 把数据装进Memory，并添加对应的 room
@@ -36,7 +36,7 @@ describe('延迟任务队列测试', () => {
     })
 
     it('可以添加新任务', () => {
-        const { manageDelayTask, addDelayCallback, addDelayTask } = CreateDelayQueue()
+        const { manageDelayTask, addDelayCallback, addDelayTask } = createDelayQueue()
         const mockCallback = jest.fn()
 
         // 添加任务并加载回调
@@ -56,7 +56,7 @@ describe('延迟任务队列测试', () => {
     })
 
     it('可以保存任务到 Memory', () => {
-        const { saveDelayTasks, addDelayTask } = CreateDelayQueue()
+        const { saveDelayTasks, addDelayTask } = createDelayQueue()
 
         // 添加任务并保存
         addDelayTask(DelayTaskType.SpawnMiner, mockData, 1)
@@ -67,7 +67,7 @@ describe('延迟任务队列测试', () => {
     })
 
     it('任务可以延迟触发', () => {
-        const { manageDelayTask, addDelayCallback, addDelayTask } = CreateDelayQueue()
+        const { manageDelayTask, addDelayCallback, addDelayTask } = createDelayQueue()
         const mockCallback = jest.fn()
 
         // 添加不在本 tick 的任务并加载回调

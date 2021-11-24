@@ -124,10 +124,13 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
         delete this.room.memory.lendSpawn
     }
 
-    public runSpawn (spawn: StructureSpawn): void {
+    public run (): void {
         // spawn 被外借了，不再处理孵化工作
         if (this.room.memory.lendSpawn) return
+        this.room[STRUCTURE_SPAWN].forEach(spawn => this.runSingleSpawn(spawn))
+    }
 
+    public runSingleSpawn (spawn: StructureSpawn): void {
         if (spawn.spawning) {
             /**
              * 开始孵化后向物流队列推送能量填充任务

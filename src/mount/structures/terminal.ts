@@ -2,10 +2,6 @@
  * Factory 原型拓展
  */
 export default class FactoryExtension extends StructureFactory {
-    public onWork (): void {
-        this.room.myTerminal.run()
-    }
-
     /**
      * 建造完成回调
      * 修改 miner 的存放位置

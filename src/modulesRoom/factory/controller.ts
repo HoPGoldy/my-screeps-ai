@@ -36,7 +36,7 @@ export default class RoomFactoryController extends FactoryBase {
     /**
      * 工厂执行工作入口
      */
-    public runFactory (): void {
+    public run (): void {
         // 没有启用或没有 factory 则跳过
         if (!this.memory || !this.room[STRUCTURE_FACTORY]) return
 

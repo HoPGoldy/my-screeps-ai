@@ -27,6 +27,7 @@ declare global {
     }
 
     interface StructureController {
+        run(): void
         /**
          * 检查房间内敌人是否有威胁
          */
@@ -34,14 +35,23 @@ declare global {
     }
 
     interface StructurePowerSpawn {
+        run(): void
         /**
          * 查看状态
          */
         stats(): string
     }
 
+    interface StructureNuker {
+        run(): void
+    }
+
+    interface StructureTower {
+        run(): void
+    }
+
     interface StructureLink {
-        onWork(): void
+        run(): void
         asCenter(): string
         asSource(): string
         asUpgrade(): string

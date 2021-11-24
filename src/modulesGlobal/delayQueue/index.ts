@@ -1,4 +1,5 @@
-import { errorMapper } from '@/modulesGlobal/errorMapper'
+import { errorMapper } from '@/modulesGlobal/framework/errorMapper'
+import { AppLifecycleCallbacks } from '../framework/types'
 import { DelayTask, DelayTaskCallback, DelayTaskDatas, DelayTaskType } from './types'
 
 /**
@@ -6,7 +7,7 @@ import { DelayTask, DelayTaskCallback, DelayTaskDatas, DelayTaskType } from './t
  */
 const SAVE_KEY = 'delayTasks'
 
-export const CreateDelayQueue = function () {
+export const createDelayQueue = function () {
     /**
      * 所有的任务回调都会被存放到这里
      */
@@ -117,13 +118,14 @@ export const CreateDelayQueue = function () {
     return { addDelayTask, initDelayTasks, manageDelayTask, addDelayCallback, saveDelayTasks }
 }
 
-export const delayQueue = CreateDelayQueue()
+export const delayQueue = createDelayQueue()
+
+delayQueue.initDelayTasks()
 
 /**
  * 延迟任务模块注册插件
  */
 export const delayQueueAppPlugin: AppLifecycleCallbacks = {
-    reset: delayQueue.initDelayTasks,
-    afterWork: delayQueue.manageDelayTask,
+    tickStart: delayQueue.manageDelayTask,
     tickEnd: delayQueue.saveDelayTasks
 }

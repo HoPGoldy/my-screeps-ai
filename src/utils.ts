@@ -1,3 +1,5 @@
+import { AppLifecycleCallbacks } from './modulesGlobal/framework/types'
+
 /**
  * 判断一个位置是否在房间入口处（是否骑墙）
  */

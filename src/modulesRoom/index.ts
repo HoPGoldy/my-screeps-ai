@@ -14,3 +14,4 @@ export { default as mountShortcut } from './shortcut'
 
 export { TransportTaskType } from './taskTransport/types'
 export { WorkTaskType } from './taskWork/types'
+export { runRoom } from './roomRunner'

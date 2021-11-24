@@ -1,3 +1,4 @@
+import { AppLifecycleCallbacks } from '../framework/types'
 import { RoomStats } from './types'
 
 /**
@@ -73,10 +74,11 @@ export const stateScanner = function (): void {
     Memory.stats.credit = Game.market.credits
 }
 
+initGlobalStats()
+
 /**
  * 生成状态统计模块的框架插件
  */
 export const stateScannerAppPlugin: AppLifecycleCallbacks = {
-    reset: initGlobalStats,
     tickEnd: stateScanner
 }
