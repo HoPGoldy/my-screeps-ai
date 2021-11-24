@@ -38,7 +38,9 @@ export const createApp = function (opt: Partial<CreateOptions> = {}) {
      */
     let _memoryCacher: MemoryCacher = next => {
         if (_cachedMemory) {
+            // @ts-ignore
             delete global.Memory
+            // @ts-ignore
             global.Memory = _cachedMemory
         }
         else {
@@ -47,6 +49,7 @@ export const createApp = function (opt: Partial<CreateOptions> = {}) {
 
         next()
 
+        // @ts-ignore
         RawMemory.set(JSON.stringify(global.Memory))
     }
 

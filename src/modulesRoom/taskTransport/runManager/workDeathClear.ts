@@ -1,3 +1,4 @@
+import { StructureWithStore } from '@/utils'
 import { ManagerState, TransportWorkContext } from '../types'
 
 /**

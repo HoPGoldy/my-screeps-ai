@@ -10,7 +10,7 @@ class StructureSpawnMock extends StructureMock {
     renewCreep = () => {}
     recycleCreep = () => {}
 
-    constructor() {
+    constructor () {
         super(STRUCTURE_SPAWN)
     }
 }

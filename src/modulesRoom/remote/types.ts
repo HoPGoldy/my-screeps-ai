@@ -1,3 +1,5 @@
+import { StructureWithStore } from '@/utils'
+
 /**
  * 外矿配置信息
  */

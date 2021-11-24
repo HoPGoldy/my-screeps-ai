@@ -1,10 +1,13 @@
-import { repairSetting, MIN_WALL_HITS } from '@/setting'
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
-import { useCache } from '@/utils'
+import { useCache, StructureWithStore } from '@/utils'
 import { getNearSite } from '@/modulesGlobal/construction'
 import { Color } from '@/modulesGlobal'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
+import { WALL_FOCUS_TIME } from '../structures/tower'
+
+// 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
+const MIN_WALL_HITS = 8000
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -161,7 +164,7 @@ export default class CreepExtension extends Creep {
             // 将其缓存在内存里
             this.room.memory.focusWall = {
                 id: targetWall.id,
-                endTime: Game.time + repairSetting.focusTime
+                endTime: Game.time + WALL_FOCUS_TIME
             }
         }
 

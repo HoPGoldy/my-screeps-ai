@@ -44,17 +44,17 @@ export default class LogRecorder {
 
     /**
      * 实例化日志记录
-     * 
+     *
      * @param name 日志要保存到的文件名称
      * @param server 日志记录所在的游戏服务器
      * @param bot 要进行记录的 bot 实例
      */
-    constructor(name: string, server: ScreepsServer, bot: User) {
+    constructor (name: string, server: ScreepsServer, bot: User) {
         this.name = name
 
         // 记录控制台输出
         const consoleListener = async logs => {
-            this.record(await server.world.gameTime, { console: logs });
+            this.record(await server.world.gameTime, { console: logs })
         }
 
         // 记录 Memory 和通知信息
@@ -73,17 +73,17 @@ export default class LogRecorder {
 
         // 注册回调
         server.on('tickStart', tickListener)
-        bot.on('console', consoleListener);
+        bot.on('console', consoleListener)
         server.on('reset', resetListener)
     }
 
     /**
      * 记录新的日志
-     * 
+     *
      * @param tick 要保存到的 tick
      * @param newLog 日志内容
      */
-    record(tick: number, newLog: TickLog) {
+    record (tick: number, newLog: TickLog) {
         if (!this.logs[tick]) this.logs[tick] = newLog
         else {
             Object.keys(newLog).forEach(key => {
@@ -96,7 +96,7 @@ export default class LogRecorder {
     /**
      * 保存日志到本地
      */
-    async save() {
+    async save () {
         await outputJson(resolve(LOG_DIR, `${this.name}.json`), this.logs, {
             spaces: 4
         })

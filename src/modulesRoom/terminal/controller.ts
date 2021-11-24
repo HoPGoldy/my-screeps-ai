@@ -1,11 +1,11 @@
 import { DROP_TARGET, MAX_DROP_AMOUNT, TerminalChannel, TerminalMode } from './constant'
 import { setRoomStats } from '@/modulesGlobal/stats'
 import { TerminalListenTask, TerminalMemory } from './types'
-import { BASE_MINERAL } from '@/setting'
 import RoomAccessor from '../RoomAccessor'
 import { getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask, unstringifyTask } from './utils'
 import { Color, colorful } from '@/modulesGlobal'
 import { TransportTaskType } from '../taskTransport/types'
+import { BASE_MINERAL } from '@/utils/constants'
 
 /**
  * Terminal 控制器

@@ -1,7 +1,6 @@
+import { EnvContext } from '@/utils'
 import { allBattleCore } from '../battleCore'
 import { SquadMemory, WarState } from '../types'
-import { EnvContext } from '@/contextTypes'
-import { contextCostMatrix, contextEnemyDamage, contextRoomInfo } from '../context'
 
 type SquadContext = {
     warCode: string

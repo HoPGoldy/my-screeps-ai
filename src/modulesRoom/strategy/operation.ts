@@ -1,4 +1,3 @@
-import { UPGRADER_WITH_ENERGY_LEVEL_8 } from '@/setting'
 import { delayQueue } from '@/modulesGlobal/delayQueue'
 import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
@@ -6,6 +5,12 @@ import RoomStrategyController from './controller'
 import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 import { WorkTaskType } from '../taskWork/types'
 import { CreepRole } from '@/role/types/role'
+
+/**
+ * 8级时只要 cpu 足够，依旧会孵化一个 upgrader 进行升级
+ * 这个限制代表了在房间 8 级时 storage 里的能量大于多少才会持续孵化 upgarder
+ */
+const UPGRADER_WITH_ENERGY_LEVEL_8 = 700000
 
 /**
  * 运维策略

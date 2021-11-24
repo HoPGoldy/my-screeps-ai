@@ -1,12 +1,23 @@
 import planWall from './planWall'
 import planBase from './planBase'
 import planRoad from './planRoad'
-import { LEVEL_BUILD_RAMPART, LEVEL_BUILD_ROAD } from '@/setting'
 import { addConstructionSite } from '@/modulesGlobal/construction'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 import { ConstructInfo } from '../construction/types'
 
 const planningCaches: StructurePlanningCache = {}
+
+/**
+ * RCL 分别在几级时放置外墙
+ * 例如 [ 3, 7, 8 ] 代表分别在第 3、7、8 级时放置第 1（最外层）、2、3 层 rampart
+ */
+const LEVEL_BUILD_RAMPART = [4, 8, 8]
+
+/**
+ * RCL 几级的时候开始放置通向 [ source, controller, mineral ] 的道路
+ * 注意这个顺序要和 src\modules\autoPlanning\planRoad.ts 的默认方法返回值保持一致
+ */
+const LEVEL_BUILD_ROAD = [3, 4, 6]
 
 /**
  * 对指定房间执行建筑规划

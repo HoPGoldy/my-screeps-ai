@@ -1,3 +1,5 @@
+import { ObjectWithId } from '@/utils'
+
 /**
  * 包含任意键值对的类
  */

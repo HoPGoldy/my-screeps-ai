@@ -1,11 +1,11 @@
 import { getMock } from '../utils'
-import { getMockSpawn } from './Spawn';
+import { getMockSpawn } from './Spawn'
 
 class SpawningMock {
     directions: DirectionConstant[] = [TOP]
-    name: string = 'mockCreep'
-    needTime: number = 10
-    remainingTime: number = 10
+    name = 'mockCreep'
+    needTime = 10
+    remainingTime = 10
     spawn: StructureSpawn = getMockSpawn();
     cancel = () => {}
     setDirections = () => {}

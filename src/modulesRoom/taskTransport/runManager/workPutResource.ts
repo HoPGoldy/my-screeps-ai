@@ -1,3 +1,4 @@
+import { StructureWithStore } from '@/utils'
 import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onPutResource = (context: TransportWorkContext) => {

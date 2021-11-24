@@ -1,4 +1,5 @@
 import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
+import { StructureWithStore } from '@/utils'
 
 /**
  * powerbank 的采集阶段

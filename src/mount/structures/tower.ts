@@ -3,8 +3,12 @@ import { TransportTaskType } from '@/modulesRoom'
 import { BoostState } from '@/modulesRoom/lab/types'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { CreepRole } from '@/role/types/role'
-import { repairSetting } from '@/setting'
-import { whiteListFilter } from '@/utils'
+import { whiteListFilter } from '../global/whiteList'
+
+/**
+ * 墙壁的关注时间（tick）
+ */
+export const WALL_FOCUS_TIME = 100
 
 // Tower 原型拓展
 export default class TowerExtension extends StructureTower {
@@ -176,7 +180,7 @@ export default class TowerExtension extends StructureTower {
                     // 将其缓存在内存里
                     this.room.memory.focusWall = {
                         id: target.id,
-                        endTime: Game.time + repairSetting.focusTime
+                        endTime: Game.time + WALL_FOCUS_TIME
                     }
                 }
             }
@@ -208,7 +212,7 @@ export default class TowerExtension extends StructureTower {
      */
     private commandRepair (): boolean {
         // 还没到检查时间就跳过
-        if (Game.time % repairSetting.checkInterval) return false
+        if (Game.time % 8) return false
 
         // 找到受损建筑
         // 没有缓存就进行搜索

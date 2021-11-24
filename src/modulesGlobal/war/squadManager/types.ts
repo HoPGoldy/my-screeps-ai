@@ -1,4 +1,4 @@
-import { EnvMethods } from '@/contextTypes'
+import { EnvMethods } from '@/utils'
 import { WarState } from '../types'
 
 /**

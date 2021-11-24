@@ -9,7 +9,7 @@ let server: ScreepsServer
 /**
  * 升级 server 实例
  * 添加更多的事件发射，并添加自动日志记录
- * 
+ *
  * @param server 要进行升级的 server 实例
  * @returns 升级后的 server 实例
  */
@@ -30,11 +30,11 @@ const upgradeServer = function (server: ScreepsServer) {
     // 在添加 bot 时同步启动日志记录实例
     // 会在 server reset 时自动保存并释放
     server.world.addBot = async function (...args) {
-        const [ addBotOptions ] = args
+        const [addBotOptions] = args
         const { username } = addBotOptions
 
         const bot = await addBot.apply(this, args)
-        new LogRecorder(username, server, bot)
+        const log = new LogRecorder(username, server, bot)
 
         return bot
     }
@@ -78,17 +78,17 @@ export const stopServer = async function () {
 
 /**
  * 添加基础房间并设置需要的房间对象
- * 
+ *
  * @param targetServer 要进行设置的服务器
  * @param roomName 要添加的房间名称
  */
-export const setBaseRoom = async function (targetServer: ScreepsServer, roomName: string = 'W0N1'): Promise<void> {
-    await targetServer.world.addRoom(roomName);
-    await targetServer.world.addRoomObject(roomName, 'controller', 10, 10, { level: 0 });
+export const setBaseRoom = async function (targetServer: ScreepsServer, roomName = 'W0N1'): Promise<void> {
+    await targetServer.world.addRoom(roomName)
+    await targetServer.world.addRoomObject(roomName, 'controller', 10, 10, { level: 0 })
     await targetServer.world.addRoomObject(roomName, 'source', 10, 40, {
         energy: 1000, energyCapacity: 1000, ticksToRegeneration: 300
-    });
+    })
     await targetServer.world.addRoomObject(roomName, 'mineral', 40, 40, {
         mineralType: 'H', density: 3, mineralAmount: 3000
-    });
+    })
 }

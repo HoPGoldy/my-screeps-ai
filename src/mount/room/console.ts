@@ -3,9 +3,7 @@
  *
  * 本文件包含了 Room 中用于控制台交互的方法
  */
-
 import { createHelp, red, yellow, colorful } from '@/modulesGlobal/console'
-import { DEFAULT_FLAG_NAME, ROOM_REMOVE_INTERVAL } from '@/setting'
 import { getName, getUniqueKey } from '@/utils'
 import RoomExtension from './extension'
 import { manageStructure, clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
@@ -13,6 +11,10 @@ import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { CreepRole } from '@/role/types/role'
+import { DEFAULT_FLAG_NAME } from '@/utils/constants'
+
+// 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
+const ROOM_REMOVE_INTERVAL = 30
 
 export default class RoomConsole extends RoomExtension {
     /**

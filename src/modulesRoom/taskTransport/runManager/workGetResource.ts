@@ -1,5 +1,5 @@
 import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
-import { useCache } from '@/utils'
+import { StructureWithStore, useCache } from '@/utils'
 import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onGetResource = (context: TransportWorkContext) => {

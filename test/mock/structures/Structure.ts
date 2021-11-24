@@ -10,7 +10,7 @@ export class StructureMock {
     isActive = () => true
     notifyWhenAttacked = () => {}
 
-    constructor(structureType: StructureConstant) { 
+    constructor (structureType: StructureConstant) {
         this.structureType = structureType
     }
 }

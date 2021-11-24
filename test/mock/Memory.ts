@@ -3,7 +3,7 @@ import { getMock } from './utils'
 /**
  * 伪造的全局 Memory 类
  */
- export class MemoryMock {
+export class MemoryMock {
     creeps = {}
     rooms = {}
 }

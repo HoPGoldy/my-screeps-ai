@@ -4,7 +4,7 @@
  * @see 跨shard设计案.md
  */
 
-import { ALL_SHARD_NAME } from '@/setting'
+import { ALL_SHARD_NAME } from '@/utils/constants'
 import { Color, log } from '../console'
 import { AppLifecycleCallbacks } from '../framework/types'
 import requestHandleStrategies, { assertCreepMemory } from './handleStrategies'
@@ -25,6 +25,7 @@ const selfShardName: ShardName = Game.shard.name as ShardName
  */
 export const execShard = function () {
     // 私服不存在该属性
+    // @ts-ignore
     if (!global.InterShardMemory) return ERR_NOT_FOUND
 
     initShardData()

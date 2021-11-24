@@ -3,9 +3,9 @@ import { CreepRole } from '@/role/types/role'
 import { RemoteInfo, RemoteShowInfo, RemoteMemory } from './types'
 import RoomAccessor from '../RoomAccessor'
 import { GetName } from '../spawn/nameGetter'
-
 import { delayQueue } from '@/modulesGlobal/delayQueue'
 import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
+import { StructureWithStore } from '@/utils'
 
 export default class RoomShareController extends RoomAccessor<RemoteMemory> {
     constructor (roomName: string) {

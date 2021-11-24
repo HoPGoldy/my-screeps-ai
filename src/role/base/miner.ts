@@ -1,9 +1,14 @@
 import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { delayQueue } from '@/modulesGlobal/delayQueue'
-import { MINE_LIMIT } from '@/setting'
 import { removeCreep } from '@/modulesGlobal/creep/utils'
 import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 import { CreepConfig, CreepRole } from '../types/role'
+
+/**
+ * miner 的矿物采集上限
+ * 当房间中的对应矿物资源多于这个值时，miner 将不再继续采矿
+ */
+const MINE_LIMIT = 100000
 
 /**
  * 添加 miner 的延迟孵化任务

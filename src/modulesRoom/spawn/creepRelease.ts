@@ -1,6 +1,5 @@
 import { removeCreep } from '@/modulesGlobal/creep'
 import { BASE_ROLE_LIMIT } from './constant'
-import { DEFAULT_FLAG_NAME } from '@/setting'
 import RoomSpawnController from './controller'
 import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
@@ -8,6 +7,8 @@ import { SepicalBodyType } from '../taskWork/types'
 import { Color, log } from '@/modulesGlobal/console/utils'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { removeCreepCantRespawn } from '@/modulesGlobal/creep/utils'
+import { StructureWithStore } from '@/utils'
+import { DEFAULT_FLAG_NAME } from '@/utils/constants'
 
 /**
  * creep 发布工具

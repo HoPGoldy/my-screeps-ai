@@ -3,6 +3,7 @@ import { MoveInfo, MoveOpt } from '@/modulesGlobal/move/types'
 import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
 import { HarvestMode } from '@/role/base/harvester'
 import { CreepRole, RoleDatas } from '@/role/types/role'
+import { StructureWithStore } from '@/utils'
 
 declare global {
     /**

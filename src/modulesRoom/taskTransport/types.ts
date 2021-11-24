@@ -1,3 +1,5 @@
+import { StructureWithStore } from '@/utils'
+
 declare global {
     interface RoomMemory {
         /**

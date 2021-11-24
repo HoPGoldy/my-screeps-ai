@@ -1,5 +1,5 @@
-import { EnvContext } from '@/contextTypes'
 import { BoostResourceConfig, BoostState } from '@/modulesRoom/lab/types'
+import { EnvContext } from '@/utils'
 import { MobilizeTask } from './mobilizeManager/types'
 import { SquadType } from './squadManager/types'
 

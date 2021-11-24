@@ -1,6 +1,7 @@
 import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { Color } from '@/modulesGlobal/console'
 import { CreepConfig, CreepRole } from '../types/role'
+import { StructureWithStore } from '@/utils'
 
 /**
  * 掠夺者

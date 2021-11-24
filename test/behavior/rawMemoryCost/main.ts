@@ -1,7 +1,7 @@
 export const loop = () => {
     RawMemory.setActiveSegments([1])
-    const cost = new PathFinder.CostMatrix
-    
+    const cost = new PathFinder.CostMatrix()
+
     cost.set(1, 2, 3)
     cost.set(2, 2, 14)
     // cost.set(3, 4, 14)
@@ -14,17 +14,17 @@ export const loop = () => {
     RawMemory.segments[2] = JSON.stringify(desData.serialize())
 }
 
-const serializeCost = function(cost: CostMatrix): string {
+const serializeCost = function (cost: CostMatrix): string {
     const rawList = cost.serialize()
     const groupList = []
 
     let currentVal: number = rawList[0]
-    let notRepeatIndex: number = 0
+    let notRepeatIndex = 0
     // 这里用的 <= 长度，所以最后会有一个 i = undefined 的循环，通过这个循环保存最后一截数据
     for (let i = 1; i <= rawList.length; i++) {
         const checkVal = rawList[i]
         if (checkVal === currentVal) continue
-        
+
         const repeatCount = i - notRepeatIndex
         if (repeatCount > 1) groupList.push(`${currentVal}x${repeatCount}`)
         else groupList.push(currentVal)
@@ -39,7 +39,7 @@ const serializeCost = function(cost: CostMatrix): string {
 const deserializeCost = function (rawCost: string): CostMatrix {
     const groupList = rawCost.split(' ')
     const rawList = [].concat(...groupList.map(group => {
-        const [ val, count ] = group.split('x')
+        const [val, count] = group.split('x')
         return Array(Number(count) || 1).fill(val)
     }))
 

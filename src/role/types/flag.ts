@@ -1,3 +1,4 @@
+import { StructureWithStore } from '@/utils'
 import { PbHarvestState } from './role'
 
 declare global {

@@ -1,6 +1,10 @@
-import { POWER_PROCESS_ENERGY_LIMIT } from '@/setting'
 import { Color, colorful, createHelp, createRoomLink } from '@/modulesGlobal/console'
 import { TransportTaskType } from '@/modulesRoom'
+
+/**
+ * 当前房间 storage 内存量低于该值时将停止 process
+ */
+const POWER_PROCESS_ENERGY_LIMIT = 500000
 
 /**
  * PowerSpawn 拓展

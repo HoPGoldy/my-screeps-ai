@@ -1,6 +1,6 @@
-import { whiteListFilter } from '@/utils'
 import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
 import { Color } from '@/modulesGlobal'
+import { whiteListFilter } from '../global/whiteList'
 
 /**
  * Controller 拓展

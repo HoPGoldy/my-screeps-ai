@@ -1,4 +1,4 @@
-import { EnvContext, EnvMethods } from '@/contextTypes'
+import { EnvContext, EnvMethods } from '@/utils'
 import { SquadType } from '../squadManager/types'
 import { SquadSpawnInfo } from './getBodyPart'
 

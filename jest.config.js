@@ -7,7 +7,7 @@ module.exports = {
     transform: {
         '^.+\\.tsx?$': 'ts-jest'
     },
-    setupFilesAfterEnv : [
+    setupFilesAfterEnv: [
         '<rootDir>/test/setup.ts'
     ],
     moduleNameMapper: pathsToModuleNameMapper(compilerOptions.paths || {}, { prefix: '<rootDir>/' }),
