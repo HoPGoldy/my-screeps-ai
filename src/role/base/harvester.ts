@@ -4,8 +4,7 @@ import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
-import { Color } from '@/modulesGlobal/console/utils'
-import { serializePos, unserializePos } from '@/utils'
+import { getFreeSpace, serializePos, unserializePos, Color } from '@/utils'
 
 /**
  * 能量采集单位的行为模式
@@ -284,7 +283,7 @@ const actionStrategy: ActionStrategy = {
             }
             else {
                 // 移动到 link 和 source 相交的位置，这样不用移动就可以传递能量
-                targetPos = source.pos.getFreeSpace().find(pos => pos.isNearTo(targetStructure.pos))
+                targetPos = getFreeSpace(source.pos).find(pos => pos.isNearTo(targetStructure.pos))
                 // 缓存起来供以后使用
                 if (targetPos) creep.memory.data.standPos = serializePos(targetPos)
             }

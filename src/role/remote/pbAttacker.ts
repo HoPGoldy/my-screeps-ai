@@ -1,5 +1,5 @@
 import { removeCreep } from '@/modulesGlobal/creep/utils'
-import { calcBodyPart } from '../bodyUtils'
+import { calcBodyPart } from '@/utils'
 import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
 
 /**

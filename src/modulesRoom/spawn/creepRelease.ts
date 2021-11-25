@@ -4,10 +4,9 @@ import RoomSpawnController from './controller'
 import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 import { SepicalBodyType } from '../taskWork/types'
-import { Color, log } from '@/modulesGlobal/console/utils'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { removeCreepCantRespawn } from '@/modulesGlobal/creep/utils'
-import { StructureWithStore } from '@/utils'
+import { StructureWithStore, Color, log } from '@/utils'
 import { DEFAULT_FLAG_NAME } from '@/utils/constants'
 
 /**

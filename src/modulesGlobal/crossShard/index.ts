@@ -4,8 +4,7 @@
  * @see 跨shard设计案.md
  */
 
-import { ALL_SHARD_NAME } from '@/utils/constants'
-import { Color, log } from '../console'
+import { ALL_SHARD_NAME, Color, log } from '@/utils'
 import { AppLifecycleCallbacks } from '../framework/types'
 import requestHandleStrategies, { assertCreepMemory } from './handleStrategies'
 

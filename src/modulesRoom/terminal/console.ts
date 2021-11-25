@@ -1,4 +1,4 @@
-import { createForm, createHelp } from '@/modulesGlobal/console'
+import { createForm, createHelp } from '@/utils'
 import { TerminalChannel, TerminalMode } from './constant'
 
 /**

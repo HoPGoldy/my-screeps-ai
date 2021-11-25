@@ -3,11 +3,10 @@
  *
  * 本文件包含了 Room 中用于控制台交互的方法
  */
-import { createHelp, red, yellow, colorful } from '@/modulesGlobal/console'
-import { getName, getUniqueKey } from '@/utils'
+import { getName, getUniqueKey, createHelp, red, yellow, colorful } from '@/utils'
+import { ModuleDescribe } from '@/utils/console/help/types'
 import RoomExtension from './extension'
 import { manageStructure, clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
-import { ModuleDescribe } from '@/modulesGlobal/console/help/types'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { CreepRole } from '@/role/types/role'

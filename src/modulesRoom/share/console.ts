@@ -1,4 +1,4 @@
-import { createHelp } from '@/modulesGlobal/console'
+import { createHelp } from '@/utils'
 /**
  * 资源共享模块的用户控制接口
  */

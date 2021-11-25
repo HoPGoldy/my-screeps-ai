@@ -1,4 +1,4 @@
-import { createHelp } from '@/modulesGlobal/console'
+import { createHelp } from '@/utils'
 import { TransportTaskType } from '@/modulesRoom'
 
 /**

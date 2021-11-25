@@ -1,7 +1,7 @@
 import { DEPOSIT_MAX_COOLDOWN, OBSERVER_DEPOSIT_MAX, OBSERVER_INTERVAL, OBSERVER_POWERBANK_MAX } from './constant'
-import { green, createRoomLink } from '@/modulesGlobal/console'
 import RoomAccessor from '../RoomAccessor'
 import { ObserverMemory } from './types'
+import { getFreeSpace, green, createRoomLink } from '@/utils'
 
 /**
  * Observer 拓展
@@ -144,7 +144,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
         // 更新数量
         this.memory.pbList.push(targetFlagName)
         // 计算应该发布的采集小组数量，最高两组
-        const groupNumber = target.pos.getFreeSpace().length > 1 ? 2 : 1
+        const groupNumber = getFreeSpace(target.pos).length > 1 ? 2 : 1
         // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
         this.room.spawner.release.pbHarvesteGroup(targetFlagName, groupNumber)
     }

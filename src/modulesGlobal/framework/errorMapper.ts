@@ -8,7 +8,7 @@
  */
 
 import { SourceMapConsumer } from 'source-map'
-import { red } from '../console/utils'
+import { red } from '@/utils'
 import { ErrorCatcher } from './types'
 
 // 缓存 SourceMap

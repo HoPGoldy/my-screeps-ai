@@ -1,4 +1,4 @@
-import { getOppositeDirection, serializePos } from '@/utils'
+import { directionToPos, getOppositeDirection, serializePos } from '@/utils'
 import crossRules from './crossRules'
 import { addCrossShardRequest } from '@/modulesGlobal/crossShard'
 import { MoveOpt } from './types'
@@ -67,7 +67,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
         if (moveMemory.prePos && currentPos === moveMemory.prePos) {
             // creep.log('发现撞停!')
             // 获取前方位置上的 creep（fontCreep）
-            const fontPos = creep.pos.directionToPos(moveMemory.lastMove)
+            const fontPos = directionToPos(creep.pos, moveMemory.lastMove)
 
             // creep.log(creep.pos + '> [上个方向]' + moveMemory.lastMove + '>' +  fontPos)
             if (!fontPos) {
@@ -142,7 +142,7 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
      * 所以要在路径还有一格时判断前方是不是传送门
      */
     if (creep.memory.fromShard && moveMemory.path && moveMemory.path.length === 1) {
-        const nextPos = creep.pos.directionToPos(direction)
+        const nextPos = directionToPos(creep.pos, direction)
         const portal = nextPos.lookFor(LOOK_STRUCTURES).find(s => s.structureType === STRUCTURE_PORTAL) as StructurePortal
 
         // 移动到去其他 shard 的传送门上了，发送跨 shard 请求
@@ -481,7 +481,7 @@ export const visualAllCreepPath = function () {
         const directions: (string | RoomPosition)[] = creep.memory._go.path.split('')
         directions.unshift(creep.pos)
         directions.reduce((pre: RoomPosition, next: string) => {
-            const nextPos = (pre as RoomPosition).directionToPos(Number(next) as DirectionConstant)
+            const nextPos = directionToPos(pre, Number(next) as DirectionConstant)
             new RoomVisual(pre.roomName).line(pre, nextPos, { color: '#a9b7c6' })
 
             return nextPos

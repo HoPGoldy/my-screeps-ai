@@ -1,6 +1,5 @@
-import { Color } from '@/modulesGlobal/console/utils'
 import { hasCreep, removeCreep } from '@/modulesGlobal/creep/utils'
-import { calcBodyPart } from '../bodyUtils'
+import { calcBodyPart, Color } from '@/utils'
 import { CreepConfig, CreepRole } from '../types/role'
 
 /**

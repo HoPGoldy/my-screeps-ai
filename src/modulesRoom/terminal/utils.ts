@@ -1,4 +1,4 @@
-import { Color } from '@/modulesGlobal'
+import { Color } from '@/utils'
 import { DEAL_RATIO, TerminalChannel, TerminalMode } from './constant'
 import { TerminalListenTask } from './types'
 

@@ -1,3 +1,5 @@
+import { BoostResourceConfig } from '@/utils'
+
 export enum LabState {
     GetTarget = 'getTarget',
     GetResource = 'getResource',
@@ -112,20 +114,6 @@ export interface BoostTask {
      * 该强化任务的进度
      */
     state: BoostState
-}
-
-/**
- * 强化任务的材料清单
- */
-export interface BoostResourceConfig {
-    /**
-     * 强化材料类型
-     */
-    resource: MineralBoostConstant
-    /**
-     * 强化材料数量
-     */
-    amount: number
 }
 
 /**

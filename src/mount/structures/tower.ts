@@ -1,4 +1,4 @@
-import { Color } from '@/modulesGlobal'
+import { Color } from '@/UTILS'
 import { TransportTaskType } from '@/modulesRoom'
 import { BoostState } from '@/modulesRoom/lab/types'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'

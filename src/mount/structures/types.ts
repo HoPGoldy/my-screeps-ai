@@ -1,4 +1,4 @@
-import { Color } from '@/modulesGlobal'
+import { Color } from '@/utils'
 
 declare global {
     /**

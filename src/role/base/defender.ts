@@ -1,4 +1,4 @@
-import { calcBodyPart } from '../bodyUtils'
+import { calcBodyPart } from '@/utils'
 import { CreepConfig, CreepRole } from '../types/role'
 
 /**

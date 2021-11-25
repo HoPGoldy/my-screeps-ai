@@ -1,7 +1,6 @@
 import mountCreep, { CreepExtension } from './creep'
 import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
-import RoomPostionExtension from './roomPosition/extension'
 import mountGlobal from './global'
 import {
     ControllerExtension, StructuresExtension, TowerExtension, LinkExtension, LinkConsole,
@@ -16,7 +15,7 @@ import ShareConsole from '@/modulesRoom/share/console'
 import ObserverConsole from '@/modulesRoom/observer/console'
 import RemoteConsole from '@/modulesRoom/remote/console'
 import LabConsole from '@/modulesRoom/lab/console'
-import { Color, log } from '@/modulesGlobal'
+import { Color, log } from '@/utils'
 
 /**
  * 初始化存储
@@ -53,7 +52,6 @@ export const mountAll = function () {
         [Room, RemoteConsole],
         [Room, LabConsole],
         // 业务模块拓展挂载
-        [RoomPosition, RoomPostionExtension],
         [Source, SourceExtension],
         [Creep, CreepExtension],
         [PowerCreep, PowerCreepExtension],

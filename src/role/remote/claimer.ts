@@ -1,5 +1,4 @@
-import { Color } from '@/modulesGlobal/console'
-import { getName } from '@/utils'
+import { Color, getName } from '@/utils'
 import { CreepConfig, CreepRole } from '../types/role'
 
 /**

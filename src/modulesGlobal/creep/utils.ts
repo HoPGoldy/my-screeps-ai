@@ -1,5 +1,5 @@
 import { CreepData } from '@/role/types/role'
-import { green, yellow, red } from '../console/utils'
+import { green, yellow, red } from '@/utils'
 
 /**
  * creep 移除配置项

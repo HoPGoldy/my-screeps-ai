@@ -1,3 +1,4 @@
+import { getFreeSpace } from '@/utils'
 import { baseLayout } from './constant'
 
 /**
@@ -59,11 +60,11 @@ const getOutLinkPos = function (room: Room): RoomPosition[] {
         }
 
         // 获取目标点位旁边的所有可用的开采空位
-        const harvesterPos = target.pos.getFreeSpace()
+        const harvesterPos = getFreeSpace(target.pos)
         if (harvesterPos.length <= 0) continue
 
         // 以开采单位为基础寻找所有可以放置 link 的位置
-        const canPlaceLinkPos = harvesterPos[0].getFreeSpace()
+        const canPlaceLinkPos = getFreeSpace(harvesterPos[0])
         if (canPlaceLinkPos.length <= 0) continue
 
         result.push(canPlaceLinkPos)

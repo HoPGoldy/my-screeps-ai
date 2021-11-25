@@ -1,4 +1,4 @@
-import { green, yellow } from '@/modulesGlobal'
+import { green, yellow } from '@/utils'
 import FactoryBase from './base'
 import { FactoryState, InteractAction, TOP_TARGET } from './constant'
 import StageGetResource from './stageGetResource'

@@ -1,7 +1,6 @@
 import { createWarController } from '@/modulesGlobal/war'
 import { WarModuleMemory } from '@/modulesGlobal/war/types'
-import { createEnvContext } from '../utils'
-import { createHelp } from '@/modulesGlobal/console'
+import { createEnvContext, createHelp } from '@/utils'
 import { WarManager } from '@/modulesGlobal/war/warManager/warManager'
 import { goTo } from '@/modulesGlobal/move'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'

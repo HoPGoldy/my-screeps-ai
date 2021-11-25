@@ -1,4 +1,4 @@
-import { createForm } from '@/modulesGlobal/console'
+import { createForm } from './main'
 
 /**
  * 创建一个包含所有可用表单项的 form 示例

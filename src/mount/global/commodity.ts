@@ -1,4 +1,4 @@
-import { Color, colorful, createRoomLink } from '@/modulesGlobal'
+import { Color, colorful, createRoomLink } from '@/utils'
 import { TOP_TARGET } from '@/modulesRoom/factory/constant'
 import { FactoryLevel } from '@/modulesRoom/factory/types'
 

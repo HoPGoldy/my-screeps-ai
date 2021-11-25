@@ -1,53 +1,6 @@
-/**
- * 包含可复用的 creep 角色身体配置项
- */
-
-import { BoostResourceConfig } from '@/modulesRoom/lab/types'
 import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
-import { BodyConfig, BodyConfigs, BodyPartGenerator, BodyRepeat } from './types/body'
-
-/**
- * 根据身体配置生成完成的身体数组
- * cpu 消耗: 0.028 左右
- *
- * @param bodySet 身体部件配置对象
- */
-export function calcBodyPart (bodySets: BodyRepeat[]): BodyPartConstant[] {
-    // 把身体配置项拓展成如下形式的二维数组
-    // [ [ TOUGH ], [ WORK, WORK ], [ MOVE, MOVE, MOVE ] ]
-    const bodys = bodySets.map(([bodyPart, length]) => Array(length).fill(bodyPart))
-    // 把二维数组展平
-    return [].concat(...bodys)
-}
-
-/**
- * body 和要使用的强化材料
- * 目前只会使用 t3 材料
- */
-export const BODY_BOOST_RESOURCES = {
-    [WORK]: RESOURCE_CATALYZED_ZYNTHIUM_ACID,
-    [ATTACK]: RESOURCE_CATALYZED_UTRIUM_ACID,
-    [RANGED_ATTACK]: RESOURCE_CATALYZED_KEANIUM_ALKALIDE,
-    [HEAL]: RESOURCE_CATALYZED_LEMERGIUM_ALKALIDE,
-    [MOVE]: RESOURCE_CATALYZED_ZYNTHIUM_ALKALIDE,
-    [TOUGH]: RESOURCE_CATALYZED_GHODIUM_ALKALIDE
-}
-
-/**
- * 计算身体部件需要的强化资源数量
- */
-export const getBodyBoostResource = function (bodys: BodyPartConstant[]): BoostResourceConfig[] {
-    const boostAmounts: { [type in MineralBoostConstant]?: number } = {}
-    bodys.forEach(body => {
-        boostAmounts[BODY_BOOST_RESOURCES[body]] =
-            (boostAmounts[BODY_BOOST_RESOURCES[body]] || 0) + LAB_BOOST_MINERAL
-    })
-
-    return Object.entries(boostAmounts).map(([res, amount]) => ({
-        resource: res as MineralBoostConstant,
-        amount
-    }))
-}
+import { BodyRepeat, calcBodyPart } from '@/utils'
+import { BodyConfig, BodyConfigs, BodyPartGenerator } from './types/body'
 
 /**
  * 生成通用身体部件获取函数

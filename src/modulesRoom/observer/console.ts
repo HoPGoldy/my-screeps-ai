@@ -1,4 +1,4 @@
-import { createHelp } from '@/modulesGlobal'
+import { createHelp } from '@/utils'
 
 export default class ObserverConsole extends Room {
     /**

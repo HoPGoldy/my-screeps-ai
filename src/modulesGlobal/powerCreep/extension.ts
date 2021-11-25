@@ -1,4 +1,4 @@
-import { Color, log } from '@/modulesGlobal/console'
+import { Color, log } from '@/utils'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 
 /**

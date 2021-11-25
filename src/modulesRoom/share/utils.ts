@@ -1,4 +1,4 @@
-import { red, blue, yellow } from '@/modulesGlobal'
+import { red, blue, yellow } from '@/utils'
 
 /**
  * 格式化输出当前的资源提供房间

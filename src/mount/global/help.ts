@@ -1,4 +1,4 @@
-import { blue, yellow, createHelp, createLink } from '@/modulesGlobal/console'
+import { blue, yellow, createHelp, createLink } from '@/utils'
 
 /**
  * 帮助文档中的标题

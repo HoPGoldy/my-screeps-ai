@@ -1,4 +1,4 @@
-import { yellow, createHelp } from '@/modulesGlobal/console'
+import { yellow, createHelp } from '@/utils'
 import { BalanceDirection } from './types'
 
 /**

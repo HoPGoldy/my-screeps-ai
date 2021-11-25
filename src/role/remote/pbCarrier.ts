@@ -1,5 +1,4 @@
-import { Color } from '@/modulesGlobal/console'
-import { calcBodyPart } from '../bodyUtils'
+import { calcBodyPart, Color } from '@/utils'
 import { CreepConfig, CreepRole, PbHarvestState } from '../types/role'
 
 /**

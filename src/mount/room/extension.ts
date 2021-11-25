@@ -6,7 +6,7 @@
  */
 import { manageStructure, clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
 import { removeCreep } from '@/modulesGlobal/creep'
-import { Color, createRoomLink, log } from '@/modulesGlobal'
+import { Color, createRoomLink, log } from '@/utils'
 
 export default class RoomExtension extends Room {
     /**

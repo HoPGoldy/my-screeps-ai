@@ -1,4 +1,4 @@
-import { Color } from '../console'
+import { Color } from '@/utils'
 
 export const runPowerCreep = function (pc: PowerCreep): void {
     if (!keepAlive(pc)) return

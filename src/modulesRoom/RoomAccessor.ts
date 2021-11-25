@@ -1,4 +1,4 @@
-import { Color, createLog, createRoomLink, log } from '@/modulesGlobal/console/utils'
+import { createLog, createRoomLink } from '@/utils'
 
 /**
  * 房间访问器

@@ -1,3 +1,5 @@
+import { getFreeSpace } from '@/utils'
+
 /**
  * source 拓展
  *
@@ -13,7 +15,7 @@ export default class SourceExtension extends Source {
     public canUse (): boolean {
         if (this.energy <= 0) return false
 
-        const freeCount = this.pos.getFreeSpace().length
+        const freeCount = getFreeSpace(this.pos).length
         const harvestCount = this.pos.findInRange(FIND_CREEPS, 1).length
 
         return freeCount - harvestCount > 0

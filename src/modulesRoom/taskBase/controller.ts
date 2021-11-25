@@ -1,5 +1,4 @@
-import { createLog } from '@/modulesGlobal/console/utils'
-import { getUniqueKey } from '@/utils'
+import { getUniqueKey, createLog } from '@/utils'
 import RoomAccessor from '../RoomAccessor'
 
 export default class TaskController<

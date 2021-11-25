@@ -1,9 +1,8 @@
-import { yellow, blue } from '@/modulesGlobal'
-import { getUniqueKey } from '@/utils'
+import { BoostResourceConfig, getUniqueKey, yellow, blue } from '@/utils'
 import { TransportTaskType } from '../taskTransport/types'
 import RoomAccessor from '../RoomAccessor'
 import { LAB_TARGETS, REACTION_SOURCE } from './constant'
-import { BoostState, LabMemory, LabState, BoostTask, BoostResourceConfig, LabType } from './types'
+import { BoostState, LabMemory, LabState, BoostTask, LabType } from './types'
 
 /**
  * lab 集群拓展

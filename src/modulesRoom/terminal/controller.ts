@@ -3,9 +3,9 @@ import { setRoomStats } from '@/modulesGlobal/stats'
 import { TerminalListenTask, TerminalMemory } from './types'
 import RoomAccessor from '../RoomAccessor'
 import { getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask, unstringifyTask } from './utils'
-import { Color, colorful } from '@/modulesGlobal'
 import { TransportTaskType } from '../taskTransport/types'
 import { BASE_MINERAL } from '@/utils/constants'
+import { getFreeSpace, Color, colorful } from '@/utils'
 
 /**
  * Terminal 控制器
@@ -73,7 +73,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
 
         this.log.normal(`剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
         if (!this.room.transport.hasTaskWithType(TransportTaskType.Terminal)) {
-            const { x, y, roomName } = this.terminal.pos.getFreeSpace()?.[0] || {}
+            const { x, y, roomName } = getFreeSpace(this.terminal.pos)?.[0] || {}
             this.room.transport.addTask({
                 type: TransportTaskType.Terminal,
                 requests: [{

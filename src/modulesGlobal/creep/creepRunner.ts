@@ -1,6 +1,6 @@
 import roles from '@/role'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
-import { Color } from '@/modulesGlobal/console'
+import { Color } from '@/utils'
 import { CreepConfig, CreepRole } from '@/role/types/role'
 
 /**

@@ -1,4 +1,4 @@
-import { red, yellow } from '@/modulesGlobal'
+import { red, yellow } from '@/utils'
 
 /**
  * 规划与确认发射指令

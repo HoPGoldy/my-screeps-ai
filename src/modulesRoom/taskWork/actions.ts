@@ -1,7 +1,6 @@
-import { Color } from '@/modulesGlobal'
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
 import { CreepRole, RoleCreep } from '@/role/types/role'
-import { useCache } from '@/utils'
+import { useCache, Color } from '@/utils'
 import RoomWork, { WorkActionGenerator } from './controller'
 import { WorkTaskType } from './types'
 

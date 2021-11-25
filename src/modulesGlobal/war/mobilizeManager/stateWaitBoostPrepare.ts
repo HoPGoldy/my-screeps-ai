@@ -1,6 +1,7 @@
 import { BoostState } from '@/modulesRoom/lab/types'
-import { getBodyBoostResource } from '@/role/bodyUtils'
+import { getBodyBoostResource } from '@/utils'
 import { contextOutside } from '../context'
+import { BODY_BOOST_RESOURCES } from '../utils'
 import { createSpawnInfo } from './getBodyPart'
 import { RunMobilizeStateFunc, MobilizeState } from './types'
 
@@ -19,7 +20,7 @@ export const runWaitBoostPrepare: RunMobilizeStateFunc = function ({ task, room,
         }
 
         const allBody: BodyPartConstant[] = [].concat(...Object.values(task.data.spawnInfo).map(info => info.bodys))
-        const boostResource = getBodyBoostResource(allBody)
+        const boostResource = getBodyBoostResource(allBody, BODY_BOOST_RESOURCES)
 
         const allResourceEnough = boostResource.every(boostRes => {
             return getResource(room, boostRes.resource) > boostRes.amount

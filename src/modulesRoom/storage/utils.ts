@@ -1,4 +1,4 @@
-import { green, red, yellow, createRoomLink } from '@/modulesGlobal'
+import { green, red, yellow, createRoomLink } from '@/utils'
 
 /**
  * 统计当前所有房间的存储状态

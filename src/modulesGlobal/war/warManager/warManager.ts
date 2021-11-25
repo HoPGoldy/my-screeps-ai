@@ -2,10 +2,9 @@ import { WarMemory, WarState } from '../types'
 import { createMobilizeManager } from '../mobilizeManager/mobilizeManager'
 import { createMemoryAccessor } from './memoryAccessor'
 import { createSquadManager, hasMyCreep } from '../squadManager/squadManager'
-import { arrayToObject, createCluster, EnvContext, getBodySpawnEnergy } from '@/utils'
+import { arrayToObject, createCluster, EnvContext, getBodyBoostResource, getBodySpawnEnergy } from '@/utils'
 import { SquadType, SquadTypeName } from '../squadManager/types'
-import { DEFAULT_SQUAD_CODE } from '../utils'
-import { getBodyBoostResource } from '@/role/bodyUtils'
+import { BODY_BOOST_RESOURCES, DEFAULT_SQUAD_CODE } from '../utils'
 import { createSpawnInfo } from '../mobilizeManager/getBodyPart'
 
 export type WarContext = {
@@ -101,7 +100,7 @@ export const createWarManager = function (context: WarContext) {
         const allBody: BodyPartConstant[] = [].concat(...Object.values(spawnInfo).map(info => info.bodys))
 
         if (needBoost) {
-            const boostResource = getBodyBoostResource(allBody)
+            const boostResource = getBodyBoostResource(allBody, BODY_BOOST_RESOURCES)
 
             const allResourceEnough = boostResource.every(boostRes => {
                 const { total } = room.myStorage.getResource(boostRes.resource)

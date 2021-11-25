@@ -1,7 +1,7 @@
 import { addCrossShardRequest } from '@/modulesGlobal/crossShard'
 import roles from '@/role'
 import { CreepConfig, CreepRole, RoleCreepMemory } from '@/role/types/role'
-import { log } from '../console'
+import { log } from '@/utils'
 
 /**
  * creep 的数量控制器

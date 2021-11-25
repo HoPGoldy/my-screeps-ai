@@ -1,4 +1,4 @@
-import { red, createRoomLink } from '@/modulesGlobal'
+import { red, createRoomLink } from '@/utils'
 
 // 查看当前启用的 powerSpawn 工作状态
 export default function (): string {

@@ -1,4 +1,4 @@
-import { red, yellow, green, createRoomLink } from '@/modulesGlobal'
+import { red, yellow, green, createRoomLink } from '@/utils'
 
 /**
  * 查看所有 observer 的运行状态

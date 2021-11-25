@@ -1,4 +1,4 @@
-import { createConst } from '@/modulesGlobal'
+import { createConst } from '@/utils'
 
 // 资源常量控制台帮助
 export const RESOURCE_HELP = `

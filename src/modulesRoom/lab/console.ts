@@ -1,4 +1,4 @@
-import { Color, colorful, createHelp } from '@/modulesGlobal/console'
+import { createHelp } from '@/utils'
 
 /**
  * Room 上的 Lab 用户控制接口

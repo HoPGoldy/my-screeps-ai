@@ -1,5 +1,4 @@
-import { calcBodyPart } from '@/role/bodyUtils'
-import { getUniqueKey } from '@/utils'
+import { calcBodyPart, getUniqueKey } from '@/utils'
 import { SoliderRole, SquadType } from '../squadManager/types'
 
 export interface MemberSpawnInfo {

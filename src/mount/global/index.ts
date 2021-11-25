@@ -14,7 +14,7 @@ import whitelist from './whiteList'
 import { showRouteChche as route } from '@/modulesGlobal/move'
 import { orderExtend, seeres, hail, base, give, roomAlias } from './common'
 
-import { getForm as getform } from '@/modulesGlobal/console/form/example'
+import { getForm as getform } from '@/utils/console/form/example'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { showResourceSource } from '@/modulesRoom/share/utils'
 

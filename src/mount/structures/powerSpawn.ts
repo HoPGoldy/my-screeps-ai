@@ -1,4 +1,4 @@
-import { Color, colorful, createHelp, createRoomLink } from '@/modulesGlobal/console'
+import { Color, colorful, createHelp, createRoomLink } from '@/utils'
 import { TransportTaskType } from '@/modulesRoom'
 
 /**

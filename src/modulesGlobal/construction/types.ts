@@ -1,4 +1,4 @@
-import { log } from '../console'
+import { log } from '@/utils'
 import { updateStructure } from '@/modulesRoom/shortcut'
 
 /**

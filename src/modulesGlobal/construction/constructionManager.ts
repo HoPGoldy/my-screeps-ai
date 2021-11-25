@@ -1,4 +1,4 @@
-import { Color } from '../console'
+import { Color } from '@/utils'
 import { ConstructInfo, CreateOptions } from './types'
 
 export const createConstructionManager = function (effects: CreateOptions) {

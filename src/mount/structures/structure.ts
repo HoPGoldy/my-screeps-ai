@@ -1,4 +1,4 @@
-import { Color } from '@/modulesGlobal'
+import { Color } from '@/utils'
 
 /**
  * 建筑原型上拓展

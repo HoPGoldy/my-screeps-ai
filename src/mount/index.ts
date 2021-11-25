@@ -1,5 +1,5 @@
 import { setBornCenter } from '@/modulesGlobal/autoPlanning/planBasePos'
-import { Color, log } from '@/modulesGlobal'
+import { Color, log } from '@/utils'
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
 import { mountAll } from './mountAll'
 

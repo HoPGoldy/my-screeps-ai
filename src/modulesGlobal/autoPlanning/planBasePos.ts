@@ -1,4 +1,4 @@
-import { Color, log } from '../console/utils'
+import { Color, log } from '@/utils'
 import { baseLayout, BASE_SIZE } from './constant'
 
 /**

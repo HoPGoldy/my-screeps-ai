@@ -1,4 +1,4 @@
-import { createHelp } from '@/modulesGlobal/console'
+import { createHelp } from '@/utils'
 
 /**
  * Factory 上的用户控制接口

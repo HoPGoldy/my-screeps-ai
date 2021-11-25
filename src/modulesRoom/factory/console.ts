@@ -1,4 +1,4 @@
-import { yellow, createHelp } from '@/modulesGlobal/console'
+import { yellow, createHelp } from '@/utils'
 
 /**
  * Factory 上的用户控制接口

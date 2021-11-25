@@ -1,5 +1,4 @@
-import { yellow, createHelp } from '@/modulesGlobal/console'
-import { getName, StructureWithStore } from '@/utils'
+import { yellow, createHelp, getName, StructureWithStore } from '@/utils'
 
 /**
  * 拓展模块的用户访问接口

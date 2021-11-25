@@ -1,7 +1,6 @@
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
-import { useCache, StructureWithStore } from '@/utils'
+import { useCache, StructureWithStore, Color } from '@/utils'
 import { getNearSite } from '@/modulesGlobal/construction'
-import { Color } from '@/modulesGlobal'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 import { WALL_FOCUS_TIME } from '../structures/tower'
