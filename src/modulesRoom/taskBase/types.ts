@@ -22,21 +22,11 @@ interface RoomTask<T = string | number> {
      */
     key?: number
     /**
-     * 该任务需要的特殊身体部件
-     */
-    require?: string
-    /**
      * 该任务需要多少人去做
      */
     need?: number
     /**
-     * 正在处理该任务的特殊体型单位人数
-     * 如果该任务指定了 require 字段的话，该字段也会存在
-     */
-    requireUnit?: number
-    /**
      * 正在处理该任务的单位人数
-     * 该值包含 requireUnit
      */
     unit?: number
 }

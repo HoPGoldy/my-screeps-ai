@@ -3,11 +3,9 @@ import { BASE_ROLE_LIMIT } from './constant'
 import RoomSpawnController from './controller'
 import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
-import { SepicalBodyType } from '../taskWork/types'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { removeCreepCantRespawn } from '@/modulesGlobal/creep/utils'
-import { StructureWithStore, Color, log } from '@/utils'
-import { DEFAULT_FLAG_NAME } from '@/utils/constants'
+import { StructureWithStore, Color, log, DEFAULT_FLAG_NAME } from '@/utils'
 
 /**
  * creep 发布工具
@@ -43,9 +41,8 @@ export default class RoomCreepRelease {
      *
      * @param type 要更新的单位类别，工人 / 搬运工
      * @param adjust 要增减的数量，为负代表减少
-     * @param bodyType 在新增时要设置的特殊体型，减少数量时无效
      */
-    public changeBaseUnit (type: BaseUnits, adjust: number, bodyType?: SepicalBodyType): void {
+    public changeBaseUnit (type: BaseUnits, adjust: number): void {
         const { room } = this.spawner
         // 单位隶属的任务模块
         const taskController = type === CreepRole.Worker ? room.work : room.transport
@@ -87,7 +84,7 @@ export default class RoomCreepRelease {
                 if (allUnits[index]) continue
 
                 const creepName = GetName[type](room.name, index)
-                this.spawner.addTask(creepName, type, { workRoom: room.name, bodyType })
+                this.spawner.addTask(creepName, type, { workRoom: room.name })
                 newSpawnCreep.push(creepName)
                 remainingAdjust -= 1
             }

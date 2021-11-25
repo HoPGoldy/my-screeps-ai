@@ -24,6 +24,7 @@ export default class StorageController extends RoomAccessor<undefined> {
      * storage 主要入口
      */
     public run (): void {
+        if (!this.storage) return
         if (Game.time % 900) return
         this.requestEnergyCheck()
         this.requestPower()

@@ -1,4 +1,4 @@
-import { Color } from '@/modulesGlobal'
+import { Color } from '@/utils'
 import { PWR_ENABLE_ROOM } from './canstant'
 import RoomPowerController from './controller'
 

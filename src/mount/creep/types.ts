@@ -1,5 +1,4 @@
 import { MoveInfo, MoveOpt } from '@/modulesGlobal/move/types'
-import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
 import { HarvestMode } from '@/role/base/harvester'
 import { CreepRole, RoleDatas } from '@/role/types/role'
 import { Color, StructureWithStore } from '@/utils'
@@ -31,10 +30,6 @@ declare global {
          * creep 的角色
          */
         role: CreepRole
-        /**
-         * 该 creep 的特殊体型
-         */
-        bodyType?: SepicalBodyType
         /**
          * 是否在工作
          */
@@ -92,15 +87,7 @@ declare global {
          */
         expectHits?: number
         /**
-         * 攻击者的小队编号 暂时未使用
-         */
-        squad?: number
-        /**
-         * 是否已经在待命位置, 此状态为 true 时，防御者的standBy方法将不会在调用 pos.isEqualTo()
-         */
-        isStanBy?: boolean
-        /**
-         * collector 允许自己再次尝试发布 power 强化 Soruce 任务的时间
+         * harvester 允许自己再次尝试发布 power 强化 Soruce 任务的时间
          * 在 Game.time 小于该值时不会尝试发布强化任务
          */
         regenSource?: number
@@ -113,10 +100,6 @@ declare global {
          * 目标旗帜的名称
          */
         targetFlagName?: string
-        /**
-         * 运营单位特有，当前正在执行的物流 / 工作任务索引
-         */
-        taskKey?: number
         /**
          * 当前正在执行的初始 container 能量转移到 storage 的任务索引
          * harvester 特有

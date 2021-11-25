@@ -1,4 +1,4 @@
-import { createForm } from './main'
+import { createForm } from './createForm'
 
 /**
  * 创建一个包含所有可用表单项的 form 示例

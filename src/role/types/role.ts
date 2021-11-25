@@ -1,4 +1,3 @@
-import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
 import { StructureWithStore } from '@/utils'
 
 /**
@@ -175,11 +174,6 @@ interface HarvesterData {
  */
 interface WorkerData {
     /**
-     * 该工作单位的特殊身体部件，例如一个 20WORK 1CARRY 5MOVE 的黄球就是工作单位的一种特殊体型
-     * 该字段为空代表是标准的角色体型
-     */
-    bodyType?: SepicalBodyType
-    /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里
      */
@@ -194,10 +188,6 @@ interface transporterData {
      * 要使用的资源存放建筑 id
      */
     sourceId?: Id<StructureWithStore>
-    /**
-     * 该工作单位的特殊身体部件，同 WorkData.bodyType
-     */
-    bodyType?: SepicalBodyType
     /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里

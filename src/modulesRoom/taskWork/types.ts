@@ -8,7 +8,7 @@ declare global {
 }
 
 /**
- * 所有的物流任务类型
+ * 所有的工作任务类型
  */
 export enum WorkTaskType {
     Upgrade = 'upgrade',
@@ -19,12 +19,12 @@ export enum WorkTaskType {
 }
 
 /**
- * 所有的房间物流任务
+ * 所有的房间工作任务
  */
 export type AllRoomWorkTask = WorkTasks[WorkTaskType]
 
 /**
- * 所有的物流任务
+ * 所有的工作任务
  */
 export interface WorkTasks {
     /**
@@ -59,17 +59,4 @@ export interface WorkTasks {
      * 刷墙任务
      */
     [WorkTaskType.FillWall]: RoomTask<WorkTaskType.FillWall>
-}
-
-/**
- * 从内存 workList 字段解析出来的存储格式
- */
-export type WorkTaskData = WorkTasks[WorkTaskType][]
-
-/**
- * 特殊身体类型
- */
-export enum SepicalBodyType {
-    Upgrade7 = 'upgrade7',
-    Upgrade8 = 'upgrade8'
 }

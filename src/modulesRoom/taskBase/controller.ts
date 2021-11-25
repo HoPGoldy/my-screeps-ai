@@ -58,41 +58,23 @@ export default class TaskController<
     public addTask (task: CostomTask, opt: AddTaskOpt = {}) {
         const addOpt: UpdateTaskOpt = { dispath: false, ...opt }
 
-        task = this.refineNewTask(task)
+        const newTask = {
+            ...task,
+            key: getUniqueKey(),
+            unit: 0,
+            // 没有指定 need 的话就先一个人做
+            need: task.need || 1
+        }
 
         // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
-        let insertIndex = this.tasks.length
-        this.tasks.find((existTask, index) => {
-            // 老任务的优先级更高，不能在这里插入
-            if (existTask.priority >= task.priority) return false
-
-            insertIndex = index
-            return true
-        })
+        let insertIndex = this.tasks.findIndex(existTask => existTask.priority < newTask.priority)
+        insertIndex = insertIndex === -1 ? this.tasks.length : insertIndex
 
         // 在目标索引位置插入新任务并重新分配任务
-        this.tasks.splice(insertIndex, 0, task)
+        this.tasks.splice(insertIndex, 0, newTask)
         if (addOpt.dispath) this.dispatchTask()
 
-        return task.key
-    }
-
-    /**
-     * 完善新任务
-     * 将其他模块输入的任务完善成保存需要的格式
-     *
-     * @param task 输入的新任务
-     */
-    private refineNewTask (task: CostomTask): CostomTask {
-        // 设置新索引
-        task.key = getUniqueKey()
-        task.unit = 0
-        // 是特殊任务的话就包含特殊任务处理者数量
-        if (!task.require) task.requireUnit = 0
-        // 没有指定 need 的话就默认一个人做
-        if (!task.need) task.need = 1
-
-        return task
+        return newTask.key
     }
 
     /**
@@ -123,8 +105,7 @@ export default class TaskController<
             // 状态变化就需要重新分派
             if (
                 task.priority !== newTask.priority ||
-                task.need !== newTask.need ||
-                task.require !== newTask.require
+                task.need !== newTask.need
             ) {
                 needRedispath = true
             }
@@ -160,15 +141,9 @@ export default class TaskController<
     protected setTaskUnit (task: CostomTask, unit: Creep): void {
         if (!task || !unit) return
 
-        task.unit = (task.unit > 0) ? task.unit + 1 : 1
+        task.unit = (task.unit || 0) + 1
         if (!this.creeps[unit.name]) this.creeps[unit.name] = { data: {} as UnitData }
         this.creeps[unit.name].doing = task.key
-        unit.memory.taskKey = task.key
-
-        // 如果是特殊任务的话就更新对应的字段
-        if (task.require && unit.memory.bodyType === task.require) {
-            task.requireUnit = (task.requireUnit > 0) ? task.requireUnit + 1 : 1
-        }
     }
 
     /**
@@ -181,15 +156,10 @@ export default class TaskController<
     protected removeTaskUnit (task: CostomTask, unit?: Creep): void {
         if (unit) {
             if (this.creeps[unit.name]) delete this.creeps[unit.name].doing
-            delete unit.memory.taskKey
         }
 
         if (!task) return
         task.unit = (task.unit < 1) ? 0 : task.unit - 1
-        // 如果是特殊任务的话就更新对应的字段
-        if (task.require && unit?.memory?.bodyType === task.require) {
-            task.requireUnit = (task.requireUnit <= 1) ? 0 : task.requireUnit - 1
-        }
     }
 
     /**
@@ -200,24 +170,9 @@ export default class TaskController<
         // 先按照优先级降序排序
         this.memory.tasks = _.sortBy(this.tasks, task => -task.priority)
 
-        // 获取所有可工作的 creep，并解除与对应工作任务的绑定
-        const units = this.getUnit(({ doing }, creep) => {
-            this.removeTaskUnit(this.getTask(doing), creep)
-            return true
-        })
-
-        // 等待分配任务的 creep 队列
-        // [0] 为具有特殊体型的 creep，将优先分配
-        // [1] 为普通体型的 creep，将在特殊体型的分配完后“填缝”
-        const waitDispatchList = [[], []]
-        // 用已有 creep 填充待分配队列
-        for (const creep of units) {
-            const type = creep.memory.bodyType ? 0 : 1
-            waitDispatchList[type].push(creep)
-        }
-
-        // 给每个 creep 重新分配任务
-        waitDispatchList.map(creepList => creepList.map(creep => this.dispatchCreep(creep)))
+        // 获取所有可工作的 creep 并依次重新分配
+        const units = this.getUnit()
+        units.forEach(creep => this.dispatchCreep(creep))
     }
 
     /**
@@ -228,33 +183,26 @@ export default class TaskController<
      * @returns 该 creep 分配到的任务
      */
     protected dispatchCreep (creep: Creep): CostomTask {
-        if (this.creeps[creep.name]) delete this.creeps[creep.name].doing
-        delete creep.memory.taskKey
+        // 先解绑正在做的任务
+        this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep)
 
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
-        // 此时 creep 将会无视人数限制，分配至体型符合的最高优先级任务
+        // overflow 为 true 时 creep 将会无视人数限制，分配至最高优先级任务
         let overflow = false
         for (let i = 0; i < this.tasks.length; i++) {
             const checkTask = this.tasks[i]
             // creep.log(`正在检查新任务 ${i} ${JSON.stringify(checkTask)}`)
 
-            const result = this.isCreepMatchTask(creep, checkTask, overflow)
-
-            // 挤掉了一个普通单位
-            // 例如这个特殊任务有普通工人在做，而自己是符合任务的特殊体型，那自己就会挤占他的工作机会
-            if (result === TaskMatchResult.NeedRmoveNormal) {
-                const creepName = Object.keys(this.creeps).find(name => this.creeps[name].doing === checkTask.key)
-                this.removeTaskUnit(checkTask, Game.creeps[creepName])
-            }
+            const matched = this.isCreepMatchTask(creep, checkTask, overflow)
 
             // 匹配成功，把单位设置到该任务并结束分派
-            if (result === TaskMatchResult.Ok || result === TaskMatchResult.NeedRmoveNormal) {
+            if (matched) {
                 this.setTaskUnit(checkTask, creep)
                 // creep.log(`领取任务 ${i} ${JSON.stringify(checkTask)}`)
                 return checkTask
             }
 
-            // 找到头了，任务都有人做（或者说没有自己适合做还缺人的任务），从头遍历一遍
+            // 找到头了，任务都有人做（或者说没有缺人的任务），从头遍历一遍，把自己分给最高优先级任务
             if (i >= this.tasks.length - 1 && !overflow) {
                 overflow = true
                 // creep.log("任务溢出！")
@@ -271,24 +219,11 @@ export default class TaskController<
      * @param creep 要匹配的单位
      * @param task 要匹配的任务
      * @param ignoreNeedLimit 是否无视任务的人数限制
+     * @returns 返回 true 代表适合去做该任务
      */
-    private isCreepMatchTask (creep: Creep, task: CostomTask, ignoreNeedLimit: boolean): TaskMatchResult {
-        const { require, need, unit, requireUnit } = task
-        // 该单位是特殊体型，选择对应的特殊任务
-        if (creep.memory.bodyType) {
-            // 体型和任务不符，下一个
-            if (!require || require !== creep.memory.bodyType) return TaskMatchResult.Failed
-            // 数量过多，下一个
-            if (!ignoreNeedLimit && (requireUnit || 0) >= need) return TaskMatchResult.Failed
-            // 特殊任务的工作单位里有普通单位，把普通单位挤掉
-            if (unit >= need && (requireUnit || 0) < unit) {
-                return TaskMatchResult.NeedRmoveNormal
-            }
-        }
-        // 普通单位只检查人数是否足够（人数溢出后无视此限制）
-        else if (!ignoreNeedLimit && unit >= need) return TaskMatchResult.Failed
-
-        return TaskMatchResult.Ok
+    private isCreepMatchTask (creep: Creep, task: CostomTask, ignoreNeedLimit: boolean): boolean {
+        // 人数是否超过限制
+        return ignoreNeedLimit || task.unit < task.need
     }
 
     /**
@@ -347,15 +282,10 @@ export default class TaskController<
      */
     public getUnitTask (creep: Creep): CostomTask {
         let doingTask = this.getTask(this.creeps[creep.name]?.doing)
+        if (this.tasks.length <= 0) return undefined
 
         // 还未分配过任务，或者任务已经完成了
-        if (!doingTask) {
-            doingTask = this.dispatchCreep(creep)
-
-            const workInfo = this.creeps[creep.name] || { data: {} as UnitData }
-            workInfo.doing = doingTask?.key
-            this.creeps[creep.name] = workInfo
-        }
+        if (!doingTask) doingTask = this.dispatchCreep(creep)
 
         return doingTask
     }
@@ -444,22 +374,4 @@ export default class TaskController<
 
         return logs.join('\n')
     }
-}
-
-/**
- * creep 的任务匹配结果
- */
-enum TaskMatchResult {
-    /**
-     * 匹配成功，可以执行该任务
-     */
-    Ok,
-    /**
-     * 匹配成功，但是需要从该任务移除一个普通单位
-     */
-    NeedRmoveNormal,
-    /**
-     * 匹配失败，不适合执行该任务
-     */
-    Failed
 }

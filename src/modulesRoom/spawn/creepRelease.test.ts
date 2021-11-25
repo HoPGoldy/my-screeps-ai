@@ -11,18 +11,6 @@ const mockAddTask = jest.fn()
 jest.mock('@/modulesGlobal/creep', () => ({
     removeCreep: mockRemoveCreep
 }))
-jest.mock('@/setting', () => ({
-    DEFAULT_FLAG_NAME: {
-        // 进攻
-        ATTACK: 'attack',
-        // 占领
-        CLAIM: 'claim',
-        // 待命
-        STANDBY: 'standBy',
-        // 掠夺
-        REIVER: 'reiver'
-    }
-}))
 jest.mock('@/utils', () => ({ log: () => {} }))
 
 let room: Room

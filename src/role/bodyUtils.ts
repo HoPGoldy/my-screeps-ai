@@ -1,4 +1,3 @@
-import { SepicalBodyType } from '@/modulesRoom/taskWork/types'
 import { BodyRepeat, calcBodyPart } from '@/utils'
 import { BodyConfig, BodyConfigs, BodyPartGenerator } from './types/body'
 
@@ -119,18 +118,4 @@ export const bodyConfigs: BodyConfigs = {
         [[WORK, 7], [CARRY, 15], [MOVE, 11]],
         [[WORK, 11], [CARRY, 15], [MOVE, 19]]
     )
-}
-
-/**
- * 特殊的身体部件类型及其对应的身体部件数组
- */
-export const specialBodyConfig: { [type in SepicalBodyType]: BodyPartGenerator } = {
-    /**
-     * RCL7 时的升级单位身体部件，由于是从 link 中取能量所以 CARRY 较少
-     */
-    upgrade7: () => calcBodyPart([[WORK, 30], [CARRY, 5], [MOVE, 15]]),
-    /**
-     * RCL8 时的升级单位身体部件，升级受限，所以 WORK 是 15 个
-     */
-    upgrade8: () => calcBodyPart([[WORK, 15], [CARRY, 6], [MOVE, 12]])
 }

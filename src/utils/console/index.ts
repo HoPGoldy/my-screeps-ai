@@ -1,3 +1,3 @@
-export { createHelp } from './help/main'
-export { createForm } from './form/main'
+export { createHelp } from './help/createHelp'
+export { createForm } from './form/createForm'
 export * from './utils'
