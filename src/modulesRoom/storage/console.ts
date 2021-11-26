@@ -12,22 +12,19 @@ export default class StorageConsole extends Room {
     sb (): string {
         const result = this.myStorage.balanceResource()
         if (result === ERR_NOT_FOUND) return 'storage 或 termianl 不存在'
-        const MAX_LENGTH = 15
+        const pad = content => _.padRight((content || '').toString(), 15)
 
-        const logs = [_.padRight('RESOURCE', MAX_LENGTH) +
-        _.padRight('STORAGE', MAX_LENGTH) +
-        _.padRight('TASK', MAX_LENGTH) +
-        _.padRight('TERMINAL', MAX_LENGTH)]
+        const logs = [pad('RESOURCE') + pad('STORAGE') + pad('TASK') + pad('TERMINAL')]
 
         result.forEach(({ resourceType, amount, direction }) => {
             const task = direction === BalanceDirection.ToStorage
-                ? _.padRight('<= ' + amount.toString(), MAX_LENGTH - 2)
-                : _.padRight(amount.toString() + ' =>', MAX_LENGTH - 2)
+                ? pad('<= ' + amount)
+                : pad(amount + ' =>')
 
-            const log = _.padRight(yellow(resourceType), MAX_LENGTH) +
-                _.padRight(this.storage.store[resourceType].toString(), MAX_LENGTH) +
+            const log = yellow(pad(resourceType)) +
+                pad(this.storage.store[resourceType]) +
                 task +
-                _.padRight(this.terminal.store[resourceType].toString(), MAX_LENGTH)
+                pad(this.terminal.store[resourceType])
 
             logs.push(log)
         })

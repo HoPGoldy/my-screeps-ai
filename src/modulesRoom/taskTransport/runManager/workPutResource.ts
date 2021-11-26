@@ -51,7 +51,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
                 const structures = workRoom[type] as StructureWithStore[]
 
                 // 不是建筑类型、找不到建筑、不能 store 的建筑都退出
-                if (!structures || structures.length <= 0 || !('store' in structures[0])) {
+                if (!structures) {
                     requireFinishTask(TaskFinishReason.CantFindTarget)
                     return
                 }
@@ -119,7 +119,7 @@ const transferResource = function (
     transferAmount: number,
     manager: Creep
 ) {
-    console.log('要运输多少资源', targetRes.resType, transferAmount, manager.store[targetRes.resType])
+    // console.log('要运输多少资源', targetRes.resType, transferAmount, manager.store[targetRes.resType])
 
     let transferResult: ScreepsReturnCode
     if (!destinationTarget) {

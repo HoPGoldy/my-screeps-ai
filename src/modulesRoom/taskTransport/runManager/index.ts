@@ -17,8 +17,8 @@ const stateRuners: { [state in ManagerState]: (context: TransportWorkContext) =>
 
 export const runManager = function (context: TransportWorkContext) {
     const { managerData, taskData } = context
-    console.log('managerData', JSON.stringify(managerData))
-    console.log('taskData', JSON.stringify(taskData))
+    // console.log('managerData', JSON.stringify(managerData))
+    // console.log('taskData', JSON.stringify(taskData))
     if (!managerData.state) managerData.state = ManagerState.ClearRemains
 
     stateRuners[managerData.state](context)
