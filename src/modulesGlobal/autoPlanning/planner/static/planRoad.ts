@@ -5,13 +5,15 @@
  * 会自动对可复用的道路进行合并
  */
 
+import { AutoPlanResult } from '../../types'
+
 /**
  * 生成指定房间需要的 Cost
  *
  * @param room 要生成 cost 的房间
  * @param structurePlacePlan 该房间的静态建筑规划结果
  */
-const getRoomCost = function (room: Room, structurePlacePlan: StructurePlanningResult): CostMatrix {
+const getRoomCost = function (room: Room, structurePlacePlan: AutoPlanResult[]): CostMatrix {
     const terrain = new Room.Terrain(room.name)
     const matrix = new PathFinder.CostMatrix()
 
@@ -63,7 +65,7 @@ const getRoomCost = function (room: Room, structurePlacePlan: StructurePlanningR
  * @param structurePlacePlan 房间的静态建筑规划结果
  * @returns 可以通过数组解构出三个 RoomPosition 数组，分别是到 source、到 controller、到 mineral 的道路位置
  */
-export default function (room: Room, centerPos: RoomPosition, structurePlacePlan: StructurePlanningResult): [ RoomPosition[], RoomPosition[], RoomPosition[] ] {
+export default function (room: Room, centerPos: RoomPosition, structurePlacePlan: AutoPlanResult[]): [ RoomPosition[], RoomPosition[], RoomPosition[] ] {
     const cost = getRoomCost(room, structurePlacePlan)
 
     /**

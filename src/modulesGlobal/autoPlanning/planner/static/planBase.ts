@@ -1,5 +1,6 @@
 import { getFreeSpace } from '@/utils'
 import { baseLayout } from './constant'
+import { AutoPlanResult } from '../../types'
 
 /**
  * 规划集中式布局的建筑摆放
@@ -9,7 +10,7 @@ import { baseLayout } from './constant'
  * @param room 要执行规划的房间
  * @param centerPos 基地中心位置
  */
-export default function (room: Room, centerPos: RoomPosition): StructurePlanningResult {
+export default function (room: Room, centerPos: RoomPosition): AutoPlanResult[] {
     // 执行自动布局规划，获取基础建筑物位置
     const outLinkPos = getOutLinkPos(room)
 

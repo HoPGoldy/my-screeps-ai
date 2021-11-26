@@ -6,6 +6,20 @@ import screeps from 'rollup-plugin-screeps'
 import copy from 'rollup-plugin-copy'
 import html from 'rollup-plugin-html'
 
+const banner = `/***
+ * SCREEPS-HOHO-BOT
+ * >>> 在控制台输入 help 来查看帮助信息 <<<
+ *
+ * >>> 如何放置第一个 Spawn <<<
+ * 在房间中找到一块 11*11 的空地，距离左上角右二下三的位置即为 Spawn 放置点：
+ * 
+ * ▨▢▢ 
+ * ▢▢▢
+ * ▢▢▢
+ * ▢▢▣ < 这里就是 sapwn 放置点
+ */
+`
+
 let config
 // 根据指定的目标获取对应的配置项
 if (!process.env.DEST) console.log('未指定目标, 代码将被编译但不会上传')
@@ -40,6 +54,7 @@ export default {
     output: {
         file: 'dist/main.js',
         format: 'cjs',
+        banner,
         sourcemap: true
     },
     plugins: [

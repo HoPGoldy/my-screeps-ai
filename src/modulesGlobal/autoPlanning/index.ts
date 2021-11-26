@@ -1,3 +1,3 @@
-export { manageStructure, clearStructure } from './manager'
-export { setBaseCenter, confirmBasePos, findBaseCenterPos } from './planBasePos'
-export { baseLayout } from './constant'
+export { createAutoPlanner, clearStructure } from './manager'
+export * from './planner/static/planBasePos'
+export { baseLayout } from './planner/static/constant'

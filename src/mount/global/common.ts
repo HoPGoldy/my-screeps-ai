@@ -1,5 +1,4 @@
-import { baseLayout } from '@/modulesGlobal/autoPlanning/constant'
-import { findBaseCenterPos } from '@/modulesGlobal/autoPlanning/planBasePos'
+import { baseLayout, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
 
 /**
  * Game.market.extendOrder 的别名

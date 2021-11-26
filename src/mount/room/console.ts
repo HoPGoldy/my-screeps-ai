@@ -6,7 +6,8 @@
 import { getName, getUniqueKey, createHelp, red, yellow, colorful } from '@/utils'
 import { ModuleDescribe } from '@/utils/console/help/types'
 import RoomExtension from './extension'
-import { manageStructure, clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
+import { clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
+import { autoPlanner } from './autoPlanner'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { CreepRole } from '@/role/types/role'
@@ -118,7 +119,7 @@ export default class RoomConsole extends RoomExtension {
         if (this.controller.level === 1) clearStructure(this)
 
         // 设置好了之后自动运行布局规划
-        manageStructure(this, flag.pos)
+        autoPlanner.runStaticPlan(this, flag.pos)
         return `[${this.name}] 已将 ${flagName} 设置为中心点，controller 升级时自动执行布局规划`
     }
 

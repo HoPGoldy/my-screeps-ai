@@ -1,108 +1,44 @@
-import planWall from './planWall'
-import planBase from './planBase'
-import planRoad from './planRoad'
-import { addConstructionSite } from '@/modulesGlobal/construction'
-import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
-import { ConstructInfo } from '../construction/types'
+import { runPlan } from './planner/static'
+import { AutoPlanResult } from './types'
 
-const planningCaches: StructurePlanningCache = {}
-
-/**
- * RCL 分别在几级时放置外墙
- * 例如 [ 3, 7, 8 ] 代表分别在第 3、7、8 级时放置第 1（最外层）、2、3 层 rampart
- */
-const LEVEL_BUILD_RAMPART = [4, 8, 8]
-
-/**
- * RCL 几级的时候开始放置通向 [ source, controller, mineral ] 的道路
- * 注意这个顺序要和 src\modules\autoPlanning\planRoad.ts 的默认方法返回值保持一致
- */
-const LEVEL_BUILD_ROAD = [3, 4, 6]
-
-/**
- * 对指定房间执行建筑规划
- *
- * @param room 要执行规划的房间
- * @return 所有需要放置工地的位置
- */
-const planStructure = function (room: Room, centerPos: RoomPosition): ERR_NOT_FOUND | StructurePlanningResult {
-    // 计算基地内的静态建筑点位
-    const result = planBase(room, centerPos)
-
-    // 执行自动墙壁规划，获取 rampart 位置
-    const wallsPos = planWall(room, centerPos)
-
-    wallsPos.forEach((walls, index) => {
-        // 获取要放置 rampart 的等级
-        let placeLevel = LEVEL_BUILD_RAMPART[index] || LEVEL_BUILD_RAMPART[LEVEL_BUILD_RAMPART.length - 1]
-        // 如果 LEVEL_BUILD_RAMPART 设置的太高会导致超过 8 级，这里检查下
-        if (placeLevel > 8) placeLevel = 8
-
-        mergeStructurePlan(result, walls, placeLevel as AllRoomControlLevel, STRUCTURE_RAMPART)
-    })
-
-    // 执行自动道路规划，获取基地之外的 road 位置
-    const roadPos = planRoad(room, centerPos, result)
-
-    roadPos.forEach((roads, index) => {
-        mergeStructurePlan(result, roads, LEVEL_BUILD_ROAD[index] as AllRoomControlLevel, STRUCTURE_ROAD)
-    })
-
-    return result
+type AutoPlannerContext = {
+    placeSite: (room: Room, result: AutoPlanResult) => unknown
 }
 
 /**
- * 对指定房间进行建筑管理
- * 会自动添加、删除房间中的建筑及工地，并完成诸如发布 builder 之类的副作用
- *
- * @param room 要管理建筑的房间
+ * 将多级的自动规划结果压平成一个
  */
-export const manageStructure = function (room: Room, centerPos: RoomPosition): OK | ERR_NOT_OWNER | ERR_NOT_FOUND {
-    // 玩家指定了不运行自动布局，或者房间不属于自己，就退出
-    if (!room.controller || !room.controller.my) return ERR_NOT_OWNER
+const squashPlanResult = function (result: AutoPlanResult[], maxLevel: number): AutoPlanResult {
+    const squashedResult: AutoPlanResult = {}
 
-    // 从缓存拿到建筑摆放规划
-    let structurePlacePlan = planningCaches[room.name]
-    // 缓存没有就新建
-    if (!structurePlacePlan) {
-        const planResult = planStructure(room, centerPos)
-        if (planResult === ERR_NOT_FOUND) return ERR_NOT_FOUND
-        planningCaches[room.name] = structurePlacePlan = planResult
+    Object.entries(result)
+        .filter(([level]) => Number(level) <= maxLevel)
+        .forEach(([level, levelResult]) => Object.assign(squashedResult, levelResult))
+
+    return squashedResult
+}
+
+/**
+ * 创建自动规划模块
+ */
+export const createAutoPlanner = function (context: AutoPlannerContext) {
+    const { placeSite } = context
+
+    /**
+     * 执行集中布局规划
+     *
+     * @param room 要执行规划的房间
+     * @param center 基地中心点位
+     */
+    const runStaticPlan = function (room: Room, center: RoomPosition): OK | ERR_NOT_OWNER {
+        // 房间不属于自己就退出
+        if (!room.controller || !room.controller.my) return ERR_NOT_OWNER
+
+        const planResult = runPlan(room, center)
+        placeSite(room, squashPlanResult(planResult, room.controller.level))
     }
 
-    // ----- 开始放置工地 -----
-
-    // 一直从 1 级放置到房间当前的等级
-    // 这个阶段会把之前阶段里应该放置但是出现问题（放了工地但是被踩了、建筑被摧毁了...）的建筑重新放下
-    for (let i = 0; i < room.controller.level; i++) {
-        const currentLevelLayout = structurePlacePlan[i]
-
-        // 遍历布局中所有建筑类型
-        const sitePosList: ConstructInfo[] = [].concat(...Object.keys(currentLevelLayout).map((structureType: BuildableStructureConstant) => {
-            // 如果是关键建筑，就执行检查：如果建筑里没有能量（就没有利用价值）了，直接摧毁
-            if (structureType === STRUCTURE_STORAGE || structureType === STRUCTURE_TERMINAL || structureType === STRUCTURE_FACTORY) {
-                const structure = room[structureType]
-                const isNotMy = structure && !structure.my
-                if (
-                    // 如果是工厂的话直接摧毁，因为就算里边有能量 creep 也不会用
-                    (structureType === STRUCTURE_FACTORY && isNotMy) ||
-                    // storage 和 terminal 要看里边有没有能量
-                    (isNotMy && structure.store[RESOURCE_ENERGY] <= 100)
-                ) structure.destroy()
-            }
-
-            // 遍历该建筑下的所有预放置点位
-            return currentLevelLayout[structureType].map(({ x, y, roomName }) => {
-                return { x, y, roomName, type: structureType }
-            })
-        }))
-
-        // 放置工地并发布建造任务
-        addConstructionSite(sitePosList)
-        addBuildTask(room.name)
-    }
-
-    return OK
+    return { runStaticPlan }
 }
 
 /**
@@ -134,23 +70,6 @@ export const clearStructure = function (room: Room): OK | ERR_NOT_FOUND {
         // 其他建筑一律摧毁
         s.destroy()
     })
-
-    return OK
-}
-
-/**
- * 将新的建筑位置合并到现有的规划方案
- *
- * @param origin 要合并到的原始规划方案
- * @param newData 要进行合并的新位置数据
- * @param level 要合并到的等级
- * @param type 要合并到的建筑类型
- */
-const mergeStructurePlan = function (origin: StructurePlanningResult, newData: RoomPosition[], level: AllRoomControlLevel, type: BuildableStructureConstant): OK {
-    // 先取出已经存在的道路
-    const targetStructurePos = origin[level - 1][type] || []
-    // 然后把新道路追加进去
-    origin[level - 1][type] = [...targetStructurePos, ...newData]
 
     return OK
 }

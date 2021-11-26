@@ -4,7 +4,8 @@
  * 包含了所有自定义的 room 拓展方法
  * 这些方法主要是用于和其他模块代码进行交互
  */
-import { manageStructure, clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { autoPlanner } from './autoPlanner'
 import { removeCreep } from '@/modulesGlobal/creep'
 import { Color, createRoomLink, log } from '@/utils'
 
@@ -107,7 +108,7 @@ export default class RoomExtension extends Room {
         if (this.controller.level === 1) clearStructure(this)
 
         const centerPos = new RoomPosition(...this.memory.center, this.name)
-        const result = manageStructure(this, centerPos)
+        const result = autoPlanner.runStaticPlan(this, centerPos)
 
         if (result === OK) return '自动规划完成'
         else if (result === ERR_NOT_OWNER) return '自动规划失败，房间没有控制权限'
