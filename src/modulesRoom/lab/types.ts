@@ -156,3 +156,23 @@ declare global {
         lab: LabMemory
     }
 }
+
+export interface BoostContext {
+    /**
+     * 添加一个 boost 任务
+     * 应返回该任务的唯一索引
+     */
+    addBoostTask: (room: Room, boostConfig: BoostResourceConfig[]) => number
+    /**
+     * 获取 boost 任务的状态
+     */
+    getBoostState: (room: Room, boostTaskId: number) => ERR_NOT_FOUND | BoostState
+    /**
+     * 让一个 creep 按照指定 boost 任务进行强化
+     */
+    boostCreep: (room: Room, creep: Creep, boostTaskId: number) => boolean
+    /**
+     * 结束 boost 任务
+     */
+    finishBoost: (room: Room, boostTaskId: number) => void
+}

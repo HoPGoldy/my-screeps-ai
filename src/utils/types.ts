@@ -6,6 +6,7 @@ export interface EnvMethods {
     getCreepByName: (creepName: string) => Creep | undefined
     getObjectById: typeof Game.getObjectById
     getFlagByName: (flagName: string) => Flag | undefined
+    inInterval: (interval: number) => boolean
     log: ReturnType<typeof createLog>
     colorful: {
         green: typeof green

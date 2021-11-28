@@ -18,7 +18,7 @@ const defaultRule: AllowCrossRuleFunc = (creep, requireCreep) => !(creep.memory.
 const noCrossWithStanding: AllowCrossRuleFunc = creep => !creep.memory.stand
 
 /**
- * 站定时不允许对穿
+ * 工作时不允许对穿
  * @param creep 被对穿的 creep
  */
 const noCrossWithWorking: AllowCrossRuleFunc = creep => !creep.memory.working
@@ -36,8 +36,7 @@ const crossRules: CrossRules = {
     [CreepRole.Manager]: () => true,
 
     // 采集单位在采集能量时不允许对穿
-    // （采集能量都在 source 阶段，也就是 ↓ working 为 false 的时候）
-    [CreepRole.Harvester]: noCrossWithWorking,
+    [CreepRole.Harvester]: noCrossWithStanding,
 
     // pb 治疗单位正在治疗时不允许其他治疗单位对穿
     [CreepRole.PbHealer]: (creep, requireCreep) => {

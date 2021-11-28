@@ -359,7 +359,7 @@ export default class TaskController<
      * 输出当前任务队列信息
      */
     public show (): string {
-        const pad = content => _.padRight((content || '').toString(), 10)
+        const pad = content => _.padRight((content || '').toString(), 12)
 
         const logs = [
             `已注册单位 ${Object.keys(this.creeps).join(', ')}`,

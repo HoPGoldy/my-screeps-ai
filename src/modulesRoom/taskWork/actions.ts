@@ -196,16 +196,19 @@ export const transportActions: {
     [WorkTaskType.FillWall]: (creep, task, workController) => ({
         source: () => getEnergy(creep, workController),
         target: () => {
+            if (creep.store.getUsedCapacity() === 0) return creep.backToGetEnergy()
             workController.countWorkTime()
-            // 有焦点墙就优先刷
-            if (creep.memory.fillWallId) creep.steadyWall()
-            // 否则就按原计划维修
-            else {
-                const filling = creep.fillDefenseStructure()
-                if (!filling) workController.removeTaskByKey(task.key)
+
+            const targetWall = creep.room.towerController.getNeedFillWall()
+            if (!targetWall) {
+                workController.removeTaskByKey(task.key)
+                return
             }
 
-            if (creep.store.getUsedCapacity() === 0) return creep.backToGetEnergy()
+            // 填充墙壁
+            const result = creep.repair(targetWall)
+            if (result === ERR_NOT_IN_RANGE) creep.goTo(targetWall.pos, { range: 3 })
+            else if (result !== OK) creep.log('刷墙任务出错！', result)
         }
     })
 }

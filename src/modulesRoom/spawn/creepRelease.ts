@@ -101,12 +101,12 @@ export default class RoomCreepRelease {
         }
 
         if (realAdjust !== 0) {
-            let logContent = `${type} 数量更新 [调整] ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
-                `[上/下限] ${MAX}/${MIN} [当前数量] ${aliveUnit.length} `
+            let logContent = `${type} ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
+                `[上/下限] ${MAX}/${MIN} [当前数量] ${aliveUnit.length} [调整]`
 
-            if (removeWhenDiedCreep.length > 0) logContent += `[将在死亡后移除] ${removeWhenDiedCreep.join(',')}`
-            if (keepWhenDiedCreep.length > 0) logContent += `[将在死亡后继续孵化] ${keepWhenDiedCreep.join(',')}`
-            if (newSpawnCreep.length > 0) logContent += `[新孵化] ${newSpawnCreep.join(',')}`
+            if (removeWhenDiedCreep.length > 0) logContent += ` 将在死亡后移除 ${removeWhenDiedCreep.join(',')}`
+            if (keepWhenDiedCreep.length > 0) logContent += ` 将在死亡后继续孵化 ${keepWhenDiedCreep.join(',')}`
+            if (newSpawnCreep.length > 0) logContent += ` 新孵化 ${newSpawnCreep.join(',')}`
 
             log(logContent, room.name)
         }

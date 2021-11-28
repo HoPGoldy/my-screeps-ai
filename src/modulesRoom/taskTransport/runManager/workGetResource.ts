@@ -26,7 +26,7 @@ export const onGetResource = (context: TransportWorkContext) => {
 
     // 走过去
     if (!manager.pos.isNearTo(destination.pos)) {
-        manager.goTo(destination.pos, { range: destination.target ? 1 : 0 })
+        manager.goTo(destination.pos, { range: 1 })
         return
     }
 
@@ -104,6 +104,16 @@ const withdrawResource = function (
             getwithdrawAmount(request, manager)
         )
 
+        // 没有指定拿的数量，如果计算出来的拿去数量太少了，说明这个能量源能量不够了
+        // 清下缓存，去其他地方
+        if (
+            !request.amount &&
+            request.resType === RESOURCE_ENERGY &&
+            withdrawAmount < (manager.store.getFreeCapacity() / 2)
+        ) {
+            delete managerData.cacheSourceId
+        }
+
         operationResult = manager.withdraw(destination.target, request.resType, withdrawAmount)
         if (operationResult === OK) {
             // 此时 withdraw 动作还没有真正执行，这里模拟判断一下会不会拿满，可以节省一 tick
@@ -149,7 +159,19 @@ const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
 const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: ManagerData): MoveTargetInfo<StructureWithStore> {
     // 从工作房间查询并缓存能量来源
     const source = useCache(() => {
-        return getRoomEnergyTarget(workRoom, findStrategy.getClosestTo(manager.pos))
+        const energyContainer = workRoom[STRUCTURE_CONTAINER].filter(container => {
+            return container.store[RESOURCE_ENERGY] >= manager.store.getFreeCapacity()
+        })
+        if (energyContainer.length > 0) {
+            return manager.pos.findClosestByRange(energyContainer)
+        }
+
+        const droppedEnergys = workRoom.source.map(source => source.getDroppedInfo().energy)
+            .filter(energy => energy && energy.amount >= manager.store.getFreeCapacity())
+
+        if (droppedEnergys.length > 0) {
+            return manager.pos.findClosestByRange(droppedEnergys)
+        }
     }, managerData, 'cacheSourceId')
 
     // 没有能量，先移动到 source 附件待命

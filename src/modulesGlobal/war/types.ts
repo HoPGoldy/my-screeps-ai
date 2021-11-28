@@ -1,4 +1,4 @@
-import { BoostState } from '@/modulesRoom/lab/types'
+import { BoostContext, BoostState } from '@/modulesRoom/lab/types'
 import { BoostResourceConfig, EnvContext } from '@/utils'
 import { MobilizeTask } from './mobilizeManager/types'
 import { SquadType } from './squadManager/types'
@@ -50,28 +50,11 @@ export interface OutsideContext {
      * 用于接入房间快捷访问
      */
     getRoomLab: (room: Room) => StructureLab[]
-    /**
-     * 添加一个 boost 任务
-     * 应返回该任务的唯一索引
-     */
-    addBoostTask: (room: Room, boostConfig: BoostResourceConfig[]) => number
-    /**
-     * 获取 boost 任务的状态
-     */
-    getBoostState: (room: Room, boostTaskId: number) => ERR_NOT_FOUND | BoostState
-    /**
-     * 让一个 creep 按照指定 boost 任务进行强化
-     */
-    boostCreep: (room: Room, creep: Creep, boostTaskId: number) => boolean
-    /**
-     * 结束 boost 任务
-     */
-    finishBoost: (room: Room, boostTaskId: number) => void
 }
 
 export type WarModuleContext = {
     getMemory: () => WarModuleMemory
-} & EnvContext & OutsideContext
+} & EnvContext & OutsideContext & BoostContext
 
 /**
  * 小队存储

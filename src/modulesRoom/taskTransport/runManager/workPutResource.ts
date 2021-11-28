@@ -20,7 +20,7 @@ export const onPutResource = (context: TransportWorkContext) => {
 
     // 走过去
     if (!manager.pos.isNearTo(destination.pos)) {
-        manager.goTo(destination.pos, { range: destination.target ? 1 : 0 })
+        manager.goTo(destination.pos, { range: 1 })
         return
     }
 
@@ -119,7 +119,7 @@ const transferResource = function (
     transferAmount: number,
     manager: Creep
 ) {
-    // console.log('要运输多少资源', targetRes.resType, transferAmount, manager.store[targetRes.resType])
+    console.log('要运输多少资源', targetRes.resType, transferAmount, manager.store[targetRes.resType])
 
     let transferResult: ScreepsReturnCode
     if (!destinationTarget) {
@@ -130,7 +130,8 @@ const transferResource = function (
     }
 
     if (transferResult === OK) {
-        targetRes.arrivedAmount = (targetRes.arrivedAmount || 0) + transferAmount
+        if (targetRes.amount) targetRes.arrivedAmount = (targetRes.arrivedAmount || 0) + transferAmount
+        manager.log(`targetRes.arrivedAmount ${targetRes.arrivedAmount} ${JSON.stringify(targetRes)}`)
         // 这一趟运完了就及时删掉名字，方便其他搬运工尽早继续处理对应的请求
         delete targetRes.managerName
     }

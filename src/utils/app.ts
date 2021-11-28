@@ -100,7 +100,7 @@ export const createCache = function <T extends (...args: unknown[]) => unknown>(
      */
     const get = function (...args) {
         // 找到缓存的键
-        const cacheKey = opt.getCacheKey ? opt.getCacheKey(...args as Parameters<T>) : args[0] as string
+        const cacheKey = opt.getCacheKey ? opt.getCacheKey(...args as Parameters<T>) : (args[0] as string || 1)
         if (cacheKey in cacheStorage) {
             const cacheData = cacheStorage[cacheKey]
             // 检查一下是否可以重用这个缓存
@@ -171,6 +171,7 @@ export const createEnvContext = function (moduleName: string): EnvMethods {
         getCreepByName: creepName => Game.creeps[creepName],
         getFlagByName: flagName => Game.flags[flagName],
         getObjectById: id => Game.getObjectById(id),
+        inInterval: interval => !!(Game.time % interval),
         log: createLog(moduleName),
         colorful: { green, red, yellow, blue }
     }

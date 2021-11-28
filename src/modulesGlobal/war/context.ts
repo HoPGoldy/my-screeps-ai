@@ -1,3 +1,4 @@
+import { BoostContext } from '@/modulesRoom/lab/types'
 import { createContext, RoomTileMap } from '@/utils'
 import { OutsideContext, RoomInfo } from './types'
 
@@ -9,4 +10,4 @@ export const contextEnemyDamage = createContext<(roomName: string) => RoomTileMa
 
 export const contextMoveCostCache = createContext<{ [cacheKey: string]: CostMatrix }>({})
 
-export const contextOutside = createContext<OutsideContext>()
+export const contextOutside = createContext<OutsideContext & BoostContext>()

@@ -104,7 +104,7 @@ declare global {
          * 当前正在执行的初始 container 能量转移到 storage 的任务索引
          * harvester 特有
          */
-        containerEnergyTransferTaskId?: number
+        energyTransferId?: number
     }
 
     /**

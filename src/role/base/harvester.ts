@@ -4,7 +4,7 @@ import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
-import { getFreeSpace, serializePos, unserializePos, Color } from '@/utils'
+import { getFreeSpace, serializePos, unserializePos, Color, getUniqueKey } from '@/utils'
 
 /**
  * 能量采集单位的行为模式
@@ -223,7 +223,7 @@ const actionStrategy: ActionStrategy = {
             creep.getEngryFrom(source)
 
             // 如果房间里有 storage，则定期发布 container 到 storage 的能量转移任务
-            if (creep.room.storage && !(Game.time % 100)) {
+            if (creep.room.storage && !(Game.time % 20)) {
                 const container = source.getContainer()
 
                 // 容器没了，有可能是起了 Link 或者被敌人拆了，总之重新设置目标
@@ -234,19 +234,19 @@ const actionStrategy: ActionStrategy = {
 
                 // 能量达到数量了就发布任务，这个值应该低一点
                 // 不然有可能出现 worker 吃能量比较快导致任务发布数量太少
-                if (
-                    container.store[RESOURCE_ENERGY] > 200 &&
-                    !creep.room.transport.hasTaskWithType(TransportTaskType.ContainerEnergyTransfer)
-                ) {
-                    creep.memory.containerEnergyTransferTaskId = creep.room.transport.addTask({
-                        type: TransportTaskType.ContainerEnergyTransfer,
+                if (container.store[RESOURCE_ENERGY] > 200) {
+                    creep.memory.energyTransferId = creep.room.transport.updateTask({
+                        key: creep.memory.energyTransferId,
+                        // 这里用唯一键时为了避免多个 container 的转移任务重复覆盖
+                        type: getUniqueKey(),
                         requests: [{
                             from: container.id,
                             to: creep.room.storage.id,
                             resType: RESOURCE_ENERGY,
-                            amount: 200
+                            amount: Math.max(container.store[RESOURCE_ENERGY] / 2, 250)
                         }]
-                    })
+                    }, { dispath: true })
+                    creep.log(`更新能量转移任务 ${Math.max(container.store[RESOURCE_ENERGY] / 2, 250)} 任务 id ${creep.memory.energyTransferId}`)
                 }
             }
 

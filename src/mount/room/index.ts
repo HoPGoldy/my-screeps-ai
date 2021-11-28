@@ -14,6 +14,8 @@ import {
     RemoteChontroller,
     LabChontroller
 } from '@/modulesRoom'
+import { lazyloadTower } from './tower'
+import { TowerController } from '@/modulesRoom/tower/controller'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -24,6 +26,8 @@ export { default as RoomConsole } from './console'
  */
 type AnyRoomPlugin = { new (name: string): any }
 
+type PluginLoader = (roomName: string) => Record<string, any>
+
 /**
  * 插件存储
  */
@@ -31,7 +35,7 @@ interface PluginStorage {
     /** 插件的类别 */
     [pluginName: string]: {
         /** 插件管理的房间名 */
-        [roomName: string]: AnyRoomPlugin
+        [roomName: string]: any
     }
 }
 
@@ -42,8 +46,11 @@ export default () => {
     // 挂载快捷方式
     mountShortcut()
 
+    // 房间插件实例化后会被分类保存到这里
+    const pluginStorage: PluginStorage = {}
+
     // 等待安装的房间插件列表
-    const plugins: [ string, AnyRoomPlugin ][] = [
+    const plugins: [string, AnyRoomPlugin][] = [
         ['share', RoomShareController],
         ['transport', RoomTransportTaskController],
         ['work', RoomWorkTaskController],
@@ -58,9 +65,6 @@ export default () => {
         ['remote', RemoteChontroller]
     ]
 
-    // 房间插件实例化后会被分类保存到这里
-    const pluginStorage: PluginStorage = {}
-
     // 安装所有的插件
     plugins.forEach(([pluginName, Plugin]) => {
         pluginStorage[pluginName] = {}
@@ -70,6 +74,27 @@ export default () => {
             // 还没访问过, 进行实例化
             if (!(this.name in pluginStorage[pluginName])) {
                 pluginStorage[pluginName][this.name] = new Plugin(this.name)
+                // 覆盖 getter 属性
+                Object.defineProperty(this, pluginName, { value: pluginStorage[pluginName][this.name] })
+            }
+            // 直接返回插件实例
+            return pluginStorage[pluginName][this.name]
+        })
+    })
+
+    // 等待安装的模块化插件列表
+    const modulePlugin: [string, PluginLoader][] = [
+        ['towerController', lazyloadTower]
+    ]
+
+    modulePlugin.forEach(([pluginName, pluginLoader]) => {
+        pluginStorage[pluginName] = {}
+
+        // 在房间上创建插件的懒加载访问器
+        createGetter(Room, pluginName, function () {
+            // 还没访问过, 进行实例化
+            if (!(this.name in pluginStorage[pluginName])) {
+                pluginStorage[pluginName][this.name] = pluginLoader(this.name)
                 // 覆盖 getter 属性
                 Object.defineProperty(this, pluginName, { value: pluginStorage[pluginName][this.name] })
             }
@@ -130,5 +155,9 @@ declare global {
          * 包括外矿和新房扩张
          */
         remote: RemoteChontroller
+        /**
+         * tower 防御模块
+         */
+        towerController: TowerController
     }
 }

@@ -1,17 +1,10 @@
 import { ManagerState, TransportWorkContext } from '../types'
 
 export const onClearRemains = (context: TransportWorkContext) => {
-    const { taskData, manager, workRoom, managerData } = context
-
-    // 找到所有还没有转移完的资源
-    const needTransferResource = taskData.requests
-        .filter(res => (res.arrivedAmount || 0) < res.amount)
-        .map(res => res.resType)
+    const { manager, workRoom, managerData } = context
 
     // 检查身上的资源，不是这个任务的就放起来
     for (const resType in manager.store) {
-        if (needTransferResource.includes(resType as ResourceConstant)) continue
-
         // 先往 storage 运，不行就往终端运
         if (transferRes(manager, workRoom?.storage, resType as ResourceConstant)) return
         if (transferRes(manager, workRoom?.terminal, resType as ResourceConstant)) return

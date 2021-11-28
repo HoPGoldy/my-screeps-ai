@@ -22,7 +22,7 @@ const getRoomCost = function (room: Room, structurePlacePlan: AutoPlanResult[]):
         for (let x = 0; x < 50; x++) {
             const tile = terrain.get(x, y)
             // WALL 255，SWAMP 5，PLAIN 2
-            const weight = tile === TERRAIN_MASK_WALL ? 255 : (tile === TERRAIN_MASK_SWAMP ? 10 : 2)
+            const weight = tile === TERRAIN_MASK_WALL ? 255 : (tile === TERRAIN_MASK_SWAMP ? 20 : 5)
 
             matrix.set(x, y, weight)
         }

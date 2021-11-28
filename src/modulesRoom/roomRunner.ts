@@ -12,9 +12,9 @@ export const runRoom = function (room: Room): void {
     room.myLab.runReaction()
     room.myFactory.run()
     room.myObserver.run()
+    room.towerController.run()
 
     room[STRUCTURE_LINK].forEach(link => link.run())
-    room[STRUCTURE_TOWER].forEach(tower => tower.run())
     room[STRUCTURE_NUKER]?.run()
     room[STRUCTURE_POWER_SPAWN]?.run()
 }
