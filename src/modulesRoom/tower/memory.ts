@@ -17,8 +17,8 @@ export const createMemoryAccessor = (getMemory: () => TowerMemory, roomName: str
         const groupedSites = _.groupBy(newSitePos, site => site.type)
 
         const stringify = ({ x, y }) => `${x},${y}`
-        const stringifyWalls = groupedSites[STRUCTURE_WALL].map(stringify)
-        const stringifyRamparts = groupedSites[STRUCTURE_RAMPART].map(stringify)
+        const stringifyWalls = groupedSites[STRUCTURE_WALL]?.map(stringify) || []
+        const stringifyRamparts = groupedSites[STRUCTURE_RAMPART]?.map(stringify) || []
         memory.walls = _.uniq([...(memory.walls || []), ...stringifyWalls])
         memory.ramparts = _.uniq([...(memory.ramparts || []), ...stringifyRamparts])
     },

@@ -1,4 +1,3 @@
-import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
 import { StructureWithStore, useCache } from '@/utils'
 import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
@@ -101,17 +100,30 @@ const withdrawResource = function (
     else {
         const withdrawAmount = Math.min(
             destination.target.store[request.resType],
-            getwithdrawAmount(request, manager)
+            getwithdrawAmount(request, manager),
+            manager.store.getFreeCapacity()
         )
 
+        if (request.amount) {
+            // 指定了目标建筑，但是目标建筑里能量数量不够了，结束任务
+            if (
+                request.resType === RESOURCE_ENERGY &&
+                request.from &&
+                withdrawAmount < (manager.store.getFreeCapacity() / 2)
+            ) {
+                requireFinishTask(TaskFinishReason.NotEnoughResource)
+                manager.log(`能量数量不足： ${JSON.stringify(request)} 当前剩余 ${destination.target.store[request.resType]}`)
+            }
+        }
         // 没有指定拿的数量，如果计算出来的拿去数量太少了，说明这个能量源能量不够了
         // 清下缓存，去其他地方
-        if (
-            !request.amount &&
-            request.resType === RESOURCE_ENERGY &&
-            withdrawAmount < (manager.store.getFreeCapacity() / 2)
-        ) {
-            delete managerData.cacheSourceId
+        else {
+            if (
+                request.resType === RESOURCE_ENERGY &&
+                withdrawAmount < (manager.store.getFreeCapacity() / 2)
+            ) {
+                delete managerData.cacheSourceId
+            }
         }
 
         operationResult = manager.withdraw(destination.target, request.resType, withdrawAmount)

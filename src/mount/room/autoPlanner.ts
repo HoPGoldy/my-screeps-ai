@@ -9,11 +9,13 @@ export const autoPlanner = createAutoPlanner({
         const wallPosList: ConstructInfo<STRUCTURE_WALL | STRUCTURE_RAMPART>[] = []
         // 遍历布局中所有建筑类型
         const sitePosList: ConstructInfo[] = [].concat(...Object.keys(planResult).map((structureType: BuildableStructureConstant) => {
+            console.log('wallInfos', structureType)
             if (structureType === STRUCTURE_WALL || structureType === STRUCTURE_RAMPART) {
                 const wallInfos = planResult[structureType].map(({ x, y, roomName }) => {
                     return { x, y, roomName, type: structureType }
                 })
                 wallPosList.push(...wallInfos)
+                console.log('wallInfos', structureType, wallInfos)
 
                 return []
             }

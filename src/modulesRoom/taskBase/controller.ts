@@ -61,9 +61,7 @@ export default class TaskController<
         const newTask = {
             ...task,
             key: getUniqueKey(),
-            unit: 0,
-            // 没有指定 need 的话就先一个人做
-            need: task.need || 1
+            unit: 0
         }
 
         // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引

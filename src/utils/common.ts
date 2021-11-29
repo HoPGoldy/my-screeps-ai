@@ -23,7 +23,7 @@ declare global {
  * 获取全局唯一索引
  */
 export const getUniqueKey = function (): number {
-    Game._uniqueKey = Game._uniqueKey ? Game._uniqueKey + 0.1 : Game.time
+    Game._uniqueKey = Game._uniqueKey ? Game._uniqueKey + 0.001 : Game.time
     return Game._uniqueKey
 }
 
