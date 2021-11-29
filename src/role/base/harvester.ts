@@ -237,8 +237,8 @@ const actionStrategy: ActionStrategy = {
                 if (container.store[RESOURCE_ENERGY] > 200) {
                     creep.memory.energyTransferId = creep.room.transport.updateTask({
                         key: creep.memory.energyTransferId,
-                        // 这里用唯一键时为了避免多个 container 的转移任务重复覆盖
-                        type: getUniqueKey(),
+                        // 这里用 creep  名字是为了避免多个 container 的转移任务覆盖彼此
+                        type: creep.name,
                         requests: [{
                             from: container.id,
                             to: creep.room.storage.id,

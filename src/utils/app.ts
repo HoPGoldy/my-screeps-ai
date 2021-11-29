@@ -161,18 +161,26 @@ export const useCache = function <T extends ObjectWithId> (
 }
 
 /**
+ * 静态的环境上下文
+ * 用于避免重复创建
+ */
+const staticEnvContext = {
+    getGame: () => Game,
+    getRoomByName: roomName => Game.rooms[roomName],
+    getCreepByName: creepName => Game.creeps[creepName],
+    getFlagByName: flagName => Game.flags[flagName],
+    getObjectById: id => Game.getObjectById(id),
+    inInterval: interval => !!(Game.time % interval),
+    colorful: { green, red, yellow, blue }
+}
+
+/**
  * 创建环境上下文
  * @param moduleName 模块的名字
  */
 export const createEnvContext = function (moduleName: string): EnvMethods {
     return {
-        getGame: () => Game,
-        getRoomByName: roomName => Game.rooms[roomName],
-        getCreepByName: creepName => Game.creeps[creepName],
-        getFlagByName: flagName => Game.flags[flagName],
-        getObjectById: id => Game.getObjectById(id),
-        inInterval: interval => !!(Game.time % interval),
-        log: createLog(moduleName),
-        colorful: { green, red, yellow, blue }
+        ...staticEnvContext,
+        log: createLog(moduleName)
     }
 }

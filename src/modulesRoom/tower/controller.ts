@@ -4,20 +4,28 @@ import { createMemoryAccessor } from './memory'
 import { TowerContext } from './types'
 
 export const createTowerController = function (context: TowerContext) {
-    const { getMemory, getWorkRoom, env } = context
-    const db = createMemoryAccessor(getMemory, getWorkRoom)
+    const { getMemory, env } = context
 
-    const { run: runTower, checkEnemyThreat } = useTower(context, db)
-    const { run: runWallControl, getNeedFillWall, clearFocus } = useWall(context, db)
+    const lazyLoader = function (roomName: string) {
+        const db = createMemoryAccessor(
+            () => getMemory(env.getRoomByName(roomName)),
+            roomName
+        )
 
-    const run = function () {
-        runTower()
+        const { run: runTower, checkEnemyThreat } = useTower(roomName, context, db)
+        const { run: runWallControl, addNewWall, checkNuker, getNeedFillWall, clearFocus } = useWall(roomName, context, db)
 
-        if (env.inInterval(20)) return
-        runWallControl()
+        const run = function () {
+            runTower()
+
+            if (!env.inInterval(20)) runWallControl()
+            if (!env.inInterval(100)) checkNuker(env.getRoomByName(roomName))
+        }
+
+        return { run, addNewWall, checkEnemyThreat, getNeedFillWall, clearFocus }
     }
 
-    return { run, checkEnemyThreat, getNeedFillWall, clearFocus }
+    return lazyLoader
 }
 
-export type TowerController = ReturnType<typeof createTowerController>
+export type TowerController = ReturnType<ReturnType<typeof createTowerController>>

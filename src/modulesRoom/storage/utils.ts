@@ -40,7 +40,7 @@ export const showStorageAmountOverview = function (): string {
             // 如果两者都没有或者房间无法被控制就不显示
             if ((!room.storage && !room.terminal) || !room.controller) return false
 
-            let log = createRoomLink(room.name, 2)
+            let log = createRoomLink(pad(room.name))
 
             log += room.storage
                 ? addColor(room.storage.store.getFreeCapacity(), STRUCTURE_STORAGE)

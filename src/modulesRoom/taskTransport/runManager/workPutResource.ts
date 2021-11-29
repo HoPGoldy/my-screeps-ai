@@ -2,7 +2,7 @@ import { StructureWithStore } from '@/utils'
 import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onPutResource = (context: TransportWorkContext) => {
-    const { manager, managerData } = context
+    const { manager, managerData, requireFinishTask } = context
 
     if (manager.store.getCapacity() <= 0) {
         managerData.state = ManagerState.PutResource
@@ -16,7 +16,10 @@ export const onPutResource = (context: TransportWorkContext) => {
 
     // 找到往哪走
     const destination = getTarget(processingRequest, context)
-    if (!destination) return
+    if (typeof destination === 'boolean') {
+        requireFinishTask(destination ? TaskFinishReason.Complete : TaskFinishReason.CantFindTarget)
+        return
+    }
 
     // 走过去
     if (!manager.pos.isNearTo(destination.pos)) {
@@ -31,8 +34,12 @@ export const onPutResource = (context: TransportWorkContext) => {
     transferResource(destination.target, processingRequest, transferAmount, manager)
 }
 
-const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo {
-    const { workRoom, requireFinishTask, manager } = context
+/**
+ * 获取指定物流请求的目标存放地
+ * 当返回 boolean 类型时说明找不到目标，其中 true 代表正常的（所有目标都被填满了），false 代表异常的（参数错误导致无法获取到目标）
+ */
+const getTarget = function (request: TransportRequestData, context: TransportWorkContext): boolean | MoveTargetInfo {
+    const { workRoom, manager } = context
     let target: Creep | StructureWithStore | PowerCreep
     let pos: RoomPosition
 
@@ -51,10 +58,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
                 const structures = workRoom[type] as StructureWithStore[]
 
                 // 不是建筑类型、找不到建筑、不能 store 的建筑都退出
-                if (!structures) {
-                    requireFinishTask(TaskFinishReason.CantFindTarget)
-                    return
-                }
+                if (!structures) return false
 
                 const needFillStructures = structures.filter(s => s.store.getFreeCapacity(request.resType) > 0)
 
@@ -65,20 +69,14 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
                 }
             }
 
-            // // 找不到，说明要填充的建筑都填满了，完成任务
-            if (!target) {
-                requireFinishTask(TaskFinishReason.Complete)
-                return
-            }
+            // 找不到，说明要填充的建筑都填满了，完成任务
+            if (!target) return true
         }
     }
     // 来源是个 id
     else if (typeof request.to === 'string') {
         target = Game.getObjectById(request.to as Id<StructureWithStore | Creep | PowerCreep>)
-        if (!target) {
-            requireFinishTask(TaskFinishReason.CantFindTarget)
-            return
-        }
+        if (!target) return false
     }
 
     if (target) pos = target.pos
@@ -100,7 +98,13 @@ const getProcessingRequest = function (context: TransportWorkContext) {
 
     // 身上的资源转移完毕，检查下是不是所有资源都完成了
     if (!targetRes && !otherUnfinishRequest) {
-        const allFinished = taskData.requests.every(res => (res.arrivedAmount || 0) <= res.amount)
+        const allFinished = taskData.requests.every(res => {
+            // 指定了转移数量，达标后即为任务完成
+            if (res.amount) return (res.arrivedAmount || 0) >= res.amount
+            // 没指定数量，找不到目标时才为任务完成
+            const destination = getTarget(res, context)
+            return typeof destination === 'boolean'
+        })
 
         if (!allFinished) {
             managerData.state = ManagerState.GetResource
@@ -119,7 +123,7 @@ const transferResource = function (
     transferAmount: number,
     manager: Creep
 ) {
-    console.log('要运输多少资源', targetRes.resType, transferAmount, manager.store[targetRes.resType])
+    transferAmount && manager.log(`放下 ${targetRes.resType} ${transferAmount}`)
 
     let transferResult: ScreepsReturnCode
     if (!destinationTarget) {
@@ -131,7 +135,7 @@ const transferResource = function (
 
     if (transferResult === OK) {
         if (targetRes.amount) targetRes.arrivedAmount = (targetRes.arrivedAmount || 0) + transferAmount
-        manager.log(`targetRes.arrivedAmount ${targetRes.arrivedAmount} ${JSON.stringify(targetRes)}`)
+        manager.log(`更新已抵达数量 ${targetRes.arrivedAmount} ${JSON.stringify(targetRes)}`)
         // 这一趟运完了就及时删掉名字，方便其他搬运工尽早继续处理对应的请求
         delete targetRes.managerName
     }

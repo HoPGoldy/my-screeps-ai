@@ -2,7 +2,7 @@ import { BuildingSite, DefenseState, TowerMemory } from './types'
 import { ConstructInfo } from '@/modulesGlobal/construction/types'
 import { BUILD_ADD_NUMBER } from './constants'
 
-export const createMemoryAccessor = (getMemory: () => TowerMemory, getWorkRoom: () => Room) => ({
+export const createMemoryAccessor = (getMemory: () => TowerMemory, roomName: string) => ({
     updateDefenseState (newState: DefenseState) {
         const memory = getMemory()
         if (newState === DefenseState.Daily) delete memory.state
@@ -36,14 +36,25 @@ export const createMemoryAccessor = (getMemory: () => TowerMemory, getWorkRoom: 
         // 重建并返回正在建造的
         return memory.building.map(siteStr => {
             const [x, y, typeCode] = siteStr.split(',')
-            const { name } = getWorkRoom()
             return {
-                pos: new RoomPosition(+x, +y, name),
+                pos: new RoomPosition(+x, +y, roomName),
                 type: +typeCode === 1 ? STRUCTURE_WALL : STRUCTURE_RAMPART
             }
         })
     },
-    insertBuilding () {
+    updateNukerWall (wallPos: RoomPosition[]) {
+        const memory = getMemory()
+        if (wallPos.length <= 0) {
+            delete memory.nukerWallsPos
+            return
+        }
+
+        memory.nukerWallsPos = wallPos.map(pos => `${pos.x},${pos.y}`)
+    },
+    /**
+     * 从待建造队列取出建造目标
+     */
+    withdrawBuilding () {
         const memory = getMemory()
 
         // 从待建造队列补充

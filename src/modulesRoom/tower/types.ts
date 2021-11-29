@@ -30,6 +30,10 @@ export interface TowerMemory {
      * 焦点墙的刷新时间
      */
     focusTimeout?: number
+    /**
+     * 要放置 nuker 防御墙壁的位置
+     */
+    nukerWallsPos?: string[]
 }
 
 /**
@@ -57,37 +61,33 @@ export interface BuildingSite<T = STRUCTURE_WALL | STRUCTURE_RAMPART> {
 
 export type TowerContext = {
     /**
-     * 获取工作房间
-     */
-    getWorkRoom: () => Room
-    /**
      * 获取 tower 的内存对象
      */
-    getMemory: () => TowerMemory
+    getMemory: (room: Room) => TowerMemory
     /**
      * 获取房间里可用的 tower
      */
-    getTower: () => StructureTower[]
+    getTower: (room: Room) => StructureTower[]
     /**
      * 获取房间里可用的 wall
      */
-    getWall: () => StructureWall[]
+    getWall: (room: Room) => StructureWall[]
     /**
      * 获取房间里可用的 rampart
      */
-    getRampart: () => StructureRampart[]
+    getRampart: (room: Room) => StructureRampart[]
     /**
      * 获取房间里可用的 lab
      */
-    getLab: () => StructureLab[]
+    getLab: (room: Room) => StructureLab[]
     /**
      * 当前是否存在 tower 填充任务
      */
-    hasFillTowerTask: () => boolean
+    hasFillTowerTask: (room: Room) => boolean
     /**
      * 新增 tower 填充任务
      */
-    addFillTowerTask: () => unknown
+    addFillTowerTask: (room: Room) => unknown
     /**
      * 判断一个 creep 是否为友军
      */
@@ -95,27 +95,27 @@ export type TowerContext = {
     /**
      * 回调 - 当房间中的敌人消失（撤走 / 被击杀）时调用
      */
-    onBackToNormal?: () => unknown
+    onBackToNormal?: (room: Room) => unknown
     /**
      * 回调 - 当房间进入主动防御模式时调用
      */
-    onStartActiveDefense?: () => unknown
+    onStartActiveDefense?: (room: Room) => unknown
     /**
      * 发布防御单位
      */
-    releaseDefender: (boostTaskId: number) => unknown
+    releaseDefender: (room: Room, boostTaskId: number) => unknown
     /**
      * 获取防御单位
      */
-    getDefender: () => Creep
+    getDefender: (room: Room) => Creep
     /**
      * 添加建造任务
      * 没有任务的时候添加，有的时候啥都不干
      */
-    updateBuildingTask: () => unknown
+    updateBuildingTask: (room: Room) => unknown
     /**
      * 添加刷墙任务
      * 如果没有刷墙任务，调用该方法应该新增刷墙任务，有的话就什么都不做
      */
-    updateFillWallTask: () => unknown
+    updateFillWallTask: (room: Room) => unknown
 } & EnvContext & BoostContext

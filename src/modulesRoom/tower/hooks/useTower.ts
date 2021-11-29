@@ -11,10 +11,10 @@ const FILL_LOWER_LIMIT = {
 /**
  * 组合 tower 防御逻辑
  */
-export const useTower = function (context: TowerContext, db: TowerMemoryAccessor) {
+export const useTower = function (roomName: string, context: TowerContext, db: TowerMemoryAccessor) {
     const {
-        isFriend, getMemory, getTower, getWorkRoom, hasFillTowerTask, addFillTowerTask, env,
-        addBoostTask, getBoostState, finishBoost, getDefender, releaseDefender
+        isFriend, getMemory, getTower, hasFillTowerTask, addFillTowerTask, env,
+        addBoostTask, getBoostState, finishBoost, getDefender, releaseDefender, getLab
     } = context
 
     /**
@@ -23,18 +23,18 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
      */
     const findEnemy = function (searchInterval = 1): (Creep | PowerCreep)[] {
         if (env.inInterval(searchInterval)) return []
-        const workRoom = getWorkRoom()
+        const room = env.getRoomByName(roomName)
 
         // 搜索白名单之外的玩家
-        let enemyCreeps: (Creep | PowerCreep)[] = workRoom.find(FIND_HOSTILE_CREEPS, { filter: isFriend })
+        let enemyCreeps: (Creep | PowerCreep)[] = room.find(FIND_HOSTILE_CREEPS, { filter: isFriend })
         if (enemyCreeps.length <= 0) {
-            enemyCreeps = workRoom.find(FIND_HOSTILE_POWER_CREEPS, { filter: isFriend })
+            enemyCreeps = room.find(FIND_HOSTILE_POWER_CREEPS, { filter: isFriend })
         }
 
         return enemyCreeps
     }
 
-    const runDailyWork = function (towers: StructureTower[]) {
+    const runDailyWork = function (towers: StructureTower[], room: Room) {
         // 先攻击敌人
         const hasEnemy = runDailyAlert(towers)
         if (hasEnemy) return
@@ -46,14 +46,14 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
     /**
      * 遇到敌人且敌人不足以启动主动模式时的防御工作
      */
-    const runDefenseWork = function (towers: StructureTower[]) {
+    const runDefenseWork = function (towers: StructureTower[], room: Room) {
         const enemys = findEnemy()
 
         // 没有敌人了就返回日常模式
         if (enemys.length <= 0) {
             // this.log('威胁解除，返回日常模式')
             db.updateDefenseState(DefenseState.Daily)
-            context.onBackToNormal && context.onBackToNormal()
+            context.onBackToNormal && context.onBackToNormal(room)
             return
         }
 
@@ -61,13 +61,13 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
         if (checkEnemyThreat(enemys)) {
             // 启动主动防御模式
             db.updateDefenseState(DefenseState.Active)
-            context.onStartActiveDefense && context.onStartActiveDefense()
+            context.onStartActiveDefense && context.onStartActiveDefense(room)
             // this.log('已启动主动防御')
         }
     }
 
-    const runActiveDefenseWork = function (towers: StructureTower[]) {
-        const defender = getDefender()
+    const runActiveDefenseWork = function (towers: StructureTower[], room: Room) {
+        const defender = getDefender(room)
 
         if (defender && !defender.spawning) {
             // 有防御单位并且掉血了就进行治疗
@@ -87,8 +87,8 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
             if (enemys.length <= 0) {
                 // this.log('威胁解除，返回日常模式')
                 db.updateDefenseState(DefenseState.Daily)
-                context.onBackToNormal && context.onBackToNormal()
-                const memory = getMemory()
+                context.onBackToNormal && context.onBackToNormal(room)
+                const memory = getMemory(room)
                 finishBoost(towers[0].room, memory.boostId)
                 return
             }
@@ -97,21 +97,22 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
             if (this.store[RESOURCE_ENERGY] > 700) fireToClosest(towers, enemys)
 
             // 没有防御单位时才准备 boost
-            execBoost()
+            execBoost(room)
         }
 
-        if (needSafeMode()) getWorkRoom().controller.activateSafeMode()
+        if (needSafeMode(room)) room.controller.activateSafeMode()
     }
 
     /**
      * 准备主动防御需要的 boost 并发布防御单位
      */
-    const execBoost = function (): void {
-        const memory = getMemory()
-        const workRoom = getWorkRoom()
+    const execBoost = function (room: Room): void {
+        // lab 数量不够 boost 的，这活不能接
+        if (getLab(room).length < 3) return
+        const memory = getMemory(room)
 
         if (!memory.boostId) {
-            memory.boostId = addBoostTask(workRoom, [
+            memory.boostId = addBoostTask(room, [
                 { resource: RESOURCE_CATALYZED_GHODIUM_ALKALIDE, amount: 16 * LAB_BOOST_MINERAL },
                 { resource: RESOURCE_ZYNTHIUM_ALKALIDE, amount: 16 * LAB_BOOST_MINERAL },
                 { resource: RESOURCE_UTRIUM_ACID, amount: 16 * LAB_BOOST_MINERAL }
@@ -121,20 +122,20 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
             return
         }
 
-        const taskState = getBoostState(workRoom, memory.boostId)
+        const taskState = getBoostState(room, memory.boostId)
         if (taskState === ERR_NOT_FOUND) {
             delete memory.boostId
             return
         }
 
         if (taskState === BoostState.WaitBoost) {
-            const result = releaseDefender(memory.boostId)
+            const result = releaseDefender(room, memory.boostId)
             env.log.success(`已发布主动防御单位，返回值：${result}`)
         }
     }
 
-    const needSafeMode = function () {
-        const logs = getWorkRoom().getEventLog()
+    const needSafeMode = function (room: Room) {
+        const logs = room.getEventLog()
         return logs.some(log => {
             if (log.event !== EVENT_ATTACK) return false
 
@@ -217,10 +218,10 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
      * 请求能量
      * @param lowerLimit 能量下限，当自己能量低于该值时将发起请求
      */
-    const requireEnergy = function (towers: StructureTower[], lowerLimit = 900): void {
-        if (hasFillTowerTask()) return
+    const requireEnergy = function (towers: StructureTower[], room: Room, lowerLimit = 900): void {
+        if (hasFillTowerTask(room)) return
         const energyInsufficient = towers.some(tower => tower.store[RESOURCE_ENERGY] <= lowerLimit)
-        if (energyInsufficient) addFillTowerTask()
+        if (energyInsufficient) addFillTowerTask(room)
     }
 
     const workRunners = {
@@ -233,16 +234,17 @@ export const useTower = function (context: TowerContext, db: TowerMemoryAccessor
      * 执行 tower 运行逻辑
      */
     const run = function (): void {
-        const towers = getTower()
+        const room = env.getRoomByName(roomName)
+        const towers = getTower(room)
         if (!towers || towers.length <= 0) return
 
         const defenseState = db.queryDefenseState()
         if (!(env.getGame().time % 5)) {
-            requireEnergy(towers, FILL_LOWER_LIMIT[defenseState])
+            requireEnergy(towers, room, FILL_LOWER_LIMIT[defenseState])
         }
 
         // 根据当前状态执行对应的逻辑
-        workRunners[defenseState](towers)
+        workRunners[defenseState](towers, room)
     }
 
     return { run, checkEnemyThreat }

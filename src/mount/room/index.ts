@@ -14,7 +14,7 @@ import {
     RemoteChontroller,
     LabChontroller
 } from '@/modulesRoom'
-import { lazyloadTower } from './tower'
+import { getTowerController } from './tower'
 import { TowerController } from '@/modulesRoom/tower/controller'
 
 export { default as RoomExtension } from './extension'
@@ -84,7 +84,7 @@ export default () => {
 
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
-        ['towerController', lazyloadTower]
+        ['towerController', getTowerController]
     ]
 
     modulePlugin.forEach(([pluginName, pluginLoader]) => {
@@ -92,14 +92,12 @@ export default () => {
 
         // 在房间上创建插件的懒加载访问器
         createGetter(Room, pluginName, function () {
-            // 还没访问过, 进行实例化
-            if (!(this.name in pluginStorage[pluginName])) {
-                pluginStorage[pluginName][this.name] = pluginLoader(this.name)
-                // 覆盖 getter 属性
-                Object.defineProperty(this, pluginName, { value: pluginStorage[pluginName][this.name] })
-            }
+            // 实例化
+            const controller = pluginLoader(this.name)
+            // 把 getter 替换成实际的功能模块
+            Object.defineProperty(this, pluginName, { value: controller })
             // 直接返回插件实例
-            return pluginStorage[pluginName][this.name]
+            return controller
         })
     })
 }

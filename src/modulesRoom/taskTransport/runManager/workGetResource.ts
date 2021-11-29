@@ -136,8 +136,12 @@ const withdrawResource = function (
     // 捡起资源的时候可能会出现 ERR_INVALID_TARGET 的情况
     else if (operationResult === ERR_NOT_ENOUGH_RESOURCES || operationResult === ERR_INVALID_TARGET) {
         if (request.keep) return
-        requireFinishTask(TaskFinishReason.NotEnoughResource)
-        manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(request)}`)
+        if (request.amount) {
+            requireFinishTask(TaskFinishReason.NotEnoughResource)
+            manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(request)}`)
+        }
+        // 没有指定搬运数量，并且把来源搬空了，任务正常结束
+        else requireFinishTask(TaskFinishReason.Complete)
     }
     else {
         manager.log(`物流任务获取资源出错！${operationResult} ${JSON.stringify(request)}`)
