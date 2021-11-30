@@ -21,22 +21,6 @@ export interface EnvContext {
 }
 
 /**
- * 包含 store 属性的建筑
- */
-export type StructureWithStore =
-    StructureTower |
-    StructureStorage |
-    StructureContainer |
-    StructureExtension |
-    StructureFactory |
-    StructureSpawn |
-    StructurePowerSpawn |
-    StructureLink |
-    StructureTerminal |
-    StructureNuker |
-    StructureLab
-
-/**
  * 所有包含 id 字段的游戏对象
  */
 export interface ObjectWithId<T = unknown> extends RoomObject {

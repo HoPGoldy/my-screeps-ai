@@ -1,4 +1,4 @@
-import { yellow, createHelp, getName, StructureWithStore } from '@/utils'
+import { yellow, createHelp, getName } from '@/utils'
 
 /**
  * 拓展模块的用户访问接口
@@ -7,7 +7,7 @@ export default class RemoteConsole extends Room {
     /**
      * 拓展新外矿
      */
-    public radd (remoteRoomName: string, sourceId: Id<Source>, targetId?: Id<StructureWithStore>): string {
+    public radd (remoteRoomName: string, sourceId: Id<Source>, targetId?: Id<AnyStoreStructure>): string {
         let logs = `[${this.name} 外矿] `
 
         const result = this.remote.add(remoteRoomName, sourceId, targetId)

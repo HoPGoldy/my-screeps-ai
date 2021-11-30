@@ -1,5 +1,3 @@
-import { StructureWithStore } from '@/utils'
-
 /**
  * powerbank 的采集阶段
  */
@@ -72,7 +70,7 @@ export interface RoleDatas {
          * 将采集到的能量运到哪个建筑
          * 如果指定了这个字段的话，harvester 将不会动态切换采集模式，直到对应的建筑无法访问
          */
-        targetId?: Id<StructureWithStore>
+        targetId?: Id<AnyStoreStructure>
     }
     [CreepRole.Worker]: WorkerData
     [CreepRole.Manager]: transporterData
@@ -187,7 +185,7 @@ interface transporterData {
     /**
      * 要使用的资源存放建筑 id
      */
-    sourceId?: Id<StructureWithStore>
+    sourceId?: Id<AnyStoreStructure>
     /**
      * 该 creep 的工作房间
      * 例如一个外矿搬运者需要知道自己的老家在哪里
@@ -220,7 +218,7 @@ interface ReiverData {
     /**
      * 要搬运到的建筑 id
      */
-    targetId: Id<StructureWithStore>
+    targetId: Id<AnyStoreStructure>
 }
 
 /**
@@ -263,7 +261,7 @@ interface RemoteResourceHarvesterData {
     /**
      * 资源要存放到哪个建筑里，外矿采集者必须指定该参数
      */
-    targetId?: Id<StructureWithStore>
+    targetId?: Id<AnyStoreStructure>
 }
 
 interface pbAttackerData {

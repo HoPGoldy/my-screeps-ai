@@ -1,5 +1,3 @@
-import { StructureWithStore } from '@/utils'
-
 declare global {
     interface RoomMemory {
         /**
@@ -74,12 +72,12 @@ interface TransportRequests {
      * 从哪里获取资源
      * 支持 id 和位置
      */
-    from?: Id<StructureWithStore> | [number, number, string]
+    from?: Id<AnyStoreStructure> | [number, number, string]
     /**
      * 资源搬运到哪里
      * 支持 id、位置、建筑常量
      */
-    to?: Id<StructureWithStore | Creep | PowerCreep> | StructureConstant[] | [number, number, string]
+    to?: Id<AnyStoreStructure | Creep | PowerCreep> | StructureConstant[] | [number, number, string]
     /**
      * 要转移的资源类型
      */
@@ -145,11 +143,11 @@ export interface ManagerData {
     /**
      * 缓存的来源 id
      */
-    cacheSourceId?: Id<StructureWithStore | Resource>
+    cacheSourceId?: Id<AnyStoreStructure | Resource>
     /**
      * 缓存的目标 id
      */
-    cacheTargetId?: Id<StructureWithStore>
+    cacheTargetId?: Id<AnyStoreStructure>
 }
 
 /**
@@ -174,7 +172,7 @@ export enum TaskFinishReason {
     CantFindTarget
 }
 
-export type DestinationTarget = Creep | StructureWithStore | PowerCreep
+export type DestinationTarget = Creep | AnyStoreStructure | PowerCreep
 
 export interface MoveTargetInfo<T = DestinationTarget> {
     /**

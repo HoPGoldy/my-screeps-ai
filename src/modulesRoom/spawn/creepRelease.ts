@@ -5,7 +5,7 @@ import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { removeCreepCantRespawn } from '@/modulesGlobal/creep/utils'
-import { StructureWithStore, Color, log, DEFAULT_FLAG_NAME } from '@/utils'
+import { Color, log, DEFAULT_FLAG_NAME } from '@/utils'
 
 /**
  * creep 发布工具
@@ -315,7 +315,7 @@ export default class RoomCreepRelease {
      * @param sourceFlagName 要搜刮的建筑上插好的旗帜名
      * @param targetStructureId 要把资源存放到的建筑 id
      */
-    public reiver (sourceFlagName = '', targetStructureId: Id<StructureWithStore> = undefined): string {
+    public reiver (sourceFlagName = '', targetStructureId: Id<AnyStoreStructure> = undefined): string {
         const { room } = this.spawner
         if (!targetStructureId && !room.terminal) return `[${room.name}] 发布失败，请填写要存放到的建筑 id`
 

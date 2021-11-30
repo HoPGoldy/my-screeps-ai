@@ -1,4 +1,4 @@
-import { StructureWithStore, useCache } from '@/utils'
+import { useCache } from '@/utils'
 import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onGetResource = (context: TransportWorkContext) => {
@@ -50,9 +50,9 @@ const getProcessingRequest = function (context: TransportWorkContext) {
     return targetRes || otherUnfinishRequest
 }
 
-const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo<StructureWithStore> {
+const getTarget = function (request: TransportRequestData, context: TransportWorkContext): MoveTargetInfo<AnyStoreStructure> {
     const { manager, managerData, workRoom, requireFinishTask } = context
-    let target: StructureWithStore
+    let target: AnyStoreStructure
     let targetPos: RoomPosition
 
     // 没有指定位置
@@ -83,7 +83,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 }
 
 const withdrawResource = function (
-    destination: MoveTargetInfo<StructureWithStore>,
+    destination: MoveTargetInfo<AnyStoreStructure>,
     request: TransportRequestData,
     context: TransportWorkContext
 ) {
@@ -172,7 +172,7 @@ const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
 /**
  * 搬运工去房间内获取能量
  */
-const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: ManagerData): MoveTargetInfo<StructureWithStore> {
+const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: ManagerData): MoveTargetInfo<AnyStoreStructure> {
     // 从工作房间查询并缓存能量来源
     const source = useCache(() => {
         const energyContainer = workRoom[STRUCTURE_CONTAINER].filter(container => {

@@ -5,7 +5,6 @@ import RoomAccessor from '../RoomAccessor'
 import { GetName } from '../spawn/nameGetter'
 import { delayQueue } from '@/modulesGlobal/delayQueue'
 import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
-import { StructureWithStore } from '@/utils'
 
 export default class RoomShareController extends RoomAccessor<RemoteMemory> {
     constructor (roomName: string) {
@@ -34,7 +33,7 @@ export default class RoomShareController extends RoomAccessor<RemoteMemory> {
      * @param targetId 能量搬到哪个建筑里
      * @returns ERR_INVALID_TARGET targetId 找不到对应的建筑
      */
-    public add (remoteRoomName: string, sourceId: Id<Source>, customTargetId?: Id<StructureWithStore>): Id<StructureWithStore> | ERR_INVALID_TARGET {
+    public add (remoteRoomName: string, sourceId: Id<Source>, customTargetId?: Id<AnyStoreStructure>): Id<AnyStoreStructure> | ERR_INVALID_TARGET {
         let targetId = customTargetId
         // 没有指定存放外矿能量的建筑，自行挑选
         if (!targetId) {
@@ -116,7 +115,7 @@ export default class RoomShareController extends RoomAccessor<RemoteMemory> {
      * @param ignoreCache 是否无视之前的缓存重新查找存放处
      * @returns 存放建筑
      */
-    public getRemoteEnergyStore (remoteRoomName: string, sourceId: string, ignoreCache = false): StructureWithStore {
+    public getRemoteEnergyStore (remoteRoomName: string, sourceId: string, ignoreCache = false): AnyStoreStructure {
         const targetStructureId = this.memory?.[remoteRoomName]?.[sourceId]?.targetId
 
         if (!targetStructureId || ignoreCache) {
@@ -131,7 +130,7 @@ export default class RoomShareController extends RoomAccessor<RemoteMemory> {
     /**
      * 自动选择外矿能量应该存放到的位置
      */
-    public selectStore (remoteRoomName: string): StructureWithStore {
+    public selectStore (remoteRoomName: string): AnyStoreStructure {
         const remotePos = new RoomPosition(25, 25, remoteRoomName)
 
         // 优先放到最近的 link、storage、terminal 里

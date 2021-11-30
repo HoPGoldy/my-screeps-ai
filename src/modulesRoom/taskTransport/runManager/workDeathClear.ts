@@ -1,4 +1,3 @@
-import { StructureWithStore } from '@/utils'
 import { ManagerState, TransportWorkContext } from '../types'
 
 /**
@@ -21,7 +20,7 @@ export const onDeathClear = (context: TransportWorkContext) => {
     }
 
     const firstResource = Object.keys(manager.store)[0] as ResourceConstant
-    let target: StructureWithStore
+    let target: AnyStoreStructure
 
     // 不是能量就放到 terminal 里
     if (firstResource !== RESOURCE_ENERGY && firstResource !== RESOURCE_POWER && workRoom.terminal) {

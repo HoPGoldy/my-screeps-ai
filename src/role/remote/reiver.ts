@@ -1,6 +1,6 @@
 import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
-import { StructureWithStore, Color } from '@/utils'
+import { Color } from '@/utils'
 
 /**
  * 掠夺者
@@ -31,7 +31,7 @@ const reiver: CreepConfig<CreepRole.Reiver> = {
         else if (flag.room) {
             if (!flag.memory.sourceId) {
                 // 搜索包含存储的目标建筑并存储
-                let targetStructure: StructureWithStore | Ruin = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s) as StructureWithStore
+                let targetStructure: AnyStoreStructure | Ruin = flag.pos.lookFor(LOOK_STRUCTURES).find(s => 'store' in s) as AnyStoreStructure
 
                 if (!targetStructure) {
                     // 查找废墟，如果有包含 store 的废墟就设为目标
@@ -70,7 +70,7 @@ const reiver: CreepConfig<CreepRole.Reiver> = {
         }
 
         if (flag.room) {
-            const targetStructure = Game.getObjectById(flag.memory.sourceId as Id<StructureWithStore | Ruin>)
+            const targetStructure = Game.getObjectById(flag.memory.sourceId as Id<AnyStoreStructure | Ruin>)
             // 如果对应的房间里没有找到目标建筑就自杀并移除旗帜
             if (!targetStructure) {
                 delete Memory.flags[flagName]

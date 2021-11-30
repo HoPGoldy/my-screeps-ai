@@ -1,6 +1,6 @@
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
-import { useCache, StructureWithStore, Color } from '@/utils'
-import { getNearSite } from '@/modulesGlobal/construction'
+import { useCache, Color } from '@/utils'
+import { getNearSite } from '@/mount/global/construction'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 import { WALL_FOCUS_TIME } from '../structures/tower'
@@ -223,7 +223,7 @@ export default class CreepExtension extends Creep {
      *
      * @param targetId 要存放的建筑 id
      */
-    public storeTo (targetId: Id<StructureWithStore>): string {
+    public storeTo (targetId: Id<AnyStoreStructure>): string {
         const isHarvester = (creep: Creep): creep is RoleCreep<CreepRole.Harvester> => {
             return creep.memory.role === CreepRole.Harvester
         }

@@ -1,7 +1,7 @@
 import { MoveInfo, MoveOpt } from '@/modulesGlobal/move/types'
 import { HarvestMode } from '@/role/base/harvester'
 import { CreepRole, RoleDatas } from '@/role/types/role'
-import { Color, StructureWithStore } from '@/utils'
+import { Color } from '@/utils'
 
 declare global {
     /**
@@ -53,7 +53,7 @@ declare global {
         /**
          * 要存放到的目标建筑
          */
-        targetId?: Id<Source | StructureWithStore | ConstructionSite>
+        targetId?: Id<Source | AnyStoreStructure | ConstructionSite>
         /**
          * 要维修的建筑 id，维修单位特有
          */
@@ -69,7 +69,7 @@ declare global {
         /**
          * manager 特有 要填充能量的建筑 id
          */
-        fillStructureId?: Id<StructureWithStore>
+        fillStructureId?: Id<AnyStoreStructure>
         /**
          * 建筑工特有，当前缓存的建筑工地
          */

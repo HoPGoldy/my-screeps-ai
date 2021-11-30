@@ -1,4 +1,3 @@
-import { StructureWithStore } from '@/utils'
 import { PbHarvestState } from './role'
 
 declare global {
@@ -18,7 +17,7 @@ declare global {
         /**
          * 该旗帜下标注的资源 id
          */
-        sourceId?: Id<StructureWithStore | Deposit | StructurePowerBank | Ruin>
+        sourceId?: Id<AnyStoreStructure | Deposit | StructurePowerBank | Ruin>
         /**
          * 当前 powerbank 采集的状态
          */

@@ -1,5 +1,3 @@
-import { StructureWithStore } from '@/utils'
-
 /**
  * 外矿配置信息
  */
@@ -11,7 +9,7 @@ export interface RemoteInfo {
     /**
      * 该外矿要把能量运到哪个建筑里，保存下来是为了后面方便自动恢复外矿采集
      */
-    targetId?: Id<StructureWithStore>
+    targetId?: Id<AnyStoreStructure>
 }
 
 /**

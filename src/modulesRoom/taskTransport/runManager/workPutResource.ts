@@ -1,4 +1,3 @@
-import { StructureWithStore } from '@/utils'
 import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onPutResource = (context: TransportWorkContext) => {
@@ -40,7 +39,7 @@ export const onPutResource = (context: TransportWorkContext) => {
  */
 const getTarget = function (request: TransportRequestData, context: TransportWorkContext): boolean | MoveTargetInfo {
     const { workRoom, manager } = context
-    let target: Creep | StructureWithStore | PowerCreep
+    let target: Creep | AnyStoreStructure | PowerCreep
     let pos: RoomPosition
 
     // 没有指定目标位置
@@ -55,7 +54,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
         // 失败了，目标地是个建筑类型数组
         catch (e) {
             for (const type of request.to as StructureConstant[]) {
-                const structures = workRoom[type] as StructureWithStore[]
+                const structures = workRoom[type] as AnyStoreStructure[]
 
                 // 不是建筑类型、找不到建筑、不能 store 的建筑都退出
                 if (!structures) return false
@@ -75,7 +74,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
     }
     // 来源是个 id
     else if (typeof request.to === 'string') {
-        target = Game.getObjectById(request.to as Id<StructureWithStore | Creep | PowerCreep>)
+        target = Game.getObjectById(request.to as Id<AnyStoreStructure | Creep | PowerCreep>)
         if (!target) return false
     }
 
