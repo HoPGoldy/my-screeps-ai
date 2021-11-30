@@ -13,8 +13,14 @@ const squashPlanResult = function (result: AutoPlanResult[], maxLevel: number): 
 
     Object.entries(result)
         .filter(([level]) => Number(level) <= maxLevel)
-        .forEach(([level, levelResult]) => Object.assign(squashedResult, levelResult))
+        .forEach(([level, levelResult]) => {
+            Object.entries(levelResult).forEach(([strType, posList]) => {
+                if (!squashedResult[strType]) squashedResult[strType] = []
+                squashedResult[strType].push(...posList)
+            })
+        })
 
+    // Object.entries(squashedResult).forEach(([type, pos]) => console.log(type, pos.map(p => `${p.x},${p.y}`).join(' ')))
     return squashedResult
 }
 
@@ -36,6 +42,7 @@ export const createAutoPlanner = function (context: AutoPlannerContext) {
 
         const planResult = runPlan(room, center)
         placeSite(room, squashPlanResult(planResult, room.controller.level))
+        return OK
     }
 
     return { runStaticPlan }

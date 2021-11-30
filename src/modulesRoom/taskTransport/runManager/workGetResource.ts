@@ -115,7 +115,7 @@ const withdrawResource = function (
                 manager.log(`能量数量不足： ${JSON.stringify(request)} 当前剩余 ${destination.target.store[request.resType]}`)
             }
         }
-        // 没有指定拿的数量，如果计算出来的拿去数量太少了，说明这个能量源能量不够了
+        // 没有指定拿的数量，如果计算出来的拿取数量太少了，说明这个能量源能量不够了
         // 清下缓存，去其他地方
         else {
             if (

@@ -42,7 +42,7 @@ const sourceMappedStackTrace = function (error: Error | string): string {
     const re = /^\s+at\s+(.+?\s+)?\(?([0-z._\-\\\/]+):(\d+):(\d+)\)?$/gm
     let match: RegExpExecArray | null
     let outStack = error.toString()
-    console.log('ErrorMapper -> sourceMappedStackTrace -> outStack', outStack)
+    console.log('ErrorMapper -> ', stack)
 
     while ((match = re.exec(stack))) {
         // 解析完成

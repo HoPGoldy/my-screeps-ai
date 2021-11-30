@@ -45,7 +45,7 @@ export default function (room: Room, centerPos: RoomPosition): AutoPlanResult[] 
 const getOutLinkPos = function (room: Room): RoomPosition[] {
     // 给 source 和 controller 旁边造 link
     const targets = [...room.source, room.controller]
-    const result = []
+    const result: RoomPosition[] = []
 
     for (const target of targets) {
         // 旁边已经造好了 link 或者有工地了，就直接返回对应位置
@@ -68,7 +68,7 @@ const getOutLinkPos = function (room: Room): RoomPosition[] {
         const canPlaceLinkPos = getFreeSpace(harvesterPos[0])
         if (canPlaceLinkPos.length <= 0) continue
 
-        result.push(canPlaceLinkPos)
+        result.push(canPlaceLinkPos[0])
     }
 
     return result

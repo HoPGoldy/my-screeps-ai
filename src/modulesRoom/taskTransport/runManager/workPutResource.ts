@@ -123,7 +123,7 @@ const transferResource = function (
     transferAmount: number,
     manager: Creep
 ) {
-    transferAmount && manager.log(`放下 ${targetRes.resType} ${transferAmount}`)
+    // transferAmount && manager.log(`放下 ${targetRes.resType} ${transferAmount}`)
 
     let transferResult: ScreepsReturnCode
     if (!destinationTarget) {
@@ -135,7 +135,7 @@ const transferResource = function (
 
     if (transferResult === OK) {
         if (targetRes.amount) targetRes.arrivedAmount = (targetRes.arrivedAmount || 0) + transferAmount
-        manager.log(`更新已抵达数量 ${targetRes.arrivedAmount} ${JSON.stringify(targetRes)}`)
+        // manager.log(`更新已抵达数量 ${targetRes.arrivedAmount} ${JSON.stringify(targetRes)}`)
         // 这一趟运完了就及时删掉名字，方便其他搬运工尽早继续处理对应的请求
         delete targetRes.managerName
     }

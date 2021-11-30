@@ -77,7 +77,7 @@ export default class RoomTransport extends TaskController<string | number, Trans
      * @param requestCreep 申请结束的爬
      */
     public requireFinishTask (task: TransportTaskData, reason: TaskFinishReason, requestCreep: Creep) {
-        console.log('申请结束搬运任务', JSON.stringify(task), reason, requestCreep)
+        // console.log('申请结束搬运任务', JSON.stringify(task), reason, requestCreep)
 
         if (reason === TaskFinishReason.Complete) this.removeTaskByKey(task.key)
         else if (reason === TaskFinishReason.CantFindSource) {

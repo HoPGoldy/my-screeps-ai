@@ -112,6 +112,5 @@ export default class RoomExtension extends Room {
 
         if (result === OK) return '自动规划完成'
         else if (result === ERR_NOT_OWNER) return '自动规划失败，房间没有控制权限'
-        else return `未找到基地中心点位，请执行 Game.rooms.${this.name}.setcenter() 以启用自动规划`
     }
 }

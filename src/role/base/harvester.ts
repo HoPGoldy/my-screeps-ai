@@ -246,7 +246,7 @@ const actionStrategy: ActionStrategy = {
                             amount: Math.max(container.store[RESOURCE_ENERGY] / 2, 250)
                         }]
                     }, { dispath: true })
-                    creep.log(`更新能量转移任务 ${Math.max(container.store[RESOURCE_ENERGY] / 2, 250)} 任务 id ${creep.memory.energyTransferId}`)
+                    // creep.log(`更新能量转移任务 ${Math.max(container.store[RESOURCE_ENERGY] / 2, 250)} 任务 id ${creep.memory.energyTransferId}`)
                 }
             }
 
