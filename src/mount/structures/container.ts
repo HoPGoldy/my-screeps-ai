@@ -1,7 +1,5 @@
 /**
  * container 拓展
- *
- * 目前只有 source container，所以会在建造完成后把自己注册到对应 source 并发布对应任务
  */
 export default class ContainerExtension extends StructureContainer {
     onBuildComplete () {

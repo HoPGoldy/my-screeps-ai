@@ -31,13 +31,6 @@ export default class TowerExtension extends StructureTower {
     }
 
     /**
-     * 回调 - 建造完成
-     */
-    public onBuildComplete (): void {
-        this.requireEnergy()
-    }
-
-    /**
      * 日常的 tower 工作
      */
     private dailyWork (): void {

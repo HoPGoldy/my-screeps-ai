@@ -1,17 +1,18 @@
-import { Color } from '@/utils'
-import { ConstructInfo, CreateOptions } from './types'
+import { createMemoryAccessor } from './memory'
+import { ConstructInfo, ConstructionContext } from './types'
 
-export const createConstructionManager = function (effects: CreateOptions) {
-    /**
-     * 向队列里新增建造任务
-     */
-    const addConstructionSite = function (sites: ConstructInfo[]) {
-        const waitingSites = effects.getWaitingSites()
-        effects.setWaitingSites([...waitingSites, ...sites])
-    }
+/**
+ * 建造的优先级
+ * 越靠前建造优先级越高
+ */
+const BUILD_PRIORITY = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_EXTENSION, STRUCTURE_LINK]
+
+export const createConstructionController = function (context: ConstructionContext) {
+    const { onBuildComplete, getMemory, env } = context
+    const db = createMemoryAccessor(getMemory)
 
     /**
-     * 检查一个建筑工地是否建造完成
+     * 获取一个工地信息对应的建筑
      *
      * @param site 建筑工地
      * @returns 若建造完成则返回对应的建筑
@@ -26,7 +27,6 @@ export const createConstructionManager = function (effects: CreateOptions) {
         }
         catch (e) {
             // 上面代码如果没有视野的话就会报错
-
         }
     }
 
@@ -34,8 +34,8 @@ export const createConstructionManager = function (effects: CreateOptions) {
      * 放置正在排队的工地
      */
     const planSite = function () {
-        const waitingSites = effects.getWaitingSites()
-        const gameSites = effects.getGameSites()
+        const waitingSites = db.queryWaitingSites()
+        const gameSites = env.getGame().constructionSites
 
         const buildingSiteLength = Object.keys(gameSites).length
         if (buildingSiteLength >= MAX_CONSTRUCTION_SITES) return
@@ -54,7 +54,7 @@ export const createConstructionManager = function (effects: CreateOptions) {
             }
             // 放置失败，下次重试
             else if (result !== OK && result !== ERR_FULL && result !== ERR_RCL_NOT_ENOUGH) {
-                effects.log(`工地 ${type} 无法放置，位置 [${sitePos}]，createConstructionSite 结果 ${result}`, '建造控制器', Color.Yellow)
+                env.log.warning(`工地 ${type} 无法放置，位置 [${sitePos}]，createConstructionSite 结果 ${result}`)
                 return true
             }
 
@@ -62,16 +62,16 @@ export const createConstructionManager = function (effects: CreateOptions) {
         })
 
         // 把放置失败的工地放到队首下次再次尝试放置
-        if (failSiteInfos.length > 0) addConstructionSite(failSiteInfos)
+        if (failSiteInfos.length > 0) db.insertWaitingSites(failSiteInfos)
     }
 
     /**
      * 找到建造完成的工地并触发对应的回调
      */
     const handleCompleteSite = function () {
-        const buildingSites = effects.getBuildSites()
+        const buildingSites = db.queryBuildSites()
         const buildingSiteLength = Object.keys(buildingSites).length
-        const existSites = effects.getGameSites()
+        const existSites = env.getGame().constructionSites
         const existSiteLength = Object.keys(existSites).length
 
         // 工地数量一致，说明没有刚造好的工地
@@ -89,7 +89,7 @@ export const createConstructionManager = function (effects: CreateOptions) {
                 return result
             }, {})
 
-            effects.setBuildingSites(newBuildingSites)
+            db.updateBuildingSites(newBuildingSites)
             return
         }
 
@@ -99,25 +99,57 @@ export const createConstructionManager = function (effects: CreateOptions) {
 
             const failSiteInfos = disappearedSiteIds.map(id => buildingSites[id]).filter(siteInfo => {
                 const structure = getSiteStructure(siteInfo)
+                if (structure) onBuildComplete(structure)
 
-                // 没找到对应位置上有建筑，那应该是被干掉了，重新尝试建造
-                if (!structure) return true
-
-                effects.updateStructure(structure.room.name, structure.structureType, structure.id)
-                // 如果有的话就执行回调
-                if (structure.onBuildComplete) structure.onBuildComplete()
-
-                return false
+                // 这里，没找到建筑会返回 true，说明被干掉了，后面会重新尝试建造
+                return !structure
             })
 
             // 把处理好的工地丢弃，防止下次调用时重复触发
             for (const id of disappearedSiteIds) delete buildingSites[id]
-            effects.setBuildingSites(buildingSites)
+            db.updateBuildingSites(buildingSites)
 
             // 把放置失败的工地放到队首下次再次尝试放置
-            if (failSiteInfos.length > 0) addConstructionSite(failSiteInfos)
+            if (failSiteInfos.length > 0) db.insertWaitingSites(failSiteInfos)
         }
     }
 
-    return { planSite, handleCompleteSite, addConstructionSite }
+    /**
+     * 获取最近的待建造工地
+     * 使用前请确保该位置有视野
+     *
+     * @param pos 获取本房间内距离该位置最近且优先级最高的工地
+     */
+    const getNearSite = function (pos: RoomPosition): ConstructionSite {
+        const room = env.getRoomByName(pos.roomName)
+        if (!room) return undefined
+
+        const sites: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
+        if (sites.length <= 0) return undefined
+
+        const groupedSite = _.groupBy(sites, site => site.structureType)
+
+        let targetSites: ConstructionSite[] = sites
+        // 先查找优先建造的工地
+        for (const type of BUILD_PRIORITY) {
+            const matchedSite = groupedSite[type]
+            if (!matchedSite) continue
+
+            if (matchedSite.length === 1) return matchedSite[0]
+            targetSites = matchedSite
+        }
+
+        // 在目标里找最近的
+        // 这里比较离谱，findClosestByPath 会必须能走到目标旁边的才会算，哪怕配置了 range 为 3 也没用
+        // 如果有一个工地没办法抵达附近，但是能到其三格以内，findClosestByPath 也会认为这个工地到不了（但是实际上是可以到的）
+        // 这里的解决方法是有目标但是又到不了附近，就往那边走着（因为寻路是可以正常找到路径的）
+        const result = pos.findClosestByPath(targetSites)
+        if (!result) {
+            env.log.warning(`发现了无法抵达的工地：${targetSites.map(site => site.pos)}，出发位置 ${pos}，工地已移除`)
+            return targetSites[0]
+        }
+        return result
+    }
+
+    return { planSite, handleCompleteSite, addConstructionSite: db.insertWaitingSites, getNearSite }
 }

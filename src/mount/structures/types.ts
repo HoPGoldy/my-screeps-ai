@@ -20,10 +20,6 @@ declare global {
          * 建筑的主要工作入口
          */
         work?(): void
-        /**
-         * 建筑在完成建造时触发的回调
-         */
-        onBuildComplete?(): void
     }
 
     interface StructureController {

@@ -1,4 +1,4 @@
-import { log } from '@/utils'
+import { EnvContext } from '@/utils'
 import { updateStructure } from '@/modulesRoom/shortcut'
 
 /**
@@ -23,33 +23,31 @@ export interface ConstructInfo<StructureType extends BuildableStructureConstant 
     type: StructureType
 }
 
+export interface ConstructionMemory {
+    /**
+     * 等待建造的工地队列
+     */
+    waiting?: ConstructInfo[]
+    /**
+     * 正在建造的工地
+     * 键为工地的 id，值为工地的信息
+     */
+    building?: Record<string, ConstructInfo>
+}
+
 /**
  * 工地管理模块所需副作用
  */
-export interface CreateOptions {
-    log: typeof log
-    updateStructure: typeof updateStructure
+export type ConstructionContext = {
     /**
-     * 获取当前存在的工地
+     * 建造完成后的回调
      */
-    getGameSites: () => { [siteId: string]: ConstructionSite }
+    onBuildComplete?: (structure: Structure) => unknown
     /**
-     * 获取等待放置的工地队列
+     * 获取模块内存
      */
-    getWaitingSites: () => ConstructInfo[]
-    /**
-     * 设置等待放置的工地队列
-     */
-    setWaitingSites: (newList: ConstructInfo[]) => void
-    /**
-     * 获取正在建造的工地 hash
-     */
-    getBuildSites: () => { [siteId: string]: ConstructInfo }
-    /**
-     * 设置正在建造的工地 hash
-     */
-    setBuildingSites: (newList: { [siteId: string]: ConstructInfo }) => void
-}
+    getMemory: () => ConstructionMemory
+} & EnvContext
 
 declare global {
     interface Memory {

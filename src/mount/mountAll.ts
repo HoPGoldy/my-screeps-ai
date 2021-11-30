@@ -3,9 +3,8 @@ import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
 import {
-    ControllerExtension, StructuresExtension, TowerExtension, LinkExtension, LinkConsole,
-    TerminalExtension, ExtractorExtension, WallExtension, RampartExtension,
-    NukerExtension, PowerSpawnExtension, PowerSpawnConsole, ContainerExtension
+    ControllerExtension, StructuresExtension, TowerExtension, LinkExtension,
+    LinkConsole, NukerExtension, PowerSpawnExtension, PowerSpawnConsole
 } from './structures'
 import SourceExtension from './source/extension'
 import FactoryConsole from '@/modulesRoom/factory/console'
@@ -60,14 +59,9 @@ export const mountAll = function () {
         [StructureTower, TowerExtension],
         [StructureLink, LinkExtension],
         [StructureLink, LinkConsole],
-        [StructureTerminal, TerminalExtension],
-        [StructureExtractor, ExtractorExtension],
         [StructureNuker, NukerExtension],
         [StructurePowerSpawn, PowerSpawnExtension],
-        [StructurePowerSpawn, PowerSpawnConsole],
-        [StructureWall, WallExtension],
-        [StructureRampart, RampartExtension],
-        [StructureContainer, ContainerExtension]
+        [StructurePowerSpawn, PowerSpawnConsole]
     ]
 
     mountList.forEach(([targetClass, extensionClass]) => {

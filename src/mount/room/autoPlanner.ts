@@ -1,5 +1,5 @@
 import { createAutoPlanner } from '@/modulesGlobal/autoPlanning'
-import { addConstructionSite } from '@/modulesGlobal/construction'
+import { addConstructionSite } from '@/mount/global/construction'
 import { ConstructInfo } from '@/modulesGlobal/construction/types'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 import { getTowerController } from './tower'

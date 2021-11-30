@@ -22,28 +22,6 @@ export class LinkExtension extends StructureLink {
     }
 
     /**
-     * 回调 - 建造完成
-     * 分配默认职责，玩家不同意默认职责的话也可以手动调用 .as... 方法重新分配职责
-     */
-    public onBuildComplete (): void {
-        // 如果附近有 controller 就转换为 UpgradeLink
-        if (this.room.controller.pos.inRangeTo(this, 2)) {
-            this.asUpgrade()
-            return
-        }
-
-        // 在基地中心附近就转换为 CenterLink
-        const center = this.room.memory.center
-        if (center && this.pos.isNearTo(new RoomPosition(center[0], center[1], this.room.name))) {
-            this.asCenter()
-            return
-        }
-
-        // 否则就默认转换为 SourceLink（因为有外矿 link，而这种 link 边上是没有 source 的）
-        this.asSource()
-    }
-
-    /**
      * 注册为源 link
      * 注册后对应 source 的采集单位不会立刻反应过来，要等到新的采集单位孵化后才会查找到 link
      */
