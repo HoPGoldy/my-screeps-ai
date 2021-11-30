@@ -1,16 +1,33 @@
-import { delayQueue } from '@/modulesGlobal/delayQueue'
+import { withDelayCallback } from '@/mount/global/delayQueue'
 import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import RoomStrategyController from './controller'
-import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 import { WorkTaskType } from '../taskWork/types'
 import { CreepRole } from '@/role/types/role'
+import { DelayTaskData } from '@/modulesGlobal/delayQueue'
 
 /**
  * 8级时只要 cpu 足够，依旧会孵化一个 upgrader 进行升级
  * 这个限制代表了在房间 8 级时 storage 里的能量大于多少才会持续孵化 upgarder
  */
 const UPGRADER_WITH_ENERGY_LEVEL_8 = 700000
+
+/**
+ * 延迟孵化升级工
+ */
+const delaySpawnUpgrader = withDelayCallback('spawnUpgrader', ({ roomName }: DelayTaskData) => {
+    const room = Game.rooms[roomName]
+    // 房间或存储没了就不在孵化
+    if (!room || !room.storage) return
+
+    // 现在还不是时候，过段时间再试一下
+    if (!needContinueUpgrade(room)) {
+        return delaySpawnUpgrader({ roomName }, 10000)
+    }
+
+    room.work.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
+    room.spawner.release.changeBaseUnit(CreepRole.Worker, 1)
+})
 
 /**
  * 运维策略
@@ -84,7 +101,7 @@ export class OperationStrategy {
         else {
             // 暂时停止升级计划
             this.room.work.removeTaskByType(WorkTaskType.Upgrade)
-            delayQueue.addDelayTask(DelayTaskType.SpawnUpgrader, { roomName: this.room.name }, 10000)
+            delaySpawnUpgrader({ roomName: this.room.name }, 10000)
         }
     }
 
@@ -136,19 +153,3 @@ const needContinueUpgrade = function (room: Room): boolean {
     // cpu 不够或者能量不够了就不升级了
     return !(Game.cpu.bucket < 700 || total < UPGRADER_WITH_ENERGY_LEVEL_8)
 }
-
-/**
- * 注册升级工的延迟孵化任务
- */
-delayQueue.addDelayCallback(DelayTaskType.SpawnUpgrader, room => {
-    // 房间或存储没了就不在孵化
-    if (!room || !room.storage) return
-
-    // 满足以下条件时就延迟发布
-    if (!needContinueUpgrade(room)) {
-        return delayQueue.addDelayTask(DelayTaskType.SpawnUpgrader, { roomName: room.name }, 10000)
-    }
-
-    room.work.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
-    room.spawner.release.changeBaseUnit(CreepRole.Worker, 1)
-})

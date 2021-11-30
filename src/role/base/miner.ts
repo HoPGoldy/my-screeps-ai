@@ -1,8 +1,8 @@
 import { bodyConfigs, createBodyGetter } from '../bodyUtils'
-import { delayQueue } from '@/modulesGlobal/delayQueue'
+import { withDelayCallback } from '@/mount/global/delayQueue'
 import { removeCreep } from '@/modulesGlobal/creep/utils'
-import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
 import { CreepConfig, CreepRole } from '../types/role'
+import { DelayTaskData } from '@/modulesGlobal/delayQueue'
 
 /**
  * miner 的矿物采集上限
@@ -11,13 +11,27 @@ import { CreepConfig, CreepRole } from '../types/role'
 const MINE_LIMIT = 100000
 
 /**
- * 添加 miner 的延迟孵化任务
- * @param roomName 添加到的房间名
- * @param delayTime 要延迟的时间，一般都是 mineal 的重生时间
+ * 延迟孵化 miner
  */
-const addSpawnMinerTask = function (roomName: string, delayTime: number) {
-    delayQueue.addDelayTask(DelayTaskType.SpawnMiner, { roomName }, delayTime + 1)
-}
+const delaySpawnMiner = withDelayCallback('spawnMiner', ({ roomName }: DelayTaskData) => {
+    const room = Game.rooms[roomName]
+    // 房间或终端没了就不在孵化
+    if (!room || !room.terminal) return
+
+    // 满足以下条件时就延迟发布
+    if (
+        // cpu 不够
+        Game.cpu.bucket < 700 ||
+        // 矿采太多了
+        room.terminal.store[room.mineral.mineralType] >= MINE_LIMIT
+    ) {
+        delaySpawnMiner({ roomName }, 1000)
+        return
+    }
+
+    // 孵化采集单位
+    room.spawner.release.miner()
+})
 
 /**
  * 元素矿采集单位
@@ -28,7 +42,7 @@ const miner: CreepConfig<CreepRole.Miner> = {
     isNeed: room => {
         // 房间中的矿床是否还有剩余产量
         if (room.mineral.mineralAmount <= 0) {
-            addSpawnMinerTask(room.name, room.mineral.ticksToRegeneration)
+            delaySpawnMiner({ roomName: room.name }, room.mineral.ticksToRegeneration + 1)
             return false
         }
 
@@ -36,7 +50,7 @@ const miner: CreepConfig<CreepRole.Miner> = {
         if (total < MINE_LIMIT) return true
 
         // 资源已经采集的足够多了，之后再采集
-        addSpawnMinerTask(room.name, 50000)
+        delaySpawnMiner({ roomName: room.name }, 50001)
         return false
     },
     source: creep => {
@@ -45,7 +59,7 @@ const miner: CreepConfig<CreepRole.Miner> = {
         const mineral = Game.rooms[creep.memory.data.workRoom]?.mineral
         // 找不到矿或者矿采集完了，添加延迟孵化并魂归卡拉
         if (!mineral || mineral.mineralAmount <= 0) {
-            addSpawnMinerTask(mineral.room.name, mineral.ticksToRegeneration)
+            delaySpawnMiner({ roomName: mineral.room.name }, mineral.ticksToRegeneration + 1)
             removeCreep(creep.name, { immediate: true })
         }
 
@@ -65,24 +79,5 @@ const miner: CreepConfig<CreepRole.Miner> = {
     },
     bodys: (room, spawn) => createBodyGetter(bodyConfigs.worker)(room, spawn)
 }
-
-/**
- * 注册 miner 的延迟孵化任务
- */
-delayQueue.addDelayCallback(DelayTaskType.SpawnMiner, room => {
-    // 房间或终端没了就不在孵化
-    if (!room || !room.terminal) return
-
-    // 满足以下条件时就延迟发布
-    if (
-        // cpu 不够
-        Game.cpu.bucket < 700 ||
-        // 矿采太多了
-        room.terminal.store[room.mineral.mineralType] >= MINE_LIMIT
-    ) return addSpawnMinerTask(room.name, 1000)
-
-    // 孵化采集单位
-    room.spawner.release.miner()
-})
 
 export default miner

@@ -4,13 +4,13 @@ import {
     runPowerCreep,
     stateScannerAppPlugin,
     creepNumberControlAppPlugin,
-    crossShardAppPlugin,
-    delayQueueAppPlugin
+    crossShardAppPlugin
 } from './modulesGlobal'
 import { runRoom } from './modulesRoom'
 import { generatePixelAppPlugin } from './utils'
 import { createGlobalExtension } from './mount'
 import { constructionAppPlugin } from './mount/global/construction'
+import { delayQueueAppPlugin } from './mount/global/delayQueue'
 import { warAppPlugin } from './mount/global/war'
 
 const app = createApp()

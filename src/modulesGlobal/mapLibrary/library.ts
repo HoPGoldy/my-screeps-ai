@@ -1,7 +1,5 @@
-import { delayQueue } from '@/modulesGlobal/delayQueue'
-import { DelayTaskType } from '../delayQueue/types'
+import { withDelayCallback } from '@/mount/global/delayQueue'
 import { MapLibrary } from './types'
-const { addDelayCallback, addDelayTask } = delayQueue
 
 const RAW_MEMORY_ID = 1
 
@@ -14,7 +12,7 @@ export let mapLibrary: MapLibrary = {}
 /**
  * map 库初始化回调
  */
-addDelayCallback(DelayTaskType.MapLibraryInit, () => {
+const delayInitMapLibrary = withDelayCallback('mapLibraryInit', () => {
     if (!(RAW_MEMORY_ID in RawMemory.segments)) return initMapLibrary()
 
     const data = RawMemory.segments[RAW_MEMORY_ID]
@@ -25,7 +23,7 @@ addDelayCallback(DelayTaskType.MapLibraryInit, () => {
  * map 库保存回调
  * 由于肯定会经历全量 JSON 压缩，所以这里不用特别指定要保存哪个房间的数据
  */
-addDelayCallback(DelayTaskType.MapLibrarySave, () => {
+const delaySaveMapLibrary = withDelayCallback('mapLibrarySave', () => {
     if (!(RAW_MEMORY_ID in RawMemory.segments)) return saveMapLibrary()
 
     // 复制 map 库，只需要保存 raw 原始数据
@@ -42,7 +40,7 @@ addDelayCallback(DelayTaskType.MapLibrarySave, () => {
  */
 export const initMapLibrary = function () {
     RawMemory.setActiveSegments([RAW_MEMORY_ID])
-    addDelayTask(DelayTaskType.MapLibraryInit, { roomName: '' }, 1)
+    delayInitMapLibrary({ }, 1)
 }
 
 /**
@@ -50,5 +48,5 @@ export const initMapLibrary = function () {
  */
 export const saveMapLibrary = function () {
     RawMemory.setActiveSegments([RAW_MEMORY_ID])
-    addDelayTask(DelayTaskType.MapLibrarySave, { roomName: '' }, 1)
+    delaySaveMapLibrary({ }, 1)
 }

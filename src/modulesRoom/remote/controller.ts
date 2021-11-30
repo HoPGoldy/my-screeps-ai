@@ -3,8 +3,18 @@ import { CreepRole } from '@/role/types/role'
 import { RemoteInfo, RemoteShowInfo, RemoteMemory } from './types'
 import RoomAccessor from '../RoomAccessor'
 import { GetName } from '../spawn/nameGetter'
-import { delayQueue } from '@/modulesGlobal/delayQueue'
-import { DelayTaskType } from '@/modulesGlobal/delayQueue/types'
+import { withDelayCallback } from '@/mount/global/delayQueue'
+
+/**
+ * 添加外矿被禁用后的恢复采集任务
+ */
+const addDelayHarvest = withDelayCallback('remoteHarvest', ({ roomName, remote, sourceId }: DelayRemoteHarvestData) => {
+    const thisRoom = Game.rooms[roomName]
+    if (!thisRoom) return
+
+    thisRoom.remote.enableRemote(remote, sourceId)
+    thisRoom.spawner.release.remoteHarvester(remote, sourceId)
+})
 
 export default class RoomShareController extends RoomAccessor<RemoteMemory> {
     constructor (roomName: string) {
@@ -68,19 +78,15 @@ export default class RoomShareController extends RoomAccessor<RemoteMemory> {
     /**
      * 暂时禁止某个外矿采集
      *
-     * @param remoteRoomName 要禁用的外矿房间名
+     * @param remote 要禁用的外矿房间名
      * @param sourceId 要禁止采集的外矿
      * @param disableTick 禁止采集多久
      */
-    public disableRemote (remoteRoomName: string, sourceId: Id<Source>, disableTick = 1500) {
-        if (this.isDisabled(remoteRoomName, sourceId)) return
-        this.setRemoteInfo(remoteRoomName, sourceId, { reharvestTick: Game.time + disableTick })
-        // 添加延迟任务
-        delayQueue.addDelayTask(DelayTaskType.RemoteHarvest, {
-            roomName: this.roomName,
-            remoteRoomName,
-            sourceId
-        }, disableTick)
+    public disableRemote (remote: string, sourceId: Id<Source>, disableTick = 1500) {
+        if (this.isDisabled(remote, sourceId)) return
+        this.setRemoteInfo(remote, sourceId, { reharvestTick: Game.time + disableTick })
+        // 添加延迟启动任务
+        addDelayHarvest({ roomName: this.roomName, remote, sourceId }, disableTick)
     }
 
     /**
@@ -184,9 +190,20 @@ export default class RoomShareController extends RoomAccessor<RemoteMemory> {
     }
 }
 
-delayQueue.addDelayCallback(DelayTaskType.RemoteHarvest, (room, { remoteRoomName, sourceId }) => {
-    if (!room) return
-
-    room.remote.enableRemote(remoteRoomName, sourceId)
-    room.spawner.release.remoteHarvester(remoteRoomName, sourceId)
-})
+/**
+ * 外矿恢复采集任务数据
+ */
+interface DelayRemoteHarvestData {
+    /**
+     * 源房间名
+     */
+    roomName: string
+    /**
+     * 被采集的外矿房间房名
+     */
+    remote: string
+    /**
+     * 要采集的外矿 id
+     */
+    sourceId: Id<Source>
+}
