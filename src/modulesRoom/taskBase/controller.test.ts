@@ -3,7 +3,7 @@ import { getMockCreep, getMockRoom, mockGetObjectById } from '@test/mock'
 
 describe('房间任务核心测试', () => {
     // 获取指定优先级的任务
-    const getTask = (priority: number): RoomTask<string> => ({ type: `${priority}`, priority })
+    const getTask = (priority: number): RoomTask<string> => ({ type: `${priority}`, priority, need: 1 })
 
     it('可以从 Memory 中初始化任务', () => {
         const taskKey = 123

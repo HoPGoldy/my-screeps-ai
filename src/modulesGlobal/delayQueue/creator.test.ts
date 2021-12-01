@@ -1,47 +1,18 @@
 import { createDelayQueue } from './index'
-import { getMockRoom } from '@test/mock'
-import { DelayTask, DelayTaskData, DelayTaskType } from './types'
+import { getTestEnvContext } from '@test/mock'
 
 describe('延迟任务队列测试', () => {
-    // 一个新增矿工的延迟任务
-    const mockData: DelayTaskData = { roomName: 'W1N1' }
-    const mockTask: DelayTask<DelayTaskType.SpawnMiner> = {
-        name: DelayTaskType.SpawnMiner,
-        data: mockData
-    }
-
-    it('可以从 Memory 中初始化任务', () => {
-        const { initDelayTasks, manageDelayTask, addDelayCallback } = createDelayQueue()
-        const mockCallback = jest.fn()
-
-        // 把数据装进Memory，并添加对应的 room
-        Memory.delayTasks = JSON.stringify({ 1: [mockTask] })
-        Game.rooms.W1N1 = getMockRoom({ name: 'W1N1' })
-        Game.time = 1
-
-        // 初始化模块并加载回调
-        initDelayTasks()
-        addDelayCallback(DelayTaskType.SpawnMiner, mockCallback)
-
-        // 执行模块
-        manageDelayTask()
-
-        // 注册的回调应该被调用一次
-        expect(mockCallback).toBeCalled()
-
-        // 回调传入的参数应该是对应的 room 和 data
-        const callbackArgs = mockCallback.mock.calls[0]
-        expect(callbackArgs[0]).not.toBeUndefined()
-        expect(callbackArgs[1]).toEqual(mockData)
-    })
-
-    it('可以添加新任务', () => {
-        const { manageDelayTask, addDelayCallback, addDelayTask } = createDelayQueue()
+    it('本 tick 的新任务会被立刻执行', () => {
+        const { env } = getTestEnvContext()
+        const { manageDelayTask, withDelayCallback } = createDelayQueue({
+            getMemory: () => ({}), env
+        })
         const mockCallback = jest.fn()
 
         // 添加任务并加载回调
-        addDelayTask(DelayTaskType.SpawnMiner, mockData, 0)
-        addDelayCallback(DelayTaskType.SpawnMiner, mockCallback)
+        const delayCallbackData = { roomName: 'W1N1' }
+        const addDelayTask = withDelayCallback('type', mockCallback)
+        addDelayTask(delayCallbackData, 0)
 
         // 执行模块
         manageDelayTask()
@@ -49,42 +20,54 @@ describe('延迟任务队列测试', () => {
         // 注册的回调应该被调用一次
         expect(mockCallback).toBeCalled()
 
-        // 回调传入的参数应该是 undefined（因为 Game.rooms 里没有对应的房间）和 data
+        // 回调传入的参数应该是发布任务时传入的 data
         const callbackArgs = mockCallback.mock.calls[0]
-        expect(callbackArgs[0]).toBeUndefined()
-        expect(callbackArgs[1]).toEqual(mockData)
-    })
-
-    it('可以保存任务到 Memory', () => {
-        const { saveDelayTasks, addDelayTask } = createDelayQueue()
-
-        // 添加任务并保存
-        addDelayTask(DelayTaskType.SpawnMiner, mockData, 1)
-        saveDelayTasks()
-
-        expect(Memory).toHaveProperty('delayTasks')
-        expect(Memory.delayTasks).toEqual(JSON.stringify({ 2: [mockTask] }))
+        expect(callbackArgs[0]).toEqual(delayCallbackData)
     })
 
     it('任务可以延迟触发', () => {
-        const { manageDelayTask, addDelayCallback, addDelayTask } = createDelayQueue()
-        const mockCallback = jest.fn()
+        const { mockGame, env } = getTestEnvContext()
+        const memory = {}
+        const { manageDelayTask, withDelayCallback } = createDelayQueue({
+            getMemory: () => memory, env
+        })
 
-        // 添加不在本 tick 的任务并加载回调
-        addDelayTask(DelayTaskType.SpawnMiner, mockData, 1)
-        addDelayCallback(DelayTaskType.SpawnMiner, mockCallback)
+        // 添加任务并加载回调
+        const mockCallback1 = jest.fn()
+        const addDelayTask1 = withDelayCallback('type1', mockCallback1)
+        addDelayTask1({ roomName: 'W1N1' }, 1)
+        addDelayTask1({ roomName: 'W2N2' }, 3)
+
+        const mockCallback2 = jest.fn()
+        const addDelayTask2 = withDelayCallback('type2', mockCallback2)
+        addDelayTask2({ sourceId: '123' }, 2)
 
         // 执行模块
-        Game.time = 1
         manageDelayTask()
-        expect(mockCallback).not.toBeCalled()
+        expect(mockCallback1).not.toBeCalled()
+        expect(mockCallback2).not.toBeCalled()
 
-        Game.time = 2
+        mockGame.time += 1
         manageDelayTask()
-        expect(mockCallback).toBeCalled()
+        // 注册的回调应该被调用一次
+        expect(mockCallback1).toBeCalled()
+        let callbackArgs = mockCallback1.mock.calls[0]
+        expect(callbackArgs[0]).toEqual({ roomName: 'W1N1' })
 
-        Game.time = 3
+        mockGame.time += 1
         manageDelayTask()
-        expect(mockCallback).toBeCalled()
+        // 第二个回调应该被调用一次
+        expect(mockCallback2).toBeCalled()
+        // 且不会触发第一个回调
+        expect(mockCallback1).toBeCalledTimes(1)
+        callbackArgs = mockCallback2.mock.calls[0]
+        expect(callbackArgs[0]).toEqual({ sourceId: '123' })
+
+        mockGame.time += 1
+        manageDelayTask()
+        // 注册的回调应该被调用两次
+        expect(mockCallback1).toBeCalledTimes(2)
+        callbackArgs = mockCallback1.mock.calls[1]
+        expect(callbackArgs[0]).toEqual({ roomName: 'W2N2' })
     })
 })

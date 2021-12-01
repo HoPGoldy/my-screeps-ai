@@ -80,7 +80,10 @@ const buildCallback: {
 
 // 构建建筑管理模块
 const { addConstructionSite, planSite, handleCompleteSite, getNearSite } = createConstructionController({
-    getMemory: () => Memory.sites,
+    getMemory: () => {
+        if (!Memory.sites) Memory.sites = {}
+        return Memory.sites
+    },
     onBuildComplete: structure => {
         const { room, id, structureType } = structure
         updateStructure(room.name, structureType, id)
@@ -91,7 +94,7 @@ const { addConstructionSite, planSite, handleCompleteSite, getNearSite } = creat
 
 declare global {
     interface Memory {
-        sites: ConstructionMemory
+        sites?: ConstructionMemory
     }
 }
 

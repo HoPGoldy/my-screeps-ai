@@ -8,6 +8,7 @@ export { getMockGame } from './Game'
 export { getMockVisual } from './RoomVisual'
 export { getMockSpawn } from './structures/Spawn'
 export { getMockMemory } from './Memory'
+export { getTestEnvContext } from './envContext'
 export * from './utils'
 
 /**

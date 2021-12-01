@@ -47,14 +47,18 @@ export const createDelayQueue = function (context: DelayQueueContext) {
          * @param call 任务在多少 tick 后调用
          */
         const addDelayTask = function (data: T, call: number) {
-            const callTick = Game.time + call
+            const currentTick = env.getGame().time
+            const callTick = currentTick + call
             // 不能添加过去的延迟任务
-            if (callTick < Game.time) return
+            if (callTick < currentTick) return
             // 当前 tick 的任务，直接触发
-            else if (callTick === Game.time) execDelayTask({ type, data })
+            else if (callTick === currentTick) {
+                execDelayTask({ type, data })
+                return
+            }
 
             // 保存起来供后面调用
-            db.insertTaskWithTick(call, type, data)
+            db.insertTaskWithTick(callTick, type, data)
         }
 
         return addDelayTask

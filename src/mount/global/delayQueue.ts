@@ -5,12 +5,15 @@ import { createEnvContext } from '@/utils'
 
 declare global {
     interface Memory {
-        delays: DelayQueueMemory
+        delays?: DelayQueueMemory
     }
 }
 
 const { manageDelayTask, withDelayCallback } = createDelayQueue({
-    getMemory: () => Memory.delays,
+    getMemory: () => {
+        if (!Memory.delays) Memory.delays = {}
+        return Memory.delays
+    },
     env: createEnvContext('延迟任务')
 })
 
