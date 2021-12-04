@@ -15,7 +15,9 @@ import {
     LabChontroller
 } from '@/modulesRoom'
 import { getTowerController } from './tower'
+import { getLinkController } from './link'
 import { TowerController } from '@/modulesRoom/tower/controller'
+import { LinkController } from '@/modulesRoom/link/linkController'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -84,7 +86,8 @@ export default () => {
 
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
-        ['towerController', getTowerController]
+        ['towerController', getTowerController],
+        ['linkController', getLinkController]
     ]
 
     modulePlugin.forEach(([pluginName, pluginLoader]) => {
@@ -92,12 +95,8 @@ export default () => {
 
         // 在房间上创建插件的懒加载访问器
         createGetter(Room, pluginName, function () {
-            // 实例化
-            const controller = pluginLoader(this.name)
-            // 把 getter 替换成实际的功能模块
-            Object.defineProperty(this, pluginName, { value: controller })
-            // 直接返回插件实例
-            return controller
+            // 返回插件实例
+            return pluginLoader(this.name)
         })
     })
 }
@@ -157,5 +156,9 @@ declare global {
          * tower 防御模块
          */
         towerController: TowerController
+        /**
+         * link 工作模块
+         */
+        linkController: LinkController
     }
 }

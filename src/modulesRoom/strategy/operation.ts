@@ -83,8 +83,8 @@ export class OperationStrategy {
             ? [WORK_TASK_PRIOIRY.UPGRADE, undefined]
             : [undefined, WORK_TASK_PRIOIRY.UPGRADE]
 
-        controller.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: upgradePriority })
-        controller.updateTask({ type: WorkTaskType.FillWall, priority: fillWallPriority })
+        controller.updateTask({ type: WorkTaskType.Upgrade, priority: upgradePriority })
+        controller.updateTask({ type: WorkTaskType.FillWall, need: 1, priority: fillWallPriority })
 
         this.room.work.dispatchTask()
     }

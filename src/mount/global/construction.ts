@@ -15,7 +15,7 @@ const onWallBuildComplete = function (wall: StructureWall | StructureRampart) {
     if (filler) filler.memory.fillWallId = wall.id
 
     // 同时发布刷墙任务
-    wall.room.work.updateTask({ type: WorkTaskType.FillWall })
+    wall.room.work.updateTask({ type: WorkTaskType.FillWall, need: 1 })
     // 移除墙壁缓存，让刷墙单位可以快速发现新 rempart
     wall.room.towerController.clearFocus()
 }

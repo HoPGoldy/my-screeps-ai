@@ -27,14 +27,6 @@ declare global {
          */
         constructionSiteId: Id<ConstructionSite>
         /**
-         * 中央 link 的 id
-         */
-        centerLinkId?: Id<StructureLink>
-        /**
-         * 升级 link 的 id
-         */
-        upgradeLinkId?: Id<StructureLink>
-        /**
          * 当前被 repairer 或 tower 关注的墙
          */
         focusWall: {

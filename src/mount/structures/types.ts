@@ -45,12 +45,4 @@ declare global {
     interface StructureTower {
         run(): void
     }
-
-    interface StructureLink {
-        run(): void
-        asCenter(): string
-        asSource(): string
-        asUpgrade(): string
-    }
-
 }

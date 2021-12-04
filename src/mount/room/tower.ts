@@ -42,7 +42,7 @@ const lazyloadTower = createTowerController({
     ),
     getDefender: room => Game.creeps[GetName.defender(room.name)],
     updateBuildingTask: room => room.work.updateTask({ type: WorkTaskType.Build, priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true }),
-    updateFillWallTask: room => room.work.updateTask({ type: WorkTaskType.FillWall }, { dispath: true }),
+    updateFillWallTask: room => room.work.updateTask({ type: WorkTaskType.FillWall, need: 1 }, { dispath: true }),
     getLab: room => room[STRUCTURE_LAB],
     addBoostTask: (room, config) => room.myLab.addBoostTask(config),
     getBoostState: (room, taskId) => room.myLab.getBoostState(taskId),

@@ -53,6 +53,10 @@ export interface OutsideContext {
 }
 
 export type WarModuleContext = {
+    /**
+     * 获取战争模块存储信息
+     * 函数，调用后返回内存对象
+     */
     getMemory: () => WarModuleMemory
 } & EnvContext & OutsideContext & BoostContext
 

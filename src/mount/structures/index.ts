@@ -1,6 +1,5 @@
 export { default as ControllerExtension } from './controller'
 export { default as TowerExtension } from './tower'
-export { LinkExtension, LinkConsole } from './link'
 export { default as NukerExtension } from './nuker'
 export { PowerSpawnExtension, PowerSpawnConsole } from './powerSpawn'
 export { default as StructuresExtension } from './structure'
