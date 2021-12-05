@@ -29,7 +29,7 @@ const lazyloadLink = createLinkController({
                 amount,
                 resType: RESOURCE_ENERGY
             }]
-        })
+        }, { dispath: true })
     },
     hasTransferTask: room => {
         return room.transport.hasTaskWithType(TransportTaskType.CenterLink)

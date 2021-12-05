@@ -1,11 +1,11 @@
-import { TransportTaskType, WorkTaskType } from '@/modulesRoom'
+import { TransportTaskType } from '@/modulesRoom'
 import { createTowerController } from '@/modulesRoom/tower/controller'
 import { whiteListFilter } from '../global/whiteList'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { CreepRole } from '@/role/types/role'
 import { createCache, createEnvContext } from '@/utils'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { TowerMemory } from '@/modulesRoom/tower/types'
+import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 
 declare global {
     interface RoomMemory {
@@ -41,8 +41,7 @@ const lazyloadTower = createTowerController({
         { boostTaskId }
     ),
     getDefender: room => Game.creeps[GetName.defender(room.name)],
-    updateBuildingTask: room => room.work.updateTask({ type: WorkTaskType.Build, priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true }),
-    updateFillWallTask: room => room.work.updateTask({ type: WorkTaskType.FillWall, need: 1 }, { dispath: true }),
+    updateBuildingTask: room => addBuildTask(room.name, 1),
     getLab: room => room[STRUCTURE_LAB],
     addBoostTask: (room, config) => room.myLab.addBoostTask(config),
     getBoostState: (room, taskId) => room.myLab.getBoostState(taskId),

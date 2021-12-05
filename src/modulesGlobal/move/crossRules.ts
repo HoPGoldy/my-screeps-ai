@@ -42,7 +42,10 @@ const crossRules: CrossRules = {
     [CreepRole.PbHealer]: (creep, requireCreep) => {
         if (creep.memory.role !== requireCreep.memory.role) return true
         return creep.memory.working !== requireCreep.memory.working
-    }
+    },
+
+    [CreepRole.RemoteBuilder]: noCrossWithStanding,
+    [CreepRole.RemoteHarvester]: noCrossWithStanding
 }
 
 export default crossRules

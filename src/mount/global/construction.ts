@@ -53,19 +53,19 @@ const buildCallback: {
     [STRUCTURE_LINK]: (link: StructureLink) => {
         // 如果附近有 controller 就转换为 UpgradeLink
         if (link.room.controller.pos.inRangeTo(link, 2)) {
-            link.asUpgrade()
+            link.room.linkController.asUpgrade(link)
             return
         }
 
         // 在基地中心附近就转换为 CenterLink
         const center = link.room.memory.center
         if (center && link.pos.isNearTo(new RoomPosition(center[0], center[1], link.room.name))) {
-            link.asCenter()
+            link.room.linkController.asCenter(link)
             return
         }
 
         // 否则就默认转换为 SourceLink（因为有外矿 link，而这种 link 边上是没有 source 的）
-        link.asSource()
+        link.room.linkController.asSource(link)
     },
     [STRUCTURE_TERMINAL]: (terminal: StructureTerminal) => {
         // 有 extractor 了，发布矿工并添加对应的共享协议

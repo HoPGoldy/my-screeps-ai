@@ -36,7 +36,10 @@ const remoteUpgrader: CreepConfig<CreepRole.RemoteUpgrader> = {
         if (!creep.memory.sourceId) {
             source = getRoomEnergyTarget(creep.room)
             // 没有有效的能量来源建筑就去找能用的 source
-            if (!source) source = creep.room.source.find(source => source.canUse())
+            if (!source) {
+                const sources = creep.room.source.filter(source => source.canUse())
+                source = creep.room.controller.pos.findClosestByPath(sources)
+            }
             if (!source) {
                 creep.say('没能量了，歇会')
                 return false

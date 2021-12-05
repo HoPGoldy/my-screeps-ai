@@ -59,6 +59,7 @@ const claimer: CreepConfig<CreepRole.Claimer> = {
             // 添加签名
             if (signText) creep.signController(controller, signText)
 
+            // remoteUpgrader 找离 controller 近的，Build 找离 center 近的
             const flag = Game.flags[getName.flagBaseCenter(creep.room.name)]
             // 用户已经指定了旗帜了
             if (flag) {

@@ -3,11 +3,15 @@
  */
 
 import { withDelayCallback } from '@/mount/global/delayQueue'
-import { DelayTaskData } from '@/modulesGlobal/delayQueue'
 import { WORK_TASK_PRIOIRY } from './constant'
 import { WorkTaskType } from './types'
 
-const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName }: DelayTaskData) => {
+interface DelayTaskData {
+    roomName: string
+    need?: number
+}
+
+const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName, need }: DelayTaskData) => {
     const room = Game.rooms[roomName]
     // 如果没有工地的话就创建并再次发布建造任务
     if (!room) {
@@ -16,7 +20,7 @@ const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName }: Delay
     }
 
     // 以指定工地为目标发布建筑
-    room.work.updateTask({ type: WorkTaskType.Build, priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true })
+    room.work.updateTask({ type: WorkTaskType.Build, need, priority: WORK_TASK_PRIOIRY.BUILD }, { dispath: true })
 })
 
 /**
@@ -25,4 +29,4 @@ const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName }: Delay
  *
  * @param roomName 建筑任务要发布到那个房间，默认为 pos 所在房间
  */
-export const addBuildTask = (roomName: string) => delayAddBuildTask({ roomName }, 2)
+export const addBuildTask = (roomName: string, need?: number) => delayAddBuildTask({ roomName, need }, 2)

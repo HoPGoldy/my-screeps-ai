@@ -300,8 +300,11 @@ export default class TaskController<
         for (const creepName in this.creeps) {
             const creep = Game.creeps[creepName]
 
-            // 人不在，有可能是在重新孵化，暂时跳过任务分配
-            if (!creep) continue
+            // 人没了，解除掉任务，防止分配任务时出现偏差
+            if (!creep) {
+                this.removeCreep(creepName)
+                continue
+            }
 
             // 如果指定了筛选条件并且筛选没通过则不返回
             if (filter && !filter(this.creeps[creepName], creep)) continue

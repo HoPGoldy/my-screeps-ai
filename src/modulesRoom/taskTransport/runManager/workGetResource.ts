@@ -112,7 +112,7 @@ const withdrawResource = function (
                 withdrawAmount < (manager.store.getFreeCapacity() / 2)
             ) {
                 requireFinishTask(TaskFinishReason.NotEnoughResource)
-                manager.log(`能量数量不足： ${JSON.stringify(request)} 当前剩余 ${destination.target.store[request.resType]}`)
+                // manager.log(`能量数量不足： ${JSON.stringify(request)} 当前剩余 ${destination.target.store[request.resType]}`)
             }
         }
         // 没有指定拿的数量，如果计算出来的拿取数量太少了，说明这个能量源能量不够了
@@ -150,7 +150,7 @@ const withdrawResource = function (
         if (request.keep) return
         if (request.amount) {
             requireFinishTask(TaskFinishReason.NotEnoughResource)
-            manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(request)}`)
+            // manager.log(`执行搬运任务是出现资源不足问题： ${JSON.stringify(request)}`)
         }
         // 没有指定搬运数量，并且把来源搬空了，任务正常结束
         else requireFinishTask(TaskFinishReason.Complete)

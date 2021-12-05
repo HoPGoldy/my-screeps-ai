@@ -113,9 +113,4 @@ export type TowerContext = {
      * 没有任务的时候添加，有的时候啥都不干
      */
     updateBuildingTask: (room: Room) => unknown
-    /**
-     * 添加刷墙任务
-     * 如果没有刷墙任务，调用该方法应该新增刷墙任务，有的话就什么都不做
-     */
-    updateFillWallTask: (room: Room) => unknown
 } & EnvContext & BoostContext

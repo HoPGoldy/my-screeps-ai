@@ -36,7 +36,16 @@ const remoteBuilder: CreepConfig<CreepRole.RemoteBuilder> = {
         if (!creep.memory.sourceId) {
             source = getRoomEnergyTarget(creep.room)
             // 没有有效的能量来源建筑就去找能用的 source
-            if (!source) source = creep.room.source.find(source => source.canUse())
+            if (!source) {
+                const sources = creep.room.source.filter(source => source.canUse())
+                if (creep.room.memory.center) {
+                    const [x, y] = creep.room.memory.center
+                    source = (new RoomPosition(x, y, creep.room.name)).findClosestByPath(sources)
+                }
+                else {
+                    source = sources[0]
+                }
+            }
             if (!source) {
                 creep.say('没能量了，歇会')
                 return false

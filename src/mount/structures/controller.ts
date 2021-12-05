@@ -46,8 +46,8 @@ export default class ControllerExtension extends StructureController {
             this.room.strategy.operation.useUnitSetting()
         }
 
-        // 从二级开始规划布局，因为一级没有可以造的东西
-        if (level !== 1) this.log(this.room.planLayout(), Color.Green)
+        // 每级都运行一次自动布局规划
+        this.log(this.room.planLayout(), Color.Green)
     }
 
     /**

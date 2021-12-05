@@ -24,6 +24,7 @@ export const getRoomEnergyTarget = function (room: Room, finder?: EnergyTargetFi
         // 缓存在 room 实例上
         allEnergyTargets = [...structureTargets, ...droppedEnergyTargets]
         room._energyFilterObj = allEnergyTargets
+        if (allEnergyTargets.length <= 0) return undefined
     }
 
     // 遍历所有过滤器

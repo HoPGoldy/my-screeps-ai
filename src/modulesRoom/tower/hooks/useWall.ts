@@ -3,7 +3,7 @@ import { TowerMemoryAccessor } from '../memory'
 import { BUILD_NEW_WALL_LIMIT } from '../constants'
 
 export const useWall = function (roomName: string, context: TowerContext, db: TowerMemoryAccessor) {
-    const { getMemory, env, getWall, getRampart, updateBuildingTask, updateFillWallTask } = context
+    const { getMemory, env, getWall, getRampart, updateBuildingTask } = context
 
     const run = function () {
         const buildSites = db.queryBuilding()
@@ -11,14 +11,37 @@ export const useWall = function (roomName: string, context: TowerContext, db: To
 
         // 如果都造好了，就放置新一批建筑
         if (buildSites.length <= 0) {
+            if (!db.hasWaitingSite()) return
+
             const needFillWall = getNeedFillWall()
             if (needFillWall && needFillWall.hits < BUILD_NEW_WALL_LIMIT) return
+
             db.withdrawBuilding()
             const buildSites = db.queryBuilding()
-            buildSites.forEach(siteInfo => siteInfo.pos.createConstructionSite(siteInfo.type))
+            buildSites.forEach(siteInfo => {
+                siteInfo.pos.createConstructionSite(siteInfo.type)
+            })
             updateBuildingTask(room)
         }
-        else updateFillWallTask(room)
+        else {
+            let needRebuild = false
+
+            const existSites = buildSites.filter(({ pos, type }) => {
+                // 有工地，还没造好
+                const hasSite = pos.lookFor(LOOK_CONSTRUCTION_SITES).some(site => site.structureType === type)
+                if (hasSite) return true
+                // 有对应的建筑了，已经造好了
+                const hasWall = pos.lookFor(LOOK_STRUCTURES).some(str => str.structureType === type)
+                if (hasWall) return false
+                // 啥都没有，需要重新放置
+                pos.createConstructionSite(type)
+                needRebuild = true
+                return true
+            })
+            // 把已经造好的剔除掉
+            db.updateBuilding(existSites)
+            if (needRebuild) updateBuildingTask(room)
+        }
     }
 
     /**
@@ -60,6 +83,7 @@ export const useWall = function (roomName: string, context: TowerContext, db: To
             if (wall) return wall
             delete memory.focusWallId
             delete memory.focusTimeout
+            env.log.normal('刷新墙壁缓存')
         }
 
         const walls = [...getWall(room), ...getRampart(room)]

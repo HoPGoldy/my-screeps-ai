@@ -28,8 +28,6 @@ export const createMemoryAccessor = (getMemory: () => TowerMemory, roomName: str
         // 补充完了还是没有，那就说明真没有
         if (!memory.building || memory.building.length <= 0) {
             delete memory.building
-            delete memory.walls
-            delete memory.ramparts
             return []
         }
 
@@ -41,6 +39,21 @@ export const createMemoryAccessor = (getMemory: () => TowerMemory, roomName: str
                 type: +typeCode === 1 ? STRUCTURE_WALL : STRUCTURE_RAMPART
             }
         })
+    },
+    updateBuilding (newBuilding: BuildingSite[]) {
+        const memory = getMemory()
+        if (newBuilding.length <= 0) {
+            delete memory.building
+            return
+        }
+
+        memory.building = newBuilding.map(({ pos, type }) => {
+            return `${pos.x},${pos.y},${type === STRUCTURE_WALL ? 1 : 2}`
+        })
+    },
+    hasWaitingSite () {
+        const memory = getMemory()
+        return (memory.ramparts?.length || 0) + (memory.walls?.length || 0) > 0
     },
     updateNukerWall (wallPos: RoomPosition[]) {
         const memory = getMemory()
