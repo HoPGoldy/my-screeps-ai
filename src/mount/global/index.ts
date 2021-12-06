@@ -3,7 +3,6 @@ import { clearFlag } from '@/utils'
 import comm from './/commodity'
 import res from './resourcesHelp'
 import help from './help'
-import { nuker, cancelNuker as cancelnuker, confirmNuker as confirmnuker } from './nuker'
 import ps from './powerSpawn'
 import ob from './observer'
 import { consoleWarModule } from './war'
@@ -17,6 +16,7 @@ import { orderExtend, seeres, hail, base, give, roomAlias } from './common'
 import { getForm as getform } from '@/utils/console/form/example'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { showResourceSource } from '@/modulesRoom/share/utils'
+import { mountNuker } from '../room/nuker'
 
 // 全局拓展操作
 const extensions = {
@@ -61,10 +61,6 @@ const alias = {
     help,
     // 显示路径缓存
     route,
-    // 挂载 nuker 相关
-    nuker,
-    cancelnuker,
-    confirmnuker,
     // 挂载全局建筑状态查看
     ps,
     ob,
@@ -86,4 +82,6 @@ export default function () {
     ))
     // 挂载没有别名的操作
     _.assign(global, extensions)
+
+    mountNuker()
 }

@@ -16,8 +16,4 @@ declare global {
          */
         stats(): string
     }
-
-    interface StructureNuker {
-        run(): void
-    }
 }

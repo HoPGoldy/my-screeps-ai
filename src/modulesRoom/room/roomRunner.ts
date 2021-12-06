@@ -17,7 +17,7 @@ export const runRoom = function (room: Room): void {
     room.myObserver.run()
     room.towerController.run()
     room.linkController.run()
+    room.nukerController.run()
 
-    room[STRUCTURE_NUKER]?.run()
     room[STRUCTURE_POWER_SPAWN]?.run()
 }

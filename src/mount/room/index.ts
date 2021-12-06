@@ -16,8 +16,10 @@ import {
 } from '@/modulesRoom'
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
+import { getNukerController } from './nuker'
 import { TowerController } from '@/modulesRoom/tower/controller'
 import { LinkController } from '@/modulesRoom/link/linkController'
+import { NukerController } from '@/modulesRoom/nuker/unkerController'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -87,13 +89,12 @@ export default () => {
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
         ['towerController', getTowerController],
-        ['linkController', getLinkController]
+        ['linkController', getLinkController],
+        ['nukerController', getNukerController]
     ]
 
+    // 在房间上创建插件的懒加载访问器
     modulePlugin.forEach(([pluginName, pluginLoader]) => {
-        pluginStorage[pluginName] = {}
-
-        // 在房间上创建插件的懒加载访问器
         createGetter(Room, pluginName, function () {
             // 返回插件实例
             return pluginLoader(this.name)
@@ -160,5 +161,9 @@ declare global {
          * link 工作模块
          */
         linkController: LinkController
+        /**
+         * nuker 工作模块
+         */
+        nukerController: NukerController
     }
 }
