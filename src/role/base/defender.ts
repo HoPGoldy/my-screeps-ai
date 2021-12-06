@@ -9,7 +9,7 @@ import { CreepConfig, CreepRole } from '../types/role'
 const defender: CreepConfig<CreepRole.Defender> = {
     // 委托 controller 判断房间内是否有威胁
     isNeed: (room, preMemory) => {
-        const needSpawn = room.controller.checkEnemyThreat()
+        const needSpawn = room.towerController.checkEnemyThreat(room.towerController.findEnemy())
         const { boostTaskId } = preMemory.data
 
         // 如果威胁已经解除了，就不再孵化
@@ -29,15 +29,12 @@ const defender: CreepConfig<CreepRole.Defender> = {
         return creep.room.myLab.boostCreep(creep, boostTaskId)
     },
     target: creep => {
-        let enemys: (Creep | PowerCreep)[] = creep.room._enemys
-        // 没有缓存则新建缓存
-        if (!enemys) enemys = creep.room._enemys = creep.room.find(FIND_HOSTILE_CREEPS)
-        if (enemys.length <= 0) enemys = creep.room._enemys = creep.room.find(FIND_HOSTILE_POWER_CREEPS)
+        const enemys = creep.room.towerController.findEnemy()
         // 没有敌人就啥也不干
         if (enemys.length <= 0) return false
 
         // 从缓存中获取敌人
-        const enemy = creep.pos.findClosestByRange(creep.room._enemys)
+        const enemy = creep.pos.findClosestByRange(enemys)
         creep.say('💢')
         // 防止一不小心出房间了
         if ((enemy.pos.x !== 0 && enemy.pos.x !== 49 && enemy.pos.y !== 0 && enemy.pos.y !== 49) && !creep.pos.isNearTo(enemy.pos)) creep.moveTo(enemy.pos)

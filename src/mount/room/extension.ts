@@ -114,3 +114,61 @@ export default class RoomExtension extends Room {
         else if (result === ERR_NOT_OWNER) return '自动规划失败，房间没有控制权限'
     }
 }
+
+declare global {
+    /**
+     * 房间内存
+     */
+    interface RoomMemory {
+        /**
+         * 该房间发起移除操作的时间
+         * 执行移除时会检查该时间，如果已经过期的话将不会执行移除操作
+         */
+        removeTime?: number
+        /**
+         * 基地中心点坐标, [0] 为 x 坐标, [1] 为 y 坐标
+         */
+        center: [number, number]
+        /**
+         * 基地中心的待选位置, [0] 为 x 坐标, [1] 为 y 坐标
+         */
+        centerCandidates?: [number, number][]
+        /**
+         * 是否关闭自动布局，该值为 true 时将不会对本房间运行自动布局
+         */
+        noLayout: boolean
+        /**
+         * powerSpawn 是否暂停
+         */
+        pausePS?: boolean
+    }
+
+    /**
+     * 房间拓展
+     * 来自于 mount.structure.ts
+     */
+    interface Room {
+        /**
+         * 发送日志
+         *
+         * @param content 日志内容
+         * @param instanceName 发送日志的实例名
+         * @param color 日志前缀颜色
+         * @param notify 是否发送邮件
+         */
+        log(content:string, instanceName?: string, color?: Color, notify?: boolean): void
+
+        /**
+         * 资源共享 api
+         */
+        giver(roomName: string, resourceType: ResourceConstant, amount?: number): string
+
+        /**
+         * 自动规划相关
+         */
+        findBaseCenterPos(): RoomPosition[]
+        confirmBaseCenter(targetPos?: RoomPosition[]): RoomPosition | ERR_NOT_FOUND
+        setBaseCenter(pos: RoomPosition): OK | ERR_INVALID_ARGS
+        planLayout(): string
+    }
+}

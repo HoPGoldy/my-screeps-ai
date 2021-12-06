@@ -9,6 +9,9 @@ import { WorkTaskType } from './types'
  * 防止影响后续任务行为
  */
 
+// 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
+const MIN_WALL_HITS = 8000
+
 /**
  * 没有任务时的行为逻辑
  */
@@ -129,15 +132,22 @@ export const transportActions: {
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
 
             // 有新墙就先刷新墙
-            if (creep.memory.fillWallId) creep.steadyWall()
-            // 没有就建其他工地，如果找不到工地了，就算任务完成
-            else {
-                // 优先建设任务中指定的工地
-                const taskTarget = Game.getObjectById(task.targetId)
-                if (creep.buildStructure(taskTarget) === ERR_NOT_FOUND) {
-                    workController.removeTaskByKey(task.key)
-                    return creep.backToGetEnergy()
+            if (creep.memory.fillWallId) {
+                const wall = Game.getObjectById(creep.memory.fillWallId)
+                if (!wall || wall.hits < MIN_WALL_HITS) {
+                    delete creep.memory.fillWallId
+                    return false
                 }
+
+                const result = creep.repair(wall)
+                if (result === ERR_NOT_IN_RANGE) creep.goTo(wall.pos, { range: 3 })
+                return false
+            }
+
+            // 没有就建其他工地，如果找不到工地了，就算任务完成
+            if (creep.buildRoom(creep.memory.data.workRoom) === ERR_NOT_FOUND) {
+                workController.removeTaskByKey(task.key)
+                return creep.backToGetEnergy()
             }
         }
     }),

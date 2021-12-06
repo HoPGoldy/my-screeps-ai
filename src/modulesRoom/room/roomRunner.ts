@@ -1,10 +1,13 @@
+import { runStrategyCore } from './strategyCore'
+
 /**
  * 运行房间工作逻辑
  */
 export const runRoom = function (room: Room): void {
     if (!room?.controller?.my) return
 
-    room.controller.run()
+    runStrategyCore(room.controller)
+
     room.spawner.run()
     room.myStorage.run()
     room.myTerminal.run()

@@ -68,7 +68,7 @@ const remoteBuilder: CreepConfig<CreepRole.RemoteBuilder> = {
 
         if (creep.memory.dontBuild) creep.upgradeRoom(targetRoomName)
         // 没有就建其他工地
-        else if (creep.buildStructure() === ERR_NOT_FOUND) creep.memory.dontBuild = true
+        else if (creep.buildRoom(targetRoomName) === ERR_NOT_FOUND) creep.memory.dontBuild = true
 
         if (creep.store.getUsedCapacity() === 0) return true
     },

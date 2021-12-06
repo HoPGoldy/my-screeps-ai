@@ -100,7 +100,7 @@ const remoteHarvester: CreepConfig<CreepRole.RemoteHarvester> = {
         // dontBuild 为 false 时表明还在建造阶段
         if (!creep.memory.dontBuild) {
             // 没有可建造的工地后就再也不建造
-            const buildResult = creep.buildStructure()
+            const buildResult = creep.buildRoom(roomName)
 
             if (buildResult === ERR_NOT_FOUND) creep.memory.dontBuild = true
             // 能量不足了就去 source 阶段，同时释放掉禁止通行点位

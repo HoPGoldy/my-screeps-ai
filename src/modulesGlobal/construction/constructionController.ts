@@ -1,3 +1,4 @@
+import { createCache } from '@/utils'
 import { createMemoryAccessor } from './memory'
 import { ConstructInfo, ConstructionContext } from './types'
 
@@ -151,5 +152,9 @@ export const createConstructionController = function (context: ConstructionConte
         return result
     }
 
-    return { planSite, handleCompleteSite, addConstructionSite: db.insertWaitingSites, getNearSite }
+    const [getNearSiteWithCache] = createCache(getNearSite, {
+        getCacheKey: pos => pos.roomName
+    })
+
+    return { planSite, handleCompleteSite, addConstructionSite: db.insertWaitingSites, getNearSite: getNearSiteWithCache }
 }

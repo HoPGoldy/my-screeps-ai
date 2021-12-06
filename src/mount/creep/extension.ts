@@ -1,12 +1,8 @@
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
-import { useCache, Color } from '@/utils'
+import { Color } from '@/utils'
 import { getNearSite } from '@/mount/global/construction'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
-import { WALL_FOCUS_TIME } from '../structures/tower'
-
-// 造好新墙时 builder 会先将墙刷到超过下面值，之后才会去建其他建筑
-const MIN_WALL_HITS = 8000
 
 // creep 原型拓展
 export default class CreepExtension extends Creep {
@@ -71,14 +67,21 @@ export default class CreepExtension extends Creep {
 
     /**
      * 建设房间内存在的建筑工地
-     *
-     * @param targetConstruction 要建造的目标工地，该参数无效的话将自行挑选工地
      */
-    public buildStructure (targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
-        // 新建目标建筑工地
-        const target = this.getBuildTarget(targetConstruction)
+    public buildRoom (roomName: string): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND {
+        const inWorkRoom = this.room.name === roomName
+        const roomPos = inWorkRoom ? this.pos : new RoomPosition(25, 25, roomName)
+        // 搜索目标工地
+        const target = getNearSite(roomPos)
 
-        if (!target) return ERR_NOT_FOUND
+        // 找不到目标就判断下，如果不在房间内就走过去，在房间内还没有目标才是真没目标
+        if (!target) {
+            if (inWorkRoom) {
+                this.goTo(roomPos, { range: 3 })
+                return OK
+            }
+            return ERR_NOT_FOUND
+        }
         // 上面发现有墙要刷了，这个 tick 就不再造建造了
         // 防止出现造好一个 rampart，然后直接造下一个 rampart，造好后又扭头去刷第一个 rampart 的小问题出现
         if (this.memory.fillWallId) return ERR_BUSY
@@ -88,98 +91,6 @@ export default class CreepExtension extends Creep {
 
         if (buildResult === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 3 })
         return buildResult
-    }
-
-    /**
-     * 建筑目标获取
-     * 优先级：指定的目标 > 自己保存的目标 > 房间内保存的目标
-     */
-    private getBuildTarget (target?: ConstructionSite): ConstructionSite | undefined {
-        // 指定了目标，直接用，并且把 id 备份一下
-        if (target) {
-            this.memory.constructionSiteId = target.id
-            return target
-        }
-        // 没有指定目标，或者指定的目标消失了，从自己内存里找
-        else {
-            const selfKeepTarget = Game.getObjectById(this.memory.constructionSiteId)
-            if (selfKeepTarget) return selfKeepTarget
-            // 移除缓存，下面会重新查找
-            else delete this.memory.constructionSiteId
-        }
-
-        // 自己内存里没找到，去房间内存里查之前缓存的
-        const roomKeepTarget = Game.getObjectById(this.room.memory.constructionSiteId)
-        // 找到了，保存到自己内存里
-        if (roomKeepTarget) {
-            this.memory.constructionSiteId = this.room.memory.constructionSiteId
-            return roomKeepTarget
-        }
-
-        // 房间内存也没有缓存，重新搜索并缓存到房间
-        delete this.room.memory.constructionSiteId
-        const newTarget = useCache(() => getNearSite(this.pos), this.room.memory, 'constructionSiteId')
-
-        // 再没有就真没有了
-        return newTarget
-    }
-
-    /**
-     * 稳定新墙
-     * 会把内存中 fillWallId 标注的墙声明值刷到定值以上
-     */
-    public steadyWall (): OK | ERR_NOT_FOUND {
-        const wall = Game.getObjectById(this.memory.fillWallId)
-        if (!wall) return ERR_NOT_FOUND
-
-        if (wall.hits < MIN_WALL_HITS) {
-            const result = this.repair(wall)
-            if (result === ERR_NOT_IN_RANGE) this.goTo(wall.pos, { range: 3 })
-        }
-        else delete this.memory.fillWallId
-
-        return OK
-    }
-
-    /**
-     * 填充防御性建筑
-     * 包括 wall 和 rempart
-     * @returns 当没有墙需要刷时返回 false，否则返回 true
-     */
-    public fillDefenseStructure (): boolean {
-        const focusWall = this.room.memory.focusWall
-        let targetWall: StructureWall | StructureRampart = null
-        // 该属性不存在 或者 当前时间已经大于关注时间 就刷新
-        if (!focusWall || (focusWall && Game.time >= focusWall.endTime)) {
-            // 获取所有没填满的墙
-            const walls = [...this.room[STRUCTURE_WALL], ...this.room[STRUCTURE_RAMPART]].filter(s => s.hits < s.hitsMax)
-
-            // 没有目标就啥都不干
-            if (walls.length <= 0) return false
-
-            // 找到血量最小的墙
-            targetWall = walls.sort((a, b) => a.hits - b.hits)[0]
-
-            // 将其缓存在内存里
-            this.room.memory.focusWall = {
-                id: targetWall.id,
-                endTime: Game.time + WALL_FOCUS_TIME
-            }
-        }
-
-        // 获取墙壁
-        if (!targetWall) targetWall = Game.getObjectById(focusWall.id)
-        // 如果缓存里的 id 找不到墙壁，就清除缓存下次再找
-        if (!targetWall) {
-            delete this.room.memory.focusWall
-            // 这个时候返回 true，因为还不确定是否所有的墙都刷好了
-            return true
-        }
-
-        // 填充墙壁
-        const result = this.repair(targetWall)
-        if (result === ERR_NOT_IN_RANGE) this.goTo(targetWall.pos, { range: 3 })
-        return true
     }
 
     /**

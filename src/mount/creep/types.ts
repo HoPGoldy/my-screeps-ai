@@ -71,10 +71,6 @@ declare global {
          */
         fillStructureId?: Id<AnyStoreStructure>
         /**
-         * 建筑工特有，当前缓存的建筑工地
-         */
-        constructionSiteId?: Id<ConstructionSite>
-        /**
          * 可以执行建筑的单位特有，当该值为 true 时将不会尝试建造
          */
         dontBuild?: boolean
@@ -117,11 +113,9 @@ declare global {
         goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
         setWayPoint(target: string[] | string): ScreepsReturnCode
         upgradeRoom(roomName: string): ScreepsReturnCode
-        buildStructure(targetConstruction?: ConstructionSite): CreepActionReturnCode | ERR_NOT_ENOUGH_RESOURCES | ERR_RCL_NOT_ENOUGH | ERR_NOT_FOUND
-        fillDefenseStructure(expectHits?: number): boolean
+        buildRoom(roomName: string): ScreepsReturnCode
         getEngryFrom(target: AllEnergySource): ScreepsReturnCode
         transferTo(target: AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt?: MoveOpt): ScreepsReturnCode
         backToGetEnergy(): true
-        steadyWall(): OK | ERR_NOT_FOUND
     }
 }

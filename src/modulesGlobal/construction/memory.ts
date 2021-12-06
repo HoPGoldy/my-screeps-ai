@@ -1,16 +1,16 @@
 import { ConstructionMemory } from './types'
 
 export const createMemoryAccessor = (getMemory: () => ConstructionMemory) => ({
-    queryWaitingSites: () => {
+    queryWaitingSites () {
         const memory = getMemory()
         return memory.waiting || []
     },
-    insertWaitingSites: (newList: ConstructionMemory['waiting']) => {
+    insertWaitingSites (newList: ConstructionMemory['waiting']) {
         const memory = getMemory()
         memory.waiting = [...(memory.waiting || []), ...newList]
         if (memory.waiting.length <= 0) delete memory.waiting
     },
-    queryBuildSites: () => {
+    queryBuildSites () {
         const memory = getMemory()
         return memory.building || {}
     },

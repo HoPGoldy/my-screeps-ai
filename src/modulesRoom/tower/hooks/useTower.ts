@@ -1,4 +1,5 @@
 import { BoostState } from '@/modulesRoom/lab/types'
+import { createCache } from '@/utils'
 import { TowerMemoryAccessor } from '../memory'
 import { DefenseState, TowerContext } from '../types'
 
@@ -19,10 +20,8 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
 
     /**
      * 搜索敌人
-     * @param searchInterval 搜索间隔，每隔多久进行一次搜索
      */
-    const findEnemy = function (searchInterval = 1): (Creep | PowerCreep)[] {
-        if (env.inInterval(searchInterval)) return []
+    const findEnemy = function (): (Creep | PowerCreep)[] {
         const room = env.getRoomByName(roomName)
 
         // 搜索白名单之外的玩家
@@ -33,6 +32,10 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
 
         return enemyCreeps
     }
+
+    const [findEnemyWithTickCache, refreshEnemyCache] = createCache(findEnemy, {
+        getCacheKey: () => roomName
+    })
 
     const runDailyWork = function (towers: StructureTower[], room: Room) {
         // 先攻击敌人
@@ -47,7 +50,7 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
      * 遇到敌人且敌人不足以启动主动模式时的防御工作
      */
     const runDefenseWork = function (towers: StructureTower[], room: Room) {
-        const enemys = findEnemy()
+        const enemys = findEnemyWithTickCache()
 
         // 没有敌人了就返回日常模式
         if (enemys.length <= 0) {
@@ -76,12 +79,12 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
             }
             // 没掉血就攻击敌人
             else {
-                const enemys = findEnemy()
+                const enemys = findEnemyWithTickCache()
                 this.fire(enemys)
             }
         }
         else {
-            const enemys = findEnemy()
+            const enemys = findEnemyWithTickCache()
 
             // 没有敌人了就返回日常模式
             if (enemys.length <= 0) {
@@ -153,7 +156,8 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
      * @returns 有敌人返回 true，没敌人返回 false
      */
     const runDailyAlert = function (towers: StructureTower[]): boolean {
-        const enemys = findEnemy(5)
+        if (env.inInterval(5)) return false
+        const enemys = findEnemyWithTickCache()
         if (enemys.length <= 0) return false
 
         // 发现敌人则攻击并设置状态为普通防御
@@ -234,6 +238,8 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
      * 执行 tower 运行逻辑
      */
     const run = function (): void {
+        refreshEnemyCache()
+
         const room = env.getRoomByName(roomName)
         const towers = getTower(room)
         if (!towers || towers.length <= 0) return
@@ -247,5 +253,5 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
         workRunners[defenseState](towers, room)
     }
 
-    return { run, checkEnemyThreat }
+    return { run, checkEnemyThreat, findEnemy: findEnemyWithTickCache }
 }

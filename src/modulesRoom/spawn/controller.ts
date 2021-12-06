@@ -148,12 +148,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
                     requests: [{ resType: RESOURCE_ENERGY, to: [STRUCTURE_SPAWN, STRUCTURE_EXTENSION], keep: true }]
                 }, { dispath: true })
 
-                if (
-                    // 非战争状态下直接发布 power 填 extension 任务
-                    !this.room.memory.war ||
-                    // 战争模式时，剩余能量掉至 50% 以下再发布 power 任务，防止 power 效果被浪费
-                    (this.room.energyAvailable / this.room.energyCapacityAvailable <= 0.5)
-                ) this.room.power.addTask(PWR_OPERATE_EXTENSION, 1)
+                this.room.power.addTask(PWR_OPERATE_EXTENSION, 1)
             }
             return
         }

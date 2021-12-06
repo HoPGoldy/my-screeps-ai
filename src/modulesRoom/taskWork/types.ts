@@ -34,9 +34,7 @@ export interface WorkTasks {
     /**
      * 建造任务
      */
-    [WorkTaskType.Build]: RoomTask<WorkTaskType.Build> & {
-        targetId?: Id<ConstructionSite>
-    }
+    [WorkTaskType.Build]: RoomTask<WorkTaskType.Build>
     /**
      * 初始 source container 建造任务
      */
