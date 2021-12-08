@@ -1,7 +1,6 @@
 import { createGetter } from '@/utils'
 import {
     mountShortcut,
-    RoomShareController,
     RoomTransportTaskController,
     RoomWorkTaskController,
     RoomSpawnController,
@@ -18,12 +17,14 @@ import { LinkController } from '@/modulesRoom/link/linkController'
 import { NukerController } from '@/modulesRoom/nuker/unkerController'
 import { PowerSpawnController } from '@/modulesRoom/powerSpawn/powerSpawnController'
 import { StorageController } from '@/modulesRoom/storage/storageController'
+import { ShareController } from '@/modulesRoom/share/shareController'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
 import { getNukerController } from './nuker'
 import { getPsController } from './powerSpawn'
 import { getStorageController } from './storage'
+import { getShareController } from './share'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -59,7 +60,6 @@ export default () => {
 
     // 等待安装的房间插件列表
     const plugins: [string, AnyRoomPlugin][] = [
-        ['share', RoomShareController],
         ['transport', RoomTransportTaskController],
         ['work', RoomWorkTaskController],
         ['spawner', RoomSpawnController],
@@ -95,7 +95,8 @@ export default () => {
         ['towerController', getTowerController],
         ['linkController', getLinkController],
         ['nukerController', getNukerController],
-        ['psController', getPsController]
+        ['psController', getPsController],
+        ['share', getShareController]
     ]
 
     // 在房间上创建插件的懒加载访问器
@@ -112,7 +113,7 @@ declare global {
         /**
          * 资源共享模块
          */
-        share: RoomShareController
+        share: ShareController
         /**
          * 工作任务模块
          */

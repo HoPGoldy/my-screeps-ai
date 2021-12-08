@@ -22,7 +22,7 @@ export enum TransportTaskType {
     LabGetEnergy,
     FactoryGetResource,
     FactoryPutResource,
-    ShareGetResource,
+    Share,
     StorageBlance,
     Terminal,
     CenterLink
@@ -57,7 +57,7 @@ export interface TransportWorkContext {
 /**
  * 房间物流任务
  */
-export interface TransportTask<T = TransportRequests> {
+export interface TransportTask<T = TransportRequest> {
     /**
      * 要搬运的资源
      */
@@ -67,7 +67,7 @@ export interface TransportTask<T = TransportRequests> {
 /**
  * 物流任务的目标资源配置
  */
-export interface TransportRequests {
+export interface TransportRequest {
     /**
      * 从哪里获取资源
      * 支持 id 和位置
@@ -94,7 +94,7 @@ export interface TransportRequests {
     keep?: boolean
 }
 
-export type TransportRequestData = TransportRequests & {
+export type TransportRequestData = TransportRequest & {
     /**
      * 正在处理该资源的搬运工名称
      */

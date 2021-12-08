@@ -36,7 +36,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         this.stateScanner()
 
         // 优先执行共享任务
-        if (this.room.share.task) {
+        if (this.room.share.hasShareTask()) {
             this.room.share.execShareTask(this.terminal)
             return
         }

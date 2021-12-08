@@ -1,4 +1,44 @@
-import { createHelp } from '@/utils'
+import { TransportTaskType } from '@/modulesRoom'
+import { createHelp, createEnvContext } from '@/utils'
+import { createShareController } from '@/modulesRoom/share/shareController'
+import { ResourceSourceMap, RoomShareTask } from '@/modulesRoom/share/types'
+
+declare global {
+    interface RoomMemory {
+        /**
+         * 该房间要执行的资源共享任务
+         */
+        shareTask: RoomShareTask
+    }
+
+    interface Memory {
+        resourceSourceMap: ResourceSourceMap,
+    }
+}
+
+export const getShareController = createShareController({
+    getGlobalMemory: () => {
+        if (!Memory.resourceSourceMap) Memory.resourceSourceMap = {}
+        return Memory.resourceSourceMap
+    },
+    getMemory: room => {
+        if (!room.memory.shareTask) room.memory.shareTask = {}
+        return room.memory.shareTask
+    },
+    clearMemory: room => {
+        delete room.memory.shareTask
+    },
+    getRoomRes: (room, resType) => {
+        const { total } = room.storageController.getResource(resType)
+        return total
+    },
+    hasTransportTask: room => room.transport.hasTaskWithType(TransportTaskType.Share),
+    addTransportTask: (room, requests) => room.transport.addTask({
+        type: TransportTaskType.Share, requests
+    }),
+    env: createEnvContext('share')
+})
+
 /**
  * 资源共享模块的用户控制接口
  */
@@ -7,30 +47,7 @@ export default class ShareConsole extends Room {
      * 显示共享任务详情
      */
     public shares (): string {
-        const { terminal, storage } = this
-        if (!terminal) return '该房间暂无 terminal，无法执行共享任务'
-        if (!this.share.task) return '暂无共享任务'
-        const { target, resourceType, amount } = this.share.task
-
-        const logs = [
-            '正在执行共享任务: ',
-            `[目标房间] ${target} [资源类型] ${resourceType} [共享数量] ${amount}`,
-            '当前终端状态：',
-            `[剩余空间] ${terminal.store.getFreeCapacity()} ` +
-            `[${resourceType} 数量] ${terminal.store[resourceType]} ` +
-            `[能量数量] ${terminal.store[RESOURCE_ENERGY]}`
-        ]
-
-        if (storage) {
-            logs.push(
-                '当前 Storage 状态：',
-                `[剩余空间] ${storage.store.getFreeCapacity()} ` +
-            `[${resourceType} 数量] ${storage.store[resourceType]} ` +
-            `[能量数量] ${storage.store[RESOURCE_ENERGY]}`
-            )
-        }
-
-        return logs.join('\n')
+        return this.share.show()
     }
 
     /**
@@ -68,7 +85,6 @@ export default class ShareConsole extends Room {
         }
 
         logs.unshift(`[资源共享] 任务已添加，移交终端处理：房间名：${roomName} 共享数量：${amount} 路费：${cost}`)
-
         return logs.join('\n')
     }
 

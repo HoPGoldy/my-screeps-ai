@@ -1,5 +1,5 @@
 import { EnvContext } from '@/utils'
-import { TransportRequests } from '../taskTransport/types'
+import { TransportRequest } from '../taskTransport/types'
 
 export type StorageContext = {
     /**
@@ -18,7 +18,7 @@ export type StorageContext = {
     /**
      * 添加和 terminal 的资源平衡物流任务
      */
-    addTransportTask: (room: Room, requests: TransportRequests[]) => unknown
+    addTransportTask: (room: Room, requests: TransportRequest[]) => unknown
 } & EnvContext
 
 /**
