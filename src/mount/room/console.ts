@@ -3,7 +3,7 @@
  *
  * 本文件包含了 Room 中用于控制台交互的方法
  */
-import { getName, getUniqueKey, createHelp, red, yellow, colorful } from '@/utils'
+import { getName, getUniqueKey, createHelp, red, yellow, blue, colorful } from '@/utils'
 import { ModuleDescribe } from '@/utils/console/help/types'
 import RoomExtension from './extension'
 import { clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
@@ -141,6 +141,11 @@ export default class RoomConsole extends RoomExtension {
     public help (): string {
         const moduleList: ModuleDescribe[] = [
             {
+                name: '房间帮助',
+                describe: `以下是房间实例上可供调用的操作，调用方法名前要加房间名，如：${blue('W1N1.fhelp')}() 或者 ${blue('Game.rooms.W1N1.fhelp')}()`,
+                api: []
+            },
+            {
                 name: '资源调配 API',
                 describe: '用于介入房间内部的资源流转或者向其他房间调配资源',
                 api: [
@@ -209,6 +214,10 @@ export default class RoomConsole extends RoomExtension {
                     {
                         title: '👁️ 查看 Observer 管理模块帮助',
                         functionName: 'obhelp'
+                    },
+                    {
+                        title: '💗 查看 PowerSpawn 模块帮助',
+                        functionName: 'phelp'
                     }
                 ]
             },

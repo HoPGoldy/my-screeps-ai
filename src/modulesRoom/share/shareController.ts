@@ -89,7 +89,7 @@ export const createShareController = function (context: ShareContext) {
          */
         const execShareTask = function (terminal: StructureTerminal): void {
             const shareTask = getMemory(terminal.room)
-            if (!shareTask) return
+            if (Object.keys(shareTask).length <= 0) return
             const { amount: taskAmount, resourceType, target } = shareTask
 
             if (taskAmount <= 0) {

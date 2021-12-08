@@ -15,8 +15,7 @@ export const PROJECT_TITLE = [
 export default (): string => [
     ...PROJECT_TITLE.map(line => blue(line, true)),
 
-    `\n半自动 AI，调用指定房间 help 方法来查看更详细的帮助信息 (如：${yellow('Game.rooms.W1N1.help')}())。` +
-    `在 ${yellow('Link, Factory, Terminal, PowerSpawn, Observer')} 对象实例上也包含对应的 help 方法。\n`,
+    `\n包含完整控制台操作的自动化 bot，调用指定房间 help 方法来查看更详细的操作帮助信息 (如：${yellow('Game.rooms.W1N1.help')}())。\n`,
 
     createHelp(
         {
