@@ -1,3 +1,4 @@
+import { createCache } from '@/utils'
 import { useTower } from './hooks/useTower'
 import { useWall } from './hooks/useWall'
 import { createMemoryAccessor } from './memory'
@@ -25,7 +26,8 @@ export const createTowerController = function (context: TowerContext) {
         return { run, addNewWall, checkEnemyThreat, getNeedFillWall, clearFocus, findEnemy, getState: db.queryDefenseState }
     }
 
-    return lazyLoader
+    const [getTowerController] = createCache(lazyLoader)
+    return getTowerController
 }
 
 export type TowerController = ReturnType<ReturnType<typeof createTowerController>>

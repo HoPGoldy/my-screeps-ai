@@ -1,8 +1,8 @@
 import { TransportTaskType } from '@/modulesRoom'
-import { createHelp, createCache, createEnvContext } from '@/utils'
+import { createHelp, createEnvContext } from '@/utils'
 import { createStorageController } from '@/modulesRoom/storage/storageController'
 
-const lazyLoadStorage = createStorageController({
+export const getStorageController = createStorageController({
     requestShareRoom: (room, resType, amount) => room.share.request(resType, amount),
     addPowerStroageTask: room => room.share.becomeSource(RESOURCE_ENERGY),
     canShareEnergy: room => room.share.becomeSource(RESOURCE_ENERGY),
@@ -16,8 +16,6 @@ const lazyLoadStorage = createStorageController({
     },
     env: createEnvContext('storage')
 })
-
-export const [getStorageController] = createCache(lazyLoadStorage)
 
 /**
  * Storage 的用户访问接口

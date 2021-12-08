@@ -1,6 +1,6 @@
 import { createLinkController } from '@/modulesRoom/link'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
-import { createCache, createEnvContext } from '@/utils'
+import { createEnvContext } from '@/utils'
 
 declare global {
     interface RoomMemory {
@@ -15,7 +15,7 @@ declare global {
     }
 }
 
-const lazyloadLink = createLinkController({
+export const getLinkController = createLinkController({
     getMemory: room => room.memory,
     getLink: room => room[STRUCTURE_LINK],
     transferEnergy: (fromStructure, toStructure, amount) => {
@@ -44,5 +44,3 @@ const lazyloadLink = createLinkController({
     },
     env: createEnvContext('link')
 })
-
-export const [getLinkController] = createCache(lazyloadLink)

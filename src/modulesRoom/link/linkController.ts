@@ -1,3 +1,4 @@
+import { createCache } from '@/utils'
 import { LinkMemory } from '.'
 import { LinkContext } from './types'
 
@@ -185,7 +186,8 @@ export const createLinkController = function (context: LinkContext) {
         return { run, asSource, asCenter, asUpgrade }
     }
 
-    return lazyLoader
+    const [getLinkController] = createCache(lazyLoader)
+    return getLinkController
 }
 
 export type LinkController = ReturnType<ReturnType<typeof createLinkController>>

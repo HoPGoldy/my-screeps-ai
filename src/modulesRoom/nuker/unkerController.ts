@@ -1,3 +1,4 @@
+import { createCache } from '@/utils'
 import { useFillNuker } from './hooks/useFillNuker'
 import { usePlanNuker } from './hooks/usePlanNuker'
 import { NukerContext } from './types'
@@ -9,7 +10,8 @@ export const createNukerController = function (context: NukerContext) {
         return useFillNuker(roomName, context)
     }
 
-    return { mountNuker: mountToGlobal, lazyLoader }
+    const [getNukerController] = createCache(lazyLoader)
+    return { mountNuker: mountToGlobal, getNukerController }
 }
 
-export type NukerController = ReturnType<ReturnType<typeof createNukerController>['lazyLoader']>
+export type NukerController = ReturnType<ReturnType<typeof createNukerController>['getNukerController']>

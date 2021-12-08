@@ -1,3 +1,4 @@
+import { createCache } from '@/utils'
 import { PowerSpawnContext } from './types'
 
 /**
@@ -104,7 +105,8 @@ export const createPowerSpawnController = function (context: PowerSpawnContext) 
         return { run, on, off, show, isWorking }
     }
 
-    return { lazyLoader }
+    const [getPsController] = createCache(lazyLoader)
+    return getPsController
 }
 
-export type PowerSpawnController = ReturnType<ReturnType<typeof createPowerSpawnController>['lazyLoader']>
+export type PowerSpawnController = ReturnType<ReturnType<typeof createPowerSpawnController>>

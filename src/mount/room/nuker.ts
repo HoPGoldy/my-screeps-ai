@@ -1,7 +1,7 @@
 import { createNukerController } from '@/modulesRoom/nuker/unkerController'
 import { setRoomStats } from '@/modulesGlobal/stats'
 import { TransportTaskType } from '@/modulesRoom'
-import { createCache, createEnvContext } from '@/utils'
+import { createEnvContext } from '@/utils'
 
 declare global {
     interface Memory {
@@ -17,7 +17,7 @@ declare global {
     }
 }
 
-const { mountNuker, lazyLoader: lazyLoadNuker } = createNukerController({
+export const { mountNuker, getNukerController } = createNukerController({
     getGlobalMemory: () => Memory,
     getRoomNuker: room => room[STRUCTURE_NUKER],
     getResAmount: (room, resType) => {
@@ -41,6 +41,3 @@ const { mountNuker, lazyLoader: lazyLoadNuker } = createNukerController({
     },
     env: createEnvContext('nuker')
 })
-
-export const [getNukerController] = createCache(lazyLoadNuker)
-export { mountNuker }

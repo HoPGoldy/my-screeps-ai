@@ -1,5 +1,5 @@
 import { TransportTaskType } from '@/modulesRoom'
-import { createCache, createEnvContext, createHelp } from '@/utils'
+import { createEnvContext, createHelp } from '@/utils'
 import { PowerSpawnMemory } from '@/modulesRoom/powerSpawn/types'
 import { createPowerSpawnController } from '@/modulesRoom/powerSpawn/powerSpawnController'
 
@@ -9,7 +9,7 @@ declare global {
     }
 }
 
-const { lazyLoader: lasyLoadPowerSpawn } = createPowerSpawnController({
+export const getPsController = createPowerSpawnController({
     getMemory: room => {
         if (!room.memory.ps) room.memory.ps = {}
         return room.memory.ps
@@ -28,8 +28,6 @@ const { lazyLoader: lasyLoadPowerSpawn } = createPowerSpawnController({
     },
     env: createEnvContext('powerSpawn')
 })
-
-export const [getPsController] = createCache(lasyLoadPowerSpawn)
 
 export class PowerSpawnConsole extends Room {
     public pon () {

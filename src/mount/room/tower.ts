@@ -3,7 +3,7 @@ import { createTowerController } from '@/modulesRoom/tower/controller'
 import { whiteListFilter } from '../global/whiteList'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
 import { CreepRole } from '@/role/types/role'
-import { createCache, createEnvContext } from '@/utils'
+import { createEnvContext } from '@/utils'
 import { TowerMemory } from '@/modulesRoom/tower/types'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 
@@ -13,7 +13,7 @@ declare global {
     }
 }
 
-const lazyloadTower = createTowerController({
+export const getTowerController = createTowerController({
     getMemory: room => {
         if (!room.memory.tower) room.memory.tower = {}
         return room.memory.tower
@@ -49,5 +49,3 @@ const lazyloadTower = createTowerController({
     finishBoost: (room, taskId) => room.myLab.finishBoost(taskId),
     env: createEnvContext('tower')
 })
-
-export const [getTowerController] = createCache(lazyloadTower)
