@@ -20,6 +20,8 @@ import { getNukerController } from './nuker'
 import { TowerController } from '@/modulesRoom/tower/controller'
 import { LinkController } from '@/modulesRoom/link/linkController'
 import { NukerController } from '@/modulesRoom/nuker/unkerController'
+import { getPsController } from './powerSpawn'
+import { PowerSpawnController } from '@/modulesRoom/powerSpawn/powerSpawnController'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -90,7 +92,8 @@ export default () => {
     const modulePlugin: [string, PluginLoader][] = [
         ['towerController', getTowerController],
         ['linkController', getLinkController],
-        ['nukerController', getNukerController]
+        ['nukerController', getNukerController],
+        ['psController', getPsController]
     ]
 
     // 在房间上创建插件的懒加载访问器
@@ -165,5 +168,9 @@ declare global {
          * nuker 工作模块
          */
         nukerController: NukerController
+        /**
+         * ps 工作模块
+         */
+        psController: PowerSpawnController
     }
 }

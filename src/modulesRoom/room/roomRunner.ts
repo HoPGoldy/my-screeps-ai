@@ -18,6 +18,5 @@ export const runRoom = function (room: Room): void {
     room.towerController.run()
     room.linkController.run()
     room.nukerController.run()
-
-    room[STRUCTURE_POWER_SPAWN]?.run()
+    room.psController.run()
 }

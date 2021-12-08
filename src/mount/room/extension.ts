@@ -137,10 +137,6 @@ declare global {
          * 是否关闭自动布局，该值为 true 时将不会对本房间运行自动布局
          */
         noLayout: boolean
-        /**
-         * powerSpawn 是否暂停
-         */
-        pausePS?: boolean
     }
 
     /**

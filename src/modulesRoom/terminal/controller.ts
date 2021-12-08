@@ -136,20 +136,15 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         // power 足够才能共享
         if (this.terminal.store[RESOURCE_POWER] < SHARE_LIMIE) return ERR_NOT_ENOUGH_RESOURCES
 
-        if (!Memory.psRooms || Memory.psRooms.length <= 0) return ERR_NOT_FOUND
-
         // 找到 power 数量最少的已启用 ps 房间的信息
-        const targetRoomInfo = Memory.psRooms
+        const targetRoomInfo = Object.values(Game.rooms)
             // 统计出所有目标房间的 power 数量
-            .map(roomName => {
-                const room = Game.rooms[roomName]
+            .map(room => {
                 // 无法正常接收的不参与计算
-                if (!room || !room.terminal) return { room: roomName, number: null }
+                if (!room.terminal) return { room: room.name, number: null }
 
-                return {
-                    room: roomName,
-                    number: room.terminal.store[RESOURCE_POWER]
-                }
+                const { total } = room.myStorage.getResource(RESOURCE_POWER)
+                return { room: room.name, number: total }
             })
             // 移除掉所有不参与计算的房间
             .filter(info => info.number !== null)

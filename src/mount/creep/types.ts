@@ -9,19 +9,11 @@ declare global {
      */
     interface CreepMemory {
         /**
-         * 移动缓存
-         */
-        _go?: MoveInfo
-        /**
          * 来自的 shard
          * 在死后会向这个 shard 发送孵化任务
          * creepController 会通过这个字段检查一个 creep 是不是跨 shard creep
          */
         fromShard?: ShardName
-        /**
-         * 自己是否会向他人发起对穿
-         */
-        disableCross?: boolean
         /**
          * creep 是否已经准备好可以工作了
          */

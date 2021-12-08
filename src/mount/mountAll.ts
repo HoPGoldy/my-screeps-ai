@@ -2,9 +2,6 @@ import mountCreep, { CreepExtension } from './creep'
 import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
-import {
-    PowerSpawnExtension, PowerSpawnConsole
-} from './structures'
 import SourceExtension from './source/extension'
 import FactoryConsole from '@/modulesRoom/factory/console'
 import TerminalConsole from '@/modulesRoom/terminal/console'
@@ -14,6 +11,7 @@ import ObserverConsole from '@/modulesRoom/observer/console'
 import RemoteConsole from '@/modulesRoom/remote/console'
 import LabConsole from '@/modulesRoom/lab/console'
 import { Color, log } from '@/utils'
+import { PowerSpawnConsole } from './room/powerSpawn'
 
 /**
  * 初始化存储
@@ -49,12 +47,11 @@ export const mountAll = function () {
         [Room, ObserverConsole],
         [Room, RemoteConsole],
         [Room, LabConsole],
-        // 业务模块拓展挂载
+        [Room, PowerSpawnConsole],
+        // 模块拓展挂载
         [Source, SourceExtension],
         [Creep, CreepExtension],
-        [PowerCreep, PowerCreepExtension],
-        [StructurePowerSpawn, PowerSpawnExtension],
-        [StructurePowerSpawn, PowerSpawnConsole]
+        [PowerCreep, PowerCreepExtension]
     ]
 
     mountList.forEach(([targetClass, extensionClass]) => {

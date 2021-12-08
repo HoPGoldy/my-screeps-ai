@@ -93,3 +93,16 @@ export type AllowCrossRuleFunc = (creep: Creep | PowerCreep, requireCreep: Creep
 export type CrossRules = {
     [role in CreepRole | 'default']?: AllowCrossRuleFunc
 }
+
+declare global {
+    interface CreepMemory {
+        /**
+         * 移动缓存
+         */
+        _go?: MoveInfo
+        /**
+         * 自己是否会向他人发起对穿
+         */
+        disableCross?: boolean
+    }
+}

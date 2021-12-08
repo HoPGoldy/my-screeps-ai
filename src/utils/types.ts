@@ -26,3 +26,10 @@ export interface EnvContext {
 export interface ObjectWithId<T = unknown> extends RoomObject {
     id: Id<T>
 }
+
+declare global {
+    interface Structure {
+        // 是否为自己的建筑，某些建筑不包含此属性，写起来会多做一层判断，所以加上
+        my?: boolean
+    }
+}
