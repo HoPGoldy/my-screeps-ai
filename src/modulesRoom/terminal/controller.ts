@@ -57,7 +57,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
      */
     private balanceResource () {
         if (this.room.storage.store.getFreeCapacity() > 0) {
-            this.room.myStorage.balanceResource()
+            this.room.storageController.balanceResource()
             this.log.normal('剩余空间不足，执行资源平衡')
             return
         }
@@ -143,7 +143,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
                 // 无法正常接收的不参与计算
                 if (!room.terminal) return { room: room.name, number: null }
 
-                const { total } = room.myStorage.getResource(RESOURCE_POWER)
+                const { total } = room.storageController.getResource(RESOURCE_POWER)
                 return { room: room.name, number: total }
             })
             // 移除掉所有不参与计算的房间

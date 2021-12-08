@@ -103,7 +103,7 @@ export const createWarManager = function (context: WarContext) {
             const boostResource = getBodyBoostResource(allBody, BODY_BOOST_RESOURCES)
 
             const allResourceEnough = boostResource.every(boostRes => {
-                const { total } = room.myStorage.getResource(boostRes.resource)
+                const { total } = room.storageController.getResource(boostRes.resource)
                 return total > boostRes.amount
             })
 

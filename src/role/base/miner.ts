@@ -46,7 +46,7 @@ const miner: CreepConfig<CreepRole.Miner> = {
             return false
         }
 
-        const { total } = room.myStorage.getResource(room.mineral.mineralType)
+        const { total } = room.storageController.getResource(room.mineral.mineralType)
         if (total < MINE_LIMIT) return true
 
         // 资源已经采集的足够多了，之后再采集

@@ -21,7 +21,7 @@ const { mountNuker, lazyLoader: lazyLoadNuker } = createNukerController({
     getGlobalMemory: () => Memory,
     getRoomNuker: room => room[STRUCTURE_NUKER],
     getResAmount: (room, resType) => {
-        const { total } = room.myStorage.getResource(resType)
+        const { total } = room.storageController.getResource(resType)
         return total
     },
     scanState: nuker => {

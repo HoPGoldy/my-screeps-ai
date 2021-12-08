@@ -33,7 +33,7 @@ export default class StageGetResource extends FactoryBase {
     }
 
     private getResource (resType: ResourceConstant, amount: number): void {
-        const source = this.room.myStorage.getResourcePlace(resType, amount)
+        const source = this.room.storageController.getResourcePlace(resType, amount)
         // 这里如果 terminal 中的资源也不足的话会把 factory 卡在这个位置
         // 这里不能挂起任务，因为它之后有更高级的任务以他为原料，如果它没有合成的话
         // 准备阶段会重新拆出来一个低级任务，如果底物缺失很久的话，会导致循环拆分从而堆积很多相同任务
@@ -64,7 +64,7 @@ export default class StageGetResource extends FactoryBase {
      * 检查工作所需能量是否充足
      */
     private hasEnoughEnergy (): boolean {
-        const { total } = this.room.myStorage.getResource(RESOURCE_ENERGY)
+        const { total } = this.room.storageController.getResource(RESOURCE_ENERGY)
         if (total >= ENERGY_LIMIT) return true
 
         // 如果能量不足了则休眠

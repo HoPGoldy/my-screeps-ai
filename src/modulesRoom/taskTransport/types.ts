@@ -67,7 +67,7 @@ export interface TransportTask<T = TransportRequests> {
 /**
  * 物流任务的目标资源配置
  */
-interface TransportRequests {
+export interface TransportRequests {
     /**
      * 从哪里获取资源
      * 支持 id 和位置

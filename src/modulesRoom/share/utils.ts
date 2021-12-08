@@ -14,7 +14,7 @@ export const showResourceSource = function (): string {
             const room = Game.rooms[roomName]
             if (!room) return `[${roomName} ${red('无法访问')}]`
 
-            const { total } = room.myStorage.getResource(resourceType)
+            const { total } = room.storageController.getResource(resourceType)
             return `[${roomName} ${blue(total)}]`
         })
         return `[${yellow(resourceType, true)}] 提供者 ${roomStats.join(' ')}`

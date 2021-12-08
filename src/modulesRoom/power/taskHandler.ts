@@ -107,7 +107,7 @@ export const PowerTasks: PowerTaskConfigs = {
             if (creep.store[RESOURCE_OPS] < POWER_INFO[PWR_OPERATE_EXTENSION].ops) return ERR_NOT_ENOUGH_RESOURCES
 
             // 获取能量来源
-            const sourceStructure = Game.rooms[creep.memory.workRoom]?.myStorage.getResourcePlace(RESOURCE_ENERGY, 100)
+            const sourceStructure = Game.rooms[creep.memory.workRoom]?.storageController.getResourcePlace(RESOURCE_ENERGY, 100)
             // 没有来源则直接完成任务
             if (!sourceStructure) {
                 creep.log('没有找到包含足够能量的存储，移除 extension 填充任务')

@@ -88,7 +88,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
         if (this.task || !this.room || !this.room.terminal) return false
 
         // 本房间内指定资源的存量
-        const { total } = this.room.myStorage.getResource(resourceType)
+        const { total } = this.room.storageController.getResource(resourceType)
 
         this.memory = {
             target: targetRoom,
@@ -116,7 +116,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
             return
         }
 
-        const { total } = terminal.room.myStorage.getResource(resourceType)
+        const { total } = terminal.room.storageController.getResource(resourceType)
         // 获取本次要发送的数量
         const { amount: sendAmount, cost } = getSendAmount(
             Math.min(taskAmount, total),
@@ -200,7 +200,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
     ) {
         if (terminal.room.transport.hasTaskWithType(TransportTaskType.ShareGetResource)) return
 
-        const { total } = terminal.room.myStorage.getResource(resType)
+        const { total } = terminal.room.storageController.getResource(resType)
         if (total < sendAmount) {
             this.log.normal(
                 `由于 ${resType} 资源不足 ${terminal.store[resType] || 0}/${sendAmount}` +
@@ -257,7 +257,7 @@ export default class RoomShareController extends RoomAccessor<RoomShareTask> {
                 room.terminal.store.getFreeCapacity() < 1000
             ) return true
 
-            const { total: existAmount } = room.myStorage.getResource(resourceType)
+            const { total: existAmount } = room.storageController.getResource(resourceType)
 
             // 如果请求共享的是能量
             if (resourceType === RESOURCE_ENERGY) {

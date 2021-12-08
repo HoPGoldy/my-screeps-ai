@@ -99,7 +99,7 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
 
         // 没有任务，并且 ops 不够，就搓 ops
         if (!powerTask) {
-            const { total } = this.room.myStorage.getResource(RESOURCE_OPS)
+            const { total } = this.room.storageController.getResource(RESOURCE_OPS)
             if (total < MAX_OPS) powerTask = PWR_GENERATE_OPS
         }
         if (!powerTask) return
@@ -193,7 +193,7 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
         // 身上的够用就不去 terminal 拿了
         if (pc.store[RESOURCE_OPS] > opsNumber) return OK
 
-        const sourceStructure = this.room.myStorage.getResourcePlace(RESOURCE_OPS, opsNumber)
+        const sourceStructure = this.room.storageController.getResourcePlace(RESOURCE_OPS, opsNumber)
         if (!sourceStructure) return ERR_NOT_ENOUGH_RESOURCES
 
         // 拿取指定数量的 ops

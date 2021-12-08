@@ -1,3 +1,26 @@
+import { EnvContext } from '@/utils'
+import { TransportRequests } from '../taskTransport/types'
+
+export type StorageContext = {
+    /**
+     * 请求可以提供资源帮助的房间
+     */
+    requestShareRoom: (room: Room, resourceType: ResourceConstant, amount: number) => Room
+    /**
+     * 添加强化 storage 任务
+     */
+    addPowerStroageTask: (room: Room) => unknown
+    /**
+     * 本方法触发代表该房间可以分享能量
+     * 会定期触发
+     */
+    canShareEnergy: (room: Room) => unknown
+    /**
+     * 添加和 terminal 的资源平衡物流任务
+     */
+    addTransportTask: (room: Room, requests: TransportRequests[]) => unknown
+} & EnvContext
+
 /**
  * 资源平衡结果
  * 每个平衡结果都会转换成一个中央物流任务

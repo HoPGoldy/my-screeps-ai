@@ -44,7 +44,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 
     // 没有指定目标位置
     if (!request.to) {
-        target = workRoom.myStorage.getStorePlace(request.resType)
+        target = workRoom.storageController.getStorePlace(request.resType)
     }
     // 目的地是个位置或者建筑类型数组
     if (typeof request.to === 'object') {

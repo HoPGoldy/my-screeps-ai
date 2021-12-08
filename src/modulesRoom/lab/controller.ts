@@ -432,7 +432,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
 
         // 目标资源数量已经足够了就不合成
-        if (this.room.myStorage.getResource(resource.target).total >= resource.number) {
+        if (this.room.storageController.getResource(resource.target).total >= resource.number) {
             this.setNextIndex()
             return
         }
@@ -450,7 +450,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
                 // 家里素材能合成的最大值
                 canReactionAmount,
                 // 当前距离期望值差了多少
-                resource.number - this.room.myStorage.getResource(resource.target).total
+                resource.number - this.room.storageController.getResource(resource.target).total
             )
 
             this.log.normal(`指定合成目标：${resource.target} ${this.memory.reactionAmount}`)
@@ -482,7 +482,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         // 检查存储里的底物数量是否足够
         const targetResource = LAB_TARGETS[this.memory.reactionIndex].target
         const hasInsufficientResource = REACTION_SOURCE[targetResource].find(res => {
-            return this.room.myStorage.getResource(res).total < this.memory.reactionAmount
+            return this.room.storageController.getResource(res).total < this.memory.reactionAmount
         })
 
         // 有不足的底物, 重新查找目标
@@ -585,7 +585,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
         // 将底物按数量从小到大排序
         const needResources = needResourcesName
-            .map(res => this.room.myStorage.getResource(res).total)
+            .map(res => this.room.storageController.getResource(res).total)
             .sort((a, b) => a - b)
 
         // 根据短板底物计算可合成数量
@@ -667,7 +667,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
             else if (reactionState === LabState.Working) {
                 // 获取当前目标产物以及 terminal 中的数量
                 const res = LAB_TARGETS[reactionIndex]
-                const currentAmount = this.room.myStorage.getResource(res.target)
+                const currentAmount = this.room.storageController.getResource(res.target)
                 logs.push(
                     `- [工作进展] 目标 ${res.target} 本次生产/当前存量/目标存量 ` +
                     `${reactionAmount}/${currentAmount.total}/${res.number}`

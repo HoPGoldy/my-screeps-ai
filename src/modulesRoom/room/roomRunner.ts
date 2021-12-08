@@ -9,7 +9,7 @@ export const runRoom = function (room: Room): void {
     runStrategyCore(room.controller)
 
     room.spawner.run()
-    room.myStorage.run()
+    room.storageController.run()
     room.myTerminal.run()
     room.myLab.runBoost()
     room.myLab.runReaction()

@@ -16,7 +16,7 @@ const { lazyLoader: lasyLoadPowerSpawn } = createPowerSpawnController({
     },
     getRoomPowerSpawn: room => room[STRUCTURE_POWER_SPAWN],
     getResAmount: (room, resType) => {
-        const { total } = room.myStorage.getResource(resType)
+        const { total } = room.storageController.getResource(resType)
         return total
     },
     hasFillPowerSpawnTask: room => room.transport.hasTaskWithType(TransportTaskType.FillPowerSpawn),

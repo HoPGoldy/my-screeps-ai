@@ -149,7 +149,7 @@ const needContinueUpgrade = function (room: Room): boolean {
     // 快掉级了，必须升
     if (room.controller.ticksToDowngrade <= 12000) return true
 
-    const { total } = room.myStorage.getResource(RESOURCE_ENERGY)
+    const { total } = room.storageController.getResource(RESOURCE_ENERGY)
     // cpu 不够或者能量不够了就不升级了
     return !(Game.cpu.bucket < 700 || total < UPGRADER_WITH_ENERGY_LEVEL_8)
 }

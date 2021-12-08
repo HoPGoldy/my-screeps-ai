@@ -121,7 +121,7 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
             // 如果有生产限制的话，会先检查资源底物是否充足
             if (this.memory.specialTraget in FACTORY_LOCK_AMOUNT) {
                 const subResLimit = FACTORY_LOCK_AMOUNT[this.memory.specialTraget]
-                const { total } = this.room.myStorage.getResource(subResLimit.sub)
+                const { total } = this.room.storageController.getResource(subResLimit.sub)
                 // 如果对应底物的数量小于需要的数量的话就不会添加新任务
                 if (total < subResLimit.limit) return 0
             }

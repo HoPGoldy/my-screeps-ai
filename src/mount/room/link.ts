@@ -34,7 +34,7 @@ const lazyloadLink = createLinkController({
     hasTransferTask: room => {
         return room.transport.hasTaskWithType(TransportTaskType.CenterLink)
     },
-    getEnergyStructure: room => room.myStorage.getResourcePlace(RESOURCE_ENERGY),
+    getEnergyStructure: room => room.storageController.getResourcePlace(RESOURCE_ENERGY),
     getSourceLink: source => source.getLink(),
     onLinkBindToSource: (link, source) => {
         source.setLink(link)

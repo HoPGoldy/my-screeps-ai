@@ -52,7 +52,7 @@ export default class ShareConsole extends Room {
             logs.push(`┖─ 因此移除的共享任务：目标房间：${task.target} 资源类型：${task.resourceType} 资源总量：${task.amount}`)
         }
 
-        const { total } = this.myStorage.getResource(resourceType)
+        const { total } = this.storageController.getResource(resourceType)
         if (!total || total < amount) return `[资源共享] 数量不足 ${resourceType} 剩余 ${total | 0}`
 
         // 计算路费，防止出现路费 + 资源超过终端上限的问题出现

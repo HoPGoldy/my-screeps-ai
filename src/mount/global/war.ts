@@ -142,7 +142,7 @@ const warModule = createWarController({
     },
     getRoomSpawn: room => room[STRUCTURE_SPAWN],
     getResource: (room, res) => {
-        const { total } = room.myStorage.getResource(res)
+        const { total } = room.storageController.getResource(res)
         return total
     },
     getRoomLab: room => room[STRUCTURE_LAB],

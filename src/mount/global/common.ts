@@ -39,7 +39,7 @@ export const seeres = function (resourceName: ResourceConstant): string {
     // 遍历所有房间并检查对应的存储建筑
     log += Object.values(Game.rooms).map(room => {
         // 统计数量
-        const { total: amount } = room.myStorage.getResource(resourceName)
+        const { total: amount } = room.storageController.getResource(resourceName)
         total += amount
 
         // 如果有就列出显示
@@ -99,7 +99,7 @@ export const give = function (roomName: string, resourceType: ResourceConstant, 
         const room = Game.rooms[currentRoomName]
         if (roomName === room.name) continue
 
-        const { total } = room.myStorage.getResource(resourceType)
+        const { total } = room.storageController.getResource(resourceType)
         if (total <= 0) continue
 
         // 计算本房间应发送的数量（不超的情况下直接发完）
@@ -112,5 +112,18 @@ export const give = function (roomName: string, resourceType: ResourceConstant, 
 
     logs.push(`调配完成，向 ${roomName} 发送 ${resourceType} 共计 ${sendAmount}`)
 
+    return logs.join('\n')
+}
+
+/**
+ * 查看当前所有的 powerSpawn 工作状态
+ */
+export const ps = function (): string {
+    const logs = Object.values(Game.rooms).map(room => {
+        if (!room || !room.powerSpawn) return false
+        return room.psController.show()
+    }).filter(Boolean)
+
+    if (logs.length <= 0) return '暂未找到 powerSpawn'
     return logs.join('\n')
 }

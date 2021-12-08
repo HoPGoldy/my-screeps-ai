@@ -57,7 +57,7 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 
     // 没有指定位置
     if (!request.from) {
-        target = workRoom.myStorage.getResourcePlace(request.resType)
+        target = workRoom.storageController.getResourcePlace(request.resType)
         targetPos = target?.pos
 
         // 如果是能量就特判一下，因为能量可以从启动 container 里取到
