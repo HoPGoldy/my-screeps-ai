@@ -6,6 +6,7 @@ import { arrayToObject, createCluster, EnvContext, getBodyBoostResource, getBody
 import { SquadType, SquadTypeName } from '../squadManager/types'
 import { BODY_BOOST_RESOURCES, DEFAULT_SQUAD_CODE } from '../utils'
 import { createSpawnInfo } from '../mobilizeManager/getBodyPart'
+import { getLab } from '@/mount/room/shortcut'
 
 export type WarContext = {
     warCode: string
@@ -107,8 +108,8 @@ export const createWarManager = function (context: WarContext) {
                 return total > boostRes.amount
             })
 
-            if (boostResource.length > room[STRUCTURE_LAB].length) {
-                env.log.warning(`所需 lab 数量不足，需要 ${boostResource.length} 现存 ${room[STRUCTURE_LAB].length}`)
+            if (boostResource.length > getLab(room).length) {
+                env.log.warning(`所需 lab 数量不足，需要 ${boostResource.length} 现存 ${getLab(room).length}`)
                 return false
             }
 

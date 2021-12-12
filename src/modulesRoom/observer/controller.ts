@@ -2,6 +2,7 @@ import { DEPOSIT_MAX_COOLDOWN, OBSERVER_DEPOSIT_MAX, OBSERVER_INTERVAL, OBSERVER
 import RoomAccessor from '../RoomAccessor'
 import { ObserverMemory } from './types'
 import { getFreeSpace, green, createRoomLink } from '@/utils'
+import { getObserver } from '@/mount/room/shortcut'
 
 /**
  * Observer 拓展
@@ -25,7 +26,7 @@ export default class ObservserController extends RoomAccessor<ObserverMemory> {
 
     /** 本房间内的 observer */
     get observer () {
-        return this.room[STRUCTURE_OBSERVER]
+        return getObserver(this.room)
     }
 
     public run (): void {

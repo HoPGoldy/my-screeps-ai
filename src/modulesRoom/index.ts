@@ -8,7 +8,6 @@ export { default as TerminalController } from './terminal/controller'
 export { default as ObserverController } from './observer/controller'
 export { default as RemoteChontroller } from './remote/controller'
 export { default as LabChontroller } from './lab/controller'
-export { default as mountShortcut } from './shortcut'
 
 export { TransportTaskType } from './taskTransport/types'
 export { WorkTaskType } from './taskWork/types'

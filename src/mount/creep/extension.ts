@@ -76,7 +76,7 @@ export default class CreepExtension extends Creep {
 
         // 找不到目标就判断下，如果不在房间内就走过去，在房间内还没有目标才是真没目标
         if (!target) {
-            if (inWorkRoom) {
+            if (!inWorkRoom) {
                 this.goTo(roomPos, { range: 3 })
                 return OK
             }

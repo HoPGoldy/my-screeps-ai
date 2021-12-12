@@ -1,9 +1,10 @@
-import { updateStructure } from '@/modulesRoom/shortcut'
+
 import { ConstructionMemory, createConstructionController } from '@/modulesGlobal/construction'
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
 import { createEnvContext } from '@/utils'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepRole } from '@/role/types/role'
+import { getExtractor, updateStructure } from '../room/shortcut'
 
 /**
 * 当墙壁建造好后将找到最近的工人刷一下自己
@@ -69,7 +70,7 @@ const buildCallback: {
     },
     [STRUCTURE_TERMINAL]: (terminal: StructureTerminal) => {
         // 有 extractor 了，发布矿工并添加对应的共享协议
-        if (terminal.room.extractor) {
+        if (getExtractor(terminal.room)) {
             terminal.room.spawner.release.miner()
         }
         terminal.room.myTerminal.resetConfig()
@@ -86,7 +87,7 @@ const { addConstructionSite, planSite, handleCompleteSite, getNearSite } = creat
     },
     onBuildComplete: structure => {
         const { room, id, structureType } = structure
-        updateStructure(room.name, structureType, id)
+        updateStructure(room, structureType as BuildableStructureConstant, id)
         if (structureType in buildCallback) buildCallback[structureType](structure)
     },
     env: createEnvContext('建筑管理')

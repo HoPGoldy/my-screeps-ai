@@ -1,4 +1,5 @@
 import { red, yellow, green, createRoomLink } from '@/utils'
+import { getObserver } from '../room/shortcut'
 
 /**
  * 查看所有 observer 的运行状态
@@ -8,7 +9,7 @@ export default function (): string {
     const getFlagRoomLink = flagName => createRoomLink(Game.flags[flagName].pos.roomName)
 
     const stats = Object.values(Game.rooms).map(room => {
-        if (!room.observer) return false
+        if (!getObserver(room)) return false
 
         const memory = room.memory.observer
         const obName = createRoomLink(room.name)

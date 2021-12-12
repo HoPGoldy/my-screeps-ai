@@ -1,6 +1,7 @@
 import { Color, colorful, createRoomLink } from '@/utils'
 import { TOP_TARGET } from '@/modulesRoom/factory/constant'
 import { FactoryLevel } from '@/modulesRoom/factory/types'
+import { getFactory } from '../room/shortcut'
 
 export default function (): string {
     if (!Memory.commodities) return '未启动商品生产线'
@@ -19,7 +20,7 @@ export default function (): string {
         // 这里返回的是筛选过的房间名
         // 所有访问不到的房间会被替换成 false
         const currentRoomNames = nodeNames.map(roomName => {
-            if (!Game.rooms[roomName] || !Game.rooms[roomName].factory) {
+            if (!Game.rooms[roomName] || !getFactory(Game.rooms[roomName])) {
                 logs.push(`    - [${roomName}] 房间无视野或无工厂，已移除`)
                 return false
             }

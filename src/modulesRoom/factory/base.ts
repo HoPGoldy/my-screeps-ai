@@ -1,6 +1,7 @@
 import { FactoryMemory, FactoryTask } from './types'
 import RoomAccessor from '../RoomAccessor'
 import { FactoryState, TOP_TARGET, BLACK_LIST, COMMODITY_MAX, FACTORY_LOCK_AMOUNT } from './constant'
+import { getFactory } from '@/mount/room/shortcut'
 
 /**
  * 工厂基础管理 api
@@ -14,7 +15,7 @@ export default class FactoryBase extends RoomAccessor<FactoryMemory> {
      * 快捷访问 - 本房价内工厂
      */
     get factory () {
-        return this.room[STRUCTURE_FACTORY]
+        return getFactory(this.room)
     }
 
     /**

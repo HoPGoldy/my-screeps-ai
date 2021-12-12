@@ -1,6 +1,7 @@
 import { getFreeSpace } from '@/utils'
 import { baseLayout } from './constant'
 import { AutoPlanResult } from '../../types'
+import { getMineral, getSource } from '@/mount/room/shortcut'
 
 /**
  * 规划集中式布局的建筑摆放
@@ -24,7 +25,7 @@ export default function (room: Room, centerPos: RoomPosition): AutoPlanResult[] 
                 // 不在集中布局内，是 link 就从刚才生成的数组中弹出一个，是 extractor 就用 mineral 的位置
                 if (pos === null) {
                     if (structureType === STRUCTURE_LINK) return outLinkPos.shift()
-                    else if (structureType === STRUCTURE_EXTRACTOR) return room.mineral.pos
+                    else if (structureType === STRUCTURE_EXTRACTOR) return getMineral(room).pos
                 }
                 // 集中布局之内，直接计算绝对位置
                 return new RoomPosition(centerPos.x + pos[0], centerPos.y + pos[1], room.name)
@@ -44,7 +45,7 @@ export default function (room: Room, centerPos: RoomPosition): AutoPlanResult[] 
  */
 const getOutLinkPos = function (room: Room): RoomPosition[] {
     // 给 source 和 controller 旁边造 link
-    const targets = [...room.source, room.controller]
+    const targets = [...getSource(room), room.controller]
     const result: RoomPosition[] = []
 
     for (const target of targets) {

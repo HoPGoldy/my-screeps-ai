@@ -12,9 +12,9 @@ import { ManagerData, ManagerState, TaskFinishReason, TransportTask, TransportTa
  */
 const WORK_PROPORTION_TO_EXPECT = [
     { proportion: 0.9, expect: 2 },
-    { proportion: 0.7, expect: 1 },
-    { proportion: 0.5, expect: 0 },
-    { proportion: 0.3, expect: -1 },
+    { proportion: 0.8, expect: 1 },
+    { proportion: 0.7, expect: 0 },
+    { proportion: 0.4, expect: -1 },
     { proportion: 0, expect: -2 }
 ]
 
@@ -123,7 +123,7 @@ export default class RoomTransport extends TaskController<string | number, Trans
         const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => {
             return (this.totalWorkTime / this.totalLifeTime) >= opt.proportion
         })
-
+        console.log('物流新期望: ', this.totalLifeTime, this.totalWorkTime, this.totalWorkTime / this.totalLifeTime, JSON.stringify(currentExpect))
         // 计算完成后移除之前的数据，不然会随着基数的增大，变化率会越来越小
         this.totalLifeTime = this.totalWorkTime = 0
         return currentExpect?.expect !== undefined ? currentExpect.expect : -2

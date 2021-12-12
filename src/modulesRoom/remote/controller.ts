@@ -4,6 +4,7 @@ import { RemoteInfo, RemoteShowInfo, RemoteMemory } from './types'
 import RoomAccessor from '../RoomAccessor'
 import { GetName } from '../spawn/nameGetter'
 import { withDelayCallback } from '@/mount/global/delayQueue'
+import { getContainer, getLink } from '@/mount/room/shortcut'
 
 /**
  * 添加外矿被禁用后的恢复采集任务
@@ -140,12 +141,12 @@ export default class RoomShareController extends RoomAccessor<RemoteMemory> {
         const remotePos = new RoomPosition(25, 25, remoteRoomName)
 
         // 优先放到最近的 link、storage、terminal 里
-        const candidates = [...this.room[STRUCTURE_LINK], this.room.storage, this.room.terminal].filter(Boolean)
+        const candidates = [...getLink(this.room), this.room.storage, this.room.terminal].filter(Boolean)
         if (candidates.length > 0) {
             return remotePos.findClosestByPath(candidates)
         }
 
-        const containers = this.room[STRUCTURE_CONTAINER]
+        const containers = getContainer(this.room)
         // 实在没有就找最近的 container，再没有就别用外矿了
         if (containers && containers.length > 0) {
             return remotePos.findClosestByPath(containers)

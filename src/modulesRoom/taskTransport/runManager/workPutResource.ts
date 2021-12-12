@@ -88,11 +88,12 @@ const getProcessingRequest = function (context: TransportWorkContext) {
     // 找到要放下的资源
     let otherUnfinishRequest: TransportRequestData
     const targetRes = taskData.requests.find(request => {
+        const unfnish = request.amount && request.amount > request.arrivedAmount
         const hasCarrying = manager.store[request.resType]
         const isMyRequest = request.managerName && request.managerName === manager.name
 
-        if (!isMyRequest && hasCarrying) otherUnfinishRequest = request
-        return hasCarrying
+        if (!isMyRequest && hasCarrying && unfnish) otherUnfinishRequest = request
+        return hasCarrying && unfnish
     })
 
     // 身上的资源转移完毕，检查下是不是所有资源都完成了

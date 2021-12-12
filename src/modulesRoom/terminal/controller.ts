@@ -6,6 +6,7 @@ import { getExistOrder, getOrderPrice, isTaskMatched, searchOrder, stringifyTask
 import { TransportTaskType } from '../taskTransport/types'
 import { BASE_MINERAL } from '@/utils/constants'
 import { getFreeSpace, Color, colorful } from '@/utils'
+import { getMineral } from '@/mount/room/shortcut'
 
 /**
  * Terminal 控制器
@@ -100,7 +101,7 @@ export default class TerminalController extends RoomAccessor<TerminalMemory> {
         this.memory.index = 0
 
         // 该房间的矿物种类
-        const roomMineral = this.room.mineral.mineralType
+        const roomMineral = getMineral(this.room).mineralType
 
         // 默认选项为从资源共享协议获取所有的基础元素，自己房间的产出矿物则为提供
         BASE_MINERAL.forEach(res => {

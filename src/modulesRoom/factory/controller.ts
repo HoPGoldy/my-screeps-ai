@@ -1,3 +1,4 @@
+import { getFactory } from '@/mount/room/shortcut'
 import { green, yellow } from '@/utils'
 import FactoryBase from './base'
 import { FactoryState, InteractAction, TOP_TARGET } from './constant'
@@ -38,7 +39,7 @@ export default class RoomFactoryController extends FactoryBase {
      */
     public run (): void {
         // 没有启用或没有 factory 则跳过
-        if (!this.memory || !this.room[STRUCTURE_FACTORY]) return
+        if (!this.memory || !getFactory(this.room)) return
 
         const { state, sleep, pause } = this.memory
         // 暂停了，跳过

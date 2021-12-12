@@ -1,3 +1,4 @@
+import { getPowerSpawn } from '@/mount/room/shortcut'
 import RoomAccessor from '../RoomAccessor'
 import { MAX_OPS, PWR_ENABLE_ROOM } from './canstant'
 import { PowerTasks } from './taskHandler'
@@ -169,12 +170,13 @@ export default class RoomPowerController extends RoomAccessor<PowerConstant[]> {
      * @returns ERR_NOT_FOUND 房间内没有 powerSpawn
      */
     public renew (pc: PowerCreep): OK | ERR_NOT_FOUND {
-        if (!this.room.powerSpawn) return ERR_NOT_FOUND
+        const ps = getPowerSpawn(this.room)
+        if (!ps) return ERR_NOT_FOUND
 
-        const result = pc.renew(this.room.powerSpawn)
+        const result = pc.renew(ps)
 
         if (result === ERR_NOT_IN_RANGE) {
-            pc.goTo(this.room.powerSpawn.pos, { checkTarget: false })
+            pc.goTo(ps.pos, { checkTarget: false })
         }
 
         return OK

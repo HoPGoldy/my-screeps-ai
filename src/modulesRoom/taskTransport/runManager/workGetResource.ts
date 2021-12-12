@@ -1,3 +1,4 @@
+import { getContainer, getSource } from '@/mount/room/shortcut'
 import { useCache } from '@/utils'
 import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
@@ -175,14 +176,14 @@ const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
 const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: ManagerData): MoveTargetInfo<AnyStoreStructure> {
     // 从工作房间查询并缓存能量来源
     const source = useCache(() => {
-        const energyContainer = workRoom[STRUCTURE_CONTAINER].filter(container => {
+        const energyContainer = getContainer(workRoom).filter(container => {
             return container.store[RESOURCE_ENERGY] >= manager.store.getFreeCapacity()
         })
         if (energyContainer.length > 0) {
             return manager.pos.findClosestByRange(energyContainer)
         }
 
-        const droppedEnergys = workRoom.source.map(source => source.getDroppedInfo().energy)
+        const droppedEnergys = getSource(workRoom).map(source => source.getDroppedInfo().energy)
             .filter(energy => energy && energy.amount >= manager.store.getFreeCapacity())
 
         if (droppedEnergys.length > 0) {
@@ -193,7 +194,7 @@ const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: Ma
     // 没有能量，先移动到 source 附件待命
     if (!source) {
         delete managerData.cacheSourceId
-        return { pos: workRoom.source[0].pos }
+        return { pos: getSource(workRoom)[0].pos }
     }
 
     const moveTarget = source instanceof Structure ? source : undefined

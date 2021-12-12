@@ -6,6 +6,7 @@ import { CreepRole } from '@/role/types/role'
 import { createEnvContext } from '@/utils'
 import { TowerMemory } from '@/modulesRoom/tower/types'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
+import { getTower, getWall, getRampart, getLab } from './shortcut'
 
 declare global {
     interface RoomMemory {
@@ -18,9 +19,9 @@ export const getTowerController = createTowerController({
         if (!room.memory.tower) room.memory.tower = {}
         return room.memory.tower
     },
-    getTower: room => room[STRUCTURE_TOWER],
-    getWall: room => room[STRUCTURE_WALL],
-    getRampart: room => room[STRUCTURE_RAMPART],
+    getTower,
+    getWall,
+    getRampart,
     hasFillTowerTask: room => room.transport.hasTaskWithType(TransportTaskType.FillTower),
     addFillTowerTask: room => room.transport.addTask({
         type: TransportTaskType.FillTower,
@@ -42,7 +43,7 @@ export const getTowerController = createTowerController({
     ),
     getDefender: room => Game.creeps[GetName.defender(room.name)],
     updateBuildingTask: room => addBuildTask(room.name, 1),
-    getLab: room => room[STRUCTURE_LAB],
+    getLab,
     addBoostTask: (room, config) => room.myLab.addBoostTask(config),
     getBoostState: (room, taskId) => room.myLab.getBoostState(taskId),
     boostCreep: (room, creep, taskId) => room.myLab.boostCreep(creep, taskId),

@@ -1,3 +1,5 @@
+import { getRampart, getWall } from '@/mount/room/shortcut'
+
 /**
  * 自动规划墙壁
  * @see /doc/墙壁自动规划.md
@@ -40,7 +42,7 @@ const getImpassableCostMatrix = function (room: Room): CostMatrix {
     }
 
     // 获取无法通过的墙壁
-    const impassableWalls = [...room[STRUCTURE_WALL], ...room[STRUCTURE_RAMPART]].filter(s => !s.my)
+    const impassableWalls = [...getWall(room), ...getRampart(room)].filter(s => !s.my)
 
     // 添加进 cost
     impassableWalls.forEach(wall => matrix.set(wall.pos.x, wall.pos.y, 255))

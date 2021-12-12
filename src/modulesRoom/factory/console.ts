@@ -1,3 +1,4 @@
+import { getFactory } from '@/mount/room/shortcut'
 import { yellow, createHelp } from '@/utils'
 
 /**
@@ -62,7 +63,7 @@ export default class FactoryConsole extends Room {
      * 用户操作 - 查看房间工作状态
      */
     public fs (): string {
-        if (!this.factory) return `[${this.name}] 未建造工厂`
+        if (!getFactory(this)) return `[${this.name}] 未建造工厂`
         return this.myFactory.stats()
     }
 

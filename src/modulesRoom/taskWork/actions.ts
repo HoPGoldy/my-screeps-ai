@@ -38,7 +38,7 @@ export const transportActions: {
 
             // 优先使用 upgrade Link 的能量
             const { workRoom: workRoomName } = creep.memory.data
-            const upgradeLink = Game.rooms[workRoomName]?.upgradeLink
+            const upgradeLink = Game.rooms[workRoomName]?.linkController.getUpgradeLink()
             if (upgradeLink && upgradeLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                 creep.getEngryFrom(upgradeLink)
                 workController.countWorkTime()

@@ -2,6 +2,7 @@ import { TransportTaskType } from '@/modulesRoom'
 import { createEnvContext, createHelp } from '@/utils'
 import { PowerSpawnMemory } from '@/modulesRoom/powerSpawn/types'
 import { createPowerSpawnController } from '@/modulesRoom/powerSpawn/powerSpawnController'
+import { getPowerSpawn } from './shortcut'
 
 declare global {
     interface RoomMemory {
@@ -14,7 +15,7 @@ export const getPsController = createPowerSpawnController({
         if (!room.memory.ps) room.memory.ps = {}
         return room.memory.ps
     },
-    getRoomPowerSpawn: room => room[STRUCTURE_POWER_SPAWN],
+    getRoomPowerSpawn: getPowerSpawn,
     getResAmount: (room, resType) => {
         const { total } = room.storageController.getResource(resType)
         return total

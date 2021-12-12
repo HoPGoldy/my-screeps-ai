@@ -1,3 +1,4 @@
+import { getPowerSpawn } from '@/mount/room/shortcut'
 import { Color } from '@/utils'
 
 export const runPowerCreep = function (pc: PowerCreep): void {
@@ -49,12 +50,12 @@ const keepAlive = function (pc: PowerCreep): boolean {
  */
 const spawnAtRoom = function (pc: PowerCreep, roomName: string): OK | ERR_INVALID_ARGS | ERR_NOT_FOUND {
     const targetRoom = Game.rooms[roomName]
-    if (!targetRoom || !targetRoom.powerSpawn) {
+    if (!targetRoom || !getPowerSpawn(targetRoom)) {
         pc.log('找不到指定房间或者房间内没有 powerSpawn，请重新指定工作房间')
         return ERR_NOT_FOUND
     }
 
-    const spawnResult = pc.spawn(targetRoom.powerSpawn)
+    const spawnResult = pc.spawn(getPowerSpawn(targetRoom))
 
     if (spawnResult === OK) {
         targetRoom.power.addSkill(pc)

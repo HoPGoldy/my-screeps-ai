@@ -1,3 +1,4 @@
+import { getContainer, getLink, getSource } from '@/mount/room/shortcut'
 import { getMax } from './findStrategy'
 
 /**
@@ -13,11 +14,11 @@ export const getRoomEnergyTarget = function (room: Room, finder?: EnergyTargetFi
 
     if (!allEnergyTargets) {
         // 查找 storage、terminal、container 以及 link
-        const structureTargets = [room.storage, room.terminal, ...room[STRUCTURE_CONTAINER], ...room[STRUCTURE_LINK]]
+        const structureTargets = [room.storage, room.terminal, ...getContainer(room), ...getLink(room)]
             .filter(structure => structure && structure.store[RESOURCE_ENERGY] > 0)
 
         // 查找 source 旁边地上扔的
-        const droppedEnergyTargets = room.source
+        const droppedEnergyTargets = getSource(room)
             .map(source => source.getDroppedInfo().energy)
             .filter(Boolean)
 

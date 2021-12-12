@@ -5,6 +5,7 @@
  * 会自动对可复用的道路进行合并
  */
 
+import { getMineral, getRampart, getSource, getWall } from '@/mount/room/shortcut'
 import { AutoPlanResult } from '../../types'
 
 /**
@@ -29,7 +30,7 @@ const getRoomCost = function (room: Room, structurePlacePlan: AutoPlanResult[]):
     }
 
     // 获取无法通过的墙壁
-    const impassableWalls = [...room[STRUCTURE_WALL], ...room[STRUCTURE_RAMPART]].filter(s => !s.my)
+    const impassableWalls = [...getWall(room), ...getRampart(room)].filter(s => !s.my)
 
     // 添加进 cost
     impassableWalls.forEach(wall => matrix.set(wall.pos.x, wall.pos.y, 255))
@@ -97,7 +98,7 @@ export default function (room: Room, centerPos: RoomPosition, structurePlacePlan
 
     // 到 Source 的路径
     const pathToSource: RoomPosition[] = []
-    for (const source of room.source) {
+    for (const source of getSource(room)) {
         const resultPos = findPath(source.pos)
 
         // 这么操作实际上两条路可能是有重复的 pos 的，不过问题不大
@@ -108,7 +109,7 @@ export default function (room: Room, centerPos: RoomPosition, structurePlacePlan
     const pathToController: RoomPosition[] = findPath(room.controller.pos, 2)
 
     // 到 Mineral 的路径
-    const pathToMineral: RoomPosition[] = findPath(room.mineral.pos, 1)
+    const pathToMineral: RoomPosition[] = findPath(getMineral(room).pos, 1)
 
     return [pathToSource, pathToController, pathToMineral]
 }

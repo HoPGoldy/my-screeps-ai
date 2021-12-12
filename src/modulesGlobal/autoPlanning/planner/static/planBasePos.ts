@@ -1,3 +1,4 @@
+import { getMineral } from '@/mount/room/shortcut'
 import { Color, log } from '@/utils'
 import { baseLayout, BASE_SIZE } from './constant'
 
@@ -117,7 +118,7 @@ export const confirmBasePos = function (room: Room, targetPos: RoomPosition[]): 
     if (!targetPos || targetPos.length <= 0) return undefined
 
     const controller = room.controller
-    const mineral = room.mineral
+    const mineral = getMineral(room)
     if (!controller || !mineral) return undefined
 
     // 所有待选点到 controller 和 mineral 的距离总和

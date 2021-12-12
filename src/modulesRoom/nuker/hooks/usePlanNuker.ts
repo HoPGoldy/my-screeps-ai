@@ -1,3 +1,4 @@
+import { getNuker } from '@/mount/room/shortcut'
 import { NukerContext } from '../types'
 
 // 在 flag 中搜索的旗帜关键字
@@ -106,10 +107,11 @@ export const usePlanNuker = function (context: NukerContext) {
         // 确保所有核弹都就绪了
         const hasNotReady = Object.keys(memory.nukerDirective).find(roomName => {
             const fireRoom = env.getRoomByName(roomName)
+            const nuker = getNuker(fireRoom)
 
-            return !fireRoom || !fireRoom.nuker || fireRoom.nuker.cooldown ||
-                fireRoom.nuker.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY ||
-                fireRoom.nuker.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY
+            return !fireRoom || !nuker || nuker.cooldown ||
+                nuker.store[RESOURCE_ENERGY] < NUKER_ENERGY_CAPACITY ||
+                nuker.store[RESOURCE_GHODIUM] < NUKER_GHODIUM_CAPACITY
         })
 
         // 如果有未准备就绪的 nuker
@@ -126,7 +128,7 @@ export const usePlanNuker = function (context: NukerContext) {
             const targetFlag = env.getFlagByName(memory.nukerDirective[fireRoomName])
             if (!targetFlag) return `${memory.nukerDirective[fireRoomName]} 旗帜不存在，该指令已跳过`
 
-            const actionResult = fireRoom.nuker.launchNuke(targetFlag.pos)
+            const actionResult = getNuker(fireRoom).launchNuke(targetFlag.pos)
 
             // 发射完成后才会移除旗帜
             if (actionResult === OK) {

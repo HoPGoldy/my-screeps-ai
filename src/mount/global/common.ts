@@ -1,4 +1,5 @@
 import { baseLayout, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { getPowerSpawn } from '../room/shortcut'
 
 /**
  * Game.market.extendOrder 的别名
@@ -120,7 +121,7 @@ export const give = function (roomName: string, resourceType: ResourceConstant, 
  */
 export const ps = function (): string {
     const logs = Object.values(Game.rooms).map(room => {
-        if (!room || !room.powerSpawn) return false
+        if (!room || !getPowerSpawn(room)) return false
         return room.psController.show()
     }).filter(Boolean)
 

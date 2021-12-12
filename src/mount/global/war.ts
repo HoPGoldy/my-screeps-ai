@@ -6,6 +6,7 @@ import { goTo } from '@/modulesGlobal/move'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { CreepRole } from '@/role/types/role'
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
+import { getLab, getSpawn } from '../room/shortcut'
 
 declare global {
     interface Memory {
@@ -140,12 +141,12 @@ const warModule = createWarController({
             }]
         }, { dispath: true })
     },
-    getRoomSpawn: room => room[STRUCTURE_SPAWN],
+    getRoomSpawn: getSpawn,
     getResource: (room, res) => {
         const { total } = room.storageController.getResource(res)
         return total
     },
-    getRoomLab: room => room[STRUCTURE_LAB],
+    getRoomLab: getLab,
     addBoostTask: (room, config) => room.myLab.addBoostTask(config),
     getBoostState: (room, taskId) => room.myLab.getBoostState(taskId),
     boostCreep: (room, creep, taskId) => room.myLab.boostCreep(creep, taskId),

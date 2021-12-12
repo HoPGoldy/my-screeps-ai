@@ -6,6 +6,7 @@ import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { removeCreepCantRespawn } from '@/modulesGlobal/creep/utils'
 import { Color, log, DEFAULT_FLAG_NAME } from '@/utils'
+import { getSource } from '@/mount/room/shortcut'
 
 /**
  * creep 发布工具
@@ -23,7 +24,8 @@ export default class RoomCreepRelease {
      * 固定一个 source 发布一个单位
      */
     public harvester (): OK | ERR_NOT_FOUND {
-        const { name: roomName, source } = this.spawner.room;
+        const { name: roomName } = this.spawner.room
+        const source = getSource(this.spawner.room);
 
         (source || []).forEach((source, index) => {
             this.spawner.addTask(GetName.harvester(roomName, index), CreepRole.Harvester, {
@@ -231,6 +233,7 @@ export default class RoomCreepRelease {
             log('目标房间没有视野，无法发布支援单位', this.spawner.room.name + ' CreepRelease', Color.Yellow)
             return
         }
+        const source = getSource(room)
 
         // 发布 upgrader 和 builder
         this.spawner.addTask(
@@ -238,7 +241,7 @@ export default class RoomCreepRelease {
             CreepRole.RemoteUpgrader,
             {
                 targetRoomName: remoteRoomName,
-                sourceId: room.source[0].id
+                sourceId: source[0].id
             }
         )
 
@@ -247,7 +250,7 @@ export default class RoomCreepRelease {
             CreepRole.RemoteBuilder,
             {
                 targetRoomName: remoteRoomName,
-                sourceId: room.source.length >= 2 ? room.source[1].id : room.source[0].id
+                sourceId: source.length >= 2 ? source[1].id : source[0].id
             }
         )
     }

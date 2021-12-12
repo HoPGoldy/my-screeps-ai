@@ -1,6 +1,7 @@
 import { createLinkController } from '@/modulesRoom/link'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { createEnvContext } from '@/utils'
+import { getLink } from './shortcut'
 
 declare global {
     interface RoomMemory {
@@ -17,7 +18,7 @@ declare global {
 
 export const getLinkController = createLinkController({
     getMemory: room => room.memory,
-    getLink: room => room[STRUCTURE_LINK],
+    getLink,
     transferEnergy: (fromStructure, toStructure, amount) => {
         fromStructure.room.transport.addTask({
             type: TransportTaskType.CenterLink,

@@ -4,6 +4,7 @@ import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
 import { getFreeSpace, serializePos, unserializePos, Color, getUniqueKey } from '@/utils'
+import { getSpawn } from '@/mount/room/shortcut'
 
 /**
  * 能量采集单位的行为模式
@@ -172,9 +173,9 @@ const actionStrategy: ActionStrategy = {
 
             // 找到 spawn 然后把身上的能量全塞进去，不搜索 extension，因为启动时还没有 extension
             // 就算是重建，只要保证 spawn 里有能量也能孵化搬运工了
-            const targetSpawn = useRoom[STRUCTURE_SPAWN].find(spawn => {
+            const targetSpawn = getSpawn(useRoom).find(spawn => {
                 return spawn.store[RESOURCE_ENERGY] < SPAWN_ENERGY_CAPACITY
-            }) || useRoom[STRUCTURE_SPAWN][0]
+            }) || getSpawn(useRoom)[0]
 
             if (!targetSpawn) {
                 creep.say('😨卧槽我家没了')

@@ -1,6 +1,5 @@
 import { createGetter } from '@/utils'
 import {
-    mountShortcut,
     RoomTransportTaskController,
     RoomWorkTaskController,
     RoomSpawnController,
@@ -52,9 +51,6 @@ interface PluginStorage {
  * 依次挂载所有的 Room 拓展
  */
 export default () => {
-    // 挂载快捷方式
-    mountShortcut()
-
     // 房间插件实例化后会被分类保存到这里
     const pluginStorage: PluginStorage = {}
 

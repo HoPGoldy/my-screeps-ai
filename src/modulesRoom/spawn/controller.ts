@@ -6,6 +6,7 @@ import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { MySpawnReturnCode, SpawnTask } from './types'
 import { TransportTaskType } from '../taskTransport/types'
 import { CreepConfig, CreepData, CreepRole, RoleDatas } from '@/role/types/role'
+import { getSpawn } from '@/mount/room/shortcut'
 
 /**
  * 房间孵化管理模块
@@ -127,7 +128,7 @@ export default class RoomSpawnController extends RoomAccessor<SpawnTask[]> {
     public run (): void {
         // spawn 被外借了，不再处理孵化工作
         if (this.room.memory.lendSpawn) return
-        this.room[STRUCTURE_SPAWN].forEach(spawn => this.runSingleSpawn(spawn))
+        getSpawn(this.room).forEach(spawn => this.runSingleSpawn(spawn))
     }
 
     public runSingleSpawn (spawn: StructureSpawn): void {

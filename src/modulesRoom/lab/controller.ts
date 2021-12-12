@@ -3,6 +3,7 @@ import { TransportTaskType } from '../taskTransport/types'
 import RoomAccessor from '../RoomAccessor'
 import { LAB_TARGETS, REACTION_SOURCE } from './constant'
 import { BoostState, LabMemory, LabState, BoostTask, LabType } from './types'
+import { getLab } from '@/mount/room/shortcut'
 
 /**
  * lab 集群拓展
@@ -52,7 +53,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
     // 根据当前房间情况重新设置 lab 状态信息
     private initLabInfo () {
         // 所有 lab 都默认为反应 lab
-        this.labInfos = this.room[STRUCTURE_LAB].map(lab => lab.id).reduce((result, id) => {
+        this.labInfos = getLab(this.room).map(lab => lab.id).reduce((result, id) => {
             result[id] = { type: LabType.Reaction }
             return result
         }, {})
@@ -166,7 +167,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
      */
     public addBoostTask (resConfig: BoostResourceConfig[]): number | undefined {
         // 强化任务需要的 lab 大于当前房间里的 lab 数量，无法完成强化
-        if (resConfig.length > this.room[STRUCTURE_LAB].length) return
+        if (resConfig.length > getLab(this.room).length) return
 
         const taskData: BoostTask = {
             id: getUniqueKey(),
@@ -237,7 +238,7 @@ export default class LabController extends RoomAccessor<LabMemory> {
         }
         // lab 加起来也不够用，放弃任务
         // 注意，这里不会因为可用的 lab（lab 总数大于任务所需数量，但是有些 lab 被其他任务占用）不足就放弃任务，因为只要 lab 总数足够，总有一天任务会安排上
-        else if (task.res.length > this.room[STRUCTURE_LAB].length) {
+        else if (task.res.length > getLab(this.room).length) {
             this.log.warning(
                 `强化任务 ${task} 需要 lab ${task.res.length} 个，但是目前 lab 只有` +
                 `${reactionLabs.length + inLabs.length} 个，任务已放弃`

@@ -3,6 +3,7 @@ import { withDelayCallback } from '@/mount/global/delayQueue'
 import { removeCreep } from '@/modulesGlobal/creep/utils'
 import { CreepConfig, CreepRole } from '../types/role'
 import { DelayTaskData } from '@/modulesGlobal/delayQueue'
+import { getMineral } from '@/mount/room/shortcut'
 
 /**
  * miner 的矿物采集上限
@@ -23,7 +24,7 @@ const delaySpawnMiner = withDelayCallback('spawnMiner', ({ roomName }: DelayTask
         // cpu 不够
         Game.cpu.bucket < 700 ||
         // 矿采太多了
-        room.terminal.store[room.mineral.mineralType] >= MINE_LIMIT
+        room.terminal.store[getMineral(room).mineralType] >= MINE_LIMIT
     ) {
         delaySpawnMiner({ roomName }, 1000)
         return
@@ -40,13 +41,14 @@ const delaySpawnMiner = withDelayCallback('spawnMiner', ({ roomName }: DelayTask
 const miner: CreepConfig<CreepRole.Miner> = {
     // 检查矿床里是不是还有矿
     isNeed: room => {
+        const mineral = getMineral(room)
         // 房间中的矿床是否还有剩余产量
-        if (room.mineral.mineralAmount <= 0) {
-            delaySpawnMiner({ roomName: room.name }, room.mineral.ticksToRegeneration + 1)
+        if (mineral.mineralAmount <= 0) {
+            delaySpawnMiner({ roomName: room.name }, mineral.ticksToRegeneration + 1)
             return false
         }
 
-        const { total } = room.storageController.getResource(room.mineral.mineralType)
+        const { total } = room.storageController.getResource(mineral.mineralType)
         if (total < MINE_LIMIT) return true
 
         // 资源已经采集的足够多了，之后再采集
@@ -56,7 +58,7 @@ const miner: CreepConfig<CreepRole.Miner> = {
     source: creep => {
         if (creep.store.getFreeCapacity() === 0) return true
 
-        const mineral = Game.rooms[creep.memory.data.workRoom]?.mineral
+        const mineral = getMineral(Game.rooms[creep.memory.data.workRoom])
         // 找不到矿或者矿采集完了，添加延迟孵化并魂归卡拉
         if (!mineral || mineral.mineralAmount <= 0) {
             delaySpawnMiner({ roomName: mineral.room.name }, mineral.ticksToRegeneration + 1)

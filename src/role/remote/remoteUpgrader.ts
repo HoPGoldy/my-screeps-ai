@@ -2,6 +2,7 @@ import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { remoteHelperIsNeed } from './utils'
 import { getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
+import { getSource } from '@/mount/room/shortcut'
 
 /**
  * 支援 - 采矿者
@@ -37,7 +38,7 @@ const remoteUpgrader: CreepConfig<CreepRole.RemoteUpgrader> = {
             source = getRoomEnergyTarget(creep.room)
             // 没有有效的能量来源建筑就去找能用的 source
             if (!source) {
-                const sources = creep.room.source.filter(source => source.canUse())
+                const sources = getSource(creep.room).filter(source => source.canUse())
                 source = creep.room.controller.pos.findClosestByPath(sources)
             }
             if (!source) {

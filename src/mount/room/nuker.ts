@@ -2,6 +2,7 @@ import { createNukerController } from '@/modulesRoom/nuker/unkerController'
 import { setRoomStats } from '@/modulesGlobal/stats'
 import { TransportTaskType } from '@/modulesRoom'
 import { createEnvContext } from '@/utils'
+import { getNuker } from './shortcut'
 
 declare global {
     interface Memory {
@@ -19,7 +20,7 @@ declare global {
 
 export const { mountNuker, getNukerController } = createNukerController({
     getGlobalMemory: () => Memory,
-    getRoomNuker: room => room[STRUCTURE_NUKER],
+    getRoomNuker: getNuker,
     getResAmount: (room, resType) => {
         const { total } = room.storageController.getResource(resType)
         return total

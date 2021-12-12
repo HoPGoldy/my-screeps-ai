@@ -1,5 +1,4 @@
 import { EnvContext } from '@/utils'
-import { updateStructure } from '@/modulesRoom/shortcut'
 
 /**
  * 要建造工地的位置

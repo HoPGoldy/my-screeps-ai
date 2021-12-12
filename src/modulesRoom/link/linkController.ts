@@ -183,7 +183,19 @@ export const createLinkController = function (context: LinkContext) {
             getLink(room).forEach(link => runSingleLink(room, link))
         }
 
-        return { run, asSource, asCenter, asUpgrade }
+        const getCenterLink = function () {
+            const room = env.getRoomByName(roomName)
+            const { centerLinkId } = getMemory(room)
+            return env.getObjectById(centerLinkId)
+        }
+
+        const getUpgradeLink = function () {
+            const room = env.getRoomByName(roomName)
+            const { upgradeLinkId } = getMemory(room)
+            return env.getObjectById(upgradeLinkId)
+        }
+
+        return { run, asSource, asCenter, asUpgrade, getCenterLink, getUpgradeLink }
     }
 
     const [getLinkController] = createCache(lazyLoader)

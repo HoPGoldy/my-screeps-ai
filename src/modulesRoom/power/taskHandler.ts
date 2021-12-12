@@ -1,3 +1,4 @@
+import { getFactory, getSource } from '@/mount/room/shortcut'
 import { Color } from '@/utils'
 import { PWR_ENABLE_ROOM } from './canstant'
 import RoomPowerController from './controller'
@@ -140,10 +141,11 @@ export const PowerTasks: PowerTaskConfigs = {
                 return OK
             }
 
-            const actionResult = creep.usePower(PWR_OPERATE_FACTORY, creep.room.factory)
+            const factory = getFactory(creep.room)
+            const actionResult = creep.usePower(PWR_OPERATE_FACTORY, factory)
 
             if (actionResult === OK) return OK
-            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(creep.room.factory.pos)
+            else if (actionResult === ERR_NOT_IN_RANGE) creep.goTo(factory.pos)
             else {
                 creep.log(`[${creep.room.name} ${creep.name}] 执行 PWR_OPERATE_FACTORY target 时出错，错误码 ${actionResult}`, Color.Red)
                 return OK
@@ -179,9 +181,10 @@ export const PowerTasks: PowerTaskConfigs = {
         source: () => OK,
         target: creep => {
             let target: Source
+            const sources = getSource(creep.room)
             if (!creep.memory.sourceIndex) {
                 // 如果有 source 没有 regen_source 任务，则将其选为目标
-                target = creep.room.source.find((s, index) => {
+                target = sources.find((s, index) => {
                     if (!s.effects || !s.effects.map(e => e.effect).includes(PWR_REGEN_SOURCE)) {
                         // 缓存目标
                         creep.memory.sourceIndex = index
@@ -191,7 +194,7 @@ export const PowerTasks: PowerTaskConfigs = {
                 })
             }
             // 有缓存了就直接获取
-            else target = creep.room.source[creep.memory.sourceIndex]
+            else target = sources[creep.memory.sourceIndex]
             // 两个 source 都有 regen_source 时将获取不到 target
             if (!target) return ERR_BUSY
 
