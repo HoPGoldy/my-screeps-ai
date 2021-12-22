@@ -1,22 +1,44 @@
+import { StructureShortcutKey } from '@/modulesRoom/shortcut/types'
+import { getStructure } from '@/mount/room/shortcut'
 import { DestinationTarget, MoveTargetInfo, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
 
 export const onPutResource = (context: TransportWorkContext) => {
-    const { manager, managerData, requireFinishTask } = context
+    const { manager, managerData, taskData, requireFinishTask } = context
+
+    // 请求都完成了，任务结束
+    if (taskData.requests.length <= 0) {
+        requireFinishTask(TaskFinishReason.Complete)
+        return
+    }
 
     if (manager.store.getCapacity() <= 0) {
-        managerData.state = ManagerState.PutResource
+        managerData.state = ManagerState.GetResource
         delete managerData.cacheTargetId
         return
     }
 
     // 找到要运输的请求
     const processingRequest = getProcessingRequest(context)
-    if (!processingRequest) return
+    // 有请求存在，但是其中找不到自己能运输的，说明自己身上的资源不够，回去拿
+    if (!processingRequest) {
+        managerData.state = ManagerState.GetResource
+        delete managerData.cacheTargetId
+        return
+    }
 
     // 找到往哪走
     const destination = getTarget(processingRequest, context)
-    if (typeof destination === 'boolean') {
-        requireFinishTask(destination ? TaskFinishReason.Complete : TaskFinishReason.CantFindTarget)
+    // 这个请求已经被填满了，移除请求并返回
+    if (destination === ERR_FULL) {
+        const fullReuqestIndex = taskData.requests.findIndex(req => req === processingRequest)
+        taskData.requests.splice(fullReuqestIndex, 1)
+        // 请求都完成了，结束任务
+        if (taskData.requests.length <= 0) requireFinishTask(TaskFinishReason.Complete)
+        return
+    }
+    // 找不到目标，报错返回
+    else if (destination === ERR_INVALID_ARGS) {
+        requireFinishTask(TaskFinishReason.CantFindTarget)
         return
     }
 
@@ -30,14 +52,16 @@ export const onPutResource = (context: TransportWorkContext) => {
     const transferAmount = getTransferAmount(manager.store, processingRequest)
 
     // 放下资源
-    transferResource(destination.target, processingRequest, transferAmount, manager)
+    transferResource(destination.target, processingRequest, transferAmount, context)
 }
 
 /**
  * 获取指定物流请求的目标存放地
- * 当返回 boolean 类型时说明找不到目标，其中 true 代表正常的（所有目标都被填满了），false 代表异常的（参数错误导致无法获取到目标）
+ *
+ * @returns ERR_FULL 目标都被填满了
+ * @returns ERR_INVALID_ARGS 参数异常导致找不到目标
  */
-const getTarget = function (request: TransportRequestData, context: TransportWorkContext): boolean | MoveTargetInfo {
+const getTarget = function (request: TransportRequestData, context: TransportWorkContext): ERR_FULL | ERR_INVALID_ARGS | MoveTargetInfo {
     const { workRoom, manager } = context
     let target: Creep | AnyStoreStructure | PowerCreep
     let pos: RoomPosition
@@ -48,101 +72,114 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
     }
     // 目的地是个位置或者建筑类型数组
     if (typeof request.to === 'object') {
-        try {
+        // 目的地是位置
+        if (typeof request.to[0] === 'number') {
             pos = new RoomPosition(...request.to as [number, number, string])
         }
-        // 失败了，目标地是个建筑类型数组
-        catch (e) {
-            for (const type of request.to as StructureConstant[]) {
-                const structures = workRoom[type] as AnyStoreStructure[]
-
-                // 不是建筑类型、找不到建筑、不能 store 的建筑都退出
-                if (!structures) return false
-
-                const needFillStructures = structures.filter(s => s.store.getFreeCapacity(request.resType) > 0)
-
-                // 找最近的
-                if (needFillStructures.length > 0) {
-                    target = manager.pos.findClosestByRange(needFillStructures)
-                    break
-                }
-            }
-
-            // 找不到，说明要填充的建筑都填满了，完成任务
-            if (!target) return true
+        // 目的地是建筑类型数组
+        else {
+            const structureResult = getStructureByType(request, workRoom, manager)
+            if (typeof structureResult === 'number') return structureResult
+            target = structureResult
         }
     }
     // 来源是个 id
     else if (typeof request.to === 'string') {
         target = Game.getObjectById(request.to as Id<AnyStoreStructure | Creep | PowerCreep>)
-        if (!target) return false
+        if (!target) return ERR_INVALID_ARGS
     }
 
     if (target) pos = target.pos
     return { target, pos }
 }
 
+const getStructureByType = function (request: TransportRequestData, workRoom: Room, manager: Creep): ERR_FULL | ERR_INVALID_ARGS | AnyStoreStructure {
+    for (const type of request.to as StructureShortcutKey[]) {
+        const structures = getStructure(workRoom, type)
+
+        // 不是建筑类型、找不到建筑、不能 store 的建筑都退出
+        if (!structures) return ERR_INVALID_ARGS
+
+        const needFillStructures = structures.filter(s => {
+            if (!('store' in s)) throw new Error(`类型为 ${type} 的建筑没有 store 属性`)
+            return s.store.getFreeCapacity(request.resType) > 0
+        })
+
+        // 找最近的
+        if (needFillStructures.length > 0) {
+            return manager.pos.findClosestByRange(needFillStructures) as AnyStoreStructure
+        }
+    }
+
+    // 走到这里说明要填充的建筑都填满了，完成任务
+    return ERR_FULL
+}
+
 const getProcessingRequest = function (context: TransportWorkContext) {
-    const { managerData, manager, taskData, requireFinishTask } = context
+    const { manager, taskData } = context
 
     // 找到要放下的资源
     let otherUnfinishRequest: TransportRequestData
     const targetRes = taskData.requests.find(request => {
-        const unfnish = request.amount && request.amount > request.arrivedAmount
-        const hasCarrying = manager.store[request.resType]
+        // 注意这里不会通过资源已搬运数量判断请求是否完成，因为完成的请求都被删除了，留在这里的肯定时没完成的请求
+        const hasCarrying = manager.store[request.resType] > 0
         const isMyRequest = request.managerName && request.managerName === manager.name
 
-        if (!isMyRequest && hasCarrying && unfnish) otherUnfinishRequest = request
-        return hasCarrying && unfnish
+        if (!isMyRequest && hasCarrying) otherUnfinishRequest = request
+        return isMyRequest && hasCarrying
     })
-
-    // 身上的资源转移完毕，检查下是不是所有资源都完成了
-    if (!targetRes && !otherUnfinishRequest) {
-        const allFinished = taskData.requests.every(res => {
-            // 指定了转移数量，达标后即为任务完成
-            if (res.amount) return (res.arrivedAmount || 0) >= res.amount
-            // 没指定数量，找不到目标时才为任务完成
-            const destination = getTarget(res, context)
-            return typeof destination === 'boolean'
-        })
-
-        if (!allFinished) {
-            managerData.state = ManagerState.GetResource
-            delete managerData.cacheTargetId
-        }
-        else requireFinishTask(TaskFinishReason.Complete)
-        return
-    }
 
     return targetRes || otherUnfinishRequest
 }
 
 const transferResource = function (
     destinationTarget: DestinationTarget,
-    targetRes: TransportRequestData,
+    targetReq: TransportRequestData,
     transferAmount: number,
-    manager: Creep
+    context: TransportWorkContext
 ) {
-    // transferAmount && manager.log(`放下 ${targetRes.resType} ${transferAmount}`)
+    const { manager, taskData, requireFinishTask } = context
+    const { resType, amount, arrivedAmount } = targetReq
+    // transferAmount && manager.log(`放下 ${resType} ${transferAmount}`)
 
     let transferResult: ScreepsReturnCode
+    let notTransferAll = false
+
     if (!destinationTarget) {
-        transferResult = manager.drop(targetRes.resType, transferAmount)
+        transferResult = manager.drop(resType, transferAmount)
     }
     else {
-        transferResult = manager.transfer(destinationTarget, targetRes.resType, transferAmount)
+        const realTransferAmount = Math.min(destinationTarget.store.getFreeCapacity(), transferAmount)
+        if (realTransferAmount !== transferAmount) notTransferAll = true
+        transferResult = manager.transfer(destinationTarget, resType, realTransferAmount)
     }
 
     if (transferResult === OK) {
-        if (targetRes.amount) targetRes.arrivedAmount = (targetRes.arrivedAmount || 0) + transferAmount
-        // manager.log(`更新已抵达数量 ${targetRes.arrivedAmount} ${JSON.stringify(targetRes)}`)
         // 这一趟运完了就及时删掉名字，方便其他搬运工尽早继续处理对应的请求
-        delete targetRes.managerName
+        delete targetReq.managerName
+        // 这个请求没有配置搬运量，就不更新已搬运数量了
+        // 留在下个 tick，通过检查是否还有空余空间的建筑来确定请求是否完成x
+        if (!amount) return
+
+        // 更新已搬运数量
+        // manager.log(`更新已抵达数量 ${targetReq.arrivedAmount} ${JSON.stringify(targetReq)}`)
+        targetReq.arrivedAmount = (arrivedAmount || 0) + transferAmount
+        // 检查下，如果已经搬够了就完成请求
+        // 注意这里如果目标建筑满了也是当作任务完成
+        if (!notTransferAll) {
+            if (targetReq.arrivedAmount < amount) return
+        }
+
+        // 移除请求
+        const fullReuqestIndex = taskData.requests.findIndex(req => req === targetReq)
+        taskData.requests.splice(fullReuqestIndex, 1)
+        // 请求都完成了，结束任务
+        if (taskData.requests.length <= 0) requireFinishTask(TaskFinishReason.Complete)
     }
     else {
         manager.log(
             `物流任务存放资源出错！${transferResult} ${destinationTarget} ` +
-            `${JSON.stringify(targetRes)} ${transferAmount}`
+            `${JSON.stringify(targetReq)} ${transferAmount}`
         )
     }
 }

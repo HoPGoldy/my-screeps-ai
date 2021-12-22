@@ -126,7 +126,7 @@ export default class TaskController<
      */
     public getTask (taskKey: number): CostomTask | undefined {
         if (!taskKey) return undefined
-        return this.tasks.find(task => task.key === taskKey) as CostomTask
+        return this.tasks.find(task => task.key === taskKey)
     }
 
     /**
@@ -170,6 +170,8 @@ export default class TaskController<
 
         // 获取所有可工作的 creep 并依次重新分配
         const units = this.getUnit()
+        // 先解绑正在做的任务
+        units.forEach(creep => this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep))
         units.forEach(creep => this.dispatchCreep(creep))
     }
 
@@ -181,9 +183,6 @@ export default class TaskController<
      * @returns 该 creep 分配到的任务
      */
     protected dispatchCreep (creep: Creep): CostomTask {
-        // 先解绑正在做的任务
-        this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep)
-
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
         // overflow 为 true 时 creep 将会无视人数限制，分配至最高优先级任务
         let overflow = false
@@ -220,8 +219,13 @@ export default class TaskController<
      * @returns 返回 true 代表适合去做该任务
      */
     private isCreepMatchTask (creep: Creep, task: CostomTask, ignoreNeedLimit: boolean): boolean {
-        // 人数是否超过限制
-        return ignoreNeedLimit || task.unit < task.need
+        // 忽略人数限制的话就直接把单位堆到该任务
+        if (ignoreNeedLimit) return true
+
+        // 任务没有指定需要多少，先分配一个
+        if (!task.need) return !task.unit
+        // 任务指定了需要的任务，一直分配直到到达需要的人数
+        else return task.unit < task.need
     }
 
     /**
@@ -247,8 +251,9 @@ export default class TaskController<
         this.memory.tasks.splice(removeTaskIndex, 1)
 
         // 给正在干这个活的单位重新分配任务
-        this.getUnit(({ doing }) => taskKey === doing)
-            .map(creep => this.dispatchCreep(creep))
+        const units = this.getUnit(({ doing }) => taskKey === doing)
+        units.forEach(creep => this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep))
+        units.forEach(creep => this.dispatchCreep(creep))
 
         return OK
     }
@@ -268,8 +273,9 @@ export default class TaskController<
         })
 
         // 给干完活的单位重新分配任务
-        this.getUnit(({ doing }) => removeTaskKeys.includes(doing))
-            .map(creep => this.dispatchCreep(creep))
+        const units = this.getUnit(({ doing }) => removeTaskKeys.includes(doing))
+        units.forEach(creep => this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep))
+        units.forEach(creep => this.dispatchCreep(creep))
 
         return OK
     }
@@ -360,7 +366,7 @@ export default class TaskController<
      * 输出当前任务队列信息
      */
     public show (): string {
-        const pad = content => _.padRight((content || '').toString(), 12)
+        const pad = content => _.padRight((content || '').toString(), 17)
 
         const logs = [
             `已注册单位 ${Object.keys(this.creeps).join(', ')}`,
@@ -370,9 +376,9 @@ export default class TaskController<
         logs.push(...this.tasks.map(task => (
             pad(task.type) +
             pad(task.key) +
-            pad(task.need) +
-            pad(task.unit) +
-            pad(task.priority)
+            pad(task.need || '-') +
+            pad(task.unit || 0) +
+            pad(task.priority || '-')
         )))
 
         return logs.join('\n')

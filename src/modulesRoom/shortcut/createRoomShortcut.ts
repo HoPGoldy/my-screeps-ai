@@ -151,6 +151,19 @@ export const createRoomShortcut = function () {
         }
     }
 
+    /**
+     * 获取房间上的建筑
+     * **注意！structureType 并不支持所有的建筑类型**，StructureShortcutKey 中包含了所有支持的建筑类型
+     *
+     * @param room 要获取的房间
+     * @param structureType 要获取的建筑类型
+     * @returns **返回类型必定为数组**
+     */
+    const getStructure = function <T extends StructureShortcutKey> (room: Room, structureType: T): ConcreteStructure<T>[] {
+        if (!room) return undefined
+        return getStructureWithCache(room, structureType)
+    }
+
     return {
         getSpawn: createGetter(STRUCTURE_SPAWN, false),
         getExtension: createGetter(STRUCTURE_EXTENSION, false),
@@ -170,6 +183,7 @@ export const createRoomShortcut = function () {
         getMineral: createGetter(MINERAL_KEY),
         getSource: createGetter(SOURCE_KEY, false),
 
+        getStructure,
         updateStructure
     }
 }
