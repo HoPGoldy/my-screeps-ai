@@ -41,7 +41,7 @@ export const createAutoPlanner = function (context: AutoPlannerContext) {
         if (!room.controller || !room.controller.my) return ERR_NOT_OWNER
 
         const planResult = runPlan(room, center)
-        placeSite(room, squashPlanResult(planResult, room.controller.level))
+        placeSite(room, squashPlanResult(planResult, room.controller.level - 1))
         return OK
     }
 

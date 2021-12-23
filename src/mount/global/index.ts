@@ -16,6 +16,7 @@ import { getForm as getform } from '@/utils/console/form/example'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { showResourceSource } from '@/modulesRoom/share/utils'
 import { mountNuker } from '../room/nuker'
+import { mountConstruct } from './construction'
 
 // 全局拓展操作
 const extensions = {
@@ -83,4 +84,5 @@ export default function () {
     _.assign(global, extensions)
 
     mountNuker()
+    mountConstruct()
 }

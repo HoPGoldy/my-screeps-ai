@@ -80,7 +80,7 @@ const buildCallback: {
 }
 
 // 构建建筑管理模块
-const { addConstructionSite, planSite, handleCompleteSite, getNearSite } = createConstructionController({
+const { addConstructionSite, planSite, handleCompleteSite, getNearSite, mountConstruct } = createConstructionController({
     getMemory: () => {
         if (!Memory.sites) Memory.sites = {}
         return Memory.sites
@@ -107,4 +107,4 @@ export const constructionAppPlugin: AppLifecycleCallbacks = {
     tickEnd: planSite
 }
 
-export { addConstructionSite, getNearSite }
+export { addConstructionSite, getNearSite, mountConstruct }

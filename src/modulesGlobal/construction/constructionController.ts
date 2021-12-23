@@ -11,6 +11,7 @@ const BUILD_PRIORITY = [STRUCTURE_SPAWN, STRUCTURE_TOWER, STRUCTURE_EXTENSION, S
 export const createConstructionController = function (context: ConstructionContext) {
     const { onBuildComplete, getMemory, env } = context
     const db = createMemoryAccessor(getMemory)
+    let dontWatchBuild = false
 
     /**
      * 获取一个工地信息对应的建筑
@@ -111,20 +112,44 @@ export const createConstructionController = function (context: ConstructionConte
             db.updateBuildingSites(buildingSites)
 
             // 把放置失败的工地放到队首下次再次尝试放置
-            if (failSiteInfos.length > 0) db.insertWaitingSites(failSiteInfos)
+            if (!dontWatchBuild && failSiteInfos.length > 0) {
+                env.log.warning(`发现如下工地消失，将重新进行放置：${failSiteInfos.join(', ')}`)
+                env.log.warning(`可使用全局指令 ${env.colorful.yellow('stopWatchBuild')} 暂时关闭监听`)
+                db.insertWaitingSites(failSiteInfos)
+            }
         }
     }
 
     /**
-     * 获取最近的待建造工地
-     * 使用前请确保该位置有视野
-     *
+     * 暂停工地重放监听
+     */
+    const stopWatchBuild = function () {
+        dontWatchBuild = true
+        env.log.success('已关闭工地重放监听，工地在被摧毁时将不会进行重放，将会在下个全局重置时自动恢复')
+        env.log.success(`可使用全局指令 ${env.colorful.yellow('startWatchBuild')} 重启监听`)
+    }
+
+    /**
+     * 重启工地重放功能
+     */
+    const startWatchBuild = function () {
+        dontWatchBuild = false
+    }
+
+    /**
+     * 将指令挂载到全局
+     */
+    const mountToGlobal = function () {
+        Object.defineProperty(global, 'stopWatchBuild', { get: stopWatchBuild })
+        Object.defineProperty(global, 'startWatchBuild', { get: startWatchBuild })
+    }
+
+    /**
+     * 获取最近的待建造工地id
+     * @param room 要搜索工地的房间
      * @param pos 获取本房间内距离该位置最近且优先级最高的工地
      */
-    const getNearSite = function (pos: RoomPosition): ConstructionSite {
-        const room = env.getRoomByName(pos.roomName)
-        if (!room) return undefined
-
+    const getNearSiteId = function (room: Room, pos: RoomPosition): Id<ConstructionSite> {
         const sites: ConstructionSite[] = room.find(FIND_MY_CONSTRUCTION_SITES)
         if (sites.length <= 0) return undefined
 
@@ -136,7 +161,7 @@ export const createConstructionController = function (context: ConstructionConte
             const matchedSite = groupedSite[type]
             if (!matchedSite) continue
 
-            if (matchedSite.length === 1) return matchedSite[0]
+            if (matchedSite.length === 1) return matchedSite[0].id
             targetSites = matchedSite
         }
 
@@ -146,15 +171,37 @@ export const createConstructionController = function (context: ConstructionConte
         // 这里的解决方法是有目标但是又到不了附近，就往那边走着（因为寻路是可以正常找到路径的）
         const result = pos.findClosestByPath(targetSites)
         if (!result) {
-            env.log.warning(`发现了无法抵达的工地：${targetSites.map(site => site.pos)}，出发位置 ${pos}，工地已移除`)
-            return targetSites[0]
+            env.log.warning(`发现了无法抵达的工地：${targetSites.map(site => site.pos)}，出发位置 ${pos}`)
+            return targetSites[0].id
         }
-        return result
+        return result.id
     }
 
-    const [getNearSiteWithCache] = createCache(getNearSite, {
-        getCacheKey: pos => pos.roomName
+    const [getNearSiteIdWithCache] = createCache(getNearSiteId, {
+        getCacheKey: room => room.name,
+        shouldReuse: siteId => {
+            return !!env.getGame().constructionSites[siteId]
+        }
     })
 
-    return { planSite, handleCompleteSite, addConstructionSite: db.insertWaitingSites, getNearSite: getNearSiteWithCache }
+    /**
+     * 获取最近的待建造工地id
+     *
+     * @param pos 获取本房间内距离该位置最近且优先级最高的工地
+     */
+    const getNearSite = function (pos: RoomPosition): ConstructionSite {
+        const room = env.getRoomByName(pos.roomName)
+        if (!room) return undefined
+
+        const stieId = getNearSiteIdWithCache(room, pos)
+        return env.getObjectById(stieId)
+    }
+
+    return {
+        planSite,
+        handleCompleteSite,
+        addConstructionSite: db.insertWaitingSites,
+        getNearSite,
+        mountConstruct: mountToGlobal
+    }
 }

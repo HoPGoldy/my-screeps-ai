@@ -13,8 +13,8 @@ export const createTowerController = function (context: TowerContext) {
             roomName
         )
 
-        const { run: runTower, checkEnemyThreat, findEnemy } = useTower(roomName, context, db)
-        const { run: runWallControl, addNewWall, checkNuker, getNeedFillWall, clearFocus } = useWall(roomName, context, db)
+        const { run: runTower, ...towerMethods } = useTower(roomName, context, db)
+        const { run: runWallControl, checkNuker, ...wallMethods } = useWall(roomName, context, db)
 
         const run = function () {
             runTower()
@@ -23,7 +23,7 @@ export const createTowerController = function (context: TowerContext) {
             if (!env.inInterval(100)) checkNuker(env.getRoomByName(roomName))
         }
 
-        return { run, addNewWall, checkEnemyThreat, getNeedFillWall, clearFocus, findEnemy, getState: db.queryDefenseState }
+        return { run, ...wallMethods, ...towerMethods, getState: db.queryDefenseState }
     }
 
     const [getTowerController] = createCache(lazyLoader)

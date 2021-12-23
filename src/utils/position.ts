@@ -79,6 +79,8 @@ export const getFreeSpace = function (origin: RoomPosition): RoomPosition[] {
 
     // 遍历 x 和 y 坐标
     xs.forEach(x => ys.forEach(y => {
+        // 不会包含自己
+        if (x === origin.x && y === origin.y) return
         // 如果不是墙则 ++
         if (terrain.get(x, y) !== TERRAIN_MASK_WALL) result.push(new RoomPosition(x, y, origin.roomName))
     }))
