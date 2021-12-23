@@ -5,6 +5,7 @@ import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepConfig, CreepRole, RoleCreep } from '../types/role'
 import { getFreeSpace, serializePos, unserializePos, Color, getUniqueKey } from '@/utils'
 import { getSpawn } from '@/mount/room/shortcut'
+import { sourceUtils } from '@/mount/global/source'
 
 /**
  * 能量采集单位的行为模式
@@ -46,7 +47,7 @@ const goToDropPos = function (creep: RoleCreep<CreepRole.Harvester>, source: Sou
     const { standPos } = creep.memory.data
     if (standPos) targetPos = unserializePos(standPos)
     else {
-        const { pos: droppedPos } = source.getDroppedInfo()
+        const { pos: droppedPos } = sourceUtils.getDroppedInfo(source)
         // 之前就已经有点位了，自己保存一份
         if (droppedPos) creep.memory.data.standPos = serializePos(droppedPos)
         // 没有点位的话就要移动到 source，调整移动范围
@@ -84,7 +85,7 @@ const setHarvestMode = function (creep: RoleCreep<CreepRole.Harvester>, source: 
     }
 
     // 有 link 就往里运
-    const nearLink = source.getLink()
+    const nearLink = sourceUtils.getLink(source)
     if (nearLink) {
         creep.memory.harvestMode = HarvestMode.Transport
         creep.memory.targetId = nearLink.id
@@ -92,7 +93,7 @@ const setHarvestMode = function (creep: RoleCreep<CreepRole.Harvester>, source: 
     }
 
     // 有 container 就往上走
-    const nearContainer = source.getContainer()
+    const nearContainer = sourceUtils.getContainer(source)
     if (nearContainer) {
         creep.memory.harvestMode = HarvestMode.Simple
         creep.memory.targetId = nearContainer.id
@@ -129,7 +130,7 @@ const actionStrategy: ActionStrategy = {
             if (!creep.pos.inRangeTo(targetPos, range)) return false
 
             // 启动模式下，走到之后就将其设置为能量丢弃点
-            source.setDroppedPos(creep.pos)
+            sourceUtils.setDroppedPos(source, creep.pos)
 
             // 把该位置存缓存到自己内存
             creep.memory.data.standPos = serializePos(creep.pos)
@@ -194,7 +195,7 @@ const actionStrategy: ActionStrategy = {
      */
     [HarvestMode.Simple]: {
         prepare: (creep, source) => {
-            const container = source.getContainer()
+            const container = sourceUtils.getContainer(source)
             if (!container) {
                 creep.memory.harvestMode = HarvestMode.Start
                 return false
@@ -224,7 +225,7 @@ const actionStrategy: ActionStrategy = {
 
             // 如果房间里有 storage，则定期发布 container 到 storage 的能量转移任务
             if (creep.room.storage && !(Game.time % 20)) {
-                const container = source.getContainer()
+                const container = sourceUtils.getContainer(source)
 
                 // 容器没了，有可能是起了 Link 或者被敌人拆了，总之重新设置目标
                 if (!container) {
@@ -368,7 +369,7 @@ const harvester: CreepConfig<CreepRole.Harvester> = {
         const source = Game.getObjectById(data.sourceId)
 
         // 如果没视野或者边上没有 Link 的话，就用 harvester 标准的部件
-        const bodyConfig = !source || !source.getLink()
+        const bodyConfig = !source || !sourceUtils.getLink(source)
             ? bodyConfigs.harvester
             : bodyConfigs.worker
 

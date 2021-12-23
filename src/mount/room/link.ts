@@ -1,6 +1,7 @@
 import { createLinkController } from '@/modulesRoom/link'
 import { TransportTaskType } from '@/modulesRoom/taskTransport/types'
 import { createEnvContext } from '@/utils'
+import { sourceUtils } from '../global/source'
 import { getLink } from './shortcut'
 
 declare global {
@@ -36,11 +37,11 @@ export const getLinkController = createLinkController({
         return room.transport.hasTaskWithType(TransportTaskType.CenterLink)
     },
     getEnergyStructure: room => room.storageController.getResourcePlace(RESOURCE_ENERGY),
-    getSourceLink: source => source.getLink(),
+    getSourceLink: sourceUtils.getLink,
     onLinkBindToSource: (link, source) => {
-        source.setLink(link)
+        sourceUtils.setLink(source, link)
         // 如果旁边有 container 的话就执行摧毁，因为有了 link 就不需要 container 了
-        const nearContainer = source.getContainer()
+        const nearContainer = sourceUtils.getContainer(source)
         nearContainer && nearContainer.destroy()
     },
     env: createEnvContext('link')

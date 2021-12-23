@@ -2,7 +2,6 @@ import mountCreep, { CreepExtension } from './creep'
 import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
-import SourceExtension from './source/extension'
 import FactoryConsole from '@/modulesRoom/factory/console'
 import TerminalConsole from '@/modulesRoom/terminal/console'
 import ObserverConsole from '@/modulesRoom/observer/console'
@@ -49,7 +48,6 @@ export const mountAll = function () {
         [Room, LabConsole],
         [Room, PowerSpawnConsole],
         // 模块拓展挂载
-        [Source, SourceExtension],
         [Creep, CreepExtension],
         [PowerCreep, PowerCreepExtension]
     ]

@@ -1,3 +1,4 @@
+import { sourceUtils } from '@/mount/global/source'
 import { getContainer, getSource } from '@/mount/room/shortcut'
 import { useCache } from '@/utils'
 import { MoveTargetInfo, ManagerData, ManagerState, TaskFinishReason, TransportRequestData, TransportWorkContext } from '../types'
@@ -183,7 +184,7 @@ const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: Ma
             return manager.pos.findClosestByRange(energyContainer)
         }
 
-        const droppedEnergys = getSource(workRoom).map(source => source.getDroppedInfo().energy)
+        const droppedEnergys = getSource(workRoom).map(source => sourceUtils.getDroppedInfo(source).energy)
             .filter(energy => energy && energy.amount >= manager.store.getFreeCapacity())
 
         if (droppedEnergys.length > 0) {

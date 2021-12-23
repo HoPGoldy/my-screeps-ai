@@ -3,6 +3,7 @@ import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
 import { CreepConfig, CreepRole } from '../types/role'
 import { getSource } from '@/mount/room/shortcut'
+import { sourceUtils } from '@/mount/global/source'
 
 /**
  * 支援者
@@ -38,7 +39,7 @@ const remoteBuilder: CreepConfig<CreepRole.RemoteBuilder> = {
             source = getRoomEnergyTarget(creep.room)
             // 没有有效的能量来源建筑就去找能用的 source
             if (!source) {
-                const sources = getSource(creep.room).filter(source => source.canUse())
+                const sources = getSource(creep.room).filter(source => sourceUtils.canUse(source))
                 if (creep.room.memory.center) {
                     const [x, y] = creep.room.memory.center
                     source = (new RoomPosition(x, y, creep.room.name)).findClosestByPath(sources)

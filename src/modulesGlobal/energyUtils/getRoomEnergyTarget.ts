@@ -1,3 +1,4 @@
+import { sourceUtils } from '@/mount/global/source'
 import { getContainer, getLink, getSource } from '@/mount/room/shortcut'
 import { getMax } from './findStrategy'
 
@@ -19,7 +20,7 @@ export const getRoomEnergyTarget = function (room: Room, finder?: EnergyTargetFi
 
         // 查找 source 旁边地上扔的
         const droppedEnergyTargets = getSource(room)
-            .map(source => source.getDroppedInfo().energy)
+            .map(source => sourceUtils.getDroppedInfo(source).energy)
             .filter(Boolean)
 
         // 缓存在 room 实例上

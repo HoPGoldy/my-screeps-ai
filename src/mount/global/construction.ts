@@ -5,6 +5,7 @@ import { createEnvContext } from '@/utils'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepRole } from '@/role/types/role'
 import { getExtractor, updateStructure } from '../room/shortcut'
+import { sourceUtils } from './source'
 
 /**
 * 当墙壁建造好后将找到最近的工人刷一下自己
@@ -33,9 +34,9 @@ const buildCallback: {
     [STRUCTURE_CONTAINER]: (container: StructureContainer) => {
         // 找到身边第一个没有设置 container 的 source
         const nearSource = container.pos.findInRange(FIND_SOURCES, 1, {
-            filter: source => !source.getContainer()
+            filter: source => !sourceUtils.getContainer(source)
         })
-        if (nearSource[0]) nearSource[0].setContainer(container)
+        if (nearSource[0]) sourceUtils.setContainer(nearSource[0], container)
 
         // 外矿的 containre 不会进行运营策略变更
         if (container.room.controller.level < 1) return false

@@ -1,4 +1,5 @@
 import { getRoomEnergyTarget, findStrategy } from '@/modulesGlobal/energyUtils'
+import { sourceUtils } from '@/mount/global/source'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { useCache, Color } from '@/utils'
 import RoomWork, { WorkActionGenerator } from './controller'
@@ -69,7 +70,7 @@ export const transportActions: {
             if (creep.store[RESOURCE_ENERGY] >= 20) return true
 
             const source = Game.getObjectById(task.sourceId)
-            if (!source || source.getContainer()) {
+            if (!source || sourceUtils.getContainer(source)) {
                 if (!source) creep.log('找不到 source，container 建造任务移除', Color.Yellow)
                 workController.removeTaskByKey(task.key)
                 return false
@@ -77,7 +78,7 @@ export const transportActions: {
             workController.countWorkTime()
 
             // 建造初始 container 时一无所有，所以只会捡地上的能量来用
-            const droppedEnergy = source.getDroppedInfo().energy
+            const { energy: droppedEnergy } = sourceUtils.getDroppedInfo(source)
             if (!droppedEnergy || droppedEnergy.amount < 100) {
                 creep.say('等待能量回复')
                 // 等待时先移动到附近

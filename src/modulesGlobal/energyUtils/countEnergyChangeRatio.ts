@@ -1,4 +1,5 @@
 import { setRoomStats } from '@/modulesGlobal/stats'
+import { sourceUtils } from '@/mount/global/source'
 import { getContainer, getSource } from '@/mount/room/shortcut'
 import { ENERGY_USE_LIMIT } from './findStrategy'
 
@@ -27,7 +28,7 @@ export const countEnergyChangeRatio = function (room: Room, withLimit = false) {
 
     // 收集地上的能量
     const droppedEnergy = getSource(room)
-        .map(s => s.getDroppedInfo().energy)
+        .map(s => sourceUtils.getDroppedInfo(s).energy)
         .filter(Boolean)
         .map(energy => {
             if (withLimit) {
