@@ -12,6 +12,7 @@ import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
 import { CreepRole } from '@/role/types/role'
 import { DEFAULT_FLAG_NAME } from '@/utils/constants'
+import { getRampart, getWall } from './shortcut'
 
 // 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
 const ROOM_REMOVE_INTERVAL = 30
@@ -128,7 +129,7 @@ export default class RoomConsole extends RoomExtension {
      */
     public clearwall (): string {
         // 找到所有不是自己的墙壁
-        const wall = [...this[STRUCTURE_WALL], ...this[STRUCTURE_RAMPART]].filter(s => !s.my)
+        const wall = [...getWall(this), ...getRampart(this)].filter(s => !s.my)
         if (wall.length <= 0) return `[${this.name}] 未找到墙壁`
 
         wall.forEach(w => w.destroy())

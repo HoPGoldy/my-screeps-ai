@@ -224,7 +224,7 @@ const actionStrategy: ActionStrategy = {
             creep.getEngryFrom(source)
 
             // 如果房间里有 storage，则定期发布 container 到 storage 的能量转移任务
-            if (creep.room.storage && !(Game.time % 20)) {
+            if (creep.room.storage && creep.room.storage.my && !(Game.time % 20)) {
                 const container = sourceUtils.getContainer(source)
 
                 // 容器没了，有可能是起了 Link 或者被敌人拆了，总之重新设置目标

@@ -149,6 +149,11 @@ const transferResource = function (
         transferResult = manager.drop(resType, transferAmount)
     }
     else {
+        // 不是自己的建筑，塞不进去的
+        if (!destinationTarget.my) {
+            requireFinishTask(TaskFinishReason.CantFindTarget)
+            return
+        }
         const realTransferAmount = Math.min(destinationTarget.store.getFreeCapacity(), transferAmount)
         if (realTransferAmount !== transferAmount) notTransferAll = true
         transferResult = manager.transfer(destinationTarget, resType, realTransferAmount)
