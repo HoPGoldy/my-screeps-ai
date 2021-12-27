@@ -1,6 +1,6 @@
 import { TowerContext } from '../types'
 import { TowerMemoryAccessor } from '../memory'
-import { BUILD_NEW_WALL_LIMIT } from '../constants'
+import { BUILD_NEW_WALL_LIMIT, MAX_WALL_HITS } from '../constants'
 
 export const useWall = function (roomName: string, context: TowerContext, db: TowerMemoryAccessor) {
     const { getMemory, env, getWall, getRampart, updateBuildingTask } = context
@@ -112,10 +112,19 @@ export const useWall = function (roomName: string, context: TowerContext, db: To
     /**
      * 查找房间中的防御墙壁
      */
-    const findNormalWal = function (room: Room) {
+    const findNormalWall = function (room: Room) {
         const walls = [...getWall(room), ...getRampart(room)]
-        // 找到生命值最小的墙并缓存起来
-        return walls.reduce((minHitsWall, nextWall) => minHitsWall.hits < nextWall.hits ? minHitsWall : nextWall)
+
+        // 剔除掉已经刷够了的墙壁
+        const notEnoughWall = walls.filter(wall => {
+            const maxLimit = MAX_WALL_HITS[room.controller.level]
+            if (!maxLimit) return true
+            return wall.hits < maxLimit
+        })
+        if (notEnoughWall.length <= 0) return undefined
+
+        // 找到生命值最小的墙
+        return notEnoughWall.reduce((minHitsWall, nextWall) => minHitsWall.hits < nextWall.hits ? minHitsWall : nextWall)
     }
 
     /**
@@ -132,7 +141,7 @@ export const useWall = function (roomName: string, context: TowerContext, db: To
         }
 
         // 优先刷 nuker 墙，再刷普通墙
-        const targetWall = findNukerWall(room) || findNormalWal(room)
+        const targetWall = findNukerWall(room) || findNormalWall(room)
         if (!targetWall) return undefined
         // 缓存起来
         memory.focusWallId = targetWall.id

@@ -3,6 +3,7 @@ import { sourceUtils } from '@/mount/global/source'
 import { CreepRole, RoleCreep } from '@/role/types/role'
 import { useCache, Color } from '@/utils'
 import RoomWork, { WorkActionGenerator } from './controller'
+import { delayAddFillWallTask } from './delayTask'
 import { WorkTaskType } from './types'
 
 /**
@@ -38,8 +39,7 @@ export const transportActions: {
             if (creep.store[RESOURCE_ENERGY] > 10) return true
 
             // 优先使用 upgrade Link 的能量
-            const { workRoom: workRoomName } = creep.memory.data
-            const upgradeLink = Game.rooms[workRoomName]?.linkController.getUpgradeLink()
+            const upgradeLink = workController.room.linkController.getUpgradeLink()
             if (upgradeLink && upgradeLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
                 creep.getEngryFrom(upgradeLink)
                 workController.countWorkTime()
@@ -50,9 +50,7 @@ export const transportActions: {
         },
         target: () => {
             workController.countWorkTime()
-            const { workRoom: workRoomName } = creep.memory.data
-
-            if (creep.upgradeRoom(workRoomName) === ERR_NOT_ENOUGH_RESOURCES) {
+            if (creep.upgradeRoom(workController.room.name) === ERR_NOT_ENOUGH_RESOURCES) {
                 return creep.backToGetEnergy()
             }
 
@@ -146,7 +144,7 @@ export const transportActions: {
             }
 
             // 没有就建其他工地，如果找不到工地了，就算任务完成
-            if (creep.buildRoom(creep.memory.data.workRoom) === ERR_NOT_FOUND) {
+            if (creep.buildRoom(workController.room.name) === ERR_NOT_FOUND) {
                 workController.removeTaskByKey(task.key)
                 return creep.backToGetEnergy()
             }
@@ -161,15 +159,10 @@ export const transportActions: {
         target: () => {
             workController.countWorkTime()
             if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
-            const room = Game.rooms[creep.memory.data.workRoom]
-            if (!room) {
-                workController.removeTaskByKey(task.key)
-                return true
-            }
 
             // 找到受损建筑
             const target: AnyStructure = useCache(() => {
-                const damagedStructures = room.find(FIND_STRUCTURES, {
+                const damagedStructures = workController.room.find(FIND_STRUCTURES, {
                     filter: s => s.hits < s.hitsMax &&
                         // 墙壁在刷墙任务里维护
                         s.structureType !== STRUCTURE_RAMPART &&
@@ -213,6 +206,7 @@ export const transportActions: {
             const targetWall = creep.room.towerController.getNeedFillWall()
             if (!targetWall) {
                 workController.removeTaskByKey(task.key)
+                delayAddFillWallTask({ roomName: workController.room.name }, 500)
                 return
             }
 
@@ -242,7 +236,7 @@ const getEnergy = function (creep: RoleCreep<CreepRole.Worker>, workController: 
     // 获取有效的能量来源并缓存能量来源
     const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(() => {
         const { getClosestTo, withLimit } = findStrategy
-        return getRoomEnergyTarget(creep.room, getClosestTo(creep.pos), withLimit)
+        return getRoomEnergyTarget(workController.room, getClosestTo(creep.pos), withLimit)
     }, creep.memory, 'sourceId')
 
     if (!source) {
