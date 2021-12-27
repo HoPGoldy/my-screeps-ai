@@ -4,7 +4,6 @@ import {
     RoomWorkTaskController,
     RoomSpawnController,
     RoomPowerController,
-    RoomStrategyController,
     FactoryController,
     TerminalController,
     ObserverController,
@@ -60,7 +59,6 @@ export default () => {
         ['work', RoomWorkTaskController],
         ['spawner', RoomSpawnController],
         ['power', RoomPowerController],
-        ['strategy', RoomStrategyController],
         ['myFactory', FactoryController],
         ['myTerminal', TerminalController],
         ['myObserver', ObserverController],
@@ -126,10 +124,6 @@ declare global {
          * power 管理模块
          */
         power: RoomPowerController
-        /**
-         * 策略模块
-         */
-        strategy: RoomStrategyController
         /**
          * 工厂管理模块
          */

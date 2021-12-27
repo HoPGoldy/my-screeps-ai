@@ -7,6 +7,8 @@ import { createEnvContext } from '@/utils'
 import { TowerMemory } from '@/modulesRoom/tower/types'
 import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 import { getTower, getWall, getRampart, getLab } from './shortcut'
+import { useUnitSetting } from '@/modulesRoom/room/strategyOperation'
+import { useDefenseUnitSetting } from '@/modulesRoom/room/strategyDefense'
 
 declare global {
     interface RoomMemory {
@@ -31,11 +33,9 @@ export const getTowerController = createTowerController({
     isFriend: whiteListFilter,
     onBackToNormal: room => {
         room.planLayout()
-        room.strategy.operation.useUnitSetting()
+        useUnitSetting(room)
     },
-    onStartActiveDefense: room => {
-        room.strategy.defense.useUnitSetting()
-    },
+    onStartActiveDefense: useDefenseUnitSetting,
     releaseDefender: (room, boostTaskId) => room.spawner.addTask(
         GetName.defender(room.name),
         CreepRole.Defender,

@@ -1,6 +1,7 @@
 import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
 import { DefenseState } from '@/modulesRoom/tower/types'
 import { Color } from '@/utils'
+import { adjustBaseUnit, adjustTaskWhenRCL8, initRoomUnit, setUpgraderWhenRCL8, useUnitSetting } from './strategyOperation'
 
 export const runStrategyCore = function (controller: StructureController) {
     // this.drawEnergyHarvestInfo()
@@ -14,10 +15,10 @@ export const runStrategyCore = function (controller: StructureController) {
     // 二级之后再开始调整，不然有可能会影响固定开局
     if (level >= 2 && !(Game.time % 500)) {
         // 调整运营 creep 数量
-        room.strategy.operation.adjustBaseUnit()
+        adjustBaseUnit(room)
         // 并在日常事情执行任务调整（防御时期任务由 tower 接管）
         if (level === 8 && room.towerController.getState() === DefenseState.Daily) {
-            room.strategy.operation.adjustTaskWhenRCL8()
+            adjustTaskWhenRCL8(room)
         }
     }
 }
@@ -43,10 +44,10 @@ export const scanRoomState = function (controller: StructureController) {
 
 export const onRoomLevelChange = function (room: Room, level: number) {
     // 刚占领，添加工作单位
-    if (level === 1) room.strategy.operation.initRoomUnit()
+    if (level === 1) initRoomUnit(room)
     else if (level === 8) {
-        room.strategy.operation.setUpgraderWhenRCL8()
-        room.strategy.operation.useUnitSetting()
+        setUpgraderWhenRCL8(room)
+        useUnitSetting(room)
     }
 
     // 每级都运行一次自动布局规划

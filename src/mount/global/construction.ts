@@ -6,6 +6,7 @@ import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepRole } from '@/role/types/role'
 import { getExtractor, updateStructure } from '../room/shortcut'
 import { sourceUtils } from './source'
+import { changeForStartContainer } from '@/modulesRoom/room/strategyOperation'
 
 /**
 * 当墙壁建造好后将找到最近的工人刷一下自己
@@ -40,7 +41,7 @@ const buildCallback: {
 
         // 外矿的 containre 不会进行运营策略变更
         if (container.room.controller.level < 1) return false
-        container.room.strategy.operation.changeForStartContainer()
+        changeForStartContainer(container.room)
     },
     /**
      * 采集器造好后如果终端造好了就孵化采集单位
