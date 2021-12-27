@@ -62,7 +62,16 @@ export const createMemoryAccessor = (getMemory: () => TowerMemory, roomName: str
             return
         }
 
-        memory.nukerWallsPos = wallPos.map(pos => `${pos.x},${pos.y}`)
+        memory.nukerWallsPos = wallPos.map(pos => `${pos.x},${pos.y}`).join('|')
+    },
+    queryNukerWall () {
+        const { nukerWallsPos } = getMemory()
+        if (!nukerWallsPos || nukerWallsPos.length <= 0) return []
+
+        return nukerWallsPos.split('|').map(posStr => {
+            const [x, y] = posStr.split(',')
+            return new RoomPosition(+x, +y, roomName)
+        })
     },
     /**
      * 从待建造队列取出建造目标

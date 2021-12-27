@@ -33,7 +33,7 @@ export interface TowerMemory {
     /**
      * 要放置 nuker 防御墙壁的位置
      */
-    nukerWallsPos?: string[]
+    nukerWallsPos?: string
 }
 
 /**
