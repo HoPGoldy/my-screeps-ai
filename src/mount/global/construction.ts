@@ -75,7 +75,7 @@ const buildCallback: {
         if (getExtractor(terminal.room)) {
             terminal.room.spawner.release.miner()
         }
-        terminal.room.myTerminal.resetConfig()
+        terminal.room.terminalController.resetConfig()
     },
     [STRUCTURE_WALL]: onWallBuildComplete,
     [STRUCTURE_RAMPART]: onWallBuildComplete

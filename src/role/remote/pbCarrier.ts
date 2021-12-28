@@ -71,7 +71,7 @@ const pbCarrier: CreepConfig<CreepRole.PbCarrier> = {
         if (result === OK) {
             creep.suicide()
             // 通知 terminal 进行 power 平衡
-            room.myTerminal.balancePower()
+            room.terminalController.balancePower()
 
             return true
         }

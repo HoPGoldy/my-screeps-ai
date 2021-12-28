@@ -3,7 +3,6 @@ import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
 import FactoryConsole from '@/modulesRoom/factory/console'
-import TerminalConsole from '@/modulesRoom/terminal/console'
 import ObserverConsole from '@/modulesRoom/observer/console'
 import RemoteConsole from '@/modulesRoom/remote/console'
 import LabConsole from '@/modulesRoom/lab/console'
@@ -11,6 +10,7 @@ import { Color, log } from '@/utils'
 import { PowerSpawnConsole } from './room/powerSpawn'
 import { StorageConsole } from './room/storage'
 import ShareConsole from './room/share'
+import TerminalConsole from './room/terminalConsole'
 
 /**
  * 初始化存储

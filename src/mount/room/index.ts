@@ -5,7 +5,6 @@ import {
     RoomSpawnController,
     RoomPowerController,
     FactoryController,
-    TerminalController,
     ObserverController,
     RemoteChontroller,
     LabChontroller
@@ -16,6 +15,7 @@ import { NukerController } from '@/modulesRoom/nuker/unkerController'
 import { PowerSpawnController } from '@/modulesRoom/powerSpawn/powerSpawnController'
 import { StorageController } from '@/modulesRoom/storage/storageController'
 import { ShareController } from '@/modulesRoom/share/shareController'
+import { TerminalController } from '@/modulesRoom/terminal'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -23,6 +23,7 @@ import { getNukerController } from './nuker'
 import { getPsController } from './powerSpawn'
 import { getStorageController } from './storage'
 import { getShareController } from './share'
+import { getTerminalController } from './terminal'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -60,7 +61,6 @@ export default () => {
         ['spawner', RoomSpawnController],
         ['power', RoomPowerController],
         ['myFactory', FactoryController],
-        ['myTerminal', TerminalController],
         ['myObserver', ObserverController],
         ['myLab', LabChontroller],
         ['remote', RemoteChontroller]
@@ -85,6 +85,7 @@ export default () => {
 
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
+        ['terminalController', getTerminalController],
         ['storageController', getStorageController],
         ['towerController', getTowerController],
         ['linkController', getLinkController],
@@ -131,7 +132,7 @@ declare global {
         /**
          * 终端管理模块
          */
-        myTerminal: TerminalController
+        terminalController: TerminalController
         /**
          * storage 管理模块
          */

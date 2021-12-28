@@ -10,7 +10,7 @@ export const runRoom = function (room: Room): void {
 
     room.spawner.run()
     room.storageController.run()
-    room.myTerminal.run()
+    room.terminalController.run()
     room.myLab.runBoost()
     room.myLab.runReaction()
     room.myFactory.run()

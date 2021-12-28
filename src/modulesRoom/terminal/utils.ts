@@ -1,5 +1,5 @@
 import { Color } from '@/utils'
-import { DEAL_RATIO, TerminalChannel, TerminalMode } from './constant'
+import { DEAL_RATIO, TerminalChannel, TerminalMode } from './constants'
 import { TerminalListenTask } from './types'
 
 /**

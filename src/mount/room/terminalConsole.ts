@@ -1,5 +1,5 @@
 import { createForm, createHelp } from '@/utils'
-import { TerminalChannel, TerminalMode } from './constant'
+import { TerminalChannel, TerminalMode } from '@/modulesRoom/terminal'
 
 /**
  * Terminal 上的用户控制接口
@@ -36,7 +36,7 @@ export default class TerminalConsole extends Room {
             { name: 'supportRoomName', label: '[可选]支援房间', type: 'input', placeholder: 'channel 为支援时必填' }
         ], {
             content: '提交',
-            command: `({resourceType, amount, mod, channel, priceLimit, supportRoomName}) => Game.rooms['${this.name}'].terminal.add(resourceType, amount, mod, channel, priceLimit, supportRoomName)`
+            command: `({resourceType, amount, mod, channel, priceLimit, supportRoomName}) => Game.rooms['${this.name}'].terminalController.addTask(resourceType, amount, mod, channel, priceLimit, supportRoomName)`
         })
     }
 
@@ -53,8 +53,8 @@ export default class TerminalConsole extends Room {
         if (!this.terminal) return `[${this.name}] 未找到终端`
         if (!_.isNumber(priceLimit)) priceLimit = undefined
 
-        this.myTerminal.addTask(resourceType, amount, mod, channel, priceLimit)
-        return `已添加，当前监听任务如下: \n${this.myTerminal.show()}`
+        this.terminalController.addTask(resourceType, amount, mod, channel, priceLimit)
+        return `已添加，当前监听任务如下: \n${this.terminalController.show()}`
     }
 
     /**
@@ -63,8 +63,8 @@ export default class TerminalConsole extends Room {
     public tremove (index: number): string {
         if (!this.terminal) return `[${this.name}] 未找到终端`
 
-        this.myTerminal.removeTask(index)
-        return `已移除，当前监听任务如下:\n${this.myTerminal.show()}`
+        this.terminalController.removeTask(index)
+        return `已移除，当前监听任务如下:\n${this.terminalController.show()}`
     }
 
     /**
@@ -72,7 +72,7 @@ export default class TerminalConsole extends Room {
      */
     public tshow (): string {
         if (!this.terminal) return `[${this.name}] 未找到终端`
-        return this.myTerminal.show()
+        return this.terminalController.show()
     }
 
     /**
@@ -81,8 +81,8 @@ export default class TerminalConsole extends Room {
      * @param hard 设为 true 来移除其默认值中不包含的监听资源
      */
     public treset (hard = false): string {
-        this.myTerminal.resetConfig(hard)
-        return `已重置，当前监听任务如下:\n${this.myTerminal.show()}`
+        this.terminalController.resetConfig(hard)
+        return `已重置，当前监听任务如下:\n${this.terminalController.show()}`
     }
 
     /**
