@@ -31,7 +31,7 @@ export const useMaintenance = function (roomName: string, context: TerminalConte
 
         const targetAmount = Math.min(store[targetRes], MAX_DROP_AMOUNT)
 
-        env.log.normal(`剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
+        env.log.normal(`${room.name} 剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
         if (hasTransportTask(room)) return
 
         const { x, y, roomName: dropRoomName } = getFreeSpace(room.terminal.pos)?.[0] || {}

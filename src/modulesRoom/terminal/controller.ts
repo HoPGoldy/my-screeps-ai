@@ -21,7 +21,7 @@ export const createTerminalController = function (context: TerminalContext) {
         const run = function () {
             const room = env.getRoomByName(roomName)
             // 没有冷却好就跳过，或者每 10t 执行一次
-            if (!room.controller.owner || !room.terminal || room.terminal.cooldown) return
+            if (!room.controller.owner || !room.terminal || !room.terminal.my || room.terminal.cooldown) return
             if (env.inInterval(10)) return
 
             if (!env.inInterval(100) && room.terminal.store.getFreeCapacity() < 50000) {
