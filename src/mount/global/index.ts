@@ -10,7 +10,7 @@ import bypass from './bypass'
 import reive from './reive'
 import whitelist from './whiteList'
 import { showRouteChche as route } from '@/modulesGlobal/move'
-import { orderExtend, seeres, hail, base, give, roomAlias, ps } from './common'
+import { cpu, orderExtend, seeres, hail, base, give, roomAlias, ps } from './common'
 
 import { getForm as getform } from '@/utils/console/form/example'
 import { updateCreepData } from '@/modulesGlobal/creep/utils'
@@ -34,6 +34,8 @@ const extensions = {
     base,
     // 全局发送资源到指定房间
     give,
+    // 显示 cpu 消耗
+    cpu,
     // 战争管理模块
     war: consoleWarModule,
     // 将 creepApi 挂载到全局方便手动操作

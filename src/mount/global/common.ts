@@ -1,5 +1,17 @@
 import { baseLayout, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { SHOW_BASE_CPU_COST, switchShowCost } from '@/modulesGlobal/framework'
 import { getPowerSpawn } from '../room/shortcut'
+
+export const SHOW_CPU_COST_TYPE = {
+    BASE: SHOW_BASE_CPU_COST,
+    ROOM: 'room',
+    CREEP: 'creep'
+}
+
+export const cpu = function (type: string) {
+    const showCost = switchShowCost(type)
+    return showCost ? '已启动 cpu 消耗显示，再次执行该命令即可关闭，全局重置时也会自动关闭' : '已关闭 cpu 消耗显示'
+}
 
 /**
  * Game.market.extendOrder 的别名

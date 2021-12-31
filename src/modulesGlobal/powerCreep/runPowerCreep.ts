@@ -1,7 +1,7 @@
 import { getPowerSpawn } from '@/mount/room/shortcut'
 import { Color } from '@/utils'
 
-export const runPowerCreep = function (pc: PowerCreep): void {
+export const powerCreepRunner = function (pc: PowerCreep): void {
     if (!keepAlive(pc)) return
     // 上班了！执行房间 power 任务
     pc.room.power.runManager(pc)

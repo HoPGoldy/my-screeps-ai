@@ -1,5 +1,6 @@
 import { AppLifecycleCallbacks, CallbackStore, CreateOptions, MemoryCacher } from './types'
 import { errorMapper } from './errorMapper'
+import { collectCost, showCpuCost, SHOW_BASE_CPU_COST } from './cpuLogger'
 
 /**
  * bot 名称的后缀，会加到指定的名称后
@@ -11,8 +12,11 @@ const DEFAULT_OPTIONS: CreateOptions = {
     name: `hopgoldy${BOT_NAME_SUFFIX}`
 }
 
+/**
+ * 创建应用
+ */
 export const createApp = function (opt: Partial<CreateOptions> = {}) {
-    const createOptions = { ...DEFAULT_OPTIONS, ...opt }
+    const { name: appName, roomRunner, creepRunner, powerCreepRunner } = { ...DEFAULT_OPTIONS, ...opt }
 
     /**
      * 通过中间件包装过的回调
@@ -100,59 +104,37 @@ export const createApp = function (opt: Partial<CreateOptions> = {}) {
         return callbackIndex++
     }
 
-    let roomRunner: (room: Room) => unknown
-
-    /**
-     * 设置房间运行器
-     */
-    const setRoomRunner = function (newRunner: typeof roomRunner): void {
-        roomRunner = newRunner
-    }
-
-    let creepRunner: (creep: Creep) => unknown
-
-    /**
-     * 设置 creep 运行器
-     */
-    const setCreepRunner = function (newRunner: typeof creepRunner): void {
-        creepRunner = newRunner
-    }
-
-    let powerCreepRunner: (creep: PowerCreep) => unknown
-
-    /**
-     * 设置 pc 运行器
-     */
-    const setPowerCreepRunner = function (newRunner: typeof powerCreepRunner): void {
-        powerCreepRunner = newRunner
-    }
-
     /**
      * 运行 bot
      */
     const run = function (): void {
+        if (showCpuCost) console.log(`—————————— Game.time ${Game.time} ——————————`)
         // 有内存缓存的话就包裹一下，否则就直接运行
         if (_memoryCacher) _memoryCacher(_run)
         else _run()
     }
+
+    const runAllRoom = () => Object.values(Game.rooms).map(room => errorMapper(roomRunner, room))
+    const runAllCreep = () => Object.values(Game.creeps).map(creep => errorMapper(creepRunner, creep))
+    const runAllPowerCreep = () => Object.values(Game.powerCreeps).map(creep => errorMapper(powerCreepRunner, creep))
 
     /**
      * 实际的框架工作
      */
     const _run = function (): void {
         // 检查是否是第一次全局重置
-        if (!Memory[createOptions.name]) {
+        if (!Memory[appName]) {
             execLifecycleCallback('born')
-            Memory[createOptions.name] = true
+            Memory[appName] = true
         }
 
-        execLifecycleCallback('tickStart')
+        collectCost('tickStart', SHOW_BASE_CPU_COST, execLifecycleCallback, 'tickStart')
 
-        if (roomRunner) Object.values(Game.rooms).map(room => errorMapper(roomRunner, room))
-        if (creepRunner) Object.values(Game.creeps).map(creep => errorMapper(creepRunner, creep))
-        if (powerCreepRunner) Object.values(Game.powerCreeps).map(creep => errorMapper(powerCreepRunner, creep))
+        if (roomRunner) collectCost('room', SHOW_BASE_CPU_COST, runAllRoom)
+        if (creepRunner) collectCost('creep', SHOW_BASE_CPU_COST, runAllCreep)
+        if (powerCreepRunner) collectCost('powerCreep', SHOW_BASE_CPU_COST, runAllPowerCreep)
 
-        execLifecycleCallback('tickEnd')
+        collectCost('tickEnd', SHOW_BASE_CPU_COST, execLifecycleCallback, 'tickEnd')
     }
 
     /**
@@ -166,5 +148,5 @@ export const createApp = function (opt: Partial<CreateOptions> = {}) {
         }
     }
 
-    return { setMemoryCacher, on, close, setRoomRunner, setCreepRunner, setPowerCreepRunner, run }
+    return { setMemoryCacher, on, close, run }
 }

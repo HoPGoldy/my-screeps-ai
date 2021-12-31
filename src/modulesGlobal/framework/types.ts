@@ -61,4 +61,19 @@ export interface CreateOptions {
      * 没啥用，会保存在 Memory 中用于确定是否已经触发过 born 阶段
      */
     name: string
+    /**
+     * 房间运行器
+     * 将对每个有视野的房间运行一次该函数
+     */
+    roomRunner?: (room: Room) => unknown
+    /**
+     * creep 运行器
+     * 将对所有的 creep 运行该函数
+     */
+    creepRunner?: (creep: Creep) => unknown
+    /**
+     * powerCreep 运行器
+     * 将对所有 pc 运行该函数（包括未出生的 pc）
+     */
+    powerCreepRunner?: (creep: PowerCreep) => unknown
 }

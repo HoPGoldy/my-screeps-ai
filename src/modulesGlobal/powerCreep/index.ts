@@ -1,2 +1,2 @@
 export { default as PowerCreepExtension } from './extension'
-export { runPowerCreep } from './runPowerCreep'
+export { powerCreepRunner } from './runPowerCreep'

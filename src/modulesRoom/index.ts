@@ -9,4 +9,4 @@ export { default as LabChontroller } from './lab/controller'
 
 export { TransportTaskType } from './taskTransport/types'
 export { WorkTaskType } from './taskWork/types'
-export { runRoom } from './room/roomRunner'
+export { roomRunner } from './room/roomRunner'

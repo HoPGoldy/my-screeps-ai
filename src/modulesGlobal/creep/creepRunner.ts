@@ -2,11 +2,10 @@ import roles from '@/role'
 import { getMemoryFromCrossShard } from '@/modulesGlobal/crossShard'
 import { Color } from '@/utils'
 import { CreepConfig, CreepRole } from '@/role/types/role'
+import { collectCost } from '../framework'
+import { SHOW_CPU_COST_TYPE } from '@/mount/global/common'
 
-/**
- * 运行 creep 工作逻辑
- */
-export const runCreep = function (creep: Creep): void {
+const innerCreepRunner = function (creep: Creep): void {
     if (!creep.memory.role) return
 
     // 检查 creep 内存中的角色是否存在
@@ -56,4 +55,11 @@ export const runCreep = function (creep: Creep): void {
         creep.memory.working = !creep.memory.working
         if (creep.memory.stand) delete creep.memory.stand
     }
+}
+
+/**
+ * 运行 creep 工作逻辑
+ */
+export const creepRunner = function (creep: Creep): void {
+    collectCost(creep.name, SHOW_CPU_COST_TYPE.CREEP, innerCreepRunner, creep)
 }

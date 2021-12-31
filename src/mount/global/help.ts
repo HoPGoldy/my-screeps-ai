@@ -1,4 +1,7 @@
 import { blue, yellow, createHelp, createLink } from '@/utils'
+import { SHOW_CPU_COST_TYPE } from './common'
+
+const showCpuCostTypeLabel = Object.values(SHOW_CPU_COST_TYPE).map(type => yellow(type)).join(', ')
 
 /**
  * 帮助文档中的标题
@@ -101,6 +104,14 @@ export default (): string => [
                         { name: 'amount', desc: '发送数量' }
                     ],
                     functionName: 'give'
+                },
+                {
+                    title: '打开 / 关闭 cpu 消耗',
+                    describe: '传入不同参数即可查看对应的 cpu 消耗，再次传入相同类型或不传类型将关闭 cpu 消耗显示',
+                    params: [
+                        { name: 'type', desc: `要显示的 cpu 消耗类型，其值为 ${showCpuCostTypeLabel}` }
+                    ],
+                    functionName: 'cpu'
                 },
                 {
                     title: '欢呼',

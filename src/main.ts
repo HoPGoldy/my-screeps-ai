@@ -1,24 +1,20 @@
 import {
     createApp,
-    runCreep,
-    runPowerCreep,
+    creepRunner,
+    powerCreepRunner,
     stateScannerAppPlugin,
     creepNumberControlAppPlugin,
     crossShardAppPlugin
 } from './modulesGlobal'
-import { runRoom } from './modulesRoom'
+import { roomRunner } from './modulesRoom'
 import { generatePixelAppPlugin } from './utils'
 import { createGlobalExtension } from './mount'
 import { constructionAppPlugin } from './mount/global/construction'
 import { delayQueueAppPlugin } from './mount/global/delayQueue'
 import { warAppPlugin } from './mount/global/war'
 
-const app = createApp()
-
 // 设置运行器
-app.setRoomRunner(runRoom)
-app.setCreepRunner(runCreep)
-app.setPowerCreepRunner(runPowerCreep)
+const app = createApp({ roomRunner, creepRunner, powerCreepRunner })
 
 // 挂载全部拓展
 app.on(createGlobalExtension())

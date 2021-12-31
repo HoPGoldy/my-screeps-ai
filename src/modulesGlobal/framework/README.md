@@ -29,7 +29,7 @@ export const loop = app.run
 ```js
 app.on({
     /**
-     * 玩家放下第一个 spawn 时触发，整个应用只会执行一次
+     * 框架第一次运行时触发，整个应用只会执行一次
      */
     born: () => console.log('欢迎来到 screeps!'),
     /**
@@ -95,7 +95,7 @@ app.close(moduleIndex)
 
 ## 热插拔
 
-框架并没有限制必须在 `run` 方法执行前注册完所有的回调，你可以在任意位置注册/取消回调，例如可以通过如下方法完成一个显示 cpu 消耗的简单功能：
+框架并 **没有** 限制必须在 `run` 方法执行前注册完所有的回调，你可以在任意位置注册/取消回调，例如可以通过如下方法完成一个显示 cpu 消耗的简单功能：
 
 ```js
 Object.defineProperty(global, 'cost', {
@@ -120,27 +120,44 @@ Object.defineProperty(global, 'cost', {
 
 框架支持以下三个运行器：
 
-- `setRoomRunner`: 设置房间运行器
-- `setCrepRunner`：设置 creep 运行器
-- `setPowercreepRunner`：设置 pc 运行器
+- `roomRunner`: 设置房间运行器
+- `crepRunner`：设置 creep 运行器
+- `powercreepRunner`：设置 pc 运行器
 
-可以使用如下方式设置运行器：
+可以在初始化 app 时设置运行器：
 
 ```js
-// 以 setRoomRunner 为例，其他同理
-const app = createApp()
-
-app.setRoomRunner(room => {
+const roomRunner = room => {
     // 每个有视野的房间都会执行一遍这个函数
-})
+}
+const crepRunner = creep => {
+    // 将对所有的 creep 运行该函数
+}
+const powerCreepRunner = creep => {
+    // 将对所有 pc 运行该函数（包括未出生的 pc）
+}
+
+// 在创建 app 时设置运行器
+const app = createApp({ roomRunner, crepRunner, powerCreepRunner })
 ```
+
+注意，这三个运行器非必填项，当你不填时，框架会直接跳过对应的游戏对象遍历。
 
 ## 功能3：异常隔离
 
 框架会自动把你代码抛出的错误限制在其能控制的最小范围内，从而避免一个错误就导致整个应用崩溃，例如：
 
 ```js
-const app = createApp()
+const creepRunner = creep => {
+    // 名为 creepB 的 creep 会一直报错
+    if (this.name === 'creepB') {
+        throw new Error(`${this.name} 报错！！！`)
+    }
+    // 其他的 creep 的逻辑
+    else console.log(this.name, '正常工作')
+}
+
+const app = createApp({ creepRunner })
 
 // 注册一个正常的模块
 app.on({
@@ -152,15 +169,6 @@ app.on({
 app.on({
     tickStart: () => { throw new Error('B 报错！！！') },
     tickEnd: () => console.log('B 保存')
-})
-
-app.setCreepRunner(creep => {
-    // 名为 creepB 的 creep 会一直报错
-    if (this.name === 'creepB') {
-        throw new Error(`${this.name} 报错！！！`)
-    }
-    // 其他的 creep 的逻辑
-    else console.log(this.name, '正常工作')
 })
 
 export const loop = app.run
@@ -180,7 +188,7 @@ B 保存
 
 可以看到，代码执行抛出的异常被限制在其所在的方法中，完全不会影响到其他模块或者单位的正常执行。
 
-*示例中只使用了 `setCreepRunner`，实际上 `setRoomRunner` 和 `setPowercreepRunner` 也有相同效果。*
+*示例中只使用了 `creepRunner`，实际上 `roomRunner` 和 `powercreepRunner` 也有相同的异常隔离效果。*
 
 ## 功能4：内存缓存
 

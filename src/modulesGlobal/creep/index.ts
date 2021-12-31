@@ -3,7 +3,7 @@ import { creepNumberListener } from './numberListener'
 
 export { creepNumberListener } from './numberListener'
 export { removeCreep, showCreep, hasCreep } from './utils'
-export { runCreep } from './creepRunner'
+export { creepRunner } from './creepRunner'
 
 /**
  * creep 数量控制模块注册插件

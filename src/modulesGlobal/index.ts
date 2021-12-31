@@ -1,5 +1,5 @@
 export { createApp } from './framework'
 export { stateScannerAppPlugin } from './stats'
-export { creepNumberControlAppPlugin, runCreep } from './creep'
-export { runPowerCreep } from './powerCreep'
+export { creepNumberControlAppPlugin, creepRunner } from './creep'
+export { powerCreepRunner } from './powerCreep'
 export { crossShardAppPlugin } from './crossShard'
