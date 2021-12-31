@@ -6,8 +6,7 @@ import {
     RoomPowerController,
     FactoryController,
     ObserverController,
-    RemoteChontroller,
-    LabChontroller
+    RemoteChontroller
 } from '@/modulesRoom'
 import { TowerController } from '@/modulesRoom/tower/controller'
 import { LinkController } from '@/modulesRoom/link/linkController'
@@ -15,6 +14,7 @@ import { NukerController } from '@/modulesRoom/nuker/unkerController'
 import { PowerSpawnController } from '@/modulesRoom/powerSpawn/powerSpawnController'
 import { StorageController } from '@/modulesRoom/storage/storageController'
 import { ShareController } from '@/modulesRoom/share/shareController'
+import { LabController } from '@/modulesRoom/lab'
 import { TerminalController } from '@/modulesRoom/terminal'
 
 import { getTowerController } from './tower'
@@ -24,6 +24,7 @@ import { getPsController } from './powerSpawn'
 import { getStorageController } from './storage'
 import { getShareController } from './share'
 import { getTerminalController } from './terminal'
+import { getLabController } from './lab'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -62,7 +63,6 @@ export default () => {
         ['power', RoomPowerController],
         ['myFactory', FactoryController],
         ['myObserver', ObserverController],
-        ['myLab', LabChontroller],
         ['remote', RemoteChontroller]
     ]
 
@@ -91,6 +91,7 @@ export default () => {
         ['linkController', getLinkController],
         ['nukerController', getNukerController],
         ['psController', getPsController],
+        ['labController', getLabController],
         ['share', getShareController]
     ]
 
@@ -144,7 +145,7 @@ declare global {
         /**
          * lab 管理模块
          */
-        myLab: LabChontroller
+        labController: LabController
         /**
          * 扩张管理模块
          * 包括外矿和新房扩张

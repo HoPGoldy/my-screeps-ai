@@ -1,5 +1,11 @@
 import { LabTarget, ReactionSource } from './types'
 
+export enum LabTransportType {
+    LabIn = 1,
+    LabOut,
+    LabGetEnergy
+}
+
 /**
  * 从反应目标产物获取其底物的对应表
  */

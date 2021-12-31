@@ -5,7 +5,6 @@ export { default as RoomSpawnController } from './spawn/controller'
 export { default as FactoryController } from './factory/controller'
 export { default as ObserverController } from './observer/controller'
 export { default as RemoteChontroller } from './remote/controller'
-export { default as LabChontroller } from './lab/controller'
 
 export { TransportTaskType } from './taskTransport/types'
 export { WorkTaskType } from './taskWork/types'

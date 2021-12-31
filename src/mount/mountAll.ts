@@ -5,12 +5,12 @@ import mountGlobal from './global'
 import FactoryConsole from '@/modulesRoom/factory/console'
 import ObserverConsole from '@/modulesRoom/observer/console'
 import RemoteConsole from '@/modulesRoom/remote/console'
-import LabConsole from '@/modulesRoom/lab/console'
 import { Color, log } from '@/utils'
 import { PowerSpawnConsole } from './room/powerSpawn'
 import { StorageConsole } from './room/storage'
 import ShareConsole from './room/share'
 import TerminalConsole from './room/terminalConsole'
+import { LabConsole } from './room/lab'
 
 /**
  * 初始化存储

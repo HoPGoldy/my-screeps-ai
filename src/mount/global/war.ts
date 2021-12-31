@@ -147,10 +147,10 @@ const warModule = createWarController({
         return total
     },
     getRoomLab: getLab,
-    addBoostTask: (room, config) => room.myLab.addBoostTask(config),
-    getBoostState: (room, taskId) => room.myLab.getBoostState(taskId),
-    boostCreep: (room, creep, taskId) => room.myLab.boostCreep(creep, taskId),
-    finishBoost: (room, taskId) => room.myLab.finishBoost(taskId),
+    addBoostTask: (room, config) => room.labController.addBoostTask(config),
+    getBoostState: (room, taskId) => room.labController.getBoostState(taskId),
+    boostCreep: (room, creep, taskId) => room.labController.boostCreep(creep, taskId),
+    finishBoost: (room, taskId) => room.labController.finishBoost(taskId),
     env: createEnvContext('war')
 })
 

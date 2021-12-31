@@ -1,9 +1,47 @@
-import { createHelp } from '@/utils'
+import { TransportTaskType } from '@/modulesRoom'
+import { createEnvContext, createHelp } from '@/utils'
+import { getLab } from './shortcut'
+import { LabMemory, createLabController, LabTransportType } from '@/modulesRoom/lab'
+import { goTo } from '@/modulesGlobal/move'
+
+declare global {
+    interface RoomMemory {
+        lab: LabMemory
+    }
+}
+
+/**
+ * 把 lab 的物流任务类型映射到物流模块的任务类型
+ */
+const TypeMapping = {
+    [LabTransportType.LabIn]: TransportTaskType.LabIn,
+    [LabTransportType.LabOut]: TransportTaskType.LabOut,
+    [LabTransportType.LabGetEnergy]: TransportTaskType.LabGetEnergy
+}
+
+export const getLabController = createLabController({
+    goTo: (creep, pos) => goTo(creep, pos, {}),
+    getMemory: room => {
+        if (!room.memory.lab) room.memory.lab = {}
+        return room.memory.lab
+    },
+    hasTransportTask: (room, type) => room.transport.hasTaskWithType(TypeMapping[type]),
+    addTransportTask: (room, type, requests) => room.transport.addTask({
+        type: TypeMapping[type],
+        requests
+    }),
+    getLab,
+    getResourceAmount: (room, resType) => {
+        const { total } = room.storageController.getResource(resType)
+        return total
+    },
+    env: createEnvContext('lab')
+})
 
 /**
  * Room 上的 Lab 用户控制接口
  */
-export default class LabConsole extends Room {
+export class LabConsole extends Room {
     /**
      * 初始化 lab 集群
      * 要提前放好名字为 lab1 和 lab2 的两个旗帜（放在集群中间的两个 lab 上）
@@ -14,7 +52,7 @@ export default class LabConsole extends Room {
 
         if (!labA || !labB) return '[lab 集群] 初始化失败，找不到对应的 lab'
 
-        this.myLab.setBaseLab(labA, labB)
+        this.labController.setBaseLab(labA, labB)
         return `[${this.name} lab] 初始化成功，稍后将自动运行生产规划`
     }
 
@@ -22,7 +60,7 @@ export default class LabConsole extends Room {
      * 用户操作：暂停 lab 集群
      */
     public loff (): string {
-        this.myLab.off()
+        this.labController.off()
         return `[${this.name} lab] 已暂停工作`
     }
 
@@ -30,7 +68,7 @@ export default class LabConsole extends Room {
      * 用户操作：重启 lab 集群
      */
     public lon (): string {
-        this.myLab.on()
+        this.labController.on()
         return `[${this.name} lab] 已恢复工作`
     }
 
@@ -38,7 +76,7 @@ export default class LabConsole extends Room {
      * 用户操作：显示当前 lab 状态
      */
     public lshow (): string {
-        return this.myLab.stats()
+        return this.labController.show()
     }
 
     public lhelp (): string {

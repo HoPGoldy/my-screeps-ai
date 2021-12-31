@@ -1,4 +1,34 @@
-import { BoostResourceConfig } from '@/utils'
+import { BoostResourceConfig, EnvContext } from '@/utils'
+import { LabTransportType } from '.'
+import { TransportRequest } from '../taskTransport/types'
+
+export type LabContext = {
+    /**
+     * 包含对穿的进行移动
+     * 将会在 boost creep 时调用，用于解决集中布局时的堵路问题
+     */
+     goTo: (creep: Creep, targetPos: RoomPosition) => void
+    /**
+     * 获取 lab 的内存对象
+     */
+    getMemory: (room: Room) => LabMemory
+    /**
+     * 获取房间中的 lab
+     */
+    getLab: (room: Room) => StructureLab[]
+    /**
+     * 获取房间中某个资源储量
+     */
+    getResourceAmount: (room: Room, resType: ResourceConstant) => number
+    /**
+     * 当前是否存在指定物流任务
+     */
+    hasTransportTask: (room: Room, type: LabTransportType) => boolean
+    /**
+     * 新增物流任务任务
+     */
+    addTransportTask: (room: Room, type: LabTransportType, requests: TransportRequest[]) => unknown
+} & EnvContext
 
 export enum LabState {
     GetTarget = 'getTarget',
@@ -35,7 +65,6 @@ export enum LabType {
 
 /**
  * lab 集群所需的信息
- * @see doc/lab设计案
  */
 export interface LabMemory {
     /**
@@ -69,14 +98,14 @@ export interface LabMemory {
     /**
      * 该房间存在的强化任务
      */
-    boostTasks: BoostTask[]
+    boostTasks?: BoostTask[]
     /**
      * 强化清单
      * 用于临时保存某个 creep 的强化进度
      * （因为一个 tick 可能无法执行完所有的强化，所以需要有个地方保存哪个 lab 强化了哪个没强化）
      * 可以将其理解为一个 creep 的体检清单
      */
-    boostingNote: {
+    boostingNote?: {
         /**
          * 被强化的 creep 名称
          */
@@ -135,26 +164,6 @@ export interface LabTarget {
      * 要合成的数量
      */
     number: number
-}
-
-declare global {
-    interface Room {
-        /**
-         * 该房间是否已经执行过 lab 集群作业了
-         * 在 Lab.work 中调用，一个房间只会执行一次
-         */
-        _hasRunLab: boolean
-        /**
-         * 该房间是否运行过 boost 作业了
-         */
-        _hasRunBoost: boolean
-    }
-    interface RoomMemory {
-        /**
-         * lab 内存
-         */
-        lab: LabMemory
-    }
 }
 
 export interface BoostContext {

@@ -14,11 +14,11 @@ const defender: CreepConfig<CreepRole.Defender> = {
 
         // 如果威胁已经解除了，就不再孵化
         if (!needSpawn && boostTaskId) {
-            room.myLab.finishBoost(boostTaskId)
+            room.labController.finishBoost(boostTaskId)
             Game.notify(`[${room.name}][${Game.time}] 入侵威胁解除，已取消主动防御模式`)
         }
         // 还要打，续上
-        else room.myLab.reloadBoostTask(boostTaskId)
+        else room.labController.reloadBoostTask(boostTaskId)
 
         return needSpawn
     },
@@ -26,7 +26,7 @@ const defender: CreepConfig<CreepRole.Defender> = {
         const { boostTaskId } = creep.memory.data
         if (!boostTaskId) return true
 
-        return creep.room.myLab.boostCreep(creep, boostTaskId)
+        return creep.room.labController.boostCreep(creep, boostTaskId)
     },
     target: creep => {
         const enemys = creep.room.towerController.findEnemy()
