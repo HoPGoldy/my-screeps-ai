@@ -64,6 +64,7 @@ export const green = (content: string | number, bold?: boolean) => colorful(cont
 export const red = (content: string | number, bold?: boolean) => colorful(content, Color.Red, bold)
 export const yellow = (content: string | number, bold?: boolean) => colorful(content, Color.Yellow, bold)
 export const blue = (content: string | number, bold?: boolean) => colorful(content, Color.Blue, bold)
+export const bold = (content: string | number) => colorful(content, null, true)
 
 /**
  * 生成控制台链接

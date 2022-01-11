@@ -1,5 +1,5 @@
 import { ObjectWithId } from './types'
-import { green, red, yellow, blue, createLog } from './console'
+import { bold, green, red, yellow, blue, createLog } from './console'
 import { EnvMethods } from '@/utils'
 
 type ObjectWithRun = {
@@ -171,7 +171,7 @@ const staticEnvContext = {
     getFlagByName: flagName => Game.flags[flagName],
     getObjectById: id => Game.getObjectById(id),
     inInterval: interval => !!(Game.time % interval),
-    colorful: { green, red, yellow, blue }
+    colorful: { green, red, yellow, blue, bold }
 }
 
 /**

@@ -7,7 +7,7 @@ export type LabContext = {
      * 包含对穿的进行移动
      * 将会在 boost creep 时调用，用于解决集中布局时的堵路问题
      */
-     goTo: (creep: Creep, targetPos: RoomPosition) => void
+    goTo: (creep: Creep, targetPos: RoomPosition) => void
     /**
      * 获取 lab 的内存对象
      */

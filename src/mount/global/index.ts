@@ -1,6 +1,6 @@
 import { showCreep, removeCreep, hasCreep } from '@/modulesGlobal/creep'
 import { clearFlag } from '@/utils'
-import comm from './/commodity'
+import { showGlobal as comm } from '../room/factory'
 import res from './resourcesHelp'
 import help from './help'
 import ob from './observer'

@@ -4,7 +4,6 @@ import {
     RoomWorkTaskController,
     RoomSpawnController,
     RoomPowerController,
-    FactoryController,
     ObserverController,
     RemoteChontroller
 } from '@/modulesRoom'
@@ -16,6 +15,7 @@ import { StorageController } from '@/modulesRoom/storage/storageController'
 import { ShareController } from '@/modulesRoom/share/shareController'
 import { LabController } from '@/modulesRoom/lab'
 import { TerminalController } from '@/modulesRoom/terminal'
+import { FactoryController } from '@/modulesRoom/factory'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -25,6 +25,7 @@ import { getStorageController } from './storage'
 import { getShareController } from './share'
 import { getTerminalController } from './terminal'
 import { getLabController } from './lab'
+import { getFactoryController } from './factory'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -61,7 +62,6 @@ export default () => {
         ['work', RoomWorkTaskController],
         ['spawner', RoomSpawnController],
         ['power', RoomPowerController],
-        ['myFactory', FactoryController],
         ['myObserver', ObserverController],
         ['remote', RemoteChontroller]
     ]
@@ -85,6 +85,7 @@ export default () => {
 
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
+        ['factoryController', getFactoryController],
         ['terminalController', getTerminalController],
         ['storageController', getStorageController],
         ['towerController', getTowerController],
@@ -129,7 +130,7 @@ declare global {
         /**
          * 工厂管理模块
          */
-        myFactory: FactoryController
+        factoryController: FactoryController
         /**
          * 终端管理模块
          */

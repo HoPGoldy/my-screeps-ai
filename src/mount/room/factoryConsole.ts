@@ -11,7 +11,7 @@ export default class FactoryConsole extends Room {
      * @param level 等级
      */
     public fsetlevel (level: 1 | 2 | 3 | 4 | 5): string {
-        const result = this.myFactory.setLevel(level)
+        const result = this.factoryController.setLevel(level)
 
         if (result === OK) return `[${this.name} factory] 已成功设置为 ${level} 级`
         else if (result === ERR_INVALID_ARGS) return `[${this.name} factory] 设置失败，请检查参数是否正确`
@@ -24,7 +24,7 @@ export default class FactoryConsole extends Room {
      * @param depositTypes 要设置的生产线类型
      */
     public fsetchain (...depositTypes: DepositConstant[]): string {
-        const result = this.myFactory.setChain(...depositTypes)
+        const result = this.factoryController.setChain(...depositTypes)
 
         if (result === OK) {
             const log = depositTypes.length > 0 ? `已成功设置为 ${depositTypes.join(', ')} 生产线` : '已清空生产线'
@@ -41,7 +41,7 @@ export default class FactoryConsole extends Room {
      * 用户操作 - 移除当前工厂配置
      */
     public fremove (): string {
-        const actionResult = this.myFactory.remove()
+        const actionResult = this.factoryController.remove()
 
         if (actionResult === ERR_NOT_FOUND) return `[${this.name} factory] 尚未启用`
         if (actionResult === OK) {
@@ -54,8 +54,8 @@ export default class FactoryConsole extends Room {
      * 用户操作 - 暂停 factory
      */
     public foff (): string {
-        if (!this.memory.factory) return `[${this.name} factory] 未启用`
-        this.memory.factory.pause = true
+        if (!getFactory(this)) return `[${this.name}] 未建造工厂`
+        this.factoryController.off()
         return `[${this.name} factory] 已暂停`
     }
 
@@ -64,7 +64,7 @@ export default class FactoryConsole extends Room {
      */
     public fs (): string {
         if (!getFactory(this)) return `[${this.name}] 未建造工厂`
-        return this.myFactory.stats()
+        return this.factoryController.show()
     }
 
     /**
@@ -72,10 +72,9 @@ export default class FactoryConsole extends Room {
      * 会同时将工厂从停工中唤醒
      */
     public fon (): string {
-        if (!this.memory.factory) return `[${this.name} factory] 未启用`
-        delete this.memory.factory.pause
-        this.myFactory.wakeup()
-        return `[${this.name} factory] 已恢复, 当前状态：${this.myFactory.stats()}`
+        if (!getFactory(this)) return `[${this.name}] 未建造工厂`
+        this.factoryController.on()
+        return `[${this.name} factory] 已恢复, 当前状态：${this.factoryController.show()}`
     }
 
     /**
@@ -85,12 +84,10 @@ export default class FactoryConsole extends Room {
      * @param clear 是否同时清理工厂之前的合成任务
      */
     public fset (target: CommodityConstant, clear = true): string {
-        if (!this.memory.factory) this.myFactory.initMemory()
-        this.memory.factory.specialTraget = target
-        // 让工厂从暂停中恢复
-        delete this.memory.factory.pause
+        this.factoryController.on()
+        this.factoryController.setSingleTarget(target, clear)
         // 清理残留任务
-        if (clear) this.myFactory.clearTask()
+        if (clear) this.factoryController.clearTask()
         return `[${this.name} factory] 目标已锁定为 ${target}，将会持续生成，${clear ? '遗留任务已被清空' : '遗留任务未清空，可能会堵塞队列'}`
     }
 
@@ -99,10 +96,10 @@ export default class FactoryConsole extends Room {
      * 如果之前设置过工厂状态的话（setlevel），将会恢复到对应的自动生产状态
      */
     public fclear (): string {
-        if (!this.memory.factory) return `[${this.name} factory] 未启用`
+        if (!getFactory(this)) return `[${this.name}] 未建造工厂`
         const logs = [`[${this.name} factory] 已移除目标 ${this.memory.factory.specialTraget}，开始托管生产。当前生产状态：`]
-        delete this.memory.factory.specialTraget
-        logs.push(this.myFactory.stats())
+        this.factoryController.clearSingleTarget()
+        logs.push(this.factoryController.show())
 
         return logs.join('\n')
     }

@@ -1,13 +1,69 @@
-import { FactoryState } from './constant'
+import { EnvContext } from '@/utils'
+import { RoomShareTask } from '../share/types'
+import { TransportRequest } from '../taskTransport/types'
+import { FactoryState, FactoryTransportType } from './constants'
 
-declare global {
-    interface RoomMemory {
-        /**
-         * 工厂内存
-         */
-        factory?: FactoryMemory
-    }
-}
+export type FactoryContext = {
+    /**
+     * 获取指定房间的 factory 内存对象
+     */
+    getMemory: (room: Room) => FactoryMemory
+    /**
+     * 获取全局的 factory 内存对象
+     */
+    getGlobalMemory: () => { [level in FactoryLevel]?: string[] }
+    /**
+     * 当前是否存在指定物流任务
+     */
+    hasTransportTask: (room: Room, type: FactoryTransportType) => boolean
+    /**
+     * 新增物流任务任务
+     */
+    addTransportTask: (room: Room, type: FactoryTransportType, requests: TransportRequest[]) => unknown
+    /**
+     * 获取房间中某个资源储量
+     */
+    getResourceAmount: (room: Room, resType: ResourceConstant) => number
+    /**
+     * 获取本房间内想要获取某个资源应该去哪里找
+     */
+    getResourceStorePlace: (room: Room, resType: ResourceConstant, amount: number) => AnyStoreStructure
+    /**
+     * 获取房间中的 factory
+     * 用于接入建筑缓存
+     */
+    getFactory: (room: Room) => StructureFactory
+    /**
+     * 获取房间中存在的共享任务（本房间共享给其他房间）
+     * 没有任务则返回 undefined
+     */
+    getRoomShareTask: (room: Room) => RoomShareTask | undefined
+    /**
+     * 添加共享任务
+     * 执行后应有指定资源会发送到 room
+     *
+     * @param room 期望接受资源的房间
+     * @param resType 发送资源类型
+     * @param amount 共享数量
+     */
+    requestShare: (room: Room, resType: ResourceConstant, amount: number) => unknown
+    /**
+     * 回调 - 当可以提供某种资源时触发
+     */
+    onCanProvideResource?: (room: Room, resType: CommodityConstant) => unknown
+    /**
+     * 回调 - 当**不**可以提供某种资源时触发
+     */
+    onCantProvideResource?: (room: Room, resType: CommodityConstant) => unknown
+    /**
+     * 回调 - 当生产完某种资源时触发
+     */
+    onFinishProduce?: (room: Room, resType: CommodityConstant, amount: number) => unknown
+    /**
+     * 请求强化指定房间的 factory
+     */
+    requestPowerFactory: (room: Room, factory: StructureFactory) => unknown
+} & EnvContext
 
 /**
  * 工厂的内存
@@ -20,7 +76,7 @@ export interface FactoryMemory {
     /**
      * 下个顶级产物索引
      */
-    targetIndex: number
+    targetIndex?: number
     /**
      * 本工厂参与的生产线类型
      */
@@ -32,11 +88,11 @@ export interface FactoryMemory {
     /**
      * 当前工厂所处的阶段
      */
-    state: FactoryState
+    state?: FactoryState
     /**
      * 工厂生产队列
      */
-    taskList: FactoryTask[]
+    taskList?: FactoryTask[]
     /**
      * 工厂是否即将移除
      * 在该字段存在时，工厂会搬出所有材料，并在净空后移除 room.factory 内存

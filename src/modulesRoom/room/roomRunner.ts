@@ -16,7 +16,7 @@ export const roomRunner = function (room: Room): void {
     collectCost(`${room.name} storage`, TYPE_ROOM, room.storageController.run)
     collectCost(`${room.name} terminal`, TYPE_ROOM, room.terminalController.run)
     collectCost(`${room.name} lab`, TYPE_ROOM, room.labController.run)
-    collectCost(`${room.name} factory`, TYPE_ROOM, () => room.myFactory.run())
+    collectCost(`${room.name} factory`, TYPE_ROOM, room.factoryController.run)
     collectCost(`${room.name} observer`, TYPE_ROOM, () => room.myObserver.run())
     collectCost(`${room.name} tower`, TYPE_ROOM, room.towerController.run)
     collectCost(`${room.name} link`, TYPE_ROOM, room.linkController.run)

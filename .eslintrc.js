@@ -22,6 +22,7 @@ module.exports = {
         'import/extensions': 'off',
         'no-use-before-define': 'off',
         'import/prefer-default-export': 'off',
+        'object-property-newline': 'off',
         '@typescript-eslint/no-explicit-any': 'off',
         '@typescript-eslint/no-namespace': 'off',
         '@typescript-eslint/no-empty-function': 'off',

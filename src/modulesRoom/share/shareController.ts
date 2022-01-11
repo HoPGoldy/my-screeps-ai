@@ -272,6 +272,14 @@ export const createShareController = function (context: ShareContext) {
         }
 
         /**
+         * 获取房间中的共享任务（没有则返回 undefined）
+         */
+        const getShareTask = function () {
+            const room = env.getRoomByName(roomName)
+            return getMemory(room)
+        }
+
+        /**
          * 显示共享任务详情
          */
         const show = function (): string {
@@ -303,7 +311,7 @@ export const createShareController = function (context: ShareContext) {
             return logs.join('\n')
         }
 
-        return { request, becomeSource, leaveSource, hasShareTask, handle, execShareTask, show }
+        return { request, becomeSource, leaveSource, hasShareTask, getShareTask, handle, execShareTask, show }
     }
 
     const [getShareController] = createCache(lazyLoader)

@@ -1,4 +1,4 @@
-import { createLog, green, red, yellow, blue } from './console'
+import { createLog, bold, green, red, yellow, blue } from './console'
 
 export interface EnvMethods {
     getGame: () => Game
@@ -13,6 +13,7 @@ export interface EnvMethods {
         red: typeof red
         yellow: typeof yellow
         blue: typeof blue
+        bold: typeof bold
     }
 }
 

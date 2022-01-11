@@ -1,6 +1,14 @@
 import { TopTargetConfig } from './types'
 
 /**
+ * 工厂的物流任务类型
+ */
+export enum FactoryTransportType {
+    GetResource = 1,
+    PutResource
+}
+
+/**
  * 工厂的不同阶段
  */
 export enum FactoryState {
@@ -118,6 +126,7 @@ export const COMMODITY_MAX = {
 
 /**
  * factory 会优先保证底物的数量超过下面的限制之后才会进行生产
+ * 避免工厂吃光了所有的资源导致其他模块无法工作
  * 例如：factory 想要生产 RESOURCE_OXIDANT，但是 RESOURCE_OXYGEN 的数量低于 FACTORY_LOCK_AMOUNT[RESOURCE_OXIDANT].limit 所以 factory 就会暂时停工
  */
 export const FACTORY_LOCK_AMOUNT = {
