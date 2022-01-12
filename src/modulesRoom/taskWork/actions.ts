@@ -133,7 +133,7 @@ export const transportActions: {
             // 有新墙就先刷新墙
             if (creep.memory.fillWallId) {
                 const wall = Game.getObjectById(creep.memory.fillWallId)
-                if (!wall || wall.hits < MIN_WALL_HITS) {
+                if (!wall || wall.hits > MIN_WALL_HITS) {
                     delete creep.memory.fillWallId
                     return false
                 }

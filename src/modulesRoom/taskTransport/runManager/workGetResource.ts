@@ -64,7 +64,9 @@ const getTarget = function (request: TransportRequestData, context: TransportWor
 
         // 如果是能量就特判一下，因为能量可以从启动 container 里取到
         if (!targetPos && request.resType === RESOURCE_ENERGY) {
-            return getEnergyStore(manager, workRoom, managerData)
+            const energySource = getEnergyStore(manager, workRoom, managerData)
+            target = energySource.target
+            targetPos = energySource.pos
         }
     }
     // 来源是个位置
@@ -176,10 +178,10 @@ const getEnergyStore = function (manager: Creep, workRoom: Room, managerData: Ma
         }
     }, managerData, 'cacheSourceId')
 
-    // 没有能量，先移动到 source 附件待命
+    // 没有找到能用的能量来源
     if (!source) {
         delete managerData.cacheSourceId
-        return { pos: getSource(workRoom)[0].pos }
+        return { }
     }
 
     const moveTarget = source instanceof Structure ? source : undefined

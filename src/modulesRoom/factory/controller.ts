@@ -41,7 +41,7 @@ export const createFactoryController = function (context: FactoryContext) {
             if (!getFactory(room)) return
 
             const memory = getMemory(room)
-            const { state, sleep, pause } = memory
+            const { state = FactoryState.Prepare, sleep, pause } = memory
             // 暂停了，跳过
             if (pause) return
 

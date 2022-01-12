@@ -65,6 +65,20 @@ export default class RoomTransport extends TaskController<string | number, Trans
     }
 
     public addTask (task: RoomTask & TransportTask, opt?: AddTaskOpt) {
+        const emptyRequest = []
+        // 剔除掉 amount 为 0 的物流请求
+        task.requests = task.requests.filter(request => {
+            if (request.amount > 0 || request.amount === undefined) return true
+            emptyRequest.push(request)
+            return false
+        })
+
+        if (emptyRequest.length > 0) {
+            const log = `发现如下容量不正确的物流请求，已剔除：${emptyRequest.map(request => JSON.stringify(request))}`
+            this.log.warning(log)
+        }
+        if (task.requests.length <= 0) return -1
+
         return super.addTask(task, opt)
     }
 
@@ -81,7 +95,7 @@ export default class RoomTransport extends TaskController<string | number, Trans
 
         if (reason === TaskFinishReason.Complete) this.removeTaskByKey(task.key)
         else if (reason === TaskFinishReason.CantFindSource) {
-            this.log.error(`找不到资源来源，任务已移除。任务详情：${JSON.stringify(task)}`)
+            this.log.error(`${this.roomName} 找不到资源来源，任务已移除。任务详情：${JSON.stringify(task)}`)
             this.removeTaskByKey(task.key)
         }
         else if (reason === TaskFinishReason.CantFindTarget) {

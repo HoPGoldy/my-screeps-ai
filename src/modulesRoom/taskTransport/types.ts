@@ -184,5 +184,5 @@ export interface MoveTargetInfo<T = DestinationTarget> {
      * 目标位置
      * 这个值为空说明运输任务找不到目标或者任务完成了
      */
-    pos: RoomPosition
+    pos?: RoomPosition
 }

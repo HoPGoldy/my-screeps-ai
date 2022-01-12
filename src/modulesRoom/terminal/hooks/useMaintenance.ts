@@ -31,6 +31,7 @@ export const useMaintenance = function (roomName: string, context: TerminalConte
 
         const targetAmount = Math.min(store[targetRes], MAX_DROP_AMOUNT)
 
+        if (targetAmount <= 0) return
         env.log.normal(`${room.name} 剩余空间不足，将丢弃资源 ${targetRes} ${targetAmount}`)
         if (hasTransportTask(room)) return
 
