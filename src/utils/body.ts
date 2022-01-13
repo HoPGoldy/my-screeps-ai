@@ -10,7 +10,6 @@ export const getBodySpawnEnergy = function (bodys: BodyPartConstant[]): number {
 
 /**
  * 根据身体配置生成完成的身体数组
- * cpu 消耗: 0.028 左右
  *
  * @param bodySet 身体部件配置对象
  */
@@ -20,6 +19,78 @@ export const calcBodyPart = function (bodySets: BodyRepeat[]): BodyPartConstant[
     const bodys = bodySets.map(([bodyPart, length]) => Array(length).fill(bodyPart))
     // 把二维数组展平
     return [].concat(...bodys)
+}
+
+/**
+ * 从索引到身体常量的映射
+ * 解压身体数组时使用
+ */
+const keyToPart = {
+    A: ATTACK,
+    M: MOVE,
+    W: WORK,
+    C: CARRY,
+    R: RANGED_ATTACK,
+    T: TOUGH,
+    H: HEAL,
+    L: CLAIM
+}
+
+/**
+ * 从身体常量到索引的映射（就是把上面 keyToPart 的 key value 互换一下）
+ * 压缩身体数组时使用
+ */
+const partToKey = Object.entries(keyToPart).reduce((result, [key, part]) => {
+    result[part] = key
+    return result
+}, {})
+
+/**
+ * 压缩过的身体数组
+ * 实际类型为字符串
+ */
+export type BodyString = string & Tag.OpaqueTag<BodyPartConstant[]>;
+
+/**
+ * 将身体数组压缩为字符串
+ * 注意，压缩后的数字 + 1 才是实际的身体部件数量
+ */
+export const serializeBody = function (bodyParts: BodyPartConstant[]): BodyString {
+    let repeatCount = 0
+    const resultStr = bodyParts.reduce((result, part) => {
+        const partKey = partToKey[part]
+        if (result[result.length - 1] === partKey) repeatCount++
+        else {
+            if (repeatCount) result += repeatCount
+            result += partKey
+            repeatCount = 0
+        }
+
+        return result
+    }, '')
+
+    return (repeatCount ? resultStr + repeatCount : resultStr) as BodyString
+}
+
+/**
+ * 将压缩的身体字符串还原为身体数组
+ */
+export const unserializeBody = function (bodyStr: BodyString): BodyPartConstant[] {
+    // 分割字符串，例如 a5m1wa3 分割为 ['a', '5', 'm', '1', 'w', 'a', '3']
+    const keys = bodyStr.match(/[a-z]|\d+/gi)
+    let result: BodyPartConstant[] = []
+    do {
+        const key = keys.shift()
+        if (!(key in keyToPart)) continue
+
+        const part: BodyPartConstant = keyToPart[key]
+        // 下一个是身体部件
+        if (keys[0] in keyToPart) result.push(part)
+        // 下一个是数字，把本身体重复对应次数
+        else result = result.concat(Array(Number(keys.shift()) + 1).fill(part))
+    } while (keys.length > 0)
+
+    return result
 }
 
 /**
