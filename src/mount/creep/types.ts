@@ -21,15 +21,15 @@ declare global {
         /**
          * creep 的角色
          */
-        role: CreepRole
+        role: string
         /**
          * 是否在工作
          */
-        working: boolean
+        working?: boolean
         /**
          * creep 在工作时需要的自定义配置，在孵化时由 spawn 复制
          */
-        data: RoleDatas[CreepRole]
+        data?: RoleDatas[CreepRole]
         /**
          * 能量采集单位特有，当前的采集模式
          */

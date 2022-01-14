@@ -1,6 +1,6 @@
 import { removeCreep } from '@/modulesGlobal/creep'
-import { BASE_ROLE_LIMIT } from './constant'
-import RoomSpawnController from './controller'
+import { BASE_ROLE_LIMIT } from './constants'
+import RoomSpawnController from './controllerOld'
 import { GetName } from './nameGetter'
 import { BaseUnitLimit, BaseUnits, RoomBaseUnitLimit } from './types'
 import { CreepRole, RoleCreep } from '@/role/types/role'

@@ -6,7 +6,7 @@ interface CreepMemory {
     /**
      * 孵化该 creep 的房间
      */
-    spawnRoom: string
+    spawnRoom?: string
 }
 
 interface Memory {

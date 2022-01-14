@@ -1,27 +1,60 @@
 import { CreepRole, RoleDatas } from '@/role/types/role'
+import { BodyString, EnvContext } from '@/utils'
 
-declare global {
-    interface RoomMemory {
-        /**
-         * 该房间的孵化队列数据
-         */
-        spawnList: SpawnTask[]
-        /**
-         * 当前是否外借 spawn
-         */
-        lendSpawn?: boolean
-        /**
-         * 该房间的基础运维单位上下限
-         * 不存在时将使用 ./constant.ts 中的 BASE_ROLE_LIMIT
-         */
-        baseUnitLimit?: RoomBaseUnitLimit
-    }
+export type SpawnContext = {
+    /**
+     * 重要角色数组
+     * 应填写支持房间运维的角色，例如 source 采集或者搬运工
+     * 默认情况下如果一个爬因为能量不足而无法孵化时，将被挂起到队列末尾放置堵塞其他爬的孵化
+     * 而如果一个爬的 role 在此数组中，对应爬的孵化任务将会被卡在队列最前面直到可以孵化为止
+     */
+    importantRoles?: string[]
+    /**
+     * 获取指定房间的 spawn 内存存放位置
+     */
+    getMemory: (room: Room) => SpawnMemory
+    /**
+     * 获取指定房间的 spawn 数组
+     * 用于接入建筑缓存
+     */
+    getSpawn: (room: Room) => StructureSpawn[]
+    /**
+     * 请求填充能量
+     * 调用后应有单位将 spawn 和 extension 中的能量填满
+     */
+    requestFill: (room: Room) => unknown
+    /**
+     * 请求 power 填充能量
+     * 调用后应有 powerCreep 执行 PWR_OPERATE_EXTENSION
+     */
+    requestPowerExtension?: (room: Room) => unknown
+} & EnvContext
+
+export interface SpawnMemory {
+    /**
+     * 当前正在孵化的 creep
+     * 用于在孵化完成后触发对应回调
+     */
+    spawning?: Record<string, true>
+    /**
+     * 该房间的孵化队列数据
+     */
+    spawnList?: SpawnTask[]
+    /**
+     * 当前是否外借 spawn
+     */
+    lendSpawn?: boolean
+    /**
+     * 该房间的基础运维单位上下限
+     * 不存在时将使用 ./constant.ts 中的 BASE_ROLE_LIMIT
+     */
+    baseUnitLimit?: RoomBaseUnitLimit
 }
 
 /**
  * 孵化任务
  */
-export interface SpawnTask<Role extends CreepRole = CreepRole> {
+export interface SpawnTask {
     /**
      * 要孵化的 creep 名称
      */
@@ -29,22 +62,16 @@ export interface SpawnTask<Role extends CreepRole = CreepRole> {
     /**
      * 该 Creep 的角色
      */
-    role: Role
+    role: string
     /**
      * 该 creep 所需的 data
      */
-    data: RoleDatas[Role],
+    data?: Record<string, any>
+    /**
+     * 身体部件数组
+     */
+    bodys: BodyString
 }
-
-/**
- * 当 creep 不需要生成时 mySpawnCreep 返回的值
- */
-export type CREEP_DONT_NEED_SPAWN = -101
-
-/**
- * spawn.mySpawnCreep 方法的返回值集合
- */
-export type MySpawnReturnCode = ScreepsReturnCode | CREEP_DONT_NEED_SPAWN
 
 /**
  * 房间运维基础单位

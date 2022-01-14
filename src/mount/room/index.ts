@@ -2,7 +2,6 @@ import { createGetter } from '@/utils'
 import {
     RoomTransportTaskController,
     RoomWorkTaskController,
-    RoomSpawnController,
     RoomPowerController,
     ObserverController,
     RemoteChontroller
@@ -16,6 +15,7 @@ import { ShareController } from '@/modulesRoom/share/shareController'
 import { LabController } from '@/modulesRoom/lab'
 import { TerminalController } from '@/modulesRoom/terminal'
 import { FactoryController } from '@/modulesRoom/factory'
+import { SpawnController } from '@/modulesRoom/spawn'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -26,6 +26,7 @@ import { getShareController } from './share'
 import { getTerminalController } from './terminal'
 import { getLabController } from './lab'
 import { getFactoryController } from './factory'
+import { getSpawnController } from './spawn'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -60,7 +61,6 @@ export default () => {
     const plugins: [string, AnyRoomPlugin][] = [
         ['transport', RoomTransportTaskController],
         ['work', RoomWorkTaskController],
-        ['spawner', RoomSpawnController],
         ['power', RoomPowerController],
         ['myObserver', ObserverController],
         ['remote', RemoteChontroller]
@@ -85,6 +85,7 @@ export default () => {
 
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
+        ['spawnController', getSpawnController],
         ['factoryController', getFactoryController],
         ['terminalController', getTerminalController],
         ['storageController', getStorageController],
@@ -108,6 +109,10 @@ export default () => {
 declare global {
     interface Room {
         /**
+         * 孵化管理模块
+         */
+        spawnController: SpawnController
+        /**
          * 资源共享模块
          */
         share: ShareController
@@ -119,10 +124,6 @@ declare global {
          * 物流任务模块
          */
         transport: RoomTransportTaskController
-        /**
-         * 孵化控制模块
-         */
-        spawner: RoomSpawnController
         /**
          * power 管理模块
          */
