@@ -35,10 +35,6 @@ declare global {
          */
         harvestMode?: HarvestMode
         /**
-         * 该 Creep 是否在进行工作（站着不动）
-         */
-        stand?: boolean
-        /**
          * 要采集的资源 Id
          */
         sourceId?: Id<AllEnergySource>
@@ -74,11 +70,6 @@ declare global {
          * 城墙填充特有，当前期望的城墙生命值
          */
         expectHits?: number
-        /**
-         * harvester 允许自己再次尝试发布 power 强化 Soruce 任务的时间
-         * 在 Game.time 小于该值时不会尝试发布强化任务
-         */
-        regenSource?: number
         /**
          * 移动到某位置需要的时间
          * 例如：miner 会用它来保存移动到 mineral 的时间

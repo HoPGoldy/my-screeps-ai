@@ -20,10 +20,8 @@ export enum PbHarvestState {
  * creep 的角色枚举
  */
 export enum CreepRole {
-    Harvester = 'harvester',
     Worker = 'worker',
     Manager = 'manager',
-    Miner = 'miner',
     Claimer = 'claimer',
     Reserver = 'reserver',
     Signer = 'signer',
@@ -65,16 +63,8 @@ export interface RoleDatas {
     /**
      * 房间运营
      */
-    [CreepRole.Harvester]: HarvesterData & {
-        /**
-         * 将采集到的能量运到哪个建筑
-         * 如果指定了这个字段的话，harvester 将不会动态切换采集模式，直到对应的建筑无法访问
-         */
-        targetId?: Id<AnyStoreStructure>
-    }
     [CreepRole.Worker]: WorkerData
     [CreepRole.Manager]: transporterData
-    [CreepRole.Miner]: WorkerData
 
     /**
      * 外派单位
@@ -160,11 +150,6 @@ interface HarvesterData {
      * 能量要存储/应用到的房间
      */
     useRoom: string
-    /**
-     * 要站立到的采集能量的位置
-     * 在采集单位第一次到达 source 旁确定
-     */
-    standPos?: string
 }
 
 /**

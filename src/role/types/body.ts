@@ -14,7 +14,6 @@ export type BodyConfig = {
  * 包含身体部件自动调整的角色
  */
 export type AutoBodyRole =
-    CreepRole.Harvester |
     CreepRole.Worker |
     CreepRole.Manager |
     CreepRole.Reserver |

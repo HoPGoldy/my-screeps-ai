@@ -2,6 +2,34 @@ import { CreepRole } from '@/role/types/role'
 import { AllowCrossRuleFunc, CrossRules } from './types'
 
 /**
+ * creep 是否在站定不动
+ *
+ * 键为 creep 的名字，值为该 creep 是否站定不动
+ */
+const creepStandInfo: Record<string, boolean> = {}
+
+/**
+ * 获取指定 creep 当前是否为站定状态
+ */
+export const isCreepStand = function (creepName: string) {
+    return !!creepStandInfo[creepName]
+}
+
+/**
+ * 将指定 creep 设置为站定状态
+ */
+export const setCreepStand = function (creepName: string) {
+    isCreepStand[creepName] = true
+}
+
+/**
+ * 取消指定 creep 的站定状态
+ */
+export const cancelCreepStand = function (creepName: string) {
+    delete isCreepStand[creepName]
+}
+
+/**
  * 默认的对穿规则
  *
  * 当自己正在站定工作，并且请求对穿的和自己是相同角色时拒绝对穿
@@ -9,13 +37,13 @@ import { AllowCrossRuleFunc, CrossRules } from './types'
  * @param creep 被对穿的 creep
  * @param requireCreep 发起对穿的 creep
  */
-const defaultRule: AllowCrossRuleFunc = (creep, requireCreep) => !(creep.memory.stand && requireCreep.memory.role === creep.memory.role)
+const defaultRule: AllowCrossRuleFunc = (creep, requireCreep) => !(isCreepStand[creep.name] && requireCreep.memory.role === creep.memory.role)
 
 /**
  * 站定时不允许对穿
  * @param creep 被对穿的 creep
  */
-const noCrossWithStanding: AllowCrossRuleFunc = creep => !creep.memory.stand
+const noCrossWithStanding: AllowCrossRuleFunc = creep => !isCreepStand[creep.name]
 
 /**
  * 工作时不允许对穿

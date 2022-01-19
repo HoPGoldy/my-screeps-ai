@@ -16,6 +16,7 @@ import { LabController } from '@/modulesRoom/lab'
 import { TerminalController } from '@/modulesRoom/terminal'
 import { FactoryController } from '@/modulesRoom/factory'
 import { SpawnController } from '@/modulesRoom/spawn'
+import { HarvestController } from '@/modulesRoom/harvest'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -27,6 +28,7 @@ import { getTerminalController } from './terminal'
 import { getLabController } from './lab'
 import { getFactoryController } from './factory'
 import { getSpawnController } from './spawn'
+import { getHarvestController } from './harvest'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -86,6 +88,7 @@ export default () => {
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
         ['spawnController', getSpawnController],
+        ['harvest', getHarvestController],
         ['factoryController', getFactoryController],
         ['terminalController', getTerminalController],
         ['storageController', getStorageController],
@@ -112,6 +115,10 @@ declare global {
          * 孵化管理模块
          */
         spawnController: SpawnController
+        /**
+         * 基础采集模块
+         */
+        harvest: HarvestController
         /**
          * 资源共享模块
          */

@@ -108,3 +108,5 @@ export const createSourceUtils = function (context: SourceContext) {
 
     return { canUse, setDroppedPos, getDroppedInfo, setContainer, getContainer, setLink, getLink }
 }
+
+export type SourceUtils = ReturnType<typeof createSourceUtils>

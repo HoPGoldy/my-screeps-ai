@@ -83,3 +83,9 @@ export const createDelayQueue = function (context: DelayQueueContext) {
 
     return { withDelayCallback, manageDelayTask }
 }
+
+/**
+ * 延迟任务创建器
+ * 给该方法传入一个延迟任务回调，即可返回一个用于发布延迟任务的函数
+ */
+export type WithDelayCallback = ReturnType<typeof createDelayQueue>['withDelayCallback']

@@ -4,6 +4,7 @@ import { Color } from '@/utils'
 import { CreepConfig, CreepRole } from '@/role/types/role'
 import { collectCost } from '../framework'
 import { SHOW_CPU_COST_TYPE } from '@/mount/global/common'
+import { cancelCreepStand } from '../move'
 
 const innerCreepRunner = function (creep: Creep): void {
     if (!creep.memory.role) return
@@ -53,7 +54,7 @@ const innerCreepRunner = function (creep: Creep): void {
     // 状态变化了就释放工作位置
     if (stateChange) {
         creep.memory.working = !creep.memory.working
-        if (creep.memory.stand) delete creep.memory.stand
+        cancelCreepStand(creep.name)
     }
 }
 

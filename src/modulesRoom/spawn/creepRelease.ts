@@ -20,25 +20,6 @@ export default class RoomCreepRelease {
     }
 
     /**
-     * 发布采集单位
-     * 固定一个 source 发布一个单位
-     */
-    public harvester (): OK | ERR_NOT_FOUND {
-        const { name: roomName } = this.spawner.room
-        const source = getSource(this.spawner.room);
-
-        (source || []).forEach((source, index) => {
-            this.spawner.addTask(GetName.harvester(roomName, index), CreepRole.Harvester, {
-                useRoom: roomName,
-                harvestRoom: roomName,
-                sourceId: source.id
-            })
-        })
-
-        return OK
-    }
-
-    /**
      * 变更基地运维单位数量
      *
      * @param type 要更新的单位类别，工人 / 搬运工
@@ -130,17 +111,6 @@ export default class RoomCreepRelease {
         else if (old + expect >= min) return expect
         // 调整值导致人数不够了，根据最小值调整
         else return min - old
-    }
-
-    /**
-     * 发布元素矿采集单位
-     */
-    public miner (): void {
-        const { name: roomName } = this.spawner.room
-
-        this.spawner.addTask(GetName.miner(roomName), CreepRole.Miner, {
-            workRoom: roomName
-        })
     }
 
     /**

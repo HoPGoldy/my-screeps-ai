@@ -83,6 +83,9 @@ export const createMemoryAccessor = function (getMemory: () => SpawnMemory) {
         else delete memory.spawnList
     }
 
+    /**
+     * 把一个爬加入孵化中名单
+     */
     const updateSpawning = function (creepName: string) {
         const memory = getMemory()
 
@@ -90,6 +93,9 @@ export const createMemoryAccessor = function (getMemory: () => SpawnMemory) {
         memory.spawning[creepName] = true
     }
 
+    /**
+     * 把一个爬移除出孵化中名单
+     */
     const deleteSpawning = function (creepName: string) {
         const memory = getMemory()
 

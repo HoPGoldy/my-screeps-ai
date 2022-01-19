@@ -47,7 +47,7 @@ const buildCallback: {
      * 采集器造好后如果终端造好了就孵化采集单位
      */
     [STRUCTURE_EXTRACTOR]: (extractor: StructureExtractor) => {
-        if (extractor.room.terminal) extractor.room.spawner.release.miner()
+        if (extractor.room.terminal) extractor.room.harvest.startHarvestMineral()
     },
     /**
      * link 造好后默认分配职责
@@ -73,7 +73,7 @@ const buildCallback: {
     [STRUCTURE_TERMINAL]: (terminal: StructureTerminal) => {
         // 有 extractor 了，发布矿工并添加对应的共享协议
         if (getExtractor(terminal.room)) {
-            terminal.room.spawner.release.miner()
+            terminal.room.harvest.startHarvestMineral()
         }
         terminal.room.terminalController.resetConfig()
     },

@@ -49,19 +49,19 @@ const delaySpawnUpgrader = withDelayCallback('spawnUpgrader', ({ roomName }: Del
 })
 
 /**
- * 初始化房间的运营单位
+ * 初始化房间的运营模块
  * 应在房间刚占领时调用
  */
 export const initRoomUnit = function (room: Room) {
-    room.spawner.release.harvester()
+    room.harvest.startHarvestSource()
     room.spawner.release.changeBaseUnit(CreepRole.Manager, 1)
     room.spawner.release.changeBaseUnit(CreepRole.Worker, 2)
 }
 
 /**
-     * 调整房间的基础运营单位数量
-     * 定期执行即可，推荐 500 tick 一次
-     */
+ * 调整房间的基础运营单位数量
+ * 定期执行即可，推荐 500 tick 一次
+ */
 export const adjustBaseUnit = function (room: Room) {
     room.spawner.release.changeBaseUnit(CreepRole.Manager, room.transport.getExpect())
 

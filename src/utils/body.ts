@@ -22,7 +22,84 @@ export const calcBodyPart = function (bodySets: BodyRepeat[]): BodyPartConstant[
 }
 
 /**
+ * 创建一个响应式的身体部件生成函数
+ *
+ * 传入一个身体数组，如 [WORK, CARRY, MOVE]，会返回一个函数
+ *
+ * 这个函数接受可用于孵化的能量，并尝试重复最开始传入的身体数组直到填满最大孵化能量
+ *
+ * 也可以传入第二个参数来指定最大重复次数，来避免孵化出过大的无用身体
+ *
+ * @param bodyRepeatPart 要重复的身体数组
+ * @param maxRepeat 最多重复多少次
+ * @returns 一个函数，接受可用于孵化的能量，返回一个能孵化的最大身体数组（通过重复 bodyRepeatPart 得到）
+ */
+export const createReactiveBody = function (bodyRepeatPart: BodyPartConstant[], maxRepeat: number) {
+    let repeatPartCost: number
+
+    return (spawnEnergy: number) => {
+        // 懒计算每个循环的消耗
+        if (!repeatPartCost) repeatPartCost = getBodySpawnEnergy(bodyRepeatPart)
+        const repeatCount = Math.min(Math.floor(spawnEnergy / repeatPartCost), maxRepeat)
+
+        const result: BodyPartConstant[] = []
+        for (let i = 0; i < repeatCount; i++) {
+            if (result.length >= 50) break
+            bodyRepeatPart.forEach(body => result.push(body))
+        }
+
+        return result
+    }
+}
+
+interface BodyLevelInfo {
+    body: BodyPartConstant[]
+    cost: number
+}
+
+/**
+ * 创建一个静态的身体部件生成函数
+ *
+ * 传入一个如下形式的二维元组（参数数量不限）：
+ *
+ * ```js
+ * createStaticBody(
+ *     [[WORK, 2], [CARRY, 1], [MOVE, 1]],
+ *     [[WORK, 4], [CARRY, 1], [MOVE, 2]],
+ *     [[WORK, 5], [CARRY, 1], [MOVE, 3]],
+ *     [[WORK, 6], [CARRY, 1], [MOVE, 4]]
+ * )
+ * ```
+ *
+ * 将会返回一个函数，函数接受可用于孵化的能量，然后从最后一行身体配置项开始尝试，并返回第一个可以孵化的身体部件
+ *
+ * 注意，该函数 **不会** 对传入的配置项按能量消耗大小排序，所以请保证传进来时第一个数组时消耗最小的，后面的消耗依次增大
+ */
+export const createStaticBody = function (...bodySets: BodyRepeat[][]) {
+    let bodyLevelInfo: BodyLevelInfo[]
+
+    return (spawnEnergy: number) => {
+        // 懒计算身体展开结果
+        if (!bodyLevelInfo) {
+            // 用传入的 bodySet 依次生成配置项
+            bodyLevelInfo = bodySets.map(bodyRepeat => {
+                const body = calcBodyPart(bodyRepeat)
+                const cost = getBodySpawnEnergy(body)
+
+                return { cost, body }
+            }).reverse()
+        }
+
+        const targetLevel = bodyLevelInfo.find(level => spawnEnergy >= level.cost)
+        if (!targetLevel) return []
+
+        return targetLevel.body
+    }
+}
+
+/**
  * 从索引到身体常量的映射
+ *
  * 解压身体数组时使用
  */
 const keyToPart = {
