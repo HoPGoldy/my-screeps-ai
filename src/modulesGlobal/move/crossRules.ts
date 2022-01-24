@@ -16,17 +16,11 @@ export const isCreepStand = function (creepName: string) {
 }
 
 /**
- * 将指定 creep 设置为站定状态
+ * 将设置指定 creep 的站定状态
  */
-export const setCreepStand = function (creepName: string) {
-    isCreepStand[creepName] = true
-}
-
-/**
- * 取消指定 creep 的站定状态
- */
-export const cancelCreepStand = function (creepName: string) {
-    delete isCreepStand[creepName]
+export const setCreepStand = function (creepName: string, isStanding: boolean): void {
+    if (isStanding) isCreepStand[creepName] = true
+    else delete isCreepStand[creepName]
 }
 
 /**

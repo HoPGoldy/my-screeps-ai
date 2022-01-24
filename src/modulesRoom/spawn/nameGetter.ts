@@ -5,17 +5,12 @@
 export class GetName {
     static worker = (roomName: string, index: number | string) => `${roomName} worker${index}`
     static manager = (roomName: string, index: number | string) => `${roomName} manager${index}`
-    static processor = (roomName: string) => `${roomName} processor`
     static claimer = (targetRoomName: string) => `${targetRoomName} claimer`
     static reserver = (targetRoomName: string) => `${targetRoomName} reserver${Game.time}`
     static signer = (roomName: string) => `${roomName} signer`
     static remoteBuilder = (remoteRoomName: string) => `${remoteRoomName} RemoteBuilder`
     static remoteUpgrader = (remoteRoomName: string) => `${remoteRoomName} RemoteUpgrader`
     static remoteHarvester = (remoteRoomName: string, sourceId: Id<Source>) => `${remoteRoomName} remoteHarvester${sourceId}`
-    static depositHarvester = (flagName: string) => `${flagName} depoHarvester`
-    static pbAttacker = (flagName: string, index: number) => `${flagName} attacker${index}`
-    static pbHealer = (flagName: string, index: number) => `${flagName} healer${index}`
-    static pbCarrier = (flagName: string, index: number) => `${flagName} carrier${index}`
     static reiver = (roomName: string) => `${roomName} reiver ${Game.time}`
     static soldier = (roomName: string, index: number) => `${roomName} soldier ${Game.time}-${index}`
     static boostDoctor = (roomName: string) => `${roomName} doctor ${Game.time}`
@@ -23,5 +18,4 @@ export class GetName {
     static boostDismantler = (roomName: string) => `${roomName} dismantler ${Game.time}`
     static apocalypse = (roomName: string) => `${roomName} apocalypse ${Game.time}`
     static defender = (roomName: string) => `${roomName} defender`
-    static repair = (roomName: string, index: number) => `${roomName} defender${index}`
 }

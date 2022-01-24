@@ -53,7 +53,7 @@ export const useMiner = function (context: HarvestContext) {
         }
 
         // 孵化采集单位
-        addSpawnTask(room, getMinerName(room.name), minerRole, getMinerBody(room.energyAvailable))
+        releaseMiner(room)
     })
 
     const miner = createRoleController({
@@ -68,13 +68,13 @@ export const useMiner = function (context: HarvestContext) {
             // 房间中的矿床是否还有剩余产量
             if (mineral.mineralAmount <= 0) {
                 delaySpawnMiner({ roomName: workRoom.name }, mineral.ticksToRegeneration + 1)
-                return
+                return false
             }
 
             const total = getResourceAmount(workRoom, mineral.mineralType)
             if (total < MINE_LIMIT) {
                 // 需要重新孵化
-                addSpawnTask(workRoom, getMinerName(workRoom.name), minerRole, getMinerBody(workRoom.energyAvailable))
+                releaseMiner(workRoom)
                 return
             }
 
@@ -84,7 +84,7 @@ export const useMiner = function (context: HarvestContext) {
         /**
          * 采集元素矿
          */
-        runStageB: (creep, memory, workRoom) => {
+        runSource: (creep, memory, workRoom) => {
             if (creep.store.getFreeCapacity() === 0) return true
 
             const mineral = getMineral(workRoom)
@@ -100,7 +100,7 @@ export const useMiner = function (context: HarvestContext) {
         /**
          * 运回存储建筑
          */
-        runStageA: (creep, memory, workRoom) => {
+        runTarget: (creep, memory, workRoom) => {
             if (creep.store.getUsedCapacity() === 0) return true
 
             if (!workRoom.terminal) {
@@ -112,11 +112,19 @@ export const useMiner = function (context: HarvestContext) {
             const result = creep.transfer(workRoom.terminal, Object.keys(creep.store)[0] as ResourceConstant)
             return result === OK
         },
-        onCreepStageChange,
-        env: createEnvContext('miner')
+        onCreepStageChange
     })
 
     addSpawnCallback(minerRole, miner.addUnit)
 
-    return miner
+    /**
+     * 发布新元素矿采集单位
+     *
+     * @param room 要采集元素矿的房间
+     */
+    const releaseMiner = function (room: Room) {
+        addSpawnTask(room, getMinerName(room.name), minerRole, getMinerBody(room.energyAvailable))
+    }
+
+    return { miner, releaseMiner }
 }

@@ -127,23 +127,4 @@ export default class CreepExtension extends Creep {
         this.goTo(target.pos, moveOpt)
         return this.transfer(target, RESOURCE)
     }
-
-    /**
-     * 手操 - 给 harvester 设置存放建筑
-     * 将会在下次孵化后生效
-     *
-     * @param targetId 要存放的建筑 id
-     */
-    public storeTo (targetId: Id<AnyStoreStructure>): string {
-        const isHarvester = (creep: Creep): creep is RoleCreep<CreepRole.Harvester> => {
-            return creep.memory.role === CreepRole.Harvester
-        }
-
-        const target = Game.getObjectById(targetId)
-        if (!target) return `${targetId} 找不到对应的建筑`
-        if (!isHarvester(this)) return '该 creep 不是 harvester，无法设置存放建筑'
-
-        this.memory.data.targetId = targetId
-        return `设置完成，将会把采集到的能量存放至 ${target}`
-    }
 }

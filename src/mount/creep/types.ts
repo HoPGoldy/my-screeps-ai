@@ -47,10 +47,6 @@ declare global {
          */
         repairStructureId?: Id<AnyStructure>
         /**
-         * deposit 采集者特有，deposit 的类型
-         */
-        depositType?: DepositConstant
-        /**
          * 要填充的墙 id
          */
         fillWallId?: Id<StructureWall | StructureRampart>

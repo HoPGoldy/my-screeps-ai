@@ -10,7 +10,9 @@ import { useHarvesterTransport } from './useHarvesterTransport'
 /**
  * 生成能量矿采集单位的名字
  */
-export const getHarvesterName = (roomName: string, index: number) => `${roomName} harvester${index}`
+export const getHarvesterName = (roomName: string, sourceId: Id<Source>) => {
+    return `${roomName} harvester${sourceId.slice(sourceId.length - 4)}`
+}
 
 /**
  * 生成能量矿采集单位的身体
@@ -79,11 +81,7 @@ export const useHarvester = function (context: HarvestContext) {
             if (!memory.harvesters) memory.harvesters = {}
             return memory.harvesters
         },
-        onCreepDead: (creepName, memory, workRoom) => {
-            addSpawnTask<HarvesterMemory>(workRoom, creepName, harvesterRole, getHarvesterBody(workRoom.energyAvailable), {
-                sourceId: memory.sourceId
-            })
-        },
+        onCreepDead: (creepName, memory, workRoom) => releaseHarvester(workRoom, memory.sourceId),
         runPrepare: (creep, memory) => {
             const { mode, sourceId } = memory
             const source = env.getObjectById(sourceId)
@@ -97,22 +95,33 @@ export const useHarvester = function (context: HarvestContext) {
         /**
          * 采集能量矿
          */
-        runStageB: (creep, memory) => {
+        runSource: (creep, memory) => {
             const source = env.getObjectById(memory.sourceId)
             return actionStrategys[memory.mode].source(creep, source, memory)
         },
         /**
          * 运回存储建筑
          */
-        runStageA: (creep, memory) => {
+        runTarget: (creep, memory) => {
             const source = env.getObjectById(memory.sourceId)
             return actionStrategys[memory.mode].target(creep, source, memory)
         },
-        onCreepStageChange,
-        env: createEnvContext('miner')
+        onCreepStageChange
     })
 
     addSpawnCallback(harvesterRole, harvester.addUnit)
 
-    return harvester
+    /**
+     * 发布能量采集单位
+     *
+     * @param room 要发布到的房间
+     * @param source 要采集的能量矿 id
+     */
+    const releaseHarvester = function (room: Room, sourceId: Id<Source>) {
+        const creepName = getHarvesterName(room.name, sourceId)
+        addSpawnTask(room, creepName, harvesterRole, getHarvesterBody(room.energyAvailable))
+        harvester.registerUnit(creepName, { sourceId }, room)
+    }
+
+    return { harvester, releaseHarvester }
 }

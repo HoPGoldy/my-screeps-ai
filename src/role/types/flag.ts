@@ -3,22 +3,6 @@ import { PbHarvestState } from './role'
 declare global {
     interface FlagMemory {
         /**
-         * deposit 旗帜特有，最长冷却时间
-         */
-        depositCooldown?: number
-        /**
-         * 公路房旗帜特有，抵达目标需要的时间
-         */
-        travelTime?: number
-        /**
-         * 公路房旗帜特有，travelTime 是否已经计算完成
-         */
-        travelComplete?: boolean
-        /**
-         * 该旗帜下标注的资源 id
-         */
-        sourceId?: Id<AnyStoreStructure | Deposit | StructurePowerBank | Ruin>
-        /**
          * 当前 powerbank 采集的状态
          */
         state?: PbHarvestState

@@ -1,17 +1,12 @@
 import { createCache } from '@/utils'
-import { HarvesterMemory } from '.'
-import { DEFAULT_HARVESTER_ROLE, DEFAULT_MINER_ROLE } from './constants'
-import { getHarvesterBody, useHarvester, getHarvesterName } from './hooks/useHarvester'
-import { getMinerBody, getMinerName, useMiner } from './hooks/useMiner'
+import { useHarvester } from './hooks/useHarvester'
+import { useMiner } from './hooks/useMiner'
 import { HarvestContext } from './types'
 
 export const createHarvestController = function (context: HarvestContext) {
-    const {
-        env, getSource, addSpawnTask,
-        harvesterRole = DEFAULT_HARVESTER_ROLE, minerRole = DEFAULT_MINER_ROLE
-    } = context
-    const miner = useMiner(context)
-    const harvester = useHarvester(context)
+    const { env, getSource } = context
+    const { harvester, releaseHarvester } = useHarvester(context)
+    const { miner, releaseMiner } = useMiner(context)
 
     const lazyLoader = function (roomName: string) {
         /**
@@ -22,15 +17,7 @@ export const createHarvestController = function (context: HarvestContext) {
             const workRoom = env.getRoomByName(roomName)
             const sources = getSource(workRoom)
 
-            sources.forEach((source, index) => {
-                addSpawnTask<HarvesterMemory>(
-                    workRoom,
-                    getHarvesterName(roomName, index),
-                    harvesterRole,
-                    getHarvesterBody(workRoom.energyAvailable),
-                    { sourceId: source.id }
-                )
-            })
+            sources.forEach(source => releaseHarvester(workRoom, source.id))
         }
 
         /**
@@ -46,8 +33,7 @@ export const createHarvestController = function (context: HarvestContext) {
          */
         const startHarvestMineral = function () {
             const workRoom = env.getRoomByName(roomName)
-            const creepName = getMinerName(roomName)
-            addSpawnTask(workRoom, creepName, minerRole, getMinerBody(workRoom.energyAvailable))
+            releaseMiner(workRoom)
         }
 
         /**

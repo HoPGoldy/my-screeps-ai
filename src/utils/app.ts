@@ -184,3 +184,22 @@ export const createEnvContext = function (moduleName: string): EnvMethods {
         log: createLog(moduleName)
     }
 }
+
+/**
+ * 创建对象键访问器
+ *
+ * @param getMemory 获取内存的方法
+ * @param memoryKey 要保存在那个键上
+ * @param defaultMemory 不存在时的默认内存
+ */
+export const createMemoryGetter = function <T, K extends keyof T> (
+    getMemory: (room: Room) => T,
+    memoryKey: K,
+    defaultMemory: T[K]
+) {
+    return room => {
+        const memory = getMemory(room)
+        if (!memory[memoryKey]) memory[memoryKey] = defaultMemory
+        return memory[memoryKey]
+    }
+}

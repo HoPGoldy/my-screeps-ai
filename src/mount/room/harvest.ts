@@ -1,4 +1,4 @@
-import { cancelCreepStand } from '@/modulesGlobal/move'
+import { setCreepStand } from '@/modulesGlobal/move'
 import { WorkTaskType } from '@/modulesRoom'
 import { createHarvestController, HarvestMemory } from '@/modulesRoom/harvest'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
@@ -60,6 +60,6 @@ export const getHarvestController = createHarvestController({
         }, { dispath: true })
     },
     requestPowerSource: source => source.room.power.addTask(PWR_REGEN_SOURCE) === OK,
-    onCreepStageChange: creep => cancelCreepStand(creep.name),
+    onCreepStageChange: (creep, isWorking) => setCreepStand(creep.name, isWorking),
     env: createEnvContext('harvest')
 })

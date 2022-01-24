@@ -3,7 +3,7 @@ import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
 import FactoryConsole from '@/mount/room/factoryConsole'
-import ObserverConsole from '@/modulesRoom/observer/console'
+import ObserverConsole from '@/mount/room/observerConsole'
 import RemoteConsole from '@/modulesRoom/remote/console'
 import { Color, log } from '@/utils'
 import { PowerSpawnConsole } from './room/powerSpawn'
@@ -34,6 +34,17 @@ const mountPowerToRoom = function () {
 }
 
 export const mountAll = function () {
+    // 存储的兜底工作
+    initStorage()
+
+    // 挂载全部拓展
+    mountGlobal()
+    mountRoom()
+    mountCreep()
+
+    // 初始化 power 能力
+    mountPowerToRoom()
+
     // 所有需要挂载的原型拓展
     const mountList = [
         [Room, RoomExtension],
@@ -58,17 +69,6 @@ export const mountAll = function () {
             targetClass.prototype[prop] = extensionClass.prototype[prop]
         })
     })
-
-    // 存储的兜底工作
-    initStorage()
-
-    // 挂载全部拓展
-    mountGlobal()
-    mountRoom()
-    mountCreep()
-
-    // 初始化 power 能力
-    mountPowerToRoom()
 
     log('拓展挂载完成', 'global', Color.Green)
 }

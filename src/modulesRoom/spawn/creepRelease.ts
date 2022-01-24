@@ -226,63 +226,6 @@ export default class RoomCreepRelease {
     }
 
     /**
-     * 发布 pbCarrier 小组
-     * 由 pbAttacker 调用
-     *
-     * @param sourceFlagName powerBank 上的旗帜名
-     * @param number 孵化几个 carrier
-     */
-    public pbCarrierGroup (sourceFlagName: string, number: number): void {
-        // 如果已经有人发布过了就不再费事了
-        if (GetName.pbCarrier(sourceFlagName, 0) in Game.creeps) return
-
-        for (let i = 0; i < number; i++) {
-            this.spawner.addTask(
-                GetName.pbCarrier(sourceFlagName, i),
-                CreepRole.PbCarrier,
-                { sourceFlagName }
-            )
-        }
-    }
-
-    /**
-     * 孵化 pb 采集小组（一红一绿为一组）
-     *
-     * @param targetFlagName 要采集的旗帜名
-     * @param groupNumber 【可选】发布的采集小组数量
-     */
-    public pbHarvesteGroup (targetFlagName: string, groupNumber = 2): void {
-        // 发布 attacker 和 healer，搬运者由 attacker 在后续任务中自行发布
-        for (let i = 0; i < groupNumber; i++) {
-            const attackerName = GetName.pbAttacker(targetFlagName, i)
-            const healerName = GetName.pbHealer(targetFlagName, i)
-
-            // 添加采集小组
-            this.spawner.addTask(attackerName, CreepRole.PbAttacker, {
-                sourceFlagName: targetFlagName,
-                healerCreepName: healerName
-            })
-            this.spawner.addTask(healerName, CreepRole.PbHealer, {
-                creepName: attackerName
-            })
-        }
-    }
-
-    /**
-     * 孵化 deposit 采集单位
-     *
-     * @param sourceFlagName 要采集的旗帜名
-     */
-    public depositHarvester (sourceFlagName: string): void {
-        // 发布采集者，他会自行完成剩下的工作
-        this.spawner.addTask(
-            GetName.depositHarvester(sourceFlagName),
-            CreepRole.DepositHarvester,
-            { sourceFlagName }
-        )
-    }
-
-    /**
      * 孵化掠夺者
      *
      * @param sourceFlagName 要搜刮的建筑上插好的旗帜名

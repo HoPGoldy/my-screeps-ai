@@ -3,7 +3,6 @@ import {
     RoomTransportTaskController,
     RoomWorkTaskController,
     RoomPowerController,
-    ObserverController,
     RemoteChontroller
 } from '@/modulesRoom'
 import { TowerController } from '@/modulesRoom/tower/controller'
@@ -17,6 +16,7 @@ import { TerminalController } from '@/modulesRoom/terminal'
 import { FactoryController } from '@/modulesRoom/factory'
 import { SpawnController } from '@/modulesRoom/spawn'
 import { HarvestController } from '@/modulesRoom/harvest'
+import { ObserverController } from '@/modulesRoom/observer'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -29,6 +29,7 @@ import { getLabController } from './lab'
 import { getFactoryController } from './factory'
 import { getSpawnController } from './spawn'
 import { getHarvestController } from './harvest'
+import { getObserverController } from './observer'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -64,7 +65,6 @@ export default () => {
         ['transport', RoomTransportTaskController],
         ['work', RoomWorkTaskController],
         ['power', RoomPowerController],
-        ['myObserver', ObserverController],
         ['remote', RemoteChontroller]
     ]
 
@@ -97,6 +97,7 @@ export default () => {
         ['nukerController', getNukerController],
         ['psController', getPsController],
         ['labController', getLabController],
+        ['observerController', getObserverController],
         ['share', getShareController]
     ]
 
@@ -148,10 +149,6 @@ declare global {
          */
         storageController: StorageController
         /**
-         * observer 管理模块
-         */
-        myObserver: ObserverController
-        /**
          * lab 管理模块
          */
         labController: LabController
@@ -176,5 +173,9 @@ declare global {
          * ps 工作模块
          */
         psController: PowerSpawnController
+        /**
+         * 过道采集模块
+         */
+        observerController: ObserverController
     }
 }

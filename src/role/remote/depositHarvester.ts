@@ -1,6 +1,6 @@
 import { bodyConfigs, createBodyGetter } from '../bodyUtils'
 import { Color } from '@/utils'
-import { DEPOSIT_MAX_COOLDOWN } from '@/modulesRoom/observer/constant'
+import { DEPOSIT_MAX_COOLDOWN } from '@/modulesRoom/observer/constants'
 import { CreepConfig, CreepRole } from '../types/role'
 
 /**

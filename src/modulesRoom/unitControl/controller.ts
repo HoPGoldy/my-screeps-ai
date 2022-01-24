@@ -1,4 +1,5 @@
-import { RemoveCreepOptions, UnitControlContext, RoleMemory } from './types'
+import { createEnvContext } from '@/utils'
+import { RemoveCreepOptions, UnitControlContext, UnitMemory } from './types'
 
 const pad = content => _.padRight((content || '').toString(), 40)
 
@@ -9,7 +10,10 @@ const pad = content => _.padRight((content || '').toString(), 40)
  * @generic C 该单位的运行上下文类型
  */
 export const createRoleController = function<T = unknown, C = unknown> (context: UnitControlContext<T, C>) {
-    const { env, getMemory, onCreepDead, runPrepare, runStageB, runStageA, onCreepStageChange } = context
+    const {
+        env = createEnvContext('unitControl'),
+        getMemory, onCreepDead, runPrepare, runSource, runTarget, onCreepStageChange
+    } = context
     const { green, yellow } = env.colorful
 
     /**
@@ -27,11 +31,32 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
      * @param room 该单位要工作在哪个房间（不填则默认为其所在房间）
      */
     const addUnit = function (creep: Creep, defaultMemory?: T, room?: Room) {
-        const memory = getMemory(room)
+        const memory = getMemory(room || creep.room)
         memory[creep.name] = {
+            ...(memory[creep.name] || {}),
+            ...defaultMemory,
             working: false,
-            ready: false,
-            ...defaultMemory
+            ready: false
+        }
+
+        delete memory[creep.name].registration
+    }
+
+    /**
+     * 注册一个单位
+     * 该方法是 addUnit 的一个特殊版本，用于在 creep 还没孵化完成时提前注册该单位的信息
+     *
+     * @param creepName 将要到岗的 creep 名字
+     * @param defaultMemory creep 的内存
+     * @param room 要发布到的房间
+     */
+    const registerUnit = function (creepName: string, defaultMemory: T, room: Room) {
+        const memory = getMemory(room)
+        memory[creepName] = {
+            ...defaultMemory,
+            registration: true,
+            working: false,
+            ready: false
         }
     }
 
@@ -51,7 +76,7 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
                 creep && creep.suicide()
             }
 
-            delete memory[creepName]
+            if (!memory.registration) delete memory[creepName]
 
             return true
         }
@@ -106,7 +131,7 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
     /**
      * 运行指定单位的生命周期
      */
-    const runSingleCreep = function (creep: Creep, memory: RoleMemory<T>, room: Room) {
+    const runSingleCreep = function (creep: Creep, memory: UnitMemory<T>, room: Room) {
         // 没准备的时候就执行准备阶段
         if (!memory.ready) {
             // 有准备阶段配置则执行
@@ -119,16 +144,16 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
         if (!memory.ready) return
 
         // 获取是否工作，没有 source 的话直接执行 target
-        const working = runStageB ? memory.working : true
+        const working = runSource ? memory.working : true
 
         let stateChange = false
         // 执行对应阶段
         // 阶段执行结果返回 true 就说明需要更换 working 状态
         if (working) {
-            if (runStageA && runStageA(creep, memory, room, runtimeContext)) stateChange = true
+            if (runTarget && runTarget(creep, memory, room, runtimeContext)) stateChange = true
         }
         else {
-            if (runStageB && runStageB(creep, memory, room, runtimeContext)) stateChange = true
+            if (runSource && runSource(creep, memory, room, runtimeContext)) stateChange = true
         }
 
         // 状态变化了就释放工作位置
@@ -154,9 +179,11 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
         for (const creepName in memory) {
             const creep = env.getCreepByName(creepName)
             // 死掉了就处理后事
-            if (!creep) {
+            // 这里需要额外判断一下，注册单位是“还没到”的单位，不是“死掉”的单位
+            if (!creep && !memory.registration) {
                 onCreepDead && onCreepDead(creepName, memory[creepName], room, runtimeContext)
-                delete memory[creepName]
+                // 这里还要再检查下，因为 onCreepDead 时有可能会重新注册这个爬
+                if (!memory.registration) delete memory[creepName]
                 continue
             }
 
@@ -164,5 +191,5 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
         }
     }
 
-    return { addUnit, removeUnit, removeAll, show, run, setRuntimeContext }
+    return { addUnit, registerUnit, removeUnit, removeAll, show, run, setRuntimeContext }
 }

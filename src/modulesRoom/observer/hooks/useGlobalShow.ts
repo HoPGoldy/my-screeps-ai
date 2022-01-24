@@ -1,23 +1,28 @@
 import { red, yellow, green, createRoomLink } from '@/utils'
-import { getObserver } from '../room/shortcut'
+import { ObserverContext } from '../types'
 
 /**
  * 查看所有 observer 的运行状态
  */
-export default function (): string {
-    // 获取旗帜所在房间的访问链接
-    const getFlagRoomLink = flagName => createRoomLink(Game.flags[flagName].pos.roomName)
+export const useGlobalShow = function (
+    context: ObserverContext,
+    updateFlagList: (room: Room) => unknown
+): string {
+    const { env, getObserver, getMemory } = context
 
-    const stats = Object.values(Game.rooms).map(room => {
+    // 获取旗帜所在房间的访问链接
+    const getFlagRoomLink = flagName => createRoomLink(env.getFlagByName(flagName)?.pos.roomName)
+
+    const stats = Object.values(env.getGame().rooms).map(room => {
         if (!getObserver(room)) return false
 
-        const memory = room.memory.observer
+        const memory = getMemory(room)
         const obName = createRoomLink(room.name)
         if (!memory) return `${red('●', true)} ${obName} 未启用`
         if (memory.pause) return `${yellow('●', true)} ${obName} 暂停中`
 
         // 更新旗帜列表，保证显示最新数据
-        room.myObserver.updateFlagList()
+        updateFlagList(room)
 
         // 正在采集的两种资源数量
         const pbNumber = memory.pbList.length

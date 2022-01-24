@@ -2,7 +2,7 @@ import { directionToPos, getOppositeDirection, serializePos } from '@/utils'
 import crossRules from './crossRules'
 import { addCrossShardRequest } from '@/modulesGlobal/crossShard'
 import { MoveOpt } from './types'
-export { setCreepStand, cancelCreepStand } from './crossRules'
+export { setCreepStand } from './crossRules'
 
 /**
  * 房间移动成本缓存

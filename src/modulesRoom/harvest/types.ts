@@ -1,6 +1,7 @@
 import { WithDelayCallback } from '@/modulesGlobal/delayQueue/creator'
 import { SourceUtils } from '@/modulesGlobal/source/sourceUtils'
 import { EnvContext } from '@/utils'
+import { UseSpawnContext } from '../spawn'
 import { TransportRequest } from '../taskTransport/types'
 import { RoleMemory } from '../unitControl/types'
 
@@ -37,15 +38,6 @@ export type HarvestContext = {
      * 用于接入建筑缓存
      */
     getSpawn: (room: Room) => StructureSpawn[]
-    /**
-     * 添加孵化任务
-     */
-    addSpawnTask: <D = Record<string, any>>(room: Room, name: string, role: string, bodys: BodyPartConstant[], data?: D) => unknown
-    /**
-     * 添加孵化任务回调
-     * 调用后，在传入的 role 类型 creep 孵化时应调用 callbackFunc 方法
-     */
-    addSpawnCallback: (role: string, callbackFunc: (creep: Creep) => unknown) => unknown
     /**
      * 获取房间中某个资源储量
      */
@@ -89,12 +81,12 @@ export type HarvestContext = {
      * 回调 - 当 creep 工作阶段发生变化
      * 例如 harvester 从采集能量转变为存放能量模式时
      */
-    onCreepStageChange?: (creep: Creep) => unknown
-} & EnvContext
+    onCreepStageChange?: (creep: Creep, isWorking: boolean) => unknown
+} & EnvContext & UseSpawnContext
 
 export interface HarvestMemory {
-    miners?: Record<string, RoleMemory>
-    harvesters?: Record<string, RoleMemory<HarvesterMemory>>
+    miners?: RoleMemory
+    harvesters?: RoleMemory<HarvesterMemory>
 }
 
 /**

@@ -93,3 +93,18 @@ export type BaseUnitLimit = {
 export type RoomBaseUnitLimit = {
     [role in BaseUnits]: BaseUnitLimit
 }
+
+/**
+ * 该孵化模块可以对外提供的能力
+ */
+export interface UseSpawnContext {
+    /**
+     * 添加孵化任务
+     */
+    addSpawnTask: <D = Record<string, any>>(room: Room, name: string, role: string, bodys: BodyPartConstant[], data?: D) => unknown
+     /**
+      * 添加孵化任务回调
+      * 调用后，在传入的 role 类型 creep 孵化时应调用 callbackFunc 方法
+      */
+    addSpawnCallback: (role: string, callbackFunc: (creep: Creep) => unknown) => unknown
+}

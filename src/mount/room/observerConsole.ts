@@ -5,30 +5,30 @@ export default class ObserverConsole extends Room {
      * 显示 ob 状态
      */
     public obshow () {
-        return this.myObserver.show()
+        return this.observerController.show()
     }
 
     /**
      * 新增监听房间
      */
     public obadd (...roomNames: string[]): string {
-        this.myObserver.addWatchRoom(...roomNames)
-        return `[${this.name} observer] 已添加，${this.myObserver.showList()}`
+        this.observerController.addWatchRoom(...roomNames)
+        return `[${this.name} observer] 已添加，${this.observerController.showWatchList()}`
     }
 
     /**
      * 移除监听房间
      */
     public obremove (...roomNames: string[]): string {
-        this.myObserver.removeWatchRoom(...roomNames)
-        return `[${this.name} observer] 已移除，${this.myObserver.showList()}`
+        this.observerController.removeWatchRoom(...roomNames)
+        return `[${this.name} observer] 已移除，${this.observerController.showWatchList()}`
     }
 
     /**
      * 暂停 observer
      */
     public oboff (): string {
-        this.myObserver.off()
+        this.observerController.off()
         return `[${this.name} observer] 已暂停`
     }
 
@@ -36,15 +36,15 @@ export default class ObserverConsole extends Room {
      * 重启 observer
      */
     public obon (): string {
-        this.myObserver.on()
-        return `[${this.name} observer] 已恢复, ${this.myObserver.showList()}`
+        this.observerController.on()
+        return `[${this.name} observer] 已恢复, ${this.observerController.showWatchList()}`
     }
 
     /**
      * 清空房间列表
      */
     public obclear (): string {
-        this.myObserver.clearWatchRoom()
+        this.observerController.clearWatchRoom()
         return `[${this.name} observer] 已清空监听房间`
     }
 
