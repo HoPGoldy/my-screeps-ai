@@ -2,7 +2,6 @@ import { createGetter } from '@/utils'
 import {
     RoomTransportTaskController,
     RoomWorkTaskController,
-    RoomPowerController,
     RemoteChontroller
 } from '@/modulesRoom'
 import { TowerController } from '@/modulesRoom/tower/controller'
@@ -17,6 +16,7 @@ import { FactoryController } from '@/modulesRoom/factory'
 import { SpawnController } from '@/modulesRoom/spawn'
 import { HarvestController } from '@/modulesRoom/harvest'
 import { ObserverController } from '@/modulesRoom/observer'
+import { PowerController } from '@/modulesRoom/power'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -30,6 +30,7 @@ import { getFactoryController } from './factory'
 import { getSpawnController } from './spawn'
 import { getHarvestController } from './harvest'
 import { getObserverController } from './observer'
+import { getPowerController } from './power'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -64,7 +65,6 @@ export default () => {
     const plugins: [string, AnyRoomPlugin][] = [
         ['transport', RoomTransportTaskController],
         ['work', RoomWorkTaskController],
-        ['power', RoomPowerController],
         ['remote', RemoteChontroller]
     ]
 
@@ -98,7 +98,8 @@ export default () => {
         ['psController', getPsController],
         ['labController', getLabController],
         ['observerController', getObserverController],
-        ['share', getShareController]
+        ['share', getShareController],
+        ['power', getPowerController]
     ]
 
     // 在房间上创建插件的懒加载访问器
@@ -135,7 +136,7 @@ declare global {
         /**
          * power 管理模块
          */
-        power: RoomPowerController
+        power: PowerController
         /**
          * 工厂管理模块
          */

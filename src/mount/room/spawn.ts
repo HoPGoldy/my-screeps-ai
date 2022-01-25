@@ -28,8 +28,6 @@ export const { getSpawnController, addSpawnCallback } = createSpawnController({
             requests: [{ resType: RESOURCE_ENERGY, to: [STRUCTURE_SPAWN, STRUCTURE_EXTENSION], keep: true }]
         }, { dispath: true })
     },
-    requestPowerExtension: room => {
-        room.power.addTask(PWR_OPERATE_EXTENSION, 1)
-    },
+    requestPowerExtension: room => room.power.addTask(PWR_OPERATE_EXTENSION, 1),
     env: createEnvContext('spawn')
 })

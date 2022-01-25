@@ -38,7 +38,7 @@ const wayPointCache: { [creepName: string]: RoomPosition } = {}
  * @param target 要移动到的目标位置
  * @param moveOpt 移动参数
  */
-export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt): ScreepsReturnCode {
+export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition | undefined, moveOpt: MoveOpt = {}): ScreepsReturnCode {
     // 默认会检查目标变更
     const options = _.defaults<MoveOpt>({ checkTarget: true }, moveOpt)
 
@@ -189,6 +189,8 @@ export const goTo = function (creep: Creep | PowerCreep, targetPos: RoomPosition
     return goResult
 }
 
+export type Goto = typeof goTo
+
 /**
  * 路径模式下获取要移动到的目标
  *
@@ -212,7 +214,7 @@ const getTarget = function (creep: Creep | PowerCreep): RoomPosition {
     else if (memroy.wayPoints && memroy.wayPoints.length > 0) {
         const [x, y, roomName] = memroy.wayPoints[0].split(' ')
         if (!x || !y || !roomName) {
-            creep.log(`错误的路径点 ${memroy.wayPoints[0]}`)
+            console.log(`${creep.name} 错误的路径点 ${memroy.wayPoints[0]}`)
         }
         else target = new RoomPosition(Number(x), Number(y), roomName)
     }

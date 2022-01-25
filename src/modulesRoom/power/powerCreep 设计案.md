@@ -23,4 +23,4 @@ powerCreep 在出生后会定期检查自己的 ttl，一旦低于指定值就�
 - **资源获取(source)**：该方法一般都是去获取 ops，可选
 - **工作(target)**：进行工作，例如强化 Source，或者强化 Factory
 
-这个配置和 creep 是比较像的，现在的工作状态是根据 source 和 target 的返回值决定的。**注意**：请把状态切换条件写在 source / target 的结尾，避免出现在条件满足后那一 tick 什么都不干的问题出现。
+这个配置和 creep 是比较像的，现在的工作状态是根据 source 和 target 的返回值决定的。

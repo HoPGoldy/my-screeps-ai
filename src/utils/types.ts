@@ -4,6 +4,7 @@ export interface EnvMethods {
     getGame: () => Game
     getRoomByName: (roomName: string) => Room | undefined
     getCreepByName: (creepName: string) => Creep | undefined
+    getPowerCreepByName: (creepName: string) => PowerCreep | undefined
     getObjectById: typeof Game.getObjectById
     getFlagByName: (flagName: string) => Flag | undefined
     inInterval: (interval: number) => boolean

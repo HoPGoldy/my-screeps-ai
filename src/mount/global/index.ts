@@ -4,6 +4,7 @@ import { showGlobal as comm } from '../room/factory'
 import res from './resourcesHelp'
 import help from './help'
 import { globalShowObserver as ob } from '../room/observer'
+import { setWorkRoom as addpc, removeWorkRoom as removepc } from '../room/power'
 import { consoleWarModule } from './war'
 import { showStorageAmountOverview } from '@/modulesRoom/storage/utils'
 import bypass from './bypass'
@@ -36,6 +37,10 @@ const extensions = {
     give,
     // 显示 cpu 消耗
     cpu,
+    // 添加 pc 运维
+    addpc,
+    // 移除 pc 运维
+    removepc,
     // 战争管理模块
     war: consoleWarModule,
     // 将 creepApi 挂载到全局方便手动操作

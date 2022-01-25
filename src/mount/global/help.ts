@@ -81,6 +81,23 @@ export default (): string => [
                     functionName: 'orderExtend'
                 },
                 {
+                    title: '添加 powerCreep',
+                    describe: '将 powerCreep 安排到指定房间参与运维任务',
+                    params: [
+                        { name: 'powerCreepName', desc: '要添加的 pc 名字' },
+                        { name: 'roomName', desc: '要运维的房间名' }
+                    ],
+                    functionName: 'addpc'
+                },
+                {
+                    title: '移除 powerCreep',
+                    describe: '将指定 powerCreep 从房间运维任务中移除（不会删除，只是不再自动运维）',
+                    params: [
+                        { name: 'powerCreepName', desc: '要移除的 pc 名字' }
+                    ],
+                    functionName: 'removepc'
+                },
+                {
                     title: '查询指定资源',
                     describe: '全局搜索资源的数量以及所处房间',
                     params: [

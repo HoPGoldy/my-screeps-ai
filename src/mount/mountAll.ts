@@ -1,5 +1,4 @@
 import mountCreep, { CreepExtension } from './creep'
-import { PowerCreepExtension } from '@/modulesGlobal/powerCreep'
 import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
 import FactoryConsole from '@/mount/room/factoryConsole'
@@ -23,16 +22,6 @@ const initStorage = function () {
     if (!Memory.waitSpawnCreeps) Memory.waitSpawnCreeps = {}
 }
 
-/**
- * 把已经孵化的 pc 能力注册到其所在的房间上
- * 方便房间内其他 RoomObject 查询并决定是否发布 power 任务
- */
-const mountPowerToRoom = function () {
-    Object.values(Game.powerCreeps).forEach(pc => {
-        pc.room && pc.room.power.addSkill(pc)
-    })
-}
-
 export const mountAll = function () {
     // 存储的兜底工作
     initStorage()
@@ -41,9 +30,6 @@ export const mountAll = function () {
     mountGlobal()
     mountRoom()
     mountCreep()
-
-    // 初始化 power 能力
-    mountPowerToRoom()
 
     // 所有需要挂载的原型拓展
     const mountList = [
@@ -59,8 +45,7 @@ export const mountAll = function () {
         [Room, LabConsole],
         [Room, PowerSpawnConsole],
         // 模块拓展挂载
-        [Creep, CreepExtension],
-        [PowerCreep, PowerCreepExtension]
+        [Creep, CreepExtension]
     ]
 
     mountList.forEach(([targetClass, extensionClass]) => {

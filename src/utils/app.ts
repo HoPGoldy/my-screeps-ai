@@ -168,6 +168,7 @@ const staticEnvContext = {
     getGame: () => Game,
     getRoomByName: roomName => Game.rooms[roomName],
     getCreepByName: creepName => Game.creeps[creepName],
+    getPowerCreepByName: creepName => Game.powerCreeps[creepName],
     getFlagByName: flagName => Game.flags[flagName],
     getObjectById: id => Game.getObjectById(id),
     inInterval: interval => !!(Game.time % interval),

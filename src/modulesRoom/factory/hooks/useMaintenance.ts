@@ -195,6 +195,16 @@ export const useMaintenance = function (roomName: string, context: FactoryContex
     }
 
     /**
+     * 获取设置的工厂等级
+     * 只要是调用过 setLevel，那这里就可以读到对应的等级值，哪怕工厂还没有经过 power 设置
+     */
+    const getLevel = function (): 1 | 2 | 3 | 4 | 5 | undefined {
+        const room = env.getRoomByName(roomName)
+        const memory = getMemory(room)
+        return memory.level
+    }
+
+    /**
      * 设置生产线
      * 可以指定多个，会直接覆盖之前的配置，所以需要包含所有要进行的生产线类别
      * @param depositTypes 要生成的生产线类型
@@ -350,7 +360,7 @@ export const useMaintenance = function (roomName: string, context: FactoryContex
     }
 
     return {
-        addTask, handleInsufficientResource, setLevel, setChain, show, gotoBed, wakeup, remove,
+        addTask, handleInsufficientResource, setLevel, getLevel, setChain, show, gotoBed, wakeup, remove,
         setSingleTarget, clearSingleTarget, off, on, isRunning
     }
 }
