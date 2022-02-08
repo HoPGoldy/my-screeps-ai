@@ -9,7 +9,7 @@ const pad = content => _.padRight((content || '').toString(), 40)
  * @generic T 该单位的内存类型
  * @generic C 该单位的运行上下文类型
  */
-export const createRoleController = function<T = unknown, C = unknown> (context: UnitControlContext<T, C>) {
+export const createRole = function<T = unknown, C = unknown> (context: UnitControlContext<T, C>) {
     const {
         env = createEnvContext('unitControl'),
         getMemory, onCreepDead, runPrepare, runSource, runTarget, onCreepStageChange
@@ -104,6 +104,13 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
     }
 
     /**
+     * 访问指定房间的单位内存
+     */
+    const getUnitMemory = function (room: Room) {
+        return getMemory(room)
+    }
+
+    /**
      * 显示指定房间中受控的 creep 信息
      */
     const show = function (room: Room): string {
@@ -191,5 +198,5 @@ export const createRoleController = function<T = unknown, C = unknown> (context:
         }
     }
 
-    return { addUnit, registerUnit, removeUnit, removeAll, show, run, setRuntimeContext }
+    return { addUnit, registerUnit, removeUnit, removeAll, getUnitMemory, show, run, setRuntimeContext }
 }

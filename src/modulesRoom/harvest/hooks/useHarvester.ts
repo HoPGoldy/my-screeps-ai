@@ -1,4 +1,4 @@
-import { createRoleController } from '@/modulesRoom/unitControl/controller'
+import { createRole } from '@/modulesRoom/unitControl/controller'
 import { createEnvContext, createReactiveBody, createStaticBody } from '@/utils'
 import { HarvesterActionStrategy, HarvestMemory } from '..'
 import { DEFAULT_HARVESTER_ROLE } from '../constants'
@@ -75,7 +75,7 @@ export const useHarvester = function (context: HarvestContext) {
         [HarvestMode.Transport]: useHarvesterTransport(context)
     }
 
-    const harvester = createRoleController<HarvesterMemory>({
+    const harvester = createRole<HarvesterMemory>({
         getMemory: room => {
             const memory = getMemory(room)
             if (!memory.harvesters) memory.harvesters = {}

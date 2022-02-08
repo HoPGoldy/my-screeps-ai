@@ -45,7 +45,7 @@ interface RoomTaskAction {
 /**
  * 正在处理任务的 creep
  */
-interface TaskUnitInfo<CustomData> {
+interface TaskUnitInfo<CustomData = Record<string, unknown>> {
     /**
      * 该 creep 正在执行的工作
      * 没有任务时为空

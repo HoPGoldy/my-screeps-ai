@@ -1,11 +1,3 @@
-declare global {
-    interface RoomMemory {
-        /**
-         * 房间工作任务内存
-         */
-        work: RoomTaskMemory<AllRoomWorkTask, Record<string, never>>
-    }
-}
 
 /**
  * 所有的工作任务类型

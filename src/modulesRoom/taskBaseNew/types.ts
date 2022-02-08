@@ -1,13 +1,28 @@
 import { EnvContext } from '@/utils'
+import { UnitMemory } from '../unitControl'
 
-export type TaskBaseContext<T extends RoomTask, U extends Record<string, any>> = {
+export type TaskBaseContext<T extends RoomTask = RoomTask> = {
+    /**
+     * 该任务模块所控制的单位名称前缀
+     * 存在多个单位时会自动在名字后面追加编号
+     */
+    unitName: string
     roomName: string
-    getMemory: () => RoomTaskMemory<T, U>
+    getMemory: () => RoomTaskMemory<T>
+    /**
+     * 读取本房间单位的内存
+     */
+    getUnitMemory: () => Record<string, UnitMemory<TaskUnitInfo>>
+    /**
+     * 发布新的运维单位
+     */
+    releaseUnit: (creepName: string) => void
 } & EnvContext
 
-export interface RoomTaskMemory<Task extends RoomTask, UnitData extends Record<string, any>> {
-    tasks: Task[]
-    creeps: { [creepName: string]: TaskUnitInfo<UnitData> }
+export interface RoomTaskMemory<Task = RoomTask> {
+    tasks?: Task[]
+    unitMax?: number
+    unitMin?: number
 }
 
 /**
@@ -41,7 +56,7 @@ export interface RoomTask<T = string | number> {
 /**
  * 正在处理任务的 creep
  */
-export interface TaskUnitInfo<CustomData> {
+export interface TaskUnitInfo<CustomData = Record<string, unknown>> {
     /**
      * 该 creep 正在执行的工作
      * 没有任务时为空

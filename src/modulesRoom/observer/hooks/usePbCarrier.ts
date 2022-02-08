@@ -1,4 +1,4 @@
-import { createRoleController } from '@/modulesRoom/unitControl/controller'
+import { createRole } from '@/modulesRoom/unitControl/controller'
 import { calcBodyPart, createMemoryGetter } from '@/utils'
 import { PbHarvestState } from '../constants'
 import { ObserverContext, PbCarrierMemory } from '../types'
@@ -15,7 +15,7 @@ export const usePbCarrier = function (context: ObserverContext) {
         onCreepStageChange
     } = context
 
-    const pbCarrier = createRoleController<PbCarrierMemory>({
+    const pbCarrier = createRole<PbCarrierMemory>({
         getMemory: createMemoryGetter(getMemory, 'pbCarrier', {}),
         // carrier 并不会重复生成
         onCreepDead: (creepName, memory) => {

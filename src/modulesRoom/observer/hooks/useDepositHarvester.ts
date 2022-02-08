@@ -1,4 +1,4 @@
-import { createRoleController } from '@/modulesRoom/unitControl/controller'
+import { createRole } from '@/modulesRoom/unitControl/controller'
 import { createEnvContext, createMemoryGetter, createStaticBody } from '@/utils'
 import { DepositHarvesterMemory, ObserverContext } from '../types'
 
@@ -22,7 +22,7 @@ export const getDepositHarvesterBody = createStaticBody(
 export const useDepositHarvester = function (context: ObserverContext) {
     const { env, getMemory, depoMax, addSpawnTask, depositHarvesterRole, addSpawnCallback, onCreepStageChange } = context
 
-    const depositHarvester = createRoleController<DepositHarvesterMemory>({
+    const depositHarvester = createRole<DepositHarvesterMemory>({
         getMemory: createMemoryGetter(getMemory, 'depositHarvester', {}),
         onCreepDead: (creepName, memory, workRoom) => {
             // 旗帜效验, 没有旗帜则不生成

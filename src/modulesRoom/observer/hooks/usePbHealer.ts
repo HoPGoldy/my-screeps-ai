@@ -1,4 +1,4 @@
-import { createRoleController } from '@/modulesRoom/unitControl/controller'
+import { createRole } from '@/modulesRoom/unitControl/controller'
 import { calcBodyPart, createMemoryGetter } from '@/utils'
 import { PbHarvestState } from '../constants'
 import { ObserverContext, PbHealerMemory } from '../types'
@@ -12,7 +12,7 @@ export const getPbHealerName = (targetCreepName: string) => `${targetCreepName} 
 export const usePbHealer = function (context: ObserverContext) {
     const { env, getMemory, pbHealerRole, addSpawnTask, addSpawnCallback, onCreepStageChange } = context
 
-    const pbHealer = createRoleController<PbHealerMemory>({
+    const pbHealer = createRole<PbHealerMemory>({
         getMemory: createMemoryGetter(getMemory, 'pbHealer', {}),
         // healer 会一直生成，直到 attacker 通知移除
         onCreepDead: (creepName, memory, workRoom) => releasePbHealer(workRoom, memory.creepName),

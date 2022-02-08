@@ -1,5 +1,5 @@
 import { DelayTaskData } from '@/modulesGlobal/delayQueue'
-import { createRoleController } from '@/modulesRoom/unitControl/controller'
+import { createRole } from '@/modulesRoom/unitControl/controller'
 import { createEnvContext, createStaticBody } from '@/utils'
 import { MINE_LIMIT, DEFAULT_MINER_ROLE } from '../constants'
 import { HarvestContext } from '../types'
@@ -56,7 +56,7 @@ export const useMiner = function (context: HarvestContext) {
         releaseMiner(room)
     })
 
-    const miner = createRoleController({
+    const miner = createRole({
         getMemory: room => {
             const memory = getMemory(room)
             if (!memory.miners) memory.miners = {}

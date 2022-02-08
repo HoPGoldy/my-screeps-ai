@@ -1,4 +1,4 @@
-import { createRoleController } from '@/modulesRoom/unitControl/controller'
+import { createRole } from '@/modulesRoom/unitControl/controller'
 import { calcBodyPart, createMemoryGetter } from '@/utils'
 import { PbHarvestState } from '../constants'
 import { ObserverContext, PbAttackerMemory } from '../types'
@@ -31,7 +31,7 @@ export const usePbAttacker = function (
         pbAttacker.removeUnit(spawnRoom, creep.name, { immediate: true })
     }
 
-    const pbAttacker = createRoleController<PbAttackerMemory>({
+    const pbAttacker = createRole<PbAttackerMemory>({
         getMemory: createMemoryGetter(getMemory, 'pbAttacker', {}),
         // healer 会一直生成，直到 attacker 通知移除
         onCreepDead: (creepName, memory, spawnRoom) => {
