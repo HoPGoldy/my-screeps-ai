@@ -1,4 +1,5 @@
 import { WorkTaskType } from '@/modulesRoom'
+import { DefaultTaskUnitMemory } from '@/modulesRoom/taskBaseNew'
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody, useCache } from '@/utils'
 import { getEngryFrom } from '@/utils/creep'
@@ -25,7 +26,7 @@ export const getWorkerBody = createStaticBody(
 )
 
 export const useWorker = function (context: WorkTaskContext, getWorkController: WorkerRuntimeContext) {
-    const { getMemory, addSpawnCallback, addSpawnTask, getEnergyStructure, goTo } = context
+    const { roleName, getMemory, onCreepStageChange, addSpawnCallback, addSpawnTask, getEnergyStructure, goTo } = context
 
     /**
      * 没有任务时的行为逻辑
@@ -74,6 +75,9 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
         else if (result === ERR_NOT_ENOUGH_RESOURCES) delete creep.memory.sourceId
     }
 
+    /**
+     * 不同任务的对应工作逻辑
+     */
     const actionStrategys: { [type in WorkTaskType]: WorkerActionStrategy } = {
         [WorkTaskType.Upgrade]: useWorkerUpgrade(context, getEnergy, getWorkController),
         [WorkTaskType.BuildStartContainer]: useWorkerBuildStartContainer(context, getWorkController),
@@ -82,6 +86,9 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
         [WorkTaskType.Repair]: useWorkerRepair(context, getEnergy, getWorkController)
     }
 
+    /**
+     * 执行指定任务的指定阶段
+     */
     const runStrategy = function (creep: Creep, stage: keyof WorkerActionStrategy, workRoom: Room) {
         const { getUnitTask, countLifeTime } = getWorkController(workRoom)
         countLifeTime()
@@ -95,7 +102,7 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
         return actionStrategys[task.type][stage](creep, task, workRoom)
     }
 
-    const worker = createRole<TaskUnitInfo, WorkerRuntimeContext>({
+    const worker = createRole<DefaultTaskUnitMemory>({
         getMemory: room => {
             const memory = getMemory(room)
             if (!memory.creeps) memory.creeps = {}
@@ -111,10 +118,11 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
         },
         runSource: (creep, memory, workRoom) => {
             return runStrategy(creep, 'source', workRoom)
-        }
+        },
+        onCreepStageChange
     })
 
-    addSpawnCallback('worker', worker.addUnit)
+    addSpawnCallback(roleName, worker.addUnit)
 
     /**
      * 发布工作单位
@@ -123,7 +131,7 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
      * @param creepName 要发布的单位名称
      */
     const releaseWorker = function (room: Room, creepName: string) {
-        addSpawnTask(room, creepName, 'worker', getWorkerBody(room.energyAvailable))
+        addSpawnTask(room, creepName, roleName, getWorkerBody(room.energyAvailable))
     }
 
     return { worker, releaseWorker }

@@ -1,26 +1,31 @@
 import { EnvContext } from '@/utils'
-import { UnitMemory } from '../unitControl'
 
-export type TaskBaseContext<T extends RoomTask = RoomTask> = {
+export type TaskBaseContext<T extends RoomTask = RoomTask, M = DefaultTaskUnitMemory> = {
     /**
      * 该任务模块所控制的单位名称前缀
      * 存在多个单位时会自动在名字后面追加编号
      */
-    unitName: string
-    roomName: string
-    getMemory: () => RoomTaskMemory<T>
+    roleName: string
     /**
-     * 读取本房间单位的内存
+     * 该模块所负责的房间名
      */
-    getUnitMemory: () => Record<string, UnitMemory<TaskUnitInfo>>
+    roomName: string
+    /**
+     * 获取内存数据存放对象
+     */
+    getMemory: () => TaskBaseMemory<T, M>
     /**
      * 发布新的运维单位
      */
     releaseUnit: (creepName: string) => void
 } & EnvContext
 
-export interface RoomTaskMemory<Task = RoomTask> {
+/**
+ * 任务核心模块的内存字段
+ */
+export interface TaskBaseMemory<Task = RoomTask, UnitData = unknown> {
     tasks?: Task[]
+    creeps?: Record<string, DefaultTaskUnitMemory & UnitData>
     unitMax?: number
     unitMin?: number
 }
@@ -54,9 +59,9 @@ export interface RoomTask<T = string | number> {
 }
 
 /**
- * 正在处理任务的 creep
+ * 默认的工作 creep 内存数据
  */
-export interface TaskUnitInfo<CustomData = Record<string, unknown>> {
+export interface DefaultTaskUnitMemory {
     /**
      * 该 creep 正在执行的工作
      * 没有任务时为空
@@ -67,10 +72,6 @@ export interface TaskUnitInfo<CustomData = Record<string, unknown>> {
      * 当该字段为 true 时，creep 可以正常工作，但是老死之后将不会重新孵化
      */
     fired?: boolean
-    /**
-     * 该单位保存的自定义数据
-     */
-    data: CustomData
 }
 
 /**

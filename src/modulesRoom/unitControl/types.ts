@@ -1,7 +1,7 @@
 import { EnvContext } from '@/utils'
 
-export type UnitControlContext<T = unknown, C = unknown> = {
-    getMemory: (room: Room) => Record<string, UnitMemory<T>>
+export type UnitControlContext<M = unknown> = {
+    getMemory: (room: Room) => Record<string, DefaultRoleMemory & M>
     /**
      * 回调 - 在 creep 去世时触发
      * 该方法执行结束后，死亡 creep 的内存将会被自动清空
@@ -11,7 +11,7 @@ export type UnitControlContext<T = unknown, C = unknown> = {
      * @param workRoom creep 所在的工作房间
      * @param context 设置给 creep 的运行时环境
      */
-    onCreepDead?: (creepName: string, memory: UnitMemory<T>, workRoom: Room, context: C) => unknown
+    onCreepDead?: (creepName: string, memory: DefaultRoleMemory & M, workRoom: Room) => unknown
     /**
      * 回调 - 在 creep 的阶段变更时触发
      *
@@ -19,9 +19,9 @@ export type UnitControlContext<T = unknown, C = unknown> = {
      * @param isWorking 新的阶段是否为 work 阶段，为 false 代表当前为 source 阶段
      */
     onCreepStageChange?: (creep: Creep, isWorking: boolean) => unknown
-    runPrepare?: (creep: Creep, memory: UnitMemory<T>, workRoom: Room, context: C) => boolean
-    runTarget: (creep: Creep, memory: UnitMemory<T>, workRoom: Room, context: C) => boolean
-    runSource?: (creep: Creep, memory: UnitMemory<T>, workRoom: Room, context: C) => boolean
+    runPrepare?: (creep: Creep, memory: DefaultRoleMemory & M, workRoom: Room) => boolean
+    runTarget: (creep: Creep, memory: DefaultRoleMemory & M, workRoom: Room) => boolean
+    runSource?: (creep: Creep, memory: DefaultRoleMemory & M, workRoom: Room) => boolean
 } & Partial<EnvContext>
 
 /**
@@ -38,7 +38,7 @@ export interface RemoveCreepOptions {
     immediate: boolean
 }
 
-export type UnitMemory<T = unknown> = {
+export type DefaultRoleMemory = {
     /**
      * creep 是否已经准备好可以工作了
      */
@@ -46,11 +46,11 @@ export type UnitMemory<T = unknown> = {
     /**
      * 为 true 代表在执行 stageA，否则代表在执行 stageB
      */
-    working: boolean
+    working?: boolean
     /**
      * 该单位是否为提前注册单位
      */
     registration?: true
-} & T
+}
 
-export type RoleMemory<T = unknown> = Record<string, UnitMemory<T>>
+export type RoleMemory<T = unknown> = Record<string, DefaultRoleMemory & T>

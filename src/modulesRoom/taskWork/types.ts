@@ -1,3 +1,57 @@
+import { EnvContext } from '@/utils'
+import { RoomTask, TaskBaseMemory, DefaultTaskUnitMemory } from '@/modulesRoom/taskBaseNew'
+import { RoleMemory } from '@/modulesRoom/unitControl'
+import { SourceUtils } from '@/modulesGlobal/source'
+import { UseSpawnContext } from '../spawn'
+import { Goto } from '@/modulesGlobal/move'
+import { WithDelayCallback } from '@/modulesGlobal/delayQueue'
+
+export type WorkTaskContext = {
+    /**
+     * 工作单位的名称（和孵化时使用的角色名）
+     * 默认为 worker
+     */
+    roleName?: string
+    /**
+     * 获取内存存放对象
+     */
+    getMemory: (room: Room) => WorkTaskMemory
+    /**
+     * 自定义移动
+     * 用于接入对穿移动
+     */
+    goTo: Goto
+    /**
+     * 获取房间中的能量存放建筑
+     * 应返回工作单位可以取能量的建筑
+     *
+     * @param pos 想要获取能量的爬在哪个位置上，可以用这个来查找最近的能量来源
+     */
+    getEnergyStructure: (room: Room, pos: RoomPosition) => EnergyTarget
+    /**
+     * 创建延迟任务
+     */
+    withDelayCallback: WithDelayCallback
+    /**
+     * source 管理工具
+     */
+    sourceUtils: SourceUtils
+    /**
+     * 回调 - 当 creep 工作阶段发生变化
+     * 例如 worker 从拿取能量转变为工作模式时
+     */
+    onCreepStageChange?: (creep: Creep, isWorking: boolean) => unknown
+} & EnvContext & UseSpawnContext
+
+export type WorkerRuntimeContext = (room: Room) => ({
+    haveCreepBeenFired: (creepName: string) => boolean
+    removeTaskByKey: (taskKey: number) => OK | ERR_NOT_FOUND
+    countWorkTime: () => void
+    countLifeTime: () => void
+    getUnitTask: (creep: Creep) => AllRoomWorkTask
+})
+
+export type WorkTaskMemory = TaskBaseMemory<AllRoomWorkTask>
 
 /**
  * 所有的工作任务类型
@@ -50,3 +104,16 @@ export interface WorkTasks {
      */
     [WorkTaskType.FillWall]: RoomTask<WorkTaskType.FillWall>
 }
+
+export type WorkerActionStrategy<T extends WorkTaskType = WorkTaskType> = {
+    source: WorkerActionStage<T>
+    target: WorkerActionStage<T>
+}
+
+type WorkerActionStage<T extends WorkTaskType> = (
+    creep: Creep,
+    task: WorkTasks[T],
+    workRoom: Room
+) => boolean
+
+export type WorkerGetEnergy = (creep: Creep, memory: unknown, workRoom: Room) => boolean

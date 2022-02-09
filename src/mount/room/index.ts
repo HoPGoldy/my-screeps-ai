@@ -1,7 +1,6 @@
 import { createGetter } from '@/utils'
 import {
     RoomTransportTaskController,
-    RoomWorkTaskController,
     RemoteChontroller
 } from '@/modulesRoom'
 import { TowerController } from '@/modulesRoom/tower/controller'
@@ -17,6 +16,7 @@ import { SpawnController } from '@/modulesRoom/spawn'
 import { HarvestController } from '@/modulesRoom/harvest'
 import { ObserverController } from '@/modulesRoom/observer'
 import { PowerController } from '@/modulesRoom/power'
+import { WorkTaskController } from '@/modulesRoom/taskWork'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -31,6 +31,7 @@ import { getSpawnController } from './spawn'
 import { getHarvestController } from './harvest'
 import { getObserverController } from './observer'
 import { getPowerController } from './power'
+import { getWorkController } from './work'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -64,7 +65,6 @@ export default () => {
     // 等待安装的房间插件列表
     const plugins: [string, AnyRoomPlugin][] = [
         ['transport', RoomTransportTaskController],
-        ['work', RoomWorkTaskController],
         ['remote', RemoteChontroller]
     ]
 
@@ -89,6 +89,7 @@ export default () => {
     const modulePlugin: [string, PluginLoader][] = [
         ['spawnController', getSpawnController],
         ['harvest', getHarvestController],
+        ['work', getWorkController],
         ['factoryController', getFactoryController],
         ['terminalController', getTerminalController],
         ['storageController', getStorageController],
@@ -128,7 +129,7 @@ declare global {
         /**
          * 工作任务模块
          */
-        work: RoomWorkTaskController
+        work: WorkTaskController
         /**
          * 物流任务模块
          */

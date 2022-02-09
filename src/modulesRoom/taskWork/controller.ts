@@ -1,84 +1,93 @@
-import { noTask, transportActions } from './actions'
-import TaskController from '../taskBase/controller'
-import { AllRoomWorkTask, WorkTasks, WorkTaskType } from './types'
-import { CreepRole, RoleCreep } from '@/role/types/role'
+import { createCache } from '@/utils'
+import { createTaskController } from '../taskBaseNew/controller'
+import { DEFAULT_ROLE_NAME, WORK_PROPORTION_TO_EXPECT, WORK_TASK_PRIOIRY } from './constants'
+import { useWorker } from './hooks/useWorker'
+import { AllRoomWorkTask, WorkTaskType, WorkTaskContext } from './types'
+
+interface BuildDelayTaskData {
+    roomName: string
+    need?: number
+}
 
 /**
- * 能量获取速率到调整期望的 map
- * 能量获取速率越高，工人数量就越多
+ * 【主要】创建工作任务管理模块
  *
- * @property {} rate 能量获取速率
- * @property {} expect 对应的期望
+ * @param context 工作任务管理模块所需的依赖
+ * @returns 任务管理模块实例
  */
-const WORK_PROPORTION_TO_EXPECT = [
-    { rate: 10, expect: 2 },
-    { rate: 5, expect: 1 },
-    { rate: 0, expect: 1 },
-    { rate: -5, expect: -1 },
-    { rate: -10, expect: -2 }
-]
+export const createWorkTaskController = function (context: WorkTaskContext) {
+    const { getMemory, withDelayCallback, roleName = DEFAULT_ROLE_NAME, env } = context
 
-/**
- * 工作任务逻辑的生成函数
- */
-export type WorkActionGenerator<T extends WorkTaskType = WorkTaskType> = (
-    creep: RoleCreep<CreepRole.Worker>,
-    task: WorkTasks[T],
-    workController: RoomWork
-) => RoomTaskAction
-
-export default class RoomWork extends TaskController<WorkTaskType, AllRoomWorkTask> {
-    /**
-     * 构造- 管理指定房间的工作任务
-     *
-     * @param roomName 要管理任务的房间名
-     */
-    constructor (roomName: string) {
-        super(roomName, 'work')
-    }
-
-    /**
-     * 获取应该执行的任务逻辑
-     * 会通过 creep 内存中存储的当前执行任务字段来判断应该执行那个任务
-     */
-    public getWork (creep: RoleCreep<CreepRole.Worker>): RoomTaskAction {
-        this.totalLifeTime += 1
-
-        const task = this.getUnitTask(creep)
-        if (!task) return noTask(creep)
-        const actionGenerator: WorkActionGenerator = transportActions[task.type]
-
-        const { x, y } = creep.pos
-        creep.room.visual.text(task.type, x, y, { opacity: 0.5, font: 0.3 })
-        // 分配完后获取任务执行逻辑
-        return actionGenerator(creep, task, this)
-    }
-
-    /**
-     * 获取当前的工人调整期望
-     * 返回的整数值代表希望增加（正值）/ 减少（负值）多少工作单位
-     * 返回 0 代表不需要调整工作单位数量
-     *
-     * @param totalEnergy 可用于使用的能量总量
-     * @param energyGetRate 能量获取速率，其值为每 tick 可以获取多少点可用能量
-     * （注意，这两个值对应的能量都应是可以完全被用于 worker 消耗的，如果想为孵化保留能量的话，需要从这个速率中剔除）
-     */
-    public getExpect (totalEnergy: number, energyGetRate: number): number {
-        // 没有工作任务时慢慢减少工作人数
-        if (this.tasks.length === 0) {
-            if (Object.keys(this.creeps).length > 0) return -1
-            else return 0
+    const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName, need }: BuildDelayTaskData) => {
+        const room = Game.rooms[roomName]
+        // 如果没有工地的话就创建并再次发布建造任务
+        if (!room) {
+            delayAddBuildTask({ roomName }, 2)
+            return
         }
 
-        // 没有可以用来工作的能量，慢慢减少工人
-        if (totalEnergy <= 0) return -1
+        // 发布建筑
+        room.work.updateTask({
+            type: WorkTaskType.Build, need, priority: WORK_TASK_PRIOIRY.BUILD
+        }, { dispath: true })
+    })
 
-        // 有三成时间都在摸鱼，估计是没能量了，慢慢减少工人
-        if (this.totalWorkTime / this.totalLifeTime < 0.7) return -1
+    const lazyLoader = function (roomName: string) {
+        const taskController = createTaskController<WorkTaskType, AllRoomWorkTask>({
+            env, roleName, roomName,
+            getMemory: () => getMemory(env.getRoomByName(roomName)),
+            releaseUnit: creepName => {
+                const workRoom = env.getRoomByName(roomName)
+                releaseWorker(workRoom, creepName)
+            }
+        })
 
-        // 按照能量消耗速率调整工人数量，消耗越快，减少工人越多
-        const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => energyGetRate >= opt.rate)
+        /**
+         * 获取当前的工人调整期望
+         * 返回的整数值代表希望增加（正值）/ 减少（负值）多少工作单位
+         * 返回 0 代表不需要调整工作单位数量
+         *
+         * @param totalEnergy 可用于使用的能量总量
+         * @param energyGetRate 能量获取速率，其值为每 tick 可以获取多少点可用能量
+         * （注意，这两个值对应的能量都应是可以完全被用于 worker 消耗的，如果想为孵化保留能量的话，需要从这个速率中剔除）
+         */
+        const getExpect = function (totalEnergy: number, energyGetRate: number): number {
+            // 没有工作任务时慢慢减少工作人数
+            const { getTasks, totalLifeTime, totalWorkTime } = taskController
+            if (getTasks().length === 0) {
+                const workRoom = env.getRoomByName(roomName)
+                const memory = getMemory(workRoom)
+                if (Object.keys(memory.creeps || {}).length > 0) return -1
+                else return 0
+            }
 
-        return currentExpect?.expect !== undefined ? currentExpect.expect : -2
+            // 没有可以用来工作的能量，慢慢减少工人
+            if (totalEnergy <= 0) return -1
+
+            // 有三成时间都在摸鱼，估计是没能量了，慢慢减少工人
+            if (totalWorkTime / totalLifeTime < 0.7) return -1
+
+            // 按照能量消耗速率调整工人数量，消耗越快，减少工人越多
+            const currentExpect = WORK_PROPORTION_TO_EXPECT.find(opt => energyGetRate >= opt.rate)
+
+            return currentExpect?.expect !== undefined ? currentExpect.expect : -2
+        }
+
+        /**
+         * 添加工地建造任务
+         * 因为工地在下个 tick 才能被发现，所以需要延迟任务
+         *
+         * @param need 需要多少人参加，默认为所有空闲单位都参加
+         */
+        const addBuildTask = (need?: number) => delayAddBuildTask({ roomName, need }, 2)
+
+        return { run: worker.run, getExpect, addBuildTask, ...taskController }
     }
+
+    const [getWorkTaskController] = createCache(lazyLoader)
+    const { worker, releaseWorker } = useWorker(context, room => getWorkTaskController(room.name))
+
+    return getWorkTaskController
 }
+
+export type WorkTaskController = ReturnType<ReturnType<typeof createWorkTaskController>>

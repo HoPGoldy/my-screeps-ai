@@ -1,14 +1,9 @@
 import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
-import { setCreepStand } from '@/modulesGlobal/move'
-import { WorkTaskType } from '@/modulesRoom'
-import { createHarvestController, HarvestMemory } from '@/modulesRoom/harvest'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
-import { WorkTaskMemory, createWorkTaskController } from '@/modulesRoom/taskWorkNew'
+import { goTo, setCreepStand } from '@/modulesGlobal/move'
+import { WorkTaskMemory, createWorkTaskController } from '@/modulesRoom/taskWork'
 import { createEnvContext } from '@/utils'
-import { addConstructionSite } from '../global/construction'
 import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
-import { getMineral, getSource, getSpawn } from './shortcut'
 import { addSpawnCallback } from './spawn'
 
 declare global {
@@ -20,8 +15,10 @@ declare global {
     }
 }
 
-export const getHarvestController = createWorkTaskController({
+export const getWorkController = createWorkTaskController({
     sourceUtils,
+    withDelayCallback,
+    goTo,
     getMemory: room => {
         if (!room.memory.work) room.memory.work = {}
         return room.memory.work
@@ -32,5 +29,6 @@ export const getHarvestController = createWorkTaskController({
         const { getClosestTo, withLimit } = findStrategy
         return getRoomEnergyTarget(room, getClosestTo(pos), withLimit)
     },
+    onCreepStageChange: (creep, isWorking) => setCreepStand(creep.name, isWorking),
     env: createEnvContext('work')
 })

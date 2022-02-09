@@ -3,7 +3,7 @@ declare global {
         /**
          * 房间物流任务内存
          */
-        transport: RoomTaskMemory<TransportTaskData, ManagerData>
+        transport: TaskBaseMemory<TransportTaskData, ManagerData>
     }
 }
 

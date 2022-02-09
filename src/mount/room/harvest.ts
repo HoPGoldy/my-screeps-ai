@@ -1,7 +1,7 @@
 import { setCreepStand } from '@/modulesGlobal/move'
 import { WorkTaskType } from '@/modulesRoom'
 import { createHarvestController, HarvestMemory } from '@/modulesRoom/harvest'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
 import { createEnvContext } from '@/utils'
 import { addConstructionSite } from '../global/construction'
 import { withDelayCallback } from '../global/delayQueue'

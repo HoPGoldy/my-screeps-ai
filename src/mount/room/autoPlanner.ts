@@ -1,7 +1,6 @@
 import { createAutoPlanner } from '@/modulesGlobal/autoPlanning'
 import { addConstructionSite } from '@/mount/global/construction'
 import { ConstructInfo } from '@/modulesGlobal/construction/types'
-import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 import { getTowerController } from './tower'
 
 export const autoPlanner = createAutoPlanner({
@@ -37,7 +36,7 @@ export const autoPlanner = createAutoPlanner({
 
         // 放置工地并发布建造任务
         addConstructionSite(sitePosList)
-        addBuildTask(room.name)
+        room.work.addBuildTask()
         // 有墙壁的话就转交给房间防御模块负责建造
         if (wallPosList.length > 0) getTowerController(room.name).addNewWall(wallPosList)
     }

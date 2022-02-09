@@ -1,12 +1,16 @@
 import { DEFAULT_UNIT_LIMIT } from '../constants'
-import { TaskBaseContext } from '../types'
+import { DefaultTaskUnitMemory, TaskBaseContext } from '../types'
 import { UnitFireControl } from './useUnitFire'
 
 /**
  * 用于控制单位的数量增加或减少
  */
-export const useUnitNumberAdjust = function (fireControl: UnitFireControl, context: TaskBaseContext) {
-    const { getMemory, getUnitMemory, releaseUnit, unitName, roomName, env } = context
+export const useUnitNumberAdjust = function (
+    fireControl: UnitFireControl,
+    getUnitMemorys: () => Record<string, DefaultTaskUnitMemory>,
+    context: TaskBaseContext
+) {
+    const { getMemory, releaseUnit, roleName, roomName, env } = context
     const { fireCreep, unfireCreep, haveCreepBeenFired } = fireControl
 
     /**
@@ -20,7 +24,7 @@ export const useUnitNumberAdjust = function (fireControl: UnitFireControl, conte
         const { unitMin = DEFAULT_UNIT_LIMIT.min, unitMax = DEFAULT_UNIT_LIMIT.max } = memory
 
         // 找到所有本房间的单位
-        const allUnitInfos = getUnitMemory()
+        const allUnitInfos = getUnitMemorys()
         const allUnitNames = Object.keys(allUnitInfos)
 
         // 计算真实的调整数量
@@ -46,7 +50,7 @@ export const useUnitNumberAdjust = function (fireControl: UnitFireControl, conte
 
             // 为新孵化的单位找到名字
             for (let i = 0; remainingAdjust <= 0; i++) {
-                const newUnitName = roomName + unitName + i
+                const newUnitName = roomName + roleName + i
                 if (newUnitName in allUnitInfos) continue
 
                 newSpawnCreep.push(newUnitName)
@@ -65,7 +69,7 @@ export const useUnitNumberAdjust = function (fireControl: UnitFireControl, conte
         }
 
         if (realAdjust !== 0) {
-            let logContent = `${roomName} ${unitName} ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
+            let logContent = `${roomName} ${roleName} ${realAdjust > 0 ? '+' : ''}${realAdjust} ` +
                 `[上/下限] ${unitMax}/${unitMin} [当前数量] ${allUnitNames.length} [调整]`
 
             if (removeWhenDiedCreep.length > 0) logContent += ` 将在死亡后移除 ${removeWhenDiedCreep.join(',')}`
