@@ -1,53 +1,52 @@
-import { getUniqueKey, createLog } from '@/utils'
-import RoomAccessor from '../RoomAccessor'
+import { getUniqueKey } from '@/utils'
+import { useUnitFire } from './hooks/useUnitFire'
+import { useUnitNumberAdjust } from './hooks/useUnitNumberAdjust'
+import { AddTaskOpt, DefaultTaskUnitMemory, RoomTask, TaskBaseContext, UpdateTaskOpt } from './types'
 
-export default class TaskController<
-    // 该任务模块包含的所有任务类型
+/**
+ * 创建任务管理模块
+ *
+ * @generic TaskType 所有可用的任务类型
+ * @generic CostomTask 所有任务
+ * @generic UnitData 该任务模块包含的单位自定义数据
+ */
+export const createTaskController = function <
     TaskType extends string | number,
-    // 该任务模块包含的所有任务
     CostomTask extends RoomTask<TaskType>,
-    // 该任务模块包含的单位自定义数据
-    UnitData extends Record<string, any> = Record<string, any>
-> extends RoomAccessor<RoomTaskMemory<CostomTask, UnitData>> {
+    UnitMemory extends Record<string, any> = Record<string, any>
+> (context: TaskBaseContext<CostomTask, UnitMemory>) {
+    const { getMemory, env } = context
+
     /**
-     * 构造 - 管理指定房间的任务
-     *
-     * @param roomName 要管理任务的房间名
-     * @param memoryKey 该任务模块保存到的 room 内存字段
+     * 获取任务队列
      */
-    constructor (roomName: string, memoryKey: string) {
-        super(`roomTask ${memoryKey}`, roomName, memoryKey, { tasks: [], creeps: {} })
-        this.log = createLog('taskController')
+    const getTasks = function () {
+        const memory = getMemory()
+        if (!memory.tasks) memory.tasks = []
+        return memory.tasks
     }
 
     /**
-     * 发送日志
+     * 获取工作单位的内存
      */
-    protected log: ReturnType<typeof createLog>
-
-    /**
-     * 任务队列的快捷访问
-     */
-    public get tasks () {
-        return this.memory.tasks
+    const getUnitMemorys = function () {
+        const memory = getMemory()
+        if (!memory.creeps) memory.creeps = {}
+        return memory.creeps
     }
 
-    /**
-     * 工人的快捷访问
-     */
-    public get creeps () {
-        return this.memory.creeps
-    }
+    const unitFireControl = useUnitFire(getUnitMemorys)
+    const unitNumberAdjust = useUnitNumberAdjust(unitFireControl, getUnitMemorys, context)
 
     /**
      * 本模块的工人总生命时长
      */
-    protected totalLifeTime = 0
+    let totalLifeTime = 0
 
     /**
-      * 本模块的工人总工作时长
-      */
-    protected totalWorkTime = 0
+     * 本模块的工人总工作时长
+     */
+    let totalWorkTime = 0
 
     /**
      * 发布新任务
@@ -55,7 +54,7 @@ export default class TaskController<
      * @param task 要发布的新任务
      * @param opt 配置项
      */
-    public addTask (task: CostomTask, opt: AddTaskOpt = {}) {
+    const addTask = function (task: CostomTask, opt: AddTaskOpt = {}) {
         const addOpt: UpdateTaskOpt = { dispath: false, ...opt }
 
         const newTask = {
@@ -64,13 +63,14 @@ export default class TaskController<
             unit: 0
         }
 
-        // 因为 this.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
-        let insertIndex = this.tasks.findIndex(existTask => existTask.priority < newTask.priority)
-        insertIndex = insertIndex === -1 ? this.tasks.length : insertIndex
+        // 因为 memory.tasks 是按照优先级降序的，所以这里要找到新任务的插入索引
+        const tasks = getTasks()
+        let insertIndex = tasks.findIndex(existTask => existTask.priority < newTask.priority)
+        insertIndex = insertIndex === -1 ? tasks.length : insertIndex
 
         // 在目标索引位置插入新任务并重新分配任务
-        this.tasks.splice(insertIndex, 0, newTask)
-        if (addOpt.dispath) this.dispatchTask()
+        tasks.splice(insertIndex, 0, newTask)
+        if (addOpt.dispath) dispatchTask()
 
         return newTask.key
     }
@@ -84,7 +84,7 @@ export default class TaskController<
      * @param addWhenNotFound 当没有匹配到任务时是否新建任务，默认为 true
      * @returns 被更新任务的索引，如果新建了任务则返回新任务的索引，若更新了多个任务的话则返回最后一个任务的索引
      */
-    public updateTask (newTask: CostomTask, opt: UpdateTaskOpt = {}): number {
+    const updateTask = function (newTask: CostomTask, opt: UpdateTaskOpt = {}): number {
         const updateOpt = { addWhenNotFound: true, ...opt }
 
         // 是否找到了要更新的任务
@@ -95,7 +95,8 @@ export default class TaskController<
         let taskKey = newTask.key
 
         // 查找并更新任务
-        this.memory.tasks = this.tasks.map(task => {
+        const memory = getMemory()
+        memory.tasks = memory.tasks.map(task => {
             if (task.key !== newTask.key && task.type !== newTask.type) return task
 
             notFound = false
@@ -112,8 +113,8 @@ export default class TaskController<
         })
 
         // 没找到就尝试更新、找到了就尝试重新分配
-        if (notFound && updateOpt.addWhenNotFound) taskKey = this.addTask(newTask, updateOpt)
-        else if (needRedispath) this.dispatchTask()
+        if (notFound && updateOpt.addWhenNotFound) taskKey = addTask(newTask, updateOpt)
+        else if (needRedispath) dispatchTask()
 
         return taskKey
     }
@@ -124,9 +125,9 @@ export default class TaskController<
      * @param taskKey 要查询的任务索引
      * @returns 对应的任务，没有的话则返回 undefined
      */
-    public getTask (taskKey: number): CostomTask | undefined {
+    const getTaskByKey = function (taskKey: number): CostomTask | undefined {
         if (!taskKey) return undefined
-        return this.tasks.find(task => task.key === taskKey)
+        return getTasks().find(task => task.key === taskKey)
     }
 
     /**
@@ -136,12 +137,16 @@ export default class TaskController<
      * @param task 要添加工作单位的任务
      * @param unit 要添加的 creep
      */
-    protected setTaskUnit (task: CostomTask, unit: Creep): void {
+    const setTaskUnit = function (task: CostomTask, unit: Creep): void {
         if (!task || !unit) return
 
         task.unit = (task.unit || 0) + 1
-        if (!this.creeps[unit.name]) this.creeps[unit.name] = { data: {} as UnitData }
-        this.creeps[unit.name].doing = task.key
+        const unitMemorys = getUnitMemorys()
+        if (!unitMemorys[unit.name]) {
+            env.log.error(`setTaskUnit 时找不到 ${unit.name} 对应的内存`)
+            return
+        }
+        unitMemorys[unit.name].doing = task.key
     }
 
     /**
@@ -151,9 +156,10 @@ export default class TaskController<
      * @param task 要移除工作单位的任务
      * @param unit 要移除的 creep
      */
-    protected removeTaskUnit (task: CostomTask, unit?: Creep): void {
+    const removeTaskUnit = function (task: CostomTask, unit?: Creep): void {
         if (unit) {
-            if (this.creeps[unit.name]) delete this.creeps[unit.name].doing
+            const unitMemorys = getUnitMemorys()
+            if (unitMemorys[unit.name]) delete unitMemorys[unit.name].doing
         }
 
         if (!task) return
@@ -164,15 +170,19 @@ export default class TaskController<
      * 调度 - 重新分配所有 creep
      * 给当前现存的任务按照优先级重新分配 creep
      */
-    public dispatchTask () {
+    const dispatchTask = function () {
+        const memory = getMemory()
         // 先按照优先级降序排序
-        this.memory.tasks = _.sortBy(this.tasks, task => -task.priority)
+        memory.tasks = _.sortBy(memory.tasks, task => -task.priority)
 
         // 获取所有可工作的 creep 并依次重新分配
-        const units = this.getUnit()
+        const units = getUnit()
         // 先解绑正在做的任务
-        units.forEach(creep => this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep))
-        units.forEach(creep => this.dispatchCreep(creep))
+        units.forEach(creep => {
+            const currentTask = getTaskByKey(getUnitMemorys()[creep.name]?.doing)
+            removeTaskUnit(currentTask, creep)
+        })
+        units.forEach(creep => dispatchCreep(creep))
     }
 
     /**
@@ -182,25 +192,26 @@ export default class TaskController<
      * @param creep 要分配任务的 creep
      * @returns 该 creep 分配到的任务
      */
-    protected dispatchCreep (creep: Creep): CostomTask {
+    const dispatchCreep = function (creep: Creep): CostomTask {
         // creep 数量是否大于任务数量（溢出），当所有的任务都有人做时，该值将被置为 true
         // overflow 为 true 时 creep 将会无视人数限制，分配至最高优先级任务
         let overflow = false
-        for (let i = 0; i < this.tasks.length; i++) {
-            const checkTask = this.tasks[i]
+        const tasks = getTasks()
+        for (let i = 0; i < tasks.length; i++) {
+            const checkTask = tasks[i]
             // creep.log(`正在检查新任务 ${i} ${JSON.stringify(checkTask)}`)
 
-            const matched = this.isCreepMatchTask(creep, checkTask, overflow)
+            const matched = isCreepMatchTask(creep, checkTask, overflow)
 
             // 匹配成功，把单位设置到该任务并结束分派
             if (matched) {
-                this.setTaskUnit(checkTask, creep)
+                setTaskUnit(checkTask, creep)
                 // creep.log(`领取任务 ${i} ${JSON.stringify(checkTask)}`)
                 return checkTask
             }
 
             // 找到头了，任务都有人做（或者说没有缺人的任务），从头遍历一遍，把自己分给最高优先级任务
-            if (i >= this.tasks.length - 1 && !overflow) {
+            if (i >= tasks.length - 1 && !overflow) {
                 overflow = true
                 // creep.log("任务溢出！")
                 // 这里设置成 -1 的原因是 for 循环的 ++ 在循环结束后执行
@@ -218,7 +229,7 @@ export default class TaskController<
      * @param ignoreNeedLimit 是否无视任务的人数限制
      * @returns 返回 true 代表适合去做该任务
      */
-    private isCreepMatchTask (creep: Creep, task: CostomTask, ignoreNeedLimit: boolean): boolean {
+    const isCreepMatchTask = function (creep: Creep, task: CostomTask, ignoreNeedLimit: boolean): boolean {
         // 忽略人数限制的话就直接把单位堆到该任务
         if (ignoreNeedLimit) return true
 
@@ -231,29 +242,34 @@ export default class TaskController<
     /**
      * 是否存在包含指定索引的任务
      */
-    public hasTaskWithKey (taskKey: number): boolean {
-        return !!this.tasks.find(task => task.key === taskKey)
+    const hasTaskWithKey = function (taskKey: number): boolean {
+        const tasks = getTasks()
+        return !!tasks.find(task => task.key === taskKey)
     }
 
     /**
      * 是否存在包含指定类型的任务
      */
-    public hasTaskWithType (taskTyep: TaskType): boolean {
-        return !!this.tasks.find(task => task.type === taskTyep)
+    const hasTaskWithType = function (taskTyep: TaskType): boolean {
+        const tasks = getTasks()
+        return !!tasks.find(task => task.type === taskTyep)
     }
 
     /**
      * 使用任务索引移除任务
      */
-    public removeTaskByKey (taskKey: number): OK | ERR_NOT_FOUND {
+    const removeTaskByKey = function (taskKey: number): OK | ERR_NOT_FOUND {
+        const memory = getMemory()
+        const unitMemorys = getUnitMemorys()
+
         // 移除任务并收集被移除的任务索引
-        const removeTaskIndex = this.tasks.findIndex(task => task.key === taskKey)
-        this.memory.tasks.splice(removeTaskIndex, 1)
+        const removeTaskIndex = memory.tasks.findIndex(task => task.key === taskKey)
+        memory.tasks.splice(removeTaskIndex, 1)
 
         // 给正在干这个活的单位重新分配任务
-        const units = this.getUnit(({ doing }) => taskKey === doing)
-        units.forEach(creep => this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep))
-        units.forEach(creep => this.dispatchCreep(creep))
+        const units = getUnit(({ doing }) => taskKey === doing)
+        units.forEach(creep => removeTaskUnit(getTaskByKey(unitMemorys[creep.name]?.doing), creep))
+        units.forEach(creep => dispatchCreep(creep))
 
         return OK
     }
@@ -262,20 +278,22 @@ export default class TaskController<
      * 使用类型移除任务
      * 会移除所有同类型任务
      */
-    public removeTaskByType (taskType: TaskType): OK | ERR_NOT_FOUND {
+    const removeTaskByType = function (taskType: TaskType): OK | ERR_NOT_FOUND {
+        const memory = getMemory()
+        const unitMemorys = getUnitMemorys()
         const removeTaskKeys = []
 
         // 移除任务并收集被移除的任务索引
-        this.memory.tasks = this.tasks.filter(task => {
+        memory.tasks = memory.tasks.filter(task => {
             if (task.type !== taskType) return true
             removeTaskKeys.push(task.key)
             return false
         })
 
         // 给干完活的单位重新分配任务
-        const units = this.getUnit(({ doing }) => removeTaskKeys.includes(doing))
-        units.forEach(creep => this.removeTaskUnit(this.getTask(this.creeps[creep.name]?.doing), creep))
-        units.forEach(creep => this.dispatchCreep(creep))
+        const units = getUnit(({ doing }) => removeTaskKeys.includes(doing))
+        units.forEach(creep => removeTaskUnit(getTaskByKey(unitMemorys[creep.name]?.doing), creep))
+        units.forEach(creep => dispatchCreep(creep))
 
         return OK
     }
@@ -284,12 +302,15 @@ export default class TaskController<
      * 获取单位的待执行任务
      * @param creep 要获取待执行任务的 creep
      */
-    public getUnitTask (creep: Creep): CostomTask {
-        let doingTask = this.getTask(this.creeps[creep.name]?.doing)
-        if (this.tasks.length <= 0) return undefined
+    const getUnitTask = function (creep: Creep): CostomTask {
+        const tasks = getTasks()
+        if (tasks.length <= 0) return undefined
+
+        const unitMemorys = getUnitMemorys()
+        let doingTask = getTaskByKey(unitMemorys[creep.name]?.doing)
 
         // 还未分配过任务，或者任务已经完成了
-        if (!doingTask) doingTask = this.dispatchCreep(creep)
+        if (!doingTask) doingTask = dispatchCreep(creep)
 
         return doingTask
     }
@@ -299,21 +320,22 @@ export default class TaskController<
      *
      * @param filter 筛选器，接受 creep 数据与 creep 本身，返回是否选择
      */
-    public getUnit (filter?: (info: TaskUnitInfo<UnitData>, creep: Creep) => boolean): Creep[] {
+    const getUnit = function (filter?: (info: DefaultTaskUnitMemory, creep: Creep) => boolean): Creep[] {
         const units: Creep[] = []
+        const unitMemorys = getUnitMemorys()
 
         // 给干完活的单位重新分配任务
-        for (const creepName in this.creeps) {
-            const creep = Game.creeps[creepName]
+        for (const creepName in unitMemorys) {
+            const creep = env.getCreepByName(creepName)
 
             // 人没了，解除掉任务，防止分配任务时出现偏差
             if (!creep) {
-                this.removeCreep(creepName)
+                removeCreep(creepName)
                 continue
             }
 
             // 如果指定了筛选条件并且筛选没通过则不返回
-            if (filter && !filter(this.creeps[creepName], creep)) continue
+            if (filter && !filter(unitMemorys[creepName], creep)) continue
 
             units.push(creep)
         }
@@ -326,54 +348,42 @@ export default class TaskController<
      *
      * @param creepName 要移除的 creep 名称
      */
-    public removeCreep (creepName: string): void {
-        const creepInfo = this.creeps[creepName]
-        if (creepInfo) this.removeTaskUnit(this.getTask(creepInfo.doing))
-        delete this.creeps[creepName]
+    const removeCreep = function (creepName: string): void {
+        const unitMemorys = getUnitMemorys()
+        if (unitMemorys[creepName]) {
+            removeTaskUnit(getTaskByKey(unitMemorys[creepName].doing))
+        }
+        delete unitMemorys[creepName]
     }
 
     /**
-     * 检查 creep 是否被炒鱿鱼了
+     * 总工作时长 + 1
      */
-    public haveCreepBeenFired (creepName: string): boolean {
-        const unitInfo = this.creeps[creepName]
-        return !unitInfo || unitInfo.fired
+    const countWorkTime = function (): void {
+        totalWorkTime += 1
     }
 
     /**
-     * 开除某个 creep
-     * 被开除的 creep 将会继续工作，直到死掉后将不再继续孵化
+     * 总生命时长 + 1
      */
-    public fireCreep (creepName: string): void {
-        if (creepName in this.creeps) this.creeps[creepName].fired = true
-    }
-
-    /**
-     * 放弃开除某个 creep
-     */
-    public unfireCreep (creepName: string): void {
-        if (creepName in this.creeps) delete this.creeps[creepName].fired
-    }
-
-    /**
-     * 用于 actions 中 creep 统计工作时长
-     */
-    public countWorkTime (): void {
-        this.totalWorkTime += 1
+    const countLifeTime = function (): void {
+        totalLifeTime += 1
     }
 
     /**
      * 输出当前任务队列信息
      */
-    public show (): string {
+    const show = function (): string {
         const pad = content => _.padRight((content || '').toString(), 17)
+        const unitMemorys = getUnitMemorys()
+        const tasks = getTasks()
 
         const logs = [
-            `已注册单位 ${Object.keys(this.creeps).join(', ')}`,
+            `已注册单位 ${Object.keys(unitMemorys).join(', ')}`,
             pad('[TYPE]') + pad('[KEY]') + pad('[NEED]') + pad('[UNIT]') + pad('[PRIORITY]')
         ]
 
-        logs.push(...this.tasks.map(task => (
+        logs.push(...tasks.map(task => (
             pad(task.type) +
             pad(task.key) +
             pad(task.need || '-') +
@@ -382,5 +392,12 @@ export default class TaskController<
         )))
 
         return logs.join('\n')
+    }
+
+    return {
+        totalLifeTime, totalWorkTime, getTasks, addTask, updateTask, getTaskByKey, removeTaskUnit,
+        dispatchTask, hasTaskWithKey, hasTaskWithType, removeTaskByKey, removeTaskByType,
+        getUnitTask, getUnit, removeCreep, countWorkTime, countLifeTime, show,
+        ...unitNumberAdjust, ...unitFireControl
     }
 }

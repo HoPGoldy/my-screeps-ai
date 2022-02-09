@@ -1,5 +1,5 @@
 import { WorkTaskType } from '@/modulesRoom'
-import { DefaultTaskUnitMemory } from '@/modulesRoom/taskBaseNew'
+import { DefaultTaskUnitMemory } from '@/modulesRoom/taskBase'
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody, useCache } from '@/utils'
 import { getEngryFrom } from '@/utils/creep'

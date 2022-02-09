@@ -1,6 +1,5 @@
 import { EnvContext } from '@/utils'
-import { RoomTask, TaskBaseMemory, DefaultTaskUnitMemory } from '@/modulesRoom/taskBaseNew'
-import { RoleMemory } from '@/modulesRoom/unitControl'
+import { RoomTask, TaskBaseMemory } from '@/modulesRoom/taskBase'
 import { SourceUtils } from '@/modulesGlobal/source'
 import { UseSpawnContext } from '../spawn'
 import { Goto } from '@/modulesGlobal/move'

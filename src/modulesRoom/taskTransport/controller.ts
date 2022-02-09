@@ -1,4 +1,4 @@
-import { AddTaskOpt, createTaskController, DefaultTaskUnitMemory, RoomTask } from '../taskBaseNew'
+import { AddTaskOpt, createTaskController, DefaultTaskUnitMemory, RoomTask } from '../taskBase'
 import { createCache } from '@/utils'
 import { ManagerData, ManagerState, TaskFinishReason, TransportContext, TransportTask, TransportTaskMemory } from './types'
 import { DEFAULT_ROLE_NAME, REGULATE_LIMIT, WORK_PROPORTION_TO_EXPECT } from './constants'

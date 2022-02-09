@@ -13,7 +13,7 @@ import { SpawnController } from '@/modulesRoom/spawn'
 import { HarvestController } from '@/modulesRoom/harvest'
 import { ObserverController } from '@/modulesRoom/observer'
 import { PowerController } from '@/modulesRoom/power'
-import { WorkTaskController } from '@/modulesRoom/taskWork'
+import { WorkController } from '@/modulesRoom/taskWork'
 import { TransportController } from '@/modulesRoom/taskTransport'
 
 import { getTowerController } from './tower'
@@ -128,7 +128,7 @@ declare global {
         /**
          * 工作任务模块
          */
-        work: WorkTaskController
+        work: WorkController
         /**
          * 物流任务模块
         */

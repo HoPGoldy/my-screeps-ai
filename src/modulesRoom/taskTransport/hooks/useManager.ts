@@ -1,4 +1,4 @@
-import { DefaultTaskUnitMemory } from '@/modulesRoom/taskBaseNew'
+import { DefaultTaskUnitMemory } from '@/modulesRoom/taskBase'
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody } from '@/utils'
 import { ManagerActionStrategy, ManagerData, ManagerState, TransportContext, InnerGetTransportController } from '../types'

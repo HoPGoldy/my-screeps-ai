@@ -3,7 +3,7 @@ import { SourceUtils } from '@/modulesGlobal/source'
 import { EnvContext } from '@/utils'
 import { StructureShortcutKey } from '../shortcut'
 import { UseSpawnContext } from '../spawn'
-import { RoomTask, TaskBaseMemory } from '../taskBaseNew'
+import { RoomTask, TaskBaseMemory } from '../taskBase'
 
 export type TransportContext = {
     /**

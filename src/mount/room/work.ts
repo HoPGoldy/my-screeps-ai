@@ -1,6 +1,6 @@
 import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
 import { goTo, setCreepStand } from '@/modulesGlobal/move'
-import { WorkTaskMemory, createWorkTaskController } from '@/modulesRoom/taskWork'
+import { WorkTaskMemory, createWorkController } from '@/modulesRoom/taskWork'
 import { createEnvContext } from '@/utils'
 import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
@@ -15,7 +15,7 @@ declare global {
     }
 }
 
-export const getWorkController = createWorkTaskController({
+export const getWorkController = createWorkController({
     sourceUtils,
     withDelayCallback,
     goTo,

@@ -1,5 +1,5 @@
 import { createCache } from '@/utils'
-import { createTaskController } from '../taskBaseNew/controller'
+import { createTaskController } from '../taskBase/controller'
 import { DEFAULT_ROLE_NAME, WORK_PROPORTION_TO_EXPECT, WORK_TASK_PRIOIRY } from './constants'
 import { useWorker } from './hooks/useWorker'
 import { AllRoomWorkTask, WorkTaskType, WorkTaskContext } from './types'
@@ -15,7 +15,7 @@ interface BuildDelayTaskData {
  * @param context 工作任务管理模块所需的依赖
  * @returns 任务管理模块实例
  */
-export const createWorkTaskController = function (context: WorkTaskContext) {
+export const createWorkController = function (context: WorkTaskContext) {
     const { getMemory, withDelayCallback, roleName = DEFAULT_ROLE_NAME, env } = context
 
     const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName, need }: BuildDelayTaskData) => {
@@ -84,10 +84,10 @@ export const createWorkTaskController = function (context: WorkTaskContext) {
         return { run: worker.run, getExpect, addBuildTask, ...taskController }
     }
 
-    const [getWorkTaskController] = createCache(lazyLoader)
-    const { worker, releaseWorker } = useWorker(context, room => getWorkTaskController(room.name))
+    const [getWorkController] = createCache(lazyLoader)
+    const { worker, releaseWorker } = useWorker(context, room => getWorkController(room.name))
 
-    return getWorkTaskController
+    return getWorkController
 }
 
-export type WorkTaskController = ReturnType<ReturnType<typeof createWorkTaskController>>
+export type WorkController = ReturnType<ReturnType<typeof createWorkController>>
