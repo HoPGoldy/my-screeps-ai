@@ -1,8 +1,5 @@
 import { createGetter } from '@/utils'
-import {
-    RoomTransportTaskController,
-    RemoteChontroller
-} from '@/modulesRoom'
+import { RemoteChontroller } from '@/modulesRoom'
 import { TowerController } from '@/modulesRoom/tower/controller'
 import { LinkController } from '@/modulesRoom/link/linkController'
 import { NukerController } from '@/modulesRoom/nuker/unkerController'
@@ -17,6 +14,7 @@ import { HarvestController } from '@/modulesRoom/harvest'
 import { ObserverController } from '@/modulesRoom/observer'
 import { PowerController } from '@/modulesRoom/power'
 import { WorkTaskController } from '@/modulesRoom/taskWork'
+import { TransportController } from '@/modulesRoom/taskTransport'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -32,6 +30,7 @@ import { getHarvestController } from './harvest'
 import { getObserverController } from './observer'
 import { getPowerController } from './power'
 import { getWorkController } from './work'
+import { getTransportController } from './transport'
 
 export { default as RoomExtension } from './extension'
 export { default as RoomConsole } from './console'
@@ -64,7 +63,6 @@ export default () => {
 
     // 等待安装的房间插件列表
     const plugins: [string, AnyRoomPlugin][] = [
-        ['transport', RoomTransportTaskController],
         ['remote', RemoteChontroller]
     ]
 
@@ -90,6 +88,7 @@ export default () => {
         ['spawnController', getSpawnController],
         ['harvest', getHarvestController],
         ['work', getWorkController],
+        ['transport', getTransportController],
         ['factoryController', getFactoryController],
         ['terminalController', getTerminalController],
         ['storageController', getStorageController],
@@ -132,8 +131,8 @@ declare global {
         work: WorkTaskController
         /**
          * 物流任务模块
-         */
-        transport: RoomTransportTaskController
+        */
+        transport: TransportController
         /**
          * power 管理模块
          */

@@ -44,7 +44,6 @@ export type WorkTaskContext = {
 } & EnvContext & UseSpawnContext
 
 export type WorkerRuntimeContext = (room: Room) => ({
-    haveCreepBeenFired: (creepName: string) => boolean
     removeTaskByKey: (taskKey: number) => OK | ERR_NOT_FOUND
     countWorkTime: () => void
     countLifeTime: () => void

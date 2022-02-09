@@ -3,12 +3,18 @@ import { useUnitFire } from './hooks/useUnitFire'
 import { useUnitNumberAdjust } from './hooks/useUnitNumberAdjust'
 import { AddTaskOpt, DefaultTaskUnitMemory, RoomTask, TaskBaseContext, UpdateTaskOpt } from './types'
 
+/**
+ * 创建任务管理模块
+ *
+ * @generic TaskType 所有可用的任务类型
+ * @generic CostomTask 所有任务
+ * @generic UnitData 该任务模块包含的单位自定义数据
+ */
 export const createTaskController = function <
-    // 该任务模块包含的所有任务类型
     TaskType extends string | number,
-    // 该任务模块包含的所有任务
-    CostomTask extends RoomTask<TaskType>
-> (context: TaskBaseContext<CostomTask>) {
+    CostomTask extends RoomTask<TaskType>,
+    UnitMemory extends Record<string, any> = Record<string, any>
+> (context: TaskBaseContext<CostomTask, UnitMemory>) {
     const { getMemory, env } = context
 
     /**

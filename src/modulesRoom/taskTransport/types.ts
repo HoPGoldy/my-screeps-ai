@@ -1,37 +1,66 @@
-declare global {
-    interface RoomMemory {
-        /**
-         * 房间物流任务内存
-         */
-        transport: TaskBaseMemory<TransportTaskData, ManagerData>
-    }
-}
+import { Goto } from '@/modulesGlobal/move'
+import { SourceUtils } from '@/modulesGlobal/source'
+import { EnvContext } from '@/utils'
+import { StructureShortcutKey } from '../shortcut'
+import { UseSpawnContext } from '../spawn'
+import { RoomTask, TaskBaseMemory } from '../taskBaseNew'
+
+export type TransportContext = {
+    /**
+     * 工作单位的名称（和孵化时使用的角色名）
+     * 默认为 manager
+     */
+    roleName?: string
+    /**
+     * 获取内存存放对象
+     */
+    getMemory: (room: Room) => TransportMemory
+    /**
+     * 自定义移动
+     * 用于接入对穿移动
+     */
+    goTo: Goto
+    /**
+     * source 管理工具
+     */
+    sourceUtils: SourceUtils
+    getContainer: (room: Room) => StructureContainer[]
+    getSource: (room: Room) => Source[]
+    getStructure: <T extends StructureShortcutKey>(room: Room, structureType: T) => ConcreteStructure<T>[]
+    /**
+     * 回调 - 当 creep 工作阶段发生变化
+     * 例如 worker 从拿取能量转变为工作模式时
+     */
+    onCreepStageChange?: (creep: Creep, isWorking: boolean) => unknown
+} & EnvContext & UseSpawnContext
+
+export type TransportMemory = TaskBaseMemory<TransportTaskMemory, ManagerData>
 
 /**
  * 所有的物流任务类型
  * 没什么实际作用，只是方便使用者搜索自己的任务
  */
 export enum TransportTaskType {
-    ContainerEnergyTransfer = 1,
-    FillExtension,
-    FillTower,
-    FillNuker,
-    FillPowerSpawn,
-    LabIn,
-    LabOut,
-    LabGetEnergy,
-    FactoryGetResource,
-    FactoryPutResource,
-    Share,
-    StorageBlance,
-    Terminal,
-    CenterLink
+    ContainerEnergyTransfer = 'cet',
+    FillExtension = 'fe',
+    FillTower = 'ft',
+    FillNuker = 'fn',
+    FillPowerSpawn = 'fps',
+    LabIn = 'li',
+    LabOut = 'lo',
+    LabGetEnergy = 'lge',
+    FactoryGetResource = 'fgr',
+    FactoryPutResource = 'fpr',
+    Share = 's',
+    StorageBlance = 'sb',
+    Terminal = 't',
+    CenterLink = 'cl'
 }
 
 /**
  * 物流任务工作处理上下文
  */
-export interface TransportWorkContext {
+export interface ManagerWorkContext {
     /**
      * 物流任务所处的房间
      */
@@ -43,7 +72,7 @@ export interface TransportWorkContext {
     /**
      * 该任务的数据
      */
-    taskData: TransportTaskData
+    taskData: TransportTaskMemory
     /**
      * 该搬运爬的数据
      */
@@ -53,6 +82,15 @@ export interface TransportWorkContext {
      */
     requireFinishTask: (reason: TaskFinishReason) => void
 }
+
+export type InnerGetTransportController = (room: Room) => ({
+    requireFinishTask: (task: TransportTaskMemory, reason: TaskFinishReason, requestCreep: Creep) => void
+    countWorkTime: () => void
+    countLifeTime: () => void
+    getUnitTask: (creep: Creep) => TransportTaskMemory
+})
+
+export type ManagerActionStrategy = (workContext: ManagerWorkContext) => unknown
 
 /**
  * 房间物流任务
@@ -130,7 +168,7 @@ export enum ManagerState {
 /**
  * 物流任务完整版
  */
-export type TransportTaskData = RoomTask & TransportTask<TransportRequestData>
+export type TransportTaskMemory = RoomTask & TransportTask<TransportRequestData>
 
 /**
  * 搬运工数据
