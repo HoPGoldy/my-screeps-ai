@@ -16,7 +16,7 @@ export const useBoost = function (roomName: string, context: LabContext, db: Lab
         const memory = getMemory(room)
 
         if (env.inInterval(10)) return
-        if (memory.boostTasks.length <= 0) return
+        if (!memory.boostTasks || memory.boostTasks.length <= 0) return
         const task = memory.boostTasks[0]
 
         switch (task.state) {

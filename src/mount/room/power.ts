@@ -20,7 +20,10 @@ export const { getPowerController, run, setWorkRoom, removeWorkRoom } = createPo
         return room.memory.power
     },
     goTo,
-    getGlobalMemory: () => Memory.power,
+    getGlobalMemory: () => {
+        if (!Memory.power) Memory.power = {}
+        return Memory.power
+    },
     getResourceStructure: (room, resType, amount) => room.storageController.getResourcePlace(resType, amount),
     getResourceAmount: (room, resType) => {
         const { total } = room.storageController.getResource(resType)

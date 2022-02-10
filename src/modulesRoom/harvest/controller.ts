@@ -16,6 +16,7 @@ export const createHarvestController = function (context: HarvestContext) {
         const startHarvestSource = function () {
             const workRoom = env.getRoomByName(roomName)
             const sources = getSource(workRoom)
+            console.log('开始采集 source', sources)
 
             sources.forEach(source => releaseHarvester(workRoom, source.id))
         }

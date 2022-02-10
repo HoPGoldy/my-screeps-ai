@@ -102,7 +102,10 @@ export const createSpawnController = function (context: SpawnContext) {
              */
             let freeSpawn: StructureSpawn
             roomSpawn.forEach(spawn => {
-                if (!spawn.spawning) freeSpawn = spawn
+                if (!spawn.spawning) {
+                    freeSpawn = spawn
+                    return
+                }
                 // 将该 creep 更新到孵化中队列，每个孵化 tick 都会更新一次，增强可靠性
                 db.updateSpawning(spawn.spawning.name)
 

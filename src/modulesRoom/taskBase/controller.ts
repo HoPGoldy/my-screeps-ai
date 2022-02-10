@@ -96,7 +96,7 @@ export const createTaskController = function <
 
         // 查找并更新任务
         const memory = getMemory()
-        memory.tasks = memory.tasks.map(task => {
+        memory.tasks = (memory.tasks || []).map(task => {
             if (task.key !== newTask.key && task.type !== newTask.type) return task
 
             notFound = false

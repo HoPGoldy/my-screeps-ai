@@ -82,7 +82,7 @@ const alias = {
 }
 
 // 挂载全局拓展
-export default function () {
+export const mountGlobal = function () {
     // 挂载有别名的操作
     Object.keys(alias).forEach(key => Object.defineProperty(
         global, key, { get: alias[key] }

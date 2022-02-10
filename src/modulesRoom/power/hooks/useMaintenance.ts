@@ -76,8 +76,9 @@ export const useMaintenance = function (roomName: string, context: PowerContext)
     const hasTask = function (task: PowerConstant): boolean {
         const workRoom = env.getRoomByName(roomName)
         const memory = getMemory(workRoom)
+        if (!memory.tasks || memory.tasks.length <= 0) return false
 
-        return !!memory?.tasks.find(power => power === task)
+        return !!memory.tasks.find(power => power === task)
     }
 
     /**

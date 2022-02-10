@@ -176,6 +176,7 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
         const memory = getMemory(room)
         for (const creepName in memory) {
             const creep = env.getCreepByName(creepName)
+            console.log('creep', creep, JSON.stringify(memory))
             // 死掉了就处理后事
             // 这里需要额外判断一下，注册单位是“还没到”的单位，不是“死掉”的单位
             if (!creep && !memory.registration) {

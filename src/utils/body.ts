@@ -161,8 +161,8 @@ export const unserializeBody = function (bodyStr: BodyString): BodyPartConstant[
         if (!(key in keyToPart)) continue
 
         const part: BodyPartConstant = keyToPart[key]
-        // 下一个是身体部件
-        if (keys[0] in keyToPart) result.push(part)
+        // 下一个不存在或者是身体部件，推一个就行
+        if (!keys[0] || keys[0] in keyToPart) result.push(part)
         // 下一个是数字，把本身体重复对应次数
         else result = result.concat(Array(Number(keys.shift()) + 1).fill(part))
     } while (keys.length > 0)

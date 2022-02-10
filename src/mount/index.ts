@@ -3,7 +3,7 @@ import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
 import { onRoomLevelChange, scanRoomState } from './room/strategy/strategyCore'
 import mountCreep from './creep'
 import mountRoom from './room'
-import mountGlobal from './global'
+import { mountGlobal } from './global'
 import { mountConsole } from './console'
 import { setBornCenter } from './room/autoPlanner'
 
