@@ -151,6 +151,7 @@ const warModule = createWarController({
     getBoostState: (room, taskId) => room.labController.getBoostState(taskId),
     boostCreep: (room, creep, taskId) => room.labController.boostCreep(creep, taskId),
     finishBoost: (room, taskId) => room.labController.finishBoost(taskId),
+    reloadBoostTask: (room, taskId) => room.labController.reloadBoostTask(taskId),
     env: createEnvContext('war')
 })
 

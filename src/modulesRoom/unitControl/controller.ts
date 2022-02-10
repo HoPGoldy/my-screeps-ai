@@ -158,6 +158,17 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
     }
 
     /**
+     * 获取正在受控的单位
+     * @returns 一个元组数组，元组的内容为爬实例和对应的爬内存
+     */
+    const getUnit = function (room: Room) {
+        const memory = getMemory(room)
+        return Object.entries(memory).map<[Creep, DefaultRoleMemory & M]>(([creepName, creepMemory]) => {
+            return [env.getCreepByName(creepName), creepMemory]
+        })
+    }
+
+    /**
      * 单位运行入口（应当每 tick 调用该方法）
      * @param room 要运行的房间
      */
@@ -178,5 +189,5 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
         }
     }
 
-    return { addUnit, registerUnit, removeUnit, removeAll, show, run }
+    return { addUnit, registerUnit, removeUnit, removeAll, getUnit, show, run }
 }

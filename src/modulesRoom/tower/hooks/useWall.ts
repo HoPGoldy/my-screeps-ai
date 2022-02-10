@@ -5,9 +5,8 @@ import { BUILD_NEW_WALL_LIMIT, MAX_WALL_HITS } from '../constants'
 export const useWall = function (roomName: string, context: TowerContext, db: TowerMemoryAccessor) {
     const { getMemory, env, getWall, getRampart, updateBuildingTask } = context
 
-    const run = function () {
+    const run = function (room: Room) {
         const buildSites = db.queryBuilding()
-        const room = env.getRoomByName(roomName)
 
         // 如果都造好了，就放置新一批建筑
         if (buildSites.length <= 0) {

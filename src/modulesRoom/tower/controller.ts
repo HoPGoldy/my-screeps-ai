@@ -1,4 +1,5 @@
 import { createCache } from '@/utils'
+import { useDefender } from './hooks/useDefender'
 import { useTower } from './hooks/useTower'
 import { useWall } from './hooks/useWall'
 import { createMemoryAccessor } from './memory'
@@ -13,20 +14,26 @@ export const createTowerController = function (context: TowerContext) {
             roomName
         )
 
-        const { run: runTower, ...towerMethods } = useTower(roomName, context, db)
+        const { run: runTower, ...towerMethods } = useTower(
+            roomName, context, db, releaseDefender,
+            room => defender.getUnit(room).map(([creep]) => creep)
+        )
         const { run: runWallControl, checkNuker, ...wallMethods } = useWall(roomName, context, db)
 
         const run = function () {
-            runTower()
+            const workRoom = env.getRoomByName(roomName)
+            runTower(workRoom)
+            defender.run(workRoom)
 
-            if (!env.inInterval(20)) runWallControl()
-            if (!env.inInterval(100)) checkNuker(env.getRoomByName(roomName))
+            if (!env.inInterval(20)) runWallControl(workRoom)
+            if (!env.inInterval(100)) checkNuker(workRoom)
         }
 
         return { run, ...wallMethods, ...towerMethods, getState: db.queryDefenseState }
     }
 
     const [getTowerController] = createCache(lazyLoader)
+    const { defender, releaseDefender } = useDefender(context, room => getTowerController(room.name))
     return getTowerController
 }
 

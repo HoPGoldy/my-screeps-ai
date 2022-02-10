@@ -1,5 +1,7 @@
 import { EnvContext } from '@/utils'
 import { BoostContext } from '../lab/types'
+import { UseSpawnContext } from '../spawn'
+import { RoleMemory } from '../unitControl'
 
 export interface TowerMemory {
     /**
@@ -34,6 +36,10 @@ export interface TowerMemory {
      * 要放置 nuker 防御墙壁的位置
      */
     nukerWallsPos?: string
+    /**
+     * 防御单位的内存
+     */
+    defender?: RoleMemory<DefenderMemory>
 }
 
 /**
@@ -60,6 +66,11 @@ export interface BuildingSite<T = STRUCTURE_WALL | STRUCTURE_RAMPART> {
 }
 
 export type TowerContext = {
+    /**
+     * 防御单位角色名
+     * 默认为 defender
+     */
+     defenderRole?: string
     /**
      * 获取 tower 的内存对象
      */
@@ -101,16 +112,28 @@ export type TowerContext = {
      */
     onStartActiveDefense?: (room: Room) => unknown
     /**
-     * 发布防御单位
-     */
-    releaseDefender: (room: Room, boostTaskId: number) => unknown
-    /**
-     * 获取防御单位
-     */
-    getDefender: (room: Room) => Creep
-    /**
      * 添加建造任务
      * 没有任务的时候添加，有的时候啥都不干
      */
     updateBuildingTask: (room: Room) => unknown
-} & EnvContext & BoostContext
+    /**
+     * 回调 - 当 creep 工作阶段发生变化
+     * 例如 harvester 从采集能量转变为存放能量模式时
+     */
+    onCreepStageChange?: (creep: Creep, isWorking: boolean) => unknown
+} & EnvContext & BoostContext & UseSpawnContext
+
+export interface DefenderMemory {
+    /**
+     * 给自己提供支持的强化任务 id
+     */
+    boostTaskId: number
+}
+
+/**
+ * 防御单位需要的本模块依赖
+ */
+export type DefenderWorkContext = (room: Room) => ({
+    findEnemy: () => (Creep | PowerCreep)[]
+    checkEnemyThreat: (enemys: (Creep | PowerCreep)[]) => boolean
+})

@@ -8,6 +8,7 @@ import { TowerMemory } from '@/modulesRoom/tower/types'
 import { getTower, getWall, getRampart, getLab } from './shortcut'
 import { useUnitSetting } from '@/modulesRoom/room/strategyOperation'
 import { useDefenseUnitSetting } from '@/modulesRoom/room/strategyDefense'
+import { addSpawnCallback } from './spawn'
 
 declare global {
     interface RoomMemory {
@@ -35,20 +36,14 @@ export const getTowerController = createTowerController({
         useUnitSetting(room)
     },
     onStartActiveDefense: useDefenseUnitSetting,
-    releaseDefender: (room, boostTaskId) => {
-        console.log('需要发布防御单位！')
-        // room.spawner.addTask(
-        //     GetName.defender(room.name),
-        //     CreepRole.Defender,
-        //     { boostTaskId }
-        // )
-    },
-    getDefender: room => Game.creeps[GetName.defender(room.name)],
     updateBuildingTask: room => room.work.addBuildTask(1),
     getLab,
+    addSpawnTask: (room, ...args) => room.spawnController.addTask(...args),
+    addSpawnCallback,
     addBoostTask: (room, config) => room.labController.addBoostTask(config),
     getBoostState: (room, taskId) => room.labController.getBoostState(taskId),
     boostCreep: (room, creep, taskId) => room.labController.boostCreep(creep, taskId),
     finishBoost: (room, taskId) => room.labController.finishBoost(taskId),
+    reloadBoostTask: (room, taskId) => room.labController.reloadBoostTask(taskId),
     env: createEnvContext('tower')
 })

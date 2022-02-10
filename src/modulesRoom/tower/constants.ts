@@ -18,3 +18,8 @@ export const MAX_WALL_HITS = {
     7: 5000000,
     8: 20000000
 }
+
+/**
+ * 默认的防御单位角色名
+ */
+export const DEFAULT_DEFENDER_ROLE = 'defender'

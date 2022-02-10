@@ -184,4 +184,8 @@ export interface BoostContext {
      * 结束 boost 任务
      */
     finishBoost: (room: Room, boostTaskId: number) => void
+    /**
+     * 重新装填某个 boost 任务的资源
+     */
+    reloadBoostTask: (room: Room, taskId: number) => ERR_NOT_FOUND | OK
 }

@@ -12,10 +12,14 @@ const FILL_LOWER_LIMIT = {
 /**
  * 组合 tower 防御逻辑
  */
-export const useTower = function (roomName: string, context: TowerContext, db: TowerMemoryAccessor) {
+export const useTower = function (
+    roomName: string, context: TowerContext, db: TowerMemoryAccessor,
+    releaseDefender: (room: Room, boostTaskId: number) => unknown,
+    getDefender: (room: Room) => Creep[]
+) {
     const {
         isFriend, getMemory, getTower, hasFillTowerTask, addFillTowerTask, env,
-        addBoostTask, getBoostState, finishBoost, getDefender, releaseDefender, getLab
+        addBoostTask, getBoostState, finishBoost, getLab
     } = context
 
     /**
@@ -70,7 +74,8 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
     }
 
     const runActiveDefenseWork = function (towers: StructureTower[], room: Room) {
-        const defender = getDefender(room)
+        // 目前只会发布一个防御单位
+        const [defender] = getDefender(room)
 
         if (defender && !defender.spawning) {
             // 有防御单位并且掉血了就进行治疗
@@ -237,10 +242,9 @@ export const useTower = function (roomName: string, context: TowerContext, db: T
     /**
      * 执行 tower 运行逻辑
      */
-    const run = function (): void {
+    const run = function (room: Room): void {
         refreshEnemyCache()
 
-        const room = env.getRoomByName(roomName)
         const towers = getTower(room)
         if (!towers || towers.length <= 0) return
 
