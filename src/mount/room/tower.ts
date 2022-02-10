@@ -2,10 +2,9 @@ import { TransportTaskType } from '@/modulesRoom'
 import { createTowerController } from '@/modulesRoom/tower/controller'
 import { whiteListFilter } from '../global/whiteList'
 import { GetName } from '@/modulesRoom/spawn/nameGetter'
-import { CreepRole } from '@/role/types/role'
+// import { CreepRole } from '@/role/types/role'
 import { createEnvContext } from '@/utils'
 import { TowerMemory } from '@/modulesRoom/tower/types'
-import { addBuildTask } from '@/modulesRoom/taskWork/delayTask'
 import { getTower, getWall, getRampart, getLab } from './shortcut'
 import { useUnitSetting } from '@/modulesRoom/room/strategyOperation'
 import { useDefenseUnitSetting } from '@/modulesRoom/room/strategyDefense'
@@ -36,13 +35,16 @@ export const getTowerController = createTowerController({
         useUnitSetting(room)
     },
     onStartActiveDefense: useDefenseUnitSetting,
-    releaseDefender: (room, boostTaskId) => room.spawner.addTask(
-        GetName.defender(room.name),
-        CreepRole.Defender,
-        { boostTaskId }
-    ),
+    releaseDefender: (room, boostTaskId) => {
+        console.log('需要发布防御单位！')
+        // room.spawner.addTask(
+        //     GetName.defender(room.name),
+        //     CreepRole.Defender,
+        //     { boostTaskId }
+        // )
+    },
     getDefender: room => Game.creeps[GetName.defender(room.name)],
-    updateBuildingTask: room => addBuildTask(room.name, 1),
+    updateBuildingTask: room => room.work.addBuildTask(1),
     getLab,
     addBoostTask: (room, config) => room.labController.addBoostTask(config),
     getBoostState: (room, taskId) => room.labController.getBoostState(taskId),

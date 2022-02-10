@@ -1,5 +1,4 @@
 import { createGetter } from '@/utils'
-import { RemoteChontroller } from '@/modulesRoom'
 import { TowerController } from '@/modulesRoom/tower/controller'
 import { LinkController } from '@/modulesRoom/link/linkController'
 import { NukerController } from '@/modulesRoom/nuker/unkerController'
@@ -58,31 +57,6 @@ interface PluginStorage {
  * 依次挂载所有的 Room 拓展
  */
 export default () => {
-    // 房间插件实例化后会被分类保存到这里
-    const pluginStorage: PluginStorage = {}
-
-    // 等待安装的房间插件列表
-    const plugins: [string, AnyRoomPlugin][] = [
-        ['remote', RemoteChontroller]
-    ]
-
-    // 安装所有的插件
-    plugins.forEach(([pluginName, Plugin]) => {
-        pluginStorage[pluginName] = {}
-
-        // 在房间上创建插件的懒加载访问器
-        createGetter(Room, pluginName, function () {
-            // 还没访问过, 进行实例化
-            if (!(this.name in pluginStorage[pluginName])) {
-                pluginStorage[pluginName][this.name] = new Plugin(this.name)
-                // 覆盖 getter 属性
-                Object.defineProperty(this, pluginName, { value: pluginStorage[pluginName][this.name] })
-            }
-            // 直接返回插件实例
-            return pluginStorage[pluginName][this.name]
-        })
-    })
-
     // 等待安装的模块化插件列表
     const modulePlugin: [string, PluginLoader][] = [
         ['spawnController', getSpawnController],
@@ -157,7 +131,7 @@ declare global {
          * 扩张管理模块
          * 包括外矿和新房扩张
          */
-        remote: RemoteChontroller
+        // remote: RemoteChontroller
         /**
          * tower 防御模块
          */

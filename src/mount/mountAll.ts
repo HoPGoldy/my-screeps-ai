@@ -3,7 +3,6 @@ import mountRoom, { RoomExtension, RoomConsole } from './room'
 import mountGlobal from './global'
 import FactoryConsole from '@/mount/room/factoryConsole'
 import ObserverConsole from '@/mount/room/observerConsole'
-import RemoteConsole from '@/modulesRoom/remote/console'
 import { Color, log } from '@/utils'
 import { PowerSpawnConsole } from './room/powerSpawn'
 import { StorageConsole } from './room/storage'
@@ -41,7 +40,7 @@ export const mountAll = function () {
         [Room, StorageConsole],
         [Room, ShareConsole],
         [Room, ObserverConsole],
-        [Room, RemoteConsole],
+        // [Room, RemoteConsole],
         [Room, LabConsole],
         [Room, PowerSpawnConsole],
         // 模块拓展挂载

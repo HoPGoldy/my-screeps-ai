@@ -28,7 +28,7 @@ const standWrapper = function (funcNames: string[]) {
             const result = this[originFuncName](...args)
             // 如果刚开始工作，就设置为站定状态
             if (result === OK && !isCreepStand(this.name)) {
-                setCreepStand(this.name)
+                setCreepStand(this.name, true)
                 // 站定后移除可能剩余的路径缓存，不然可能出现目标换了但是还是按照之前的路径走的问题
                 delete this.memory._go
             }

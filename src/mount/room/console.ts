@@ -9,7 +9,7 @@ import RoomExtension from './extension'
 import { clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
 import { autoPlanner } from './autoPlanner'
 import { WorkTaskType } from '@/modulesRoom'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
 import { CreepRole } from '@/role/types/role'
 import { DEFAULT_FLAG_NAME } from '@/utils/constants'
 import { getRampart, getWall } from './shortcut'
@@ -28,8 +28,8 @@ export default class RoomConsole extends RoomExtension {
         }, { dispath: true })
         let log = '已发布建筑任务'
 
-        if (Object.keys(this.work.creeps).length <= 0) {
-            this.spawner.release.changeBaseUnit(CreepRole.Worker, 1)
+        if (this.work.getUnit().length <= 0) {
+            this.work.changeUnitNumber(1)
             log += '并添加工作单位'
         }
 

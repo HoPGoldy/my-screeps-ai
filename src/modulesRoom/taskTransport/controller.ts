@@ -108,7 +108,15 @@ export const createTransportController = function (context: TransportContext) {
             return currentExpect?.expect !== undefined ? currentExpect.expect : -2
         }
 
-        return { run: manager.run, getExpect, requireFinishTask, ...taskController, addTask }
+        /**
+         * 【入口】执行物流模块逻辑
+         */
+        const run = function () {
+            const workRoom = env.getRoomByName(roomName)
+            manager.run(workRoom)
+        }
+
+        return { run, getExpect, requireFinishTask, ...taskController, addTask }
     }
 
     const [getTransportController] = createCache(lazyLoader)

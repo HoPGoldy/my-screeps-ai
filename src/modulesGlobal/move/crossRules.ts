@@ -40,12 +40,6 @@ const defaultRule: AllowCrossRuleFunc = (creep, requireCreep) => !(isCreepStand[
 const noCrossWithStanding: AllowCrossRuleFunc = creep => !isCreepStand[creep.name]
 
 /**
- * 工作时不允许对穿
- * @param creep 被对穿的 creep
- */
-const noCrossWithWorking: AllowCrossRuleFunc = creep => !creep.memory.working
-
-/**
  * 对穿规则合集
  *
  * 返回值代表了 creep 是否允许 requireCreep 对穿
@@ -61,10 +55,7 @@ const crossRules: CrossRules = {
     [CreepRole.Harvester]: noCrossWithStanding,
 
     // pb 治疗单位正在治疗时不允许其他治疗单位对穿
-    [CreepRole.PbHealer]: (creep, requireCreep) => {
-        if (creep.memory.role !== requireCreep.memory.role) return true
-        return creep.memory.working !== requireCreep.memory.working
-    },
+    [CreepRole.PbHealer]: noCrossWithStanding,
 
     [CreepRole.RemoteBuilder]: noCrossWithStanding,
     [CreepRole.RemoteHarvester]: noCrossWithStanding

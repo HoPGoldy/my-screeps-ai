@@ -126,7 +126,13 @@ export const createSpawnController = function (context: SpawnContext) {
             runSpawn(freeSpawn)
         }
 
-        return { run, lendSpawn, remandSpawn, addTask: db.addTask, hasTask: db.hasTask, clear: db.deleteAllTask }
+        return {
+            run, lendSpawn, remandSpawn,
+            getTaskByRole: db.queryTaskByRole,
+            addTask: db.addTask,
+            hasTask: db.hasTask,
+            clear: db.deleteAllTask
+        }
     }
 
     const [getSpawnController] = createCache(lazyLoader)

@@ -1,20 +1,12 @@
-import { PbHarvestState } from './role'
-
-declare global {
-    interface FlagMemory {
-        /**
-         * 当前 powerbank 采集的状态
-         */
-        state?: PbHarvestState
-        /**
-         * 因为外矿房间有可能没视野
-         * 所以把房间名缓存进内存
-         */
-        roomName?: string
-        /**
-         * 路径点旗帜中生效
-         * 用于指定下一个路径点的旗帜名
-         */
-        next: string
-    }
+interface FlagMemory {
+    /**
+     * 因为外矿房间有可能没视野
+     * 所以把房间名缓存进内存
+     */
+    roomName?: string
+    /**
+     * 路径点旗帜中生效
+     * 用于指定下一个路径点的旗帜名
+     */
+    next: string
 }

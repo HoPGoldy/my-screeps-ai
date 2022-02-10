@@ -1,4 +1,4 @@
-import { showCreep, removeCreep, hasCreep } from '@/modulesGlobal/creep'
+// import { showCreep, removeCreep, hasCreep } from '@/modulesGlobal/creep'
 import { clearFlag } from '@/utils'
 import { showGlobal as comm } from '../room/factory'
 import res from './resourcesHelp'
@@ -14,7 +14,7 @@ import { showRouteChche as route } from '@/modulesGlobal/move'
 import { cpu, orderExtend, seeres, hail, base, give, roomAlias, ps } from './common'
 
 import { getForm as getform } from '@/utils/console/form/example'
-import { updateCreepData } from '@/modulesGlobal/creep/utils'
+// import { updateCreepData } from '@/modulesGlobal/creep/utils'
 import { showResourceSource } from '@/modulesRoom/share/utils'
 import { mountNuker } from '../room/nuker'
 import { mountConstruct } from './construction'
@@ -44,12 +44,12 @@ const extensions = {
     // 战争管理模块
     war: consoleWarModule,
     // 将 creepApi 挂载到全局方便手动操作
-    creep: {
-        show: showCreep,
-        remove: removeCreep,
-        has: hasCreep,
-        update: updateCreepData
-    },
+    // creep: {
+    //     show: showCreep,
+    //     remove: removeCreep,
+    //     has: hasCreep,
+    //     update: updateCreepData
+    // },
     // 绕路模块
     bypass,
     // 掠夺模块

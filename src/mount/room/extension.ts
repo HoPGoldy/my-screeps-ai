@@ -6,7 +6,6 @@
  */
 import { clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
 import { autoPlanner } from './autoPlanner'
-import { removeCreep } from '@/modulesGlobal/creep'
 import { Color, createRoomLink, log } from '@/utils'
 
 export default class RoomExtension extends Room {
@@ -43,12 +42,12 @@ export default class RoomExtension extends Room {
             s.destroy()
         })
 
-        // 移除 creep
-        removeCreep(this.name, { batch: true, immediate: true })
-
         // 移除内存
         delete this.memory
         delete Memory.stats.rooms[this.name]
+
+        // 移除 creep
+        this.find(FIND_MY_CREEPS).forEach(creep => creep.suicide())
 
         // 放弃房间
         this.controller.unclaim()

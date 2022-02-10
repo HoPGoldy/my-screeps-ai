@@ -1,6 +1,6 @@
 import { withDelayCallback } from '@/mount/global/delayQueue'
 import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork/constant'
+import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
 import { WorkTaskType } from '../taskWork/types'
 import { CreepRole } from '@/role/types/role'
 import { DelayTaskData } from '@/modulesGlobal/delayQueue'
@@ -45,7 +45,7 @@ const delaySpawnUpgrader = withDelayCallback('spawnUpgrader', ({ roomName }: Del
     }
 
     room.work.updateTask({ type: WorkTaskType.Upgrade, need: 1, priority: WORK_TASK_PRIOIRY.UPGRADE })
-    room.spawner.release.changeBaseUnit(CreepRole.Worker, 1)
+    room.work.changeUnitNumber(1)
 })
 
 /**
@@ -54,8 +54,8 @@ const delaySpawnUpgrader = withDelayCallback('spawnUpgrader', ({ roomName }: Del
  */
 export const initRoomUnit = function (room: Room) {
     room.harvest.startHarvestSource()
-    room.spawner.release.changeBaseUnit(CreepRole.Manager, 1)
-    room.spawner.release.changeBaseUnit(CreepRole.Worker, 2)
+    room.work.changeUnitNumber(1)
+    room.transport.changeUnitNumber(2)
 }
 
 /**
@@ -63,13 +63,13 @@ export const initRoomUnit = function (room: Room) {
  * 定期执行即可，推荐 500 tick 一次
  */
 export const adjustBaseUnit = function (room: Room) {
-    room.spawner.release.changeBaseUnit(CreepRole.Manager, room.transport.getExpect())
+    room.transport.changeUnitNumber(room.transport.getExpect())
 
     // 先更新房间能量使用情况，然后根据情况调整期望
     const { energyGetRate, totalEnergy } = countEnergyChangeRatio(room, true)
     const workerChange = room.work.getExpect(totalEnergy, energyGetRate)
 
-    room.spawner.release.changeBaseUnit(CreepRole.Worker, workerChange)
+    room.work.changeUnitNumber(workerChange)
 }
 
 /**
@@ -112,7 +112,7 @@ export const setUpgraderWhenRCL8 = function (room: Room) {
 export const useUnitSetting = function (room: Room) {
     if (room.controller.level >= 8) {
         // 如果本 shard 的 cpu 较少，8 级之后就限制只要一个 worker
-        const MAX = (
+        const max = (
             Game.cpu.shardLimits &&
             Game.cpu.shardLimits[Game.shard.name] <= 20 &&
             room.controller.level >= 8
@@ -120,13 +120,13 @@ export const useUnitSetting = function (room: Room) {
             ? 1
             : 20
         // 允许没有 worker
-        room.spawner.release.setBaseUnitLimit(CreepRole.Worker, { MIN: 0, MAX })
-        room.spawner.release.setBaseUnitLimit(CreepRole.Manager, { MIN: 1, MAX: 2 })
+        room.work.setUnitLimit({ min: 0, max })
+        room.transport.setUnitLimit({ min: 1, max: 2 })
     }
     else {
         // 没到 8 级前不需要特殊限制
-        room.spawner.release.setBaseUnitLimit(CreepRole.Worker)
-        room.spawner.release.setBaseUnitLimit(CreepRole.Manager)
+        room.work.setUnitLimit()
+        room.transport.setUnitLimit()
     }
 }
 
@@ -134,7 +134,7 @@ export const useUnitSetting = function (room: Room) {
  * 启动 container 造好后进行的运营单位变更
  */
 export const changeForStartContainer = function (room: Room) {
-    // 每个 container 发布四个 worker
-    room.spawner.release.changeBaseUnit(CreepRole.Worker, 4)
+    // 每个 container 发布两个 worker
+    room.work.changeUnitNumber(4)
     room.work.updateTask({ type: WorkTaskType.Upgrade, priority: WORK_TASK_PRIOIRY.UPGRADE })
 }

@@ -1,7 +1,6 @@
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
 import { Color } from '@/utils'
 import { getNearSite } from '@/mount/global/construction'
-import { CreepRole, RoleCreep } from '@/role/types/role'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 
 // creep 原型拓展

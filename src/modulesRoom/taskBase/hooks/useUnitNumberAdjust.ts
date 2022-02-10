@@ -14,7 +14,7 @@ export const useUnitNumberAdjust = function (
     const { fireCreep, unfireCreep, haveCreepBeenFired } = fireControl
 
     /**
-     * 变更基地运维单位数量
+     * 变更运维单位数量
      *
      * @param adjust 要增减的数量，为负代表减少
      */
@@ -99,13 +99,18 @@ export const useUnitNumberAdjust = function (
     }
 
     /**
-     * 设置基地运维角色数量
+     * 设置运维单位数量上下限
      *
-     * @param type 要设置的单位角色
      * @param limit 设置的限制，设置为空来使用默认配置
      */
-    const setUnitLimit = function (limit: { max?: number, min?: number }): void {
+    const setUnitLimit = function (limit?: { max?: number, min?: number }): void {
         const memory = getMemory()
+        if (!limit) {
+            delete memory.unitMax
+            delete memory.unitMin
+            return
+        }
+
         const { unitMin: min, unitMax: max } = memory
         const newLimit = {
             ...DEFAULT_UNIT_LIMIT,

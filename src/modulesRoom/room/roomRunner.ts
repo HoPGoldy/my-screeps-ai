@@ -13,6 +13,8 @@ export const roomRunner = function (room: Room): void {
     runStrategyCore(room.controller)
 
     collectCost(`${room.name} spawn`, TYPE_ROOM, room.spawnController.run)
+    collectCost(`${room.name} transport`, TYPE_ROOM, room.transport.run)
+    collectCost(`${room.name} work`, TYPE_ROOM, room.work.run)
     collectCost(`${room.name} tower`, TYPE_ROOM, room.towerController.run)
     collectCost(`${room.name} storage`, TYPE_ROOM, room.storageController.run)
     collectCost(`${room.name} terminal`, TYPE_ROOM, room.terminalController.run)

@@ -81,7 +81,15 @@ export const createWorkController = function (context: WorkTaskContext) {
          */
         const addBuildTask = (need?: number) => delayAddBuildTask({ roomName, need }, 2)
 
-        return { run: worker.run, getExpect, addBuildTask, ...taskController }
+        /**
+         * 【入口】执行工作模块逻辑
+         */
+        const run = function () {
+            const workRoom = env.getRoomByName(roomName)
+            worker.run(workRoom)
+        }
+
+        return { run, getExpect, addBuildTask, ...taskController }
     }
 
     const [getWorkController] = createCache(lazyLoader)

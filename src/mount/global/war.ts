@@ -122,12 +122,12 @@ if (!Memory.warMemory) Memory.warMemory = { wars: {} }
 const warModule = createWarController({
     getMemory: () => Memory.warMemory,
     goTo: (creep, pos) => goTo(creep, pos, {}),
-    remandSpawn: room => room.spawner.remandSpawn(),
-    lendSpawn: room => room.spawner.lendSpawn(),
+    remandSpawn: room => room.spawnController.remandSpawn(),
+    lendSpawn: room => room.spawnController.lendSpawn(),
     getRoomManager: room => room.transport.getUnit(),
     addManager: (room, addNumber) => {
-        if (room.spawner.getTaskByRole(CreepRole.Manager).length <= 0) {
-            room.spawner.release.changeBaseUnit(CreepRole.Manager, addNumber)
+        if (room.spawnController.getTaskByRole(CreepRole.Manager).length <= 0) {
+            room.transport.changeUnitNumber(addNumber)
         }
     },
     addFillEnergyTask: room => {
