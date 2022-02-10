@@ -5,10 +5,10 @@
  * 这些方法主要是用于和其他模块代码进行交互
  */
 import { clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
-import { autoPlanner } from './autoPlanner'
+import { autoPlanner } from '../room/autoPlanner'
 import { Color, createRoomLink, log } from '@/utils'
 
-export default class RoomExtension extends Room {
+export class RoomExtension extends Room {
     /**
      * 房间打印日志
      * 会包含房间的信息

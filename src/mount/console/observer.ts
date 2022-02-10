@@ -1,6 +1,6 @@
 import { createHelp } from '@/utils'
 
-export default class ObserverConsole extends Room {
+export class ObserverConsole extends Room {
     /**
      * 显示 ob 状态
      */

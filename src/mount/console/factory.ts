@@ -4,7 +4,7 @@ import { yellow, createHelp } from '@/utils'
 /**
  * Factory 上的用户控制接口
  */
-export default class FactoryConsole extends Room {
+export class FactoryConsole extends Room {
     /**
      * 用户操作：设置工厂等级
      *

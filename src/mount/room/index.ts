@@ -31,27 +31,7 @@ import { getPowerController } from './power'
 import { getWorkController } from './work'
 import { getTransportController } from './transport'
 
-export { default as RoomExtension } from './extension'
-export { default as RoomConsole } from './console'
-
-/**
- * 房间插件
- * 实例化时必须接受当前房间名
- */
-type AnyRoomPlugin = { new (name: string): any }
-
 type PluginLoader = (roomName: string) => Record<string, any>
-
-/**
- * 插件存储
- */
-interface PluginStorage {
-    /** 插件的类别 */
-    [pluginName: string]: {
-        /** 插件管理的房间名 */
-        [roomName: string]: any
-    }
-}
 
 /**
  * 依次挂载所有的 Room 拓展

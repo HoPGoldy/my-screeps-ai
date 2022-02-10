@@ -1,6 +1,5 @@
-import { MoveInfo, MoveOpt } from '@/modulesGlobal/move/types'
-import { HarvestMode } from '@/role/base/harvester'
-import { CreepRole, RoleDatas } from '@/role/types/role'
+import { MoveOpt } from '@/modulesGlobal/move/types'
+import { HarvestMode } from '@/modulesRoom/harvest'
 import { Color } from '@/utils'
 
 declare global {
@@ -26,10 +25,6 @@ declare global {
          * 是否在工作
          */
         working?: boolean
-        /**
-         * creep 在工作时需要的自定义配置，在孵化时由 spawn 复制
-         */
-        data?: RoleDatas[CreepRole]
         /**
          * 能量采集单位特有，当前的采集模式
          */

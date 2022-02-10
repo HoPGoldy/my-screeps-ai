@@ -1,8 +1,32 @@
 import { setBornCenter } from '@/modulesGlobal/autoPlanning'
 import { Color, log } from '@/utils'
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
-import { mountAll } from './mountAll'
 import { onRoomLevelChange, scanRoomState } from '@/modulesRoom/room/strategyCore'
+import mountCreep from './creep'
+import mountRoom from './room'
+import mountGlobal from './global'
+import { mountConsole } from './console'
+
+/**
+ * 初始化存储
+ */
+const initStorage = function () {
+    if (!Memory.rooms) Memory.rooms = {}
+    else delete Memory.rooms.undefined
+}
+
+const mountAll = function () {
+    // 存储的兜底工作
+    initStorage()
+
+    // 挂载全部拓展
+    mountGlobal()
+    mountRoom()
+    mountConsole()
+    mountCreep()
+
+    log('拓展挂载完成', 'global', Color.Green)
+}
 
 /**
  * 主要拓展注册插件
