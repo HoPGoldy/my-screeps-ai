@@ -82,6 +82,18 @@ export const createWorkController = function (context: WorkTaskContext) {
         const addBuildTask = (need?: number) => delayAddBuildTask({ roomName, need }, 2)
 
         /**
+         * 想指定房间发送支援工人
+         *
+         * @param supportRoomName 要支援的房间
+         * @param supportNumber 要孵化的支援单位数量
+         */
+        const supportRoom = function (supportRoomName: string, supportNumber: number) {
+            for (let i = 0; i < supportNumber; i++) {
+                releaseWorker(env.getRoomByName(roomName), `${supportRoomName} s${roleName}${i}`)
+            }
+        }
+
+        /**
          * 【入口】执行工作模块逻辑
          */
         const run = function () {
@@ -89,7 +101,7 @@ export const createWorkController = function (context: WorkTaskContext) {
             worker.run(workRoom)
         }
 
-        return { run, getExpect, addBuildTask, ...taskController }
+        return { run, getExpect, addBuildTask, supportRoom, ...taskController }
     }
 
     const [getWorkController] = createCache(lazyLoader)

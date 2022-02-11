@@ -2,6 +2,7 @@ import { DefaultTaskUnitMemory } from '@/modulesRoom/taskBase'
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody, useCache } from '@/utils'
 import { getEngryFrom } from '@/utils/creep'
+import { WorkerMemory } from '..'
 import { WorkTaskType, WorkerActionStrategy, WorkerGetEnergy, WorkerRuntimeContext, WorkTaskContext } from '../types'
 import { useWorkerBuild } from './useWorkerBuild'
 import { useWorkerBuildStartContainer } from './useWorkerBuildStartContainer'
@@ -24,7 +25,7 @@ export const getWorkerBody = createStaticBody(
 )
 
 export const useWorker = function (context: WorkTaskContext, getWorkController: WorkerRuntimeContext) {
-    const { roleName, getMemory, onCreepStageChange, addSpawnCallback, addSpawnTask, getEnergyStructure, goTo } = context
+    const { roleName, getMemory, onCreepStageChange, addSpawnCallback, addSpawnTask, getEnergyStructure, goTo, env } = context
 
     /**
      * 没有任务时的行为逻辑
@@ -100,7 +101,7 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
         return actionStrategys[task.type][stage](creep, task, workRoom)
     }
 
-    const worker = createRole<DefaultTaskUnitMemory>({
+    const worker = createRole<DefaultTaskUnitMemory & WorkerMemory>({
         getMemory: room => {
             const memory = getMemory(room)
             if (!memory.creeps) memory.creeps = {}
@@ -111,10 +112,12 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
             if (memory.fired) return false
             releaseWorker(workRoom, creepName)
         },
-        runTarget: (creep, memory, workRoom) => {
+        runTarget: (creep, memory, spawnRoom) => {
+            const workRoom = memory.supportRoomName ? env.getRoomByName(memory.supportRoomName) : spawnRoom
             return runStrategy(creep, 'target', workRoom)
         },
-        runSource: (creep, memory, workRoom) => {
+        runSource: (creep, memory, spawnRoom) => {
+            const workRoom = memory.supportRoomName ? env.getRoomByName(memory.supportRoomName) : spawnRoom
             return runStrategy(creep, 'source', workRoom)
         },
         onCreepStageChange

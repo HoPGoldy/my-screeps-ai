@@ -103,6 +103,13 @@ export interface WorkTasks {
     [WorkTaskType.FillWall]: RoomTask<WorkTaskType.FillWall>
 }
 
+export interface WorkerMemory {
+    /**
+     * 工作单位要支援哪个房间
+     */
+    supportRoomName?: string
+}
+
 export type WorkerActionStrategy<T extends WorkTaskType = WorkTaskType> = {
     source: WorkerActionStage<T>
     target: WorkerActionStage<T>

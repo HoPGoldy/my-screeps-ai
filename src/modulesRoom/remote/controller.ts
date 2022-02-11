@@ -1,210 +1,249 @@
-// import { removeCreep } from '@/modulesGlobal/creep'
-// import { CreepRole } from '@/role/types/role'
-// import { RemoteInfo, RemoteShowInfo, RemoteMemory } from './types'
-// import RoomAccessor from '../RoomAccessor'
-// import { GetName } from '../spawn/nameGetter'
-// import { withDelayCallback } from '@/mount/global/delayQueue'
-// import { getContainer, getLink } from '@/mount/room/shortcut'
+import { createCache } from '@/utils'
+import { useClaimer } from './hooks/useClaimer'
+import { getRemoteHarvesterName, useRemoteHarvester } from './hooks/useRemoteHarvester'
+import { useReserver } from './hooks/useReserver'
+import { RemoteContext, DelayRemoteHarvestData, RemoteShowInfo, RemoteConfig } from './types'
 
-// /**
-//  * 添加外矿被禁用后的恢复采集任务
-//  */
-// const addDelayHarvest = withDelayCallback('remoteHarvest', ({ roomName, remote, sourceId }: DelayRemoteHarvestData) => {
-//     const thisRoom = Game.rooms[roomName]
-//     if (!thisRoom) return
+interface BuildDelayTaskData {
+    roomName: string
+    need?: number
+}
 
-//     thisRoom.remote.enableRemote(remote, sourceId)
-//     thisRoom.spawner.release.remoteHarvester(remote, sourceId)
-// })
+/**
+ * 创建扩展管理模块
+ */
+export const createRemoteController = function (context: RemoteContext) {
+    const { getMemory, withDelayCallback, getLink, getContainer, env } = context
 
-// export default class RoomShareController extends RoomAccessor<RemoteMemory> {
-//     constructor (roomName: string) {
-//         super('roomRemote', roomName, 'remote', undefined)
-//     }
+    const lazyLoader = function (roomName: string) {
+        /**
+         * 获取本房间所有外矿的列表
+         */
+        const getRemoteList = function (): RemoteShowInfo[] {
+            const room = env.getRoomByName(roomName)
+            const { config } = getMemory(room)
+            if (!config) return []
 
-//     /**
-//      * 获取本房间所有外矿的列表
-//      */
-//     get remoteList (): RemoteShowInfo[] {
-//         if (!this.memory) return []
+            return [].concat(...Object.entries(config).map(([remoteRoomName, roomSource]) => {
+                return Object.entries(roomSource).map(([sourceId, sourceInfo]) => ({
+                    ...sourceInfo,
+                    sourceId,
+                    remoteRoomName
+                }))
+            }))
+        }
 
-//         return [].concat(...Object.entries(this.memory).map(([remoteRoomName, roomSource]) => {
-//             return Object.entries(roomSource).map(([sourceId, sourceInfo]) => ({
-//                 ...sourceInfo,
-//                 sourceId,
-//                 remoteRoomName
-//             }))
-//         }))
-//     }
+        /**
+         * 拓展新的外矿
+         *
+         * @param remoteRoomName 要拓展的外矿房间名
+         * @param sourceId 要采集的外矿 source id
+         * @param customTargetId 能量搬到哪个建筑里，不指定则自行挑选
+         * @returns ERR_INVALID_TARGET targetId 找不到对应的建筑
+         */
+        const add = function (
+            remoteRoomName: string,
+            sourceId: Id<Source>,
+            customTargetId?: Id<AnyStoreStructure>
+        ): Id<AnyStoreStructure> | ERR_INVALID_TARGET {
+            let targetId = customTargetId
+            // 没有指定存放外矿能量的建筑，自行挑选
+            if (!targetId) {
+                const targetStructure = selectStore(remoteRoomName)
+                if (targetStructure) targetId = targetStructure.id
+                else return ERR_INVALID_TARGET
+            }
 
-//     /**
-//      * 拓展新的外矿
-//      *
-//      * @param remoteRoomName 要拓展的外矿房间名
-//      * @param targetId 能量搬到哪个建筑里
-//      * @returns ERR_INVALID_TARGET targetId 找不到对应的建筑
-//      */
-//     public add (remoteRoomName: string, sourceId: Id<Source>, customTargetId?: Id<AnyStoreStructure>): Id<AnyStoreStructure> | ERR_INVALID_TARGET {
-//         let targetId = customTargetId
-//         // 没有指定存放外矿能量的建筑，自行挑选
-//         if (!targetId) {
-//             const targetStructure = this.selectStore(remoteRoomName)
-//             if (targetStructure) targetId = targetStructure.id
-//             else return ERR_INVALID_TARGET
-//         }
+            // target 建筑一定要有
+            if (!env.getObjectById(targetId)) return ERR_INVALID_TARGET
 
-//         // target 建筑一定要有
-//         if (!Game.getObjectById(targetId)) return ERR_INVALID_TARGET
+            const room = env.getRoomByName(roomName)
+            const memory = getMemory(room)
 
-//         // 兜底
-//         if (!this.memory) this.memory = {}
+            // 兜底
+            if (!memory.config) memory.config = {}
 
-//         // 保存外矿信息并发布采集单位
-//         this.setRemoteInfo(remoteRoomName, sourceId, { targetId })
-//         this.room.spawner.release.remoteHarvester(remoteRoomName, sourceId)
+            // 保存外矿信息并发布采集单位
+            setRemoteInfo(remoteRoomName, sourceId, { targetId })
+            releaseRemoteHarvester(room, remoteRoomName, sourceId)
 
-//         return targetId
-//     }
+            return targetId
+        }
 
-//     /**
-//      * 判断指定外矿是否被禁用
-//      *
-//      * @param remoteRoomName 外矿房间名
-//      * @param sourceId 采集的外矿 id
-//      */
-//     public isDisabled (remoteRoomName: string, sourceId: string): boolean {
-//         return !!this.memory?.[remoteRoomName]?.[sourceId]?.reharvestTick
-//     }
+        /**
+         * 判断指定外矿是否被禁用
+         *
+         * @param remoteRoomName 外矿房间名
+         * @param sourceId 采集的外矿 id
+         */
+        const isDisabled = function (remoteRoomName: string, sourceId: string): boolean {
+            const room = env.getRoomByName(roomName)
+            const memory = getMemory(room)
 
-//     /**
-//      * 暂时禁止某个外矿采集
-//      *
-//      * @param remote 要禁用的外矿房间名
-//      * @param sourceId 要禁止采集的外矿
-//      * @param disableTick 禁止采集多久
-//      */
-//     public disableRemote (remote: string, sourceId: Id<Source>, disableTick = 1500) {
-//         if (this.isDisabled(remote, sourceId)) return
-//         this.setRemoteInfo(remote, sourceId, { reharvestTick: Game.time + disableTick })
-//         // 添加延迟启动任务
-//         addDelayHarvest({ roomName: this.roomName, remote, sourceId }, disableTick)
-//     }
+            return !!memory?.config?.[remoteRoomName]?.[sourceId]?.reharvestTick
+        }
 
-//     /**
-//      * 重新启用某个外矿
-//      * @param remoteRoomName 要启用的外矿房间名
-//      * @param sourceId 要启用的外矿 id
-//      */
-//     public enableRemote (remoteRoomName: string, sourceId: Id<Source>) {
-//         if (!this.isDisabled(remoteRoomName, sourceId)) return
-//         this.setRemoteInfo(remoteRoomName, sourceId, { reharvestTick: undefined })
-//     }
+        /**
+         * 暂时禁止某个外矿采集
+         *
+         * @param remote 要禁用的外矿房间名
+         * @param sourceId 要禁止采集的外矿
+         * @param disableTick 禁止采集多久
+         */
+        const disableRemote = function (remote: string, sourceId: Id<Source>, disableTick = 1500) {
+            if (isDisabled(remote, sourceId)) return
+            setRemoteInfo(remote, sourceId, { reharvestTick: Game.time + disableTick })
+            // 添加延迟启动任务
+            delayAddHarvester({ roomName, remote, sourceId }, disableTick)
+        }
 
-//     /**
-//      * 保存外矿信息
-//      * 包含非空兜底
-//      */
-//     private setRemoteInfo (remoteRoomName: string, sourceId: string, info: RemoteInfo) {
-//         if (!this.memory[remoteRoomName]) this.memory[remoteRoomName] = {}
-//         if (!this.memory[remoteRoomName][sourceId]) this.memory[remoteRoomName][sourceId] = info
-//         else {
-//             this.memory[remoteRoomName][sourceId] = {
-//                 ...this.memory[remoteRoomName][sourceId],
-//                 ...info
-//             }
-//         }
-//     }
+        /**
+         * 重新启用某个外矿
+         * @param remoteRoomName 要启用的外矿房间名
+         * @param sourceId 要启用的外矿 id
+         */
+        const enableRemote = function (remoteRoomName: string, sourceId: Id<Source>) {
+            if (!isDisabled(remoteRoomName, sourceId)) return
+            setRemoteInfo(remoteRoomName, sourceId, { reharvestTick: undefined })
+        }
 
-//     /**
-//      *
-//      * @param remoteRoomName 外矿房间名
-//      * @param sourceId 采集的外矿 id
-//      * @param ignoreCache 是否无视之前的缓存重新查找存放处
-//      * @returns 存放建筑
-//      */
-//     public getRemoteEnergyStore (remoteRoomName: string, sourceId: string, ignoreCache = false): AnyStoreStructure {
-//         const targetStructureId = this.memory?.[remoteRoomName]?.[sourceId]?.targetId
+        /**
+         * 保存外矿信息
+         * 包含非空兜底
+         */
+        const setRemoteInfo = function (remoteRoomName: string, sourceId: string, info: RemoteConfig) {
+            const room = env.getRoomByName(roomName)
+            const memory = getMemory(room)
 
-//         if (!targetStructureId || ignoreCache) {
-//             const targetStructure = this.selectStore(remoteRoomName)
-//             this.setRemoteInfo(remoteRoomName, sourceId, { targetId: targetStructure.id })
-//             return targetStructure
-//         }
+            if (!memory.config) memory.config = {}
 
-//         return Game.getObjectById(targetStructureId)
-//     }
+            if (!memory.config[remoteRoomName]) memory.config[remoteRoomName] = {}
+            if (!memory.config[remoteRoomName][sourceId]) memory.config[remoteRoomName][sourceId] = info
+            else {
+                memory.config[remoteRoomName][sourceId] = {
+                    ...memory.config[remoteRoomName][sourceId],
+                    ...info
+                }
+            }
+        }
 
-//     /**
-//      * 自动选择外矿能量应该存放到的位置
-//      */
-//     public selectStore (remoteRoomName: string): AnyStoreStructure {
-//         const remotePos = new RoomPosition(25, 25, remoteRoomName)
+        /**
+         * 获取指定外矿的能量存放位置
+         *
+         * @param remoteRoomName 外矿房间名
+         * @param sourceId 采集的外矿 id
+         * @param ignoreCache 是否无视之前的缓存重新查找存放处
+         * @returns 存放建筑
+         */
+        const getRemoteEnergyStore = function (remoteRoomName: string, sourceId: string, ignoreCache = false): AnyStoreStructure {
+            const room = env.getRoomByName(roomName)
+            const memory = getMemory(room)
 
-//         // 优先放到最近的 link、storage、terminal 里
-//         const candidates = [...getLink(this.room), this.room.storage, this.room.terminal].filter(Boolean)
-//         if (candidates.length > 0) {
-//             return remotePos.findClosestByPath(candidates)
-//         }
+            const targetStructureId = memory?.config?.[remoteRoomName]?.[sourceId]?.targetId
 
-//         const containers = getContainer(this.room)
-//         // 实在没有就找最近的 container，再没有就别用外矿了
-//         if (containers && containers.length > 0) {
-//             return remotePos.findClosestByPath(containers)
-//         }
-//     }
+            if (!targetStructureId || ignoreCache) {
+                const targetStructure = selectStore(remoteRoomName)
+                setRemoteInfo(remoteRoomName, sourceId, { targetId: targetStructure.id })
+                return targetStructure
+            }
 
-//     /**
-//      * 移除外矿
-//      *
-//      * @param remoteRoomName 要移除的外矿
-//      * @param sourceId 要移除的外矿 id
-//      */
-//     public remove (remoteRoomName: string, sourceId: Id<Source>): OK | ERR_NOT_FOUND {
-//         // 兜底
-//         if (!this.memory) return ERR_NOT_FOUND
-//         if (!(remoteRoomName in this.memory)) return ERR_NOT_FOUND
+            return env.getObjectById(targetStructureId)
+        }
 
-//         delete this.memory[remoteRoomName]
-//         if (Object.keys(this.memory).length <= 0) delete this.memory
+        /**
+         * 自动选择外矿能量应该存放到的位置
+         */
+        const selectStore = function (remoteRoomName: string): AnyStoreStructure {
+            const remotePos = new RoomPosition(25, 25, remoteRoomName)
+            const selfRoom = env.getRoomByName(roomName)
 
-//         // 移除相关单位
-//         removeCreep(GetName.remoteHarvester(remoteRoomName, sourceId))
+            // 优先放到最近的 link、storage、terminal 里
+            const candidates = [...getLink(selfRoom), selfRoom.storage, selfRoom.terminal].filter(Boolean)
+            if (candidates.length > 0) {
+                return remotePos.findClosestByPath(candidates)
+            }
 
-//         return OK
-//     }
+            const containers = getContainer(selfRoom)
+            // 实在没有就找最近的 container，再没有就别用外矿了
+            if (containers && containers.length > 0) {
+                return remotePos.findClosestByPath(containers)
+            }
+        }
 
-//     /**
-//      * 占领新房间
-//      * 本方法只会发布占领单位，等到占领成功后 claimer 会自己发布支援单位
-//      *
-//      * @param targetRoomName 要占领的目标房间
-//      * @param signText 新房间的签名
-//      */
-//     public claim (targetRoomName: string, signText = ''): OK {
-//         this.room.spawner.addTask(
-//             GetName.claimer(targetRoomName),
-//             CreepRole.Claimer,
-//             { targetRoomName, signText }
-//         )
+        /**
+         * 移除外矿
+         *
+         * @param remoteRoomName 要移除的外矿
+         */
+        const remove = function (remoteRoomName: string): OK | ERR_NOT_FOUND {
+            const room = env.getRoomByName(roomName)
+            const memory = getMemory(room)
 
-//         return OK
-//     }
-// }
+            // 兜底
+            if (!memory.config) return ERR_NOT_FOUND
+            if (!(remoteRoomName in memory.config)) return ERR_NOT_FOUND
 
-// /**
-//  * 外矿恢复采集任务数据
-//  */
-// interface DelayRemoteHarvestData {
-//     /**
-//      * 源房间名
-//      */
-//     roomName: string
-//     /**
-//      * 被采集的外矿房间房名
-//      */
-//     remote: string
-//     /**
-//      * 要采集的外矿 id
-//      */
-//     sourceId: Id<Source>
-// }
+            // 移除相关单位
+            Object.keys(memory.config[remoteRoomName]).forEach((sourceId: Id<Source>) => {
+                const harvesterName = getRemoteHarvesterName(remoteRoomName, sourceId)
+                remoteHarvester.removeUnit(room, harvesterName, { immediate: true })
+            })
+            // 移除相关内存数据
+            delete memory.config[remoteRoomName]
+            if (Object.keys(memory).length <= 0) delete memory.config
+
+            return OK
+        }
+
+        /**
+         * 占领新房间
+         * 本方法只会发布占领单位，等到占领成功后 claimer 会自己发布支援单位
+         *
+         * @param targetRoomName 要占领的目标房间
+         * @param signText 新房间的签名
+         * @param centerFlagName 新房的基地中心位置旗帜名
+         */
+        const claim = function (targetRoomName: string, signText?: string, centerFlagName?: string): OK {
+            releaseClaimer(env.getRoomByName(roomName), targetRoomName, signText, centerFlagName)
+            return OK
+        }
+
+        /**
+         * 【入口】执行扩展模块逻辑
+         */
+        const run = function () {
+            const workRoom = env.getRoomByName(roomName)
+
+            remoteHarvester.run(workRoom)
+            reserver.run(workRoom)
+            claimer.run(workRoom)
+        }
+
+        return { run, getRemoteList, add, remove, claim, getRemoteEnergyStore, isDisabled, disableRemote, enableRemote }
+    }
+
+    const [getRemoteController] = createCache(lazyLoader)
+    const getController = room => getRemoteController(room.name)
+    // 创建预定单位
+    const { reserver, releaseReserver } = useReserver(context)
+    // 创建外矿采集单位
+    const { remoteHarvester, releaseRemoteHarvester } = useRemoteHarvester(context, getController, releaseReserver)
+    // 创建占领单位
+    const { claimer, releaseClaimer } = useClaimer(context)
+
+    /**
+     * 添加外矿被禁用后的恢复采集任务
+     */
+    const delayAddHarvester = withDelayCallback('remoteHarvest', ({ roomName, remote, sourceId }: DelayRemoteHarvestData) => {
+        const thisRoom = env.getRoomByName(roomName)
+        if (!thisRoom) return
+
+        const { enableRemote } = getRemoteController(roomName)
+        enableRemote(remote, sourceId)
+        releaseRemoteHarvester(thisRoom, remote, sourceId)
+    })
+
+    return getRemoteController
+}
+
+export type RemoteController = ReturnType<ReturnType<typeof createRemoteController>>
