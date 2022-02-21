@@ -1,5 +1,6 @@
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody } from '@/utils'
+import { DEFAULT_RESERVER_ROLE } from '../constants'
 import { RemoteContext, ReserverMemory } from '../types'
 
 /**
@@ -27,7 +28,7 @@ export const getReserverBody = createStaticBody(
  * 外矿采集单位采集的时候会检查预定剩余时间，如果不够了会主动发布该角色
  */
 export const useReserver = function (context: RemoteContext) {
-    const { reserverRole, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env } = context
+    const { reserverRole = DEFAULT_RESERVER_ROLE, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env } = context
 
     const reserver = createRole<ReserverMemory>({
         getMemory: room => {

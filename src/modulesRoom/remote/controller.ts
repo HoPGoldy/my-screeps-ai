@@ -2,12 +2,8 @@ import { createCache } from '@/utils'
 import { useClaimer } from './hooks/useClaimer'
 import { getRemoteHarvesterName, useRemoteHarvester } from './hooks/useRemoteHarvester'
 import { useReserver } from './hooks/useReserver'
+import { useSigner } from './hooks/useSigner'
 import { RemoteContext, DelayRemoteHarvestData, RemoteShowInfo, RemoteConfig } from './types'
-
-interface BuildDelayTaskData {
-    roomName: string
-    need?: number
-}
 
 /**
  * 创建扩展管理模块
@@ -209,7 +205,18 @@ export const createRemoteController = function (context: RemoteContext) {
         }
 
         /**
-         * 【入口】执行扩展模块逻辑
+         * 给指定房间控制器签名
+         *
+         * @param signText 要签名的内容
+         * @param targetRoomName 要签名的房间（默认为本房间）
+         */
+        const sign = function (signText: string, targetRoomName?: string) {
+            releaseSigner(env.getRoomByName(roomName), targetRoomName || roomName, signText)
+            return OK
+        }
+
+        /**
+         * 【入口】执行扩张模块逻辑
          */
         const run = function () {
             const workRoom = env.getRoomByName(roomName)
@@ -217,9 +224,10 @@ export const createRemoteController = function (context: RemoteContext) {
             remoteHarvester.run(workRoom)
             reserver.run(workRoom)
             claimer.run(workRoom)
+            signer.run(workRoom)
         }
 
-        return { run, getRemoteList, add, remove, claim, getRemoteEnergyStore, isDisabled, disableRemote, enableRemote }
+        return { run, getRemoteList, add, remove, claim, sign, getRemoteEnergyStore, isDisabled, disableRemote, enableRemote }
     }
 
     const [getRemoteController] = createCache(lazyLoader)
@@ -230,6 +238,8 @@ export const createRemoteController = function (context: RemoteContext) {
     const { remoteHarvester, releaseRemoteHarvester } = useRemoteHarvester(context, getController, releaseReserver)
     // 创建占领单位
     const { claimer, releaseClaimer } = useClaimer(context)
+    // 创建签名单位
+    const { signer, releaseSigner } = useSigner(context)
 
     /**
      * 添加外矿被禁用后的恢复采集任务

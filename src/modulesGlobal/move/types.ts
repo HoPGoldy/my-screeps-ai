@@ -131,4 +131,12 @@ declare global {
          */
         stand: boolean
     }
+
+    interface FlagMemory {
+        /**
+         * 路径点旗帜中生效
+         * 用于指定下一个路径点的旗帜名
+         */
+        next: string
+    }
 }

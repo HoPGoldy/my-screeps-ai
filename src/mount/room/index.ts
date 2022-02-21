@@ -14,6 +14,7 @@ import { ObserverController } from '@/modulesRoom/observer'
 import { PowerController } from '@/modulesRoom/power'
 import { WorkController } from '@/modulesRoom/taskWork'
 import { TransportController } from '@/modulesRoom/taskTransport'
+import { RemoteController } from '@/modulesRoom/remote'
 
 import { getTowerController } from './tower'
 import { getLinkController } from './link'
@@ -30,6 +31,7 @@ import { getObserverController } from './observer'
 import { getPowerController } from './power'
 import { getWorkController } from './work'
 import { getTransportController } from './transport'
+import { getRemoteController } from './remote'
 
 type PluginLoader = (roomName: string) => Record<string, any>
 
@@ -53,6 +55,7 @@ export default () => {
         ['labController', getLabController],
         ['observerController', getObserverController],
         ['share', getShareController],
+        ['remote', getRemoteController],
         ['power', getPowerController]
     ]
 
@@ -111,7 +114,7 @@ declare global {
          * 扩张管理模块
          * 包括外矿和新房扩张
          */
-        // remote: RemoteChontroller
+        remote: RemoteController
         /**
          * tower 防御模块
          */

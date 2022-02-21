@@ -1,5 +1,5 @@
 import { createRole } from '@/modulesRoom/unitControl'
-import { createStaticBody } from '@/utils'
+import { DEFAULT_CLAIMER_ROLE } from '../constants'
 import { ClaimerMemory, RemoteContext } from '../types'
 
 /**
@@ -8,26 +8,12 @@ import { ClaimerMemory, RemoteContext } from '../types'
 export const getClaimerName = (targetRoomName: string) => `${targetRoomName} claimer`
 
 /**
- * 生成占领单位的身体
- */
-export const getClaimerBody = createStaticBody(
-    [[MOVE, 1], [CLAIM, 1]],
-    [[MOVE, 1], [CLAIM, 1]],
-    [[MOVE, 1], [CLAIM, 1]],
-    [[MOVE, 1], [CLAIM, 1]],
-    [[MOVE, 2], [CLAIM, 2]],
-    [[MOVE, 2], [CLAIM, 2]],
-    [[MOVE, 3], [CLAIM, 3]],
-    [[MOVE, 5], [CLAIM, 5]]
-)
-
-/**
  * 预定者
  * 这个角色并不会想太多，出生了就去预定，一辈子走完了就不再孵化
  * 外矿采集单位采集的时候会检查预定剩余时间，如果不够了会主动发布该角色
  */
 export const useClaimer = function (context: RemoteContext) {
-    const { claimerRole, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env } = context
+    const { claimerRole = DEFAULT_CLAIMER_ROLE, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env } = context
 
     const claimer = createRole<ClaimerMemory>({
         getMemory: room => {
@@ -116,6 +102,8 @@ export const useClaimer = function (context: RemoteContext) {
      *
      * @param room 哪个房间孵化
      * @param targetRoomName 要占领的房间
+     * @param sign 要签名的内容
+     * @param center 玩家自定义的基地中心点位
      */
     const releaseClaimer = function (room: Room, targetRoomName: string, sign?: string, center?: string) {
         const creepName = getClaimerName(targetRoomName)

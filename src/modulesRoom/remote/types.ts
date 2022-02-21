@@ -22,6 +22,11 @@ export type RemoteContext = {
      */
     claimerRole?: string
     /**
+     * 签名单位的角色名
+     * 默认为 signer
+     */
+    signerRole?: string
+    /**
      * 获取内存存放对象
      */
     getMemory: (room: Room) => RemoteMemory
@@ -97,16 +102,14 @@ export interface RemoteMemory {
      */
     claimer?: RoleMemory<ClaimerMemory>
     /**
+     * 签名单位内存
+     */
+    signer?: RoleMemory<SignerMemory>
+    /**
      * 外矿配置信息
      * 外层键为房间名，内层键为 source id
      */
     config?: Record<string, Record<string, RemoteConfig>>
-}
-
-declare global {
-    interface RoomMemory {
-        remote?: RemoteMemory
-    }
 }
 
 /**
@@ -160,6 +163,20 @@ export interface ClaimerMemory {
      * 挑选结果就保存在这里
      */
     centerCandidates?: [number, number][]
+}
+
+/**
+ * 签名单位内存
+ */
+export interface SignerMemory {
+    /**
+     * 要签名的房间
+     */
+    targetRoomName: string
+    /**
+     * 要签的内容
+     */
+    sign: string
 }
 
 /**

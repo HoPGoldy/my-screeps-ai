@@ -1,5 +1,6 @@
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody } from '@/utils'
+import { DEFAULT_REMOTE_HARVESTER_ROLE } from '../constants'
 import { RemoteContext, RemoteHarvesterMemory, UnitWorkContext } from '../types'
 
 /**
@@ -25,7 +26,10 @@ export const getRemoteHarvesterBody = createStaticBody(
 )
 
 export const useRemoteHarvester = function (context: RemoteContext, getController: UnitWorkContext, releaseReserver: (room: Room, targetRoomName: string) => void) {
-    const { remoteHarvesterRole, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env } = context
+    const {
+        remoteHarvesterRole = DEFAULT_REMOTE_HARVESTER_ROLE,
+        getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env
+    } = context
 
     const remoteHarvester = createRole<RemoteHarvesterMemory>({
         getMemory: room => {

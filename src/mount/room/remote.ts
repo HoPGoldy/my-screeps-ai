@@ -1,34 +1,32 @@
-import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
 import { goTo, setCreepStand } from '@/modulesGlobal/move'
-import { WorkTaskMemory, createWorkController } from '@/modulesRoom/taskWork'
+import { createRemoteController, RemoteMemory } from '@/modulesRoom/remote'
 import { createEnvContext } from '@/utils'
 import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
+import { getLink, getContainer } from './shortcut'
 import { addSpawnCallback } from './spawn'
 
 declare global {
     interface RoomMemory {
         /**
-         * 房间工作任务内存
+         * 房间扩张模块内存
          */
-        work: WorkTaskMemory
+        remote: RemoteMemory
     }
 }
 
-export const getWorkController = createWorkController({
+export const getRemoteController = createRemoteController({
     sourceUtils,
     withDelayCallback,
     goTo,
     getMemory: room => {
-        if (!room.memory.work) room.memory.work = {}
-        return room.memory.work
+        if (!room.memory.remote) room.memory.remote = {}
+        return room.memory.remote
     },
+    getLink,
+    getContainer,
     addSpawnTask: (room, ...args) => room.spawnController.addTask(...args),
     addSpawnCallback,
-    getEnergyStructure: (room, pos) => {
-        const { getClosestTo, withLimit } = findStrategy
-        return getRoomEnergyTarget(room, getClosestTo(pos), withLimit)
-    },
     onCreepStageChange: (creep, isWorking) => setCreepStand(creep.name, isWorking),
-    env: createEnvContext('work')
+    env: createEnvContext('remote')
 })
