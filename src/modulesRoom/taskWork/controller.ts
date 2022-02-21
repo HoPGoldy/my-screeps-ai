@@ -82,7 +82,7 @@ export const createWorkController = function (context: WorkTaskContext) {
         const addBuildTask = (need?: number) => delayAddBuildTask({ roomName, need }, 2)
 
         /**
-         * 想指定房间发送支援工人
+         * 向指定房间发送支援工人
          *
          * @param supportRoomName 要支援的房间
          * @param supportNumber 要孵化的支援单位数量

@@ -13,7 +13,10 @@ export const getClaimerName = (targetRoomName: string) => `${targetRoomName} cla
  * 外矿采集单位采集的时候会检查预定剩余时间，如果不够了会主动发布该角色
  */
 export const useClaimer = function (context: RemoteContext) {
-    const { claimerRole = DEFAULT_CLAIMER_ROLE, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask, env } = context
+    const {
+        claimerRole = DEFAULT_CLAIMER_ROLE, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask,
+        findBaseCenterPos, onBaseCenterConfirmed, confirmBaseCenter, onClaimSuccess, env
+    } = context
 
     const claimer = createRole<ClaimerMemory>({
         getMemory: room => {
@@ -31,7 +34,7 @@ export const useClaimer = function (context: RemoteContext) {
             // 进入房间之后运行基地选址规划
             else {
                 // 用户没有指定旗帜时才会运行自动规划
-                if (!center) memory.centerCandidates = creep.room.findBaseCenterPos().map(pos => [pos.x, pos.y])
+                if (!center) memory.centerCandidates = findBaseCenterPos(targetRoomName).map(pos => [pos.x, pos.y])
                 return true
             }
         },
@@ -59,8 +62,8 @@ export const useClaimer = function (context: RemoteContext) {
             else if (claimResult === OK) {
                 env.log.success(`新房间 ${targetRoomName} 占领成功！已向源房间 ${spawnRoom.name} 请求支援单位`)
 
-                // 占领成功，发布支援组
-                spawnRoom.work.supportRoom(targetRoomName, 2)
+                // 占领成功
+                onClaimSuccess && onClaimSuccess(creep.room, spawnRoom)
 
                 // 添加签名
                 if (sign) creep.signController(controller, sign)
@@ -69,7 +72,7 @@ export const useClaimer = function (context: RemoteContext) {
                 const flag = env.getFlagByName(center)
                 // 用户已经指定了旗帜了
                 if (flag) {
-                    creep.room.setBaseCenter(flag.pos)
+                    onBaseCenterConfirmed && onBaseCenterConfirmed(creep.room, flag.pos)
                     env.log.success(`使用玩家提供的基地中心点，位置 [${flag.pos.x}, ${flag.pos.y}]`)
                     // 移除旗帜
                     flag.remove()
@@ -80,9 +83,17 @@ export const useClaimer = function (context: RemoteContext) {
                         env.log.warning(`房间中未找到有效的基地中心点，请放置旗帜并执行 Game.rooms.${creep.room.name}.setcenter('旗帜名')`)
                     }
                     else {
-                        const result = creep.room.confirmBaseCenter()
+                        let result: RoomPosition | ERR_NOT_FOUND = ERR_NOT_FOUND
+                        if (confirmBaseCenter) {
+                            const candidates = centerCandidates.map(c => new RoomPosition(c[0], c[1], targetRoomName))
+                            result = confirmBaseCenter(creep.room, candidates)
+                        }
+
                         if (result === ERR_NOT_FOUND) env.log.warning('新的基地中心点确认失败，请手动指定')
-                        else env.log.success(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`)
+                        else {
+                            env.log.success(`新的基地中心点已确认, 位置 [${result.x}, ${result.y}]`)
+                            onBaseCenterConfirmed && onBaseCenterConfirmed(creep.room, result)
+                        }
                     }
                 }
 

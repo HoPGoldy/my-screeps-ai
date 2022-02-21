@@ -16,6 +16,7 @@ export const roomRunner = function (room: Room): void {
     collectCost(`${room.name} transport`, TYPE_ROOM, room.transport.run)
     collectCost(`${room.name} work`, TYPE_ROOM, room.work.run)
     collectCost(`${room.name} tower`, TYPE_ROOM, room.towerController.run)
+    collectCost(`${room.name} remote`, TYPE_ROOM, room.remote.run)
     collectCost(`${room.name} storage`, TYPE_ROOM, room.storageController.run)
     collectCost(`${room.name} terminal`, TYPE_ROOM, room.terminalController.run)
     collectCost(`${room.name} link`, TYPE_ROOM, room.linkController.run)

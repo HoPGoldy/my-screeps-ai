@@ -58,6 +58,33 @@ export type RemoteContext = {
      * 例如 worker 从拿取能量转变为工作模式时
      */
     onCreepStageChange?: (creep: Creep, isWorking: boolean) => unknown
+    /**
+     * 在指定房间中查找可以放置基地的位置
+     *
+     * @param roomName 要搜索的房间名
+     * @returns 可以放置基地的中心点
+     */
+    findBaseCenterPos: (roomName: string) => RoomPosition[]
+    /**
+     * 确定基地选址
+     * 当存在多个基地中心待选点位时，可以通过这个方法来挑选
+     *
+     * @param targetPos 待选的中心点数组
+     */
+    confirmBaseCenter?: (room: Room, targetPos: RoomPosition[]) => RoomPosition | ERR_NOT_FOUND
+    /**
+     * 回调 - 当占领单位确定了最终的基地中心点位时
+     * @param pos 中心点位
+     */
+    onBaseCenterConfirmed?: (room: Room, centerPos: RoomPosition) => unknown
+    /**
+     * 回调 - 房间占领成功
+     * 可以在这里发布支援单位
+     *
+     * @param claimRoom 被占领的房间
+     * @param originRoom 发布占领单位的源房间
+     */
+    onClaimSuccess?: (claimRoom: Room, originRoom: Room) => unknown
 } & EnvContext & UseSpawnContext
 
 /**

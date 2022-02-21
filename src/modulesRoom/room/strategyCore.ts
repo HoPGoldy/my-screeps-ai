@@ -4,7 +4,7 @@ import { Color } from '@/utils'
 import { adjustBaseUnit, adjustTaskWhenRCL8, initRoomUnit, setUpgraderWhenRCL8, useUnitSetting } from './strategyOperation'
 
 export const runStrategyCore = function (controller: StructureController) {
-    // this.drawEnergyHarvestInfo()
+    // drawEnergyHarvestInfo(controller)
     if (Game.time % 20) return
 
     const { room, level } = controller

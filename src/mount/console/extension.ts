@@ -4,7 +4,7 @@
  * 包含了所有自定义的 room 拓展方法
  * 这些方法主要是用于和其他模块代码进行交互
  */
-import { clearStructure, setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { clearStructure } from '@/modulesGlobal/autoPlanning'
 import { autoPlanner } from '../room/autoPlanner'
 import { Color, createRoomLink, log } from '@/utils'
 
@@ -56,47 +56,6 @@ export class RoomExtension extends Room {
     }
 
     /**
-     * 在本房间中查找可以放置基地的位置
-     * 会将可选位置保存至房间内存
-     *
-     * @returns 可以放置基地的中心点
-     */
-    public findBaseCenterPos (): RoomPosition[] {
-        const targetPos = findBaseCenterPos(this.name)
-        this.memory.centerCandidates = targetPos.map(pos => [pos.x, pos.y])
-
-        return targetPos
-    }
-
-    /**
-     * 确定基地选址
-     * 从给定的位置中挑选一个最优的作为基地中心点，如果没有提供的话就从 memory.centerCandidates 中挑选
-     * 挑选完成后会自动将其设置为中心点
-     *
-     * @param targetPos 待选的中心点数组
-     */
-    public confirmBaseCenter (targetPos: RoomPosition[] = undefined): RoomPosition | ERR_NOT_FOUND {
-        if (!targetPos) {
-            if (!this.memory.centerCandidates) return ERR_NOT_FOUND
-            targetPos = this.memory.centerCandidates.map(c => new RoomPosition(c[0], c[1], this.name))
-        }
-
-        const center = confirmBasePos(this, targetPos)
-        setBaseCenter(this, center)
-        delete this.memory.centerCandidates
-
-        return center
-    }
-
-    /**
-     * 设置基地中心
-     * @param pos 中心点位
-     */
-    public setBaseCenter (pos: RoomPosition): OK | ERR_INVALID_ARGS {
-        return setBaseCenter(this, pos)
-    }
-
-    /**
      * 执行自动建筑规划
      */
     public planLayout (): string {
@@ -129,10 +88,6 @@ declare global {
          */
         center: [number, number]
         /**
-         * 基地中心的待选位置, [0] 为 x 坐标, [1] 为 y 坐标
-         */
-        centerCandidates?: [number, number][]
-        /**
          * 是否关闭自动布局，该值为 true 时将不会对本房间运行自动布局
          */
         noLayout: boolean
@@ -161,9 +116,6 @@ declare global {
         /**
          * 自动规划相关
          */
-        findBaseCenterPos(): RoomPosition[]
-        confirmBaseCenter(targetPos?: RoomPosition[]): RoomPosition | ERR_NOT_FOUND
-        setBaseCenter(pos: RoomPosition): OK | ERR_INVALID_ARGS
         planLayout(): string
     }
 }
