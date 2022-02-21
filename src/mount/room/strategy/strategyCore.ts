@@ -1,6 +1,7 @@
 import { setRoomStats, getRoomStats } from '@/modulesGlobal/stats'
-import { DefenseState } from '@/modulesRoom/tower/types'
-import { Color } from '@/utils'
+import { DefenseState } from '@/modulesRoom/tower'
+import { Color, createRoomLink, log } from '@/utils'
+import { planRoomLayout } from '../autoPlanner'
 import { adjustBaseUnit, adjustTaskWhenRCL8, initRoomUnit, setUpgraderWhenRCL8, useUnitSetting } from './strategyOperation'
 
 export const runStrategyCore = function (controller: StructureController) {
@@ -51,7 +52,8 @@ export const onRoomLevelChange = function (room: Room, level: number) {
     }
 
     // 每级都运行一次自动布局规划
-    room.log(room.planLayout(), '建筑规划', Color.Green)
+    const roomName = createRoomLink(this.name)
+    log(planRoomLayout(room), roomName + '建筑规划', Color.Green)
 }
 
 /**

@@ -6,7 +6,7 @@ import { WorkTaskType } from '@/modulesRoom/taskWork/types'
 import { CreepRole } from '@/role/types/role'
 import { getExtractor, updateStructure } from '../room/shortcut'
 import { sourceUtils } from './source'
-import { changeForStartContainer } from '@/modulesRoom/room/strategyOperation'
+import { changeForStartContainer } from '@/mount/room/strategy/strategyOperation'
 
 /**
 * 当墙壁建造好后将找到最近的工人刷一下自己

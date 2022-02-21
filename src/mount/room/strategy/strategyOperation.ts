@@ -1,8 +1,6 @@
 import { withDelayCallback } from '@/mount/global/delayQueue'
 import { countEnergyChangeRatio } from '@/modulesGlobal/energyUtils'
-import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
-import { WorkTaskType } from '../taskWork/types'
-import { CreepRole } from '@/role/types/role'
+import { WorkTaskType, WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
 import { DelayTaskData } from '@/modulesGlobal/delayQueue'
 
 /**

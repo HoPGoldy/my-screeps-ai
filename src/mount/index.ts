@@ -1,11 +1,13 @@
-import { setBornCenter } from '@/modulesGlobal/autoPlanning'
 import { Color, log } from '@/utils'
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
-import { onRoomLevelChange, scanRoomState } from '@/modulesRoom/room/strategyCore'
+import { onRoomLevelChange, scanRoomState } from './room/strategy/strategyCore'
 import mountCreep from './creep'
 import mountRoom from './room'
 import mountGlobal from './global'
 import { mountConsole } from './console'
+import { setBornCenter } from './room/autoPlanner'
+
+export { roomRunner } from './room/roomHelper'
 
 /**
  * 初始化存储

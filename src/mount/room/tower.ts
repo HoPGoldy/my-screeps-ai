@@ -1,14 +1,13 @@
 import { TransportTaskType } from '@/modulesRoom'
 import { createTowerController } from '@/modulesRoom/tower/controller'
 import { whiteListFilter } from '../global/whiteList'
-import { GetName } from '@/modulesRoom/spawn/nameGetter'
-// import { CreepRole } from '@/role/types/role'
 import { createEnvContext } from '@/utils'
 import { TowerMemory } from '@/modulesRoom/tower/types'
 import { getTower, getWall, getRampart, getLab } from './shortcut'
-import { useUnitSetting } from '@/modulesRoom/room/strategyOperation'
-import { useDefenseUnitSetting } from '@/modulesRoom/room/strategyDefense'
+import { useUnitSetting } from '@/mount/room/strategy/strategyOperation'
+import { useDefenseUnitSetting } from '@/mount/room/strategy/strategyDefense'
 import { addSpawnCallback } from './spawn'
+import { planRoomLayout } from './autoPlanner'
 
 declare global {
     interface RoomMemory {
@@ -32,7 +31,7 @@ export const getTowerController = createTowerController({
     }),
     isFriend: whiteListFilter,
     onBackToNormal: room => {
-        room.planLayout()
+        planRoomLayout(room)
         useUnitSetting(room)
     },
     onStartActiveDefense: useDefenseUnitSetting,

@@ -5,7 +5,8 @@ import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
 import { getLink, getContainer } from './shortcut'
 import { addSpawnCallback } from './spawn'
-import { setBaseCenter, confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
+import { setBaseCenter } from './autoPlanner'
 
 declare global {
     interface RoomMemory {

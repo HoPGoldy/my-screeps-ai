@@ -6,13 +6,11 @@ import { ShareConsole } from './share'
 import TerminalConsole from './terminal'
 import { LabConsole } from './lab'
 import { RoomConsole } from './room'
-import { RoomExtension } from './extension'
 import { CreepExtension } from '../creep'
 
 export const mountConsole = function () {
     // 所有需要挂载的原型拓展
     const mountList = [
-        [Room, RoomExtension],
         // 挂载各个模块的手操接口
         [Room, RoomConsole],
         [Room, FactoryConsole],

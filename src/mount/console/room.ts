@@ -5,18 +5,18 @@
  */
 import { getName, getUniqueKey, createHelp, red, yellow, blue, colorful } from '@/utils'
 import { ModuleDescribe } from '@/utils/console/help/types'
-import { RoomExtension } from './extension'
-import { clearStructure, setBaseCenter } from '@/modulesGlobal/autoPlanning'
-import { autoPlanner } from '../room/autoPlanner'
+import { clearStructure } from '@/modulesGlobal/autoPlanning'
+import { autoPlanner, planRoomLayout, setBaseCenter } from '../room/autoPlanner'
 import { WorkTaskType } from '@/modulesRoom'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
 import { DEFAULT_FLAG_NAME } from '@/utils/constants'
 import { getRampart, getWall } from '../room/shortcut'
+import { dangerousRemove } from '../room/roomHelper'
 
 // 在执行了第一次移除操作之后，玩家需要在多少 tick 内重新执行移除操作才能真正发起移除请求
 const ROOM_REMOVE_INTERVAL = 30
 
-export class RoomConsole extends RoomExtension {
+export class RoomConsole extends Room {
     /**
      * 有手动摆放工地时可以调用这个方法进行建造
      */
@@ -83,7 +83,7 @@ export class RoomConsole extends RoomExtension {
             ].join('\n')
             this.memory.removeTime = Game.time
         }
-        else this.dangerousRemove()
+        else dangerousRemove(this)
         return log
     }
 
@@ -99,7 +99,7 @@ export class RoomConsole extends RoomExtension {
      * 用户操作 - 执行自动建筑规划
      */
     public planlayout (): string {
-        return this.planLayout()
+        return planRoomLayout(this)
     }
 
     /**

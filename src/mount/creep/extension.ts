@@ -1,5 +1,5 @@
 import { goTo, setWayPoint } from '@/modulesGlobal/move'
-import { Color } from '@/utils'
+import { Color, createRoomLink, log } from '@/utils'
 import { getNearSite } from '@/mount/global/construction'
 import { MoveOpt } from '@/modulesGlobal/move/types'
 
@@ -14,7 +14,8 @@ export default class CreepExtension extends Creep {
      * @param notify 是否发送邮件
      */
     log (content: string, color: Color = undefined, notify = false): void {
-        this.room.log(content, this.name, color, notify)
+        const roomName = createRoomLink(this.room.name)
+        log(content, roomName + this.name, color, notify)
     }
 
     /**

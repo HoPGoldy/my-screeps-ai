@@ -108,3 +108,9 @@ export class ShareConsole extends Room {
         })
     }
 }
+
+declare global {
+    interface Room {
+        giver (roomName: string, resourceType: ResourceConstant, amount?: number): string
+    }
+}

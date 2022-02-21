@@ -1,5 +1,4 @@
-import { CreepRole } from '@/role/types/role'
-import { WorkTaskType } from '../taskWork/types'
+import { WorkTaskType } from '@/modulesRoom/taskWork'
 
 /**
  * 将房间的运维角色配置调整为防御模式
