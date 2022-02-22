@@ -22,6 +22,11 @@ export type RemoteContext = {
      */
     claimerRole?: string
     /**
+     * 新房协助单位的角色名
+     * 默认为 remoteHelper
+     */
+    remtoeHelperRole?: string
+    /**
      * 签名单位的角色名
      * 默认为 signer
      */
@@ -46,13 +51,19 @@ export type RemoteContext = {
      */
     getContainer: (room: Room) => StructureContainer[]
     /**
+     * 获取房间中的 spawn
+     * 用于接入建筑缓存
+     */
+    getSpawn: (room: Room) => StructureSpawn[]
+    /**
+     * 获取房间中的能量矿
+     * 用于接入建筑缓存
+     */
+    getSource: (room: Room) => Source[]
+    /**
      * 创建延迟任务
      */
     withDelayCallback: WithDelayCallback
-    /**
-     * source 管理工具
-     */
-    sourceUtils: SourceUtils
     /**
      * 回调 - 当 creep 工作阶段发生变化
      * 例如 worker 从拿取能量转变为工作模式时
@@ -133,6 +144,10 @@ export interface RemoteMemory {
      */
     signer?: RoleMemory<SignerMemory>
     /**
+     * 新房协助单位内存
+     */
+    helper?: RoleMemory<RemoteHelperMemory>
+    /**
      * 外矿配置信息
      * 外层键为房间名，内层键为 source id
      */
@@ -204,6 +219,26 @@ export interface SignerMemory {
      * 要签的内容
      */
     sign: string
+}
+
+export type EnergySource = StructureContainer | StructureStorage | Resource<RESOURCE_ENERGY> | Source
+
+/**
+ * 新房协助单位内存
+ */
+export interface RemoteHelperMemory {
+    /**
+     * 要建造的新房名
+     */
+    targetRoomName: string
+    /**
+     * 要采集的 sourceId
+     */
+    sourceId?: Id<EnergySource>
+    /**
+     * 是否已经建造完了所有的工地（这辈子将不会再次执行建造工作）
+     */
+    dontBuild?: boolean
 }
 
 /**

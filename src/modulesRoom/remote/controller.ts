@@ -1,6 +1,7 @@
 import { createCache } from '@/utils'
 import { useClaimer } from './hooks/useClaimer'
 import { getRemoteHarvesterName, useRemoteHarvester } from './hooks/useRemoteHarvester'
+import { useRemoteHelper } from './hooks/useRemoteHelper'
 import { useReserver } from './hooks/useReserver'
 import { useSigner } from './hooks/useSigner'
 import { RemoteContext, DelayRemoteHarvestData, RemoteShowInfo, RemoteConfig } from './types'
@@ -223,6 +224,7 @@ export const createRemoteController = function (context: RemoteContext) {
 
             remoteHarvester.run(workRoom)
             reserver.run(workRoom)
+            remoteHelper.run(workRoom)
             claimer.run(workRoom)
             signer.run(workRoom)
         }
@@ -236,8 +238,10 @@ export const createRemoteController = function (context: RemoteContext) {
     const { reserver, releaseReserver } = useReserver(context)
     // 创建外矿采集单位
     const { remoteHarvester, releaseRemoteHarvester } = useRemoteHarvester(context, getController, releaseReserver)
+    // 创建支援单位
+    const { remoteHelper, releaseRemoteHelper } = useRemoteHelper(context)
     // 创建占领单位
-    const { claimer, releaseClaimer } = useClaimer(context)
+    const { claimer, releaseClaimer } = useClaimer(context, releaseRemoteHelper)
     // 创建签名单位
     const { signer, releaseSigner } = useSigner(context)
 

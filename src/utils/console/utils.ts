@@ -122,8 +122,8 @@ export function log (content: string, prefix = '', color: Color = null, notify =
  * @param prefix 模块日志前缀
  */
 export const createLog = (prefix: string) => ({
-    normal: (content: string) => log(content, prefix),
-    success: (content: string) => log(content, prefix, Color.Green),
-    warning: (content: string) => log(content, prefix, Color.Yellow),
-    error: (content: string) => log(content, prefix, Color.Red, true)
+    normal: (content: string, notify = false) => log(content, prefix, null, notify),
+    success: (content: string, notify = false) => log(content, prefix, Color.Green, notify),
+    warning: (content: string, notify = false) => log(content, prefix, Color.Yellow, notify),
+    error: (content: string, notify = true) => log(content, prefix, Color.Red, notify)
 })

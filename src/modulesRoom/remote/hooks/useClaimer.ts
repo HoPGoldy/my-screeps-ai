@@ -12,7 +12,7 @@ export const getClaimerName = (targetRoomName: string) => `${targetRoomName} cla
  * 这个角色并不会想太多，出生了就去预定，一辈子走完了就不再孵化
  * 外矿采集单位采集的时候会检查预定剩余时间，如果不够了会主动发布该角色
  */
-export const useClaimer = function (context: RemoteContext) {
+export const useClaimer = function (context: RemoteContext, releaseRemoteHelper: (spawnRoom: Room, helpRoomName: string) => unknown) {
     const {
         claimerRole = DEFAULT_CLAIMER_ROLE, getMemory, goTo, onCreepStageChange, addSpawnCallback, addSpawnTask,
         findBaseCenterPos, onBaseCenterConfirmed, confirmBaseCenter, onClaimSuccess, env
@@ -64,6 +64,9 @@ export const useClaimer = function (context: RemoteContext) {
 
                 // 占领成功
                 onClaimSuccess && onClaimSuccess(creep.room, spawnRoom)
+                // 发两个支援单位
+                releaseRemoteHelper(spawnRoom, targetRoomName)
+                releaseRemoteHelper(spawnRoom, targetRoomName)
 
                 // 添加签名
                 if (sign) creep.signController(controller, sign)
