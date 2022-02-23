@@ -52,7 +52,7 @@ export const onRoomLevelChange = function (room: Room, level: number) {
     }
 
     // 每级都运行一次自动布局规划
-    const roomName = createRoomLink(this.name)
+    const roomName = createRoomLink(room.name)
     log(planRoomLayout(room), roomName + '建筑规划', Color.Green)
 }
 

@@ -52,8 +52,8 @@ const delaySpawnUpgrader = withDelayCallback('spawnUpgrader', ({ roomName }: Del
  */
 export const initRoomUnit = function (room: Room) {
     room.harvest.startHarvestSource()
-    room.work.changeUnitNumber(1)
-    room.transport.changeUnitNumber(2)
+    room.work.changeUnitNumber(2)
+    room.transport.changeUnitNumber(1)
 }
 
 /**

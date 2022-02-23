@@ -38,7 +38,7 @@ export const useHarvesterStart = function (context: HarvestContext): HarvesterAc
 
             targetPos = droppedPos || source.pos
         }
-
+        console.log('creep', creep)
         // 到了就不进行移动了
         if (creep.pos.isEqualTo(targetPos)) return { result: OK, targetPos, range }
 

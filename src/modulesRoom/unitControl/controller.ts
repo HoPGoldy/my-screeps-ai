@@ -32,7 +32,7 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
             working: false,
             ready: false
         }
-
+        // console.log('孵化新的单位！', JSON.stringify(memory[creep.name]))
         delete memory[creep.name].registration
     }
 
@@ -52,6 +52,7 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
             working: false,
             ready: false
         }
+        // console.log('注册新的单位！', JSON.stringify(memory[creepName]))
     }
 
     /**
@@ -176,13 +177,14 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
         const memory = getMemory(room)
         for (const creepName in memory) {
             const creep = env.getCreepByName(creepName)
-            console.log('creep', creep, JSON.stringify(memory))
+            // console.log('creep', creep, JSON.stringify(memory))
             // 死掉了就处理后事
             // 这里需要额外判断一下，注册单位是“还没到”的单位，不是“死掉”的单位
-            if (!creep && !memory.registration) {
+            if (!creep) continue
+            if (!creep && !memory[creepName].registration) {
                 onCreepDead && onCreepDead(creepName, memory[creepName], room)
                 // 这里还要再检查下，因为 onCreepDead 时有可能会重新注册这个爬
-                if (!memory.registration) delete memory[creepName]
+                if (!memory[creepName].registration) delete memory[creepName]
                 continue
             }
 

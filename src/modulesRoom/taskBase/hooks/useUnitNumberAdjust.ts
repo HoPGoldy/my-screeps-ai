@@ -29,6 +29,7 @@ export const useUnitNumberAdjust = function (
 
         // 计算真实的调整数量
         const realAdjust = clacRealAdjust(adjust, allUnitNames.length, unitMin, unitMax)
+        console.log('真实调整', roleName, JSON.stringify(allUnitInfos), adjust, realAdjust)
 
         const removeWhenDiedCreep: string[] = []
         const keepWhenDiedCreep: string[] = []
@@ -49,7 +50,7 @@ export const useUnitNumberAdjust = function (
             }
 
             // 为新孵化的单位找到名字
-            for (let i = 0; remainingAdjust <= 0; i++) {
+            for (let i = 0; remainingAdjust > 0; i++) {
                 const newUnitName = roomName + roleName + i
                 if (newUnitName in allUnitInfos) continue
 

@@ -84,9 +84,7 @@ export const useHarvester = function (context: HarvestContext) {
         onCreepDead: (creepName, memory, workRoom) => releaseHarvester(workRoom, memory.sourceId),
         runPrepare: (creep, memory) => {
             const { mode, sourceId } = memory
-            console.log('sourceId', sourceId)
             const source = env.getObjectById(sourceId)
-            console.log('source', source)
 
             // 设置采集模式
             if (!mode) setHarvestMode(source, memory)
@@ -99,8 +97,6 @@ export const useHarvester = function (context: HarvestContext) {
          */
         runSource: (creep, memory) => {
             const source = env.getObjectById(memory.sourceId)
-            console.log('source', source)
-            console.log('memory.sourceId', memory.sourceId)
             return actionStrategys[memory.mode].source(creep, source, memory)
         },
         /**
@@ -123,7 +119,6 @@ export const useHarvester = function (context: HarvestContext) {
      */
     const releaseHarvester = function (room: Room, sourceId: Id<Source>) {
         const creepName = getHarvesterName(room.name, sourceId)
-        console.log('发布 harvester', creepName, room, sourceId)
         addSpawnTask(room, creepName, harvesterRole, getHarvesterBody(room.energyAvailable))
         harvester.registerUnit(creepName, { sourceId }, room)
     }
