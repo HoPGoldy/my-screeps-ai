@@ -47,14 +47,14 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
         // 切换至 target 阶段时会移除缓存，保证下一次获取能量时重新搜索，避免出现一堆人都去挤一个的情况发生
         if (creep.store[RESOURCE_ENERGY] > 10) {
             countWorkTime()
-            delete creep.memory.sourceId
+            delete memory.cacheSourceId
             return true
         }
 
         // 获取有效的能量来源并缓存能量来源
         const source = useCache<EnergySourceStructure | Resource<RESOURCE_ENERGY>>(
             () => getEnergyStructure(workRoom, creep.pos),
-            creep.memory, 'sourceId'
+            memory, 'cacheSourceId'
         )
 
         if (!source) {
@@ -67,11 +67,11 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
 
         // 之前用的能量来源没能量了就更新来源
         if (result === OK) {
-            delete creep.memory.sourceId
+            delete memory.cacheSourceId
             return true
         }
         else if (result === ERR_NOT_IN_RANGE) goTo(creep, source.pos, { range: 1 })
-        else if (result === ERR_NOT_ENOUGH_RESOURCES) delete creep.memory.sourceId
+        else if (result === ERR_NOT_ENOUGH_RESOURCES) delete memory.cacheSourceId
     }
 
     /**

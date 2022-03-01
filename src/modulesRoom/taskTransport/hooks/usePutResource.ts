@@ -5,7 +5,7 @@ import {
 } from '../types'
 
 export const usePutResource = function (context: TransportContext): ManagerActionStrategy {
-    const { getStructure } = context
+    const { env, getStructure } = context
     /**
      * 获取指定物流请求的目标存放地
      *
@@ -133,8 +133,8 @@ export const usePutResource = function (context: TransportContext): ManagerActio
             if (taskData.requests.length <= 0) requireFinishTask(TaskFinishReason.Complete)
         }
         else {
-            manager.log(
-                `物流任务存放资源出错！${transferResult} ${destinationTarget} ` +
+            env.log.error(
+                `${manager.name} 物流任务存放资源出错！${transferResult} ${destinationTarget} ` +
                 `${JSON.stringify(targetReq)} ${transferAmount}`
             )
         }

@@ -171,6 +171,10 @@ export interface RemoteHarvesterMemory {
      * 一个采集单位一辈子只能请求一次
      */
     callReserver?: boolean
+    /**
+     * 当该值为 true 时将不会尝试建造
+     */
+    dontBuild?: boolean
 }
 
 /**

@@ -2,6 +2,7 @@ import { findStrategy, getRoomEnergyTarget } from '@/modulesGlobal/energyUtils'
 import { goTo, setCreepStand } from '@/modulesGlobal/move'
 import { WorkTaskMemory, createWorkController } from '@/modulesRoom/taskWork'
 import { createEnvContext } from '@/utils'
+import { CreepRole } from '../creep/types'
 import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
 import { addSpawnCallback } from './spawn'
@@ -16,6 +17,7 @@ declare global {
 }
 
 export const getWorkController = createWorkController({
+    roleName: CreepRole.Worker,
     sourceUtils,
     withDelayCallback,
     goTo,

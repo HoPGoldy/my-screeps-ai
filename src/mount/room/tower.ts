@@ -8,6 +8,7 @@ import { useUnitSetting } from '@/mount/room/strategy/strategyOperation'
 import { useDefenseUnitSetting } from '@/mount/room/strategy/strategyDefense'
 import { addSpawnCallback } from './spawn'
 import { planRoomLayout } from './autoPlanner'
+import { CreepRole } from '../creep/types'
 
 declare global {
     interface RoomMemory {
@@ -16,6 +17,7 @@ declare global {
 }
 
 export const getTowerController = createTowerController({
+    defenderRole: CreepRole.Defender,
     getMemory: room => {
         if (!room.memory.tower) room.memory.tower = {}
         return room.memory.tower

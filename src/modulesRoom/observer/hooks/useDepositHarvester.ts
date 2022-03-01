@@ -20,7 +20,7 @@ export const getDepositHarvesterBody = createStaticBody(
  * 从指定沉积物中挖 deposit > 将挖出来的资源转移到建筑中
  */
 export const useDepositHarvester = function (context: ObserverContext) {
-    const { env, getMemory, depoMax, addSpawnTask, depositHarvesterRole, addSpawnCallback, onCreepStageChange } = context
+    const { env, getMemory, depoMax, addSpawnTask, depositHarvesterRole, addSpawnCallback, onCreepStageChange, goTo } = context
 
     const depositHarvester = createRole<DepositHarvesterMemory>({
         getMemory: createMemoryGetter(getMemory, 'depositHarvester', {}),
@@ -62,7 +62,7 @@ export const useDepositHarvester = function (context: ObserverContext) {
                 // 旅途时间还没有计算完成
                 else if (!memory.travelComplete) memory.travelTime++ // 增量
 
-                creep.goTo(targetFlag.pos, { range: 1, checkTarget: false })
+                goTo(creep, targetFlag.pos, { range: 1, checkTarget: false })
 
                 return false
             }
@@ -105,7 +105,7 @@ export const useDepositHarvester = function (context: ObserverContext) {
             }
 
             // 转移并检测返回值
-            creep.goTo(workRoom.terminal.pos, { range: 1 })
+            goTo(creep, workRoom.terminal.pos, { range: 1 })
             const result = creep.transfer(workRoom.terminal, depositType)
 
             if (result === OK || result === ERR_NOT_ENOUGH_RESOURCES) {

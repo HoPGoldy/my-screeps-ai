@@ -17,7 +17,7 @@ export const usePbAttacker = function (
     releasePbHealer: ReleasePbHealer,
     releasePbCarrier: ReleasePbCarrier
 ) {
-    const { env, getMemory, pbAttackerRole, addSpawnTask, addSpawnCallback, onCreepStageChange } = context
+    const { env, getMemory, pbAttackerRole, addSpawnTask, addSpawnCallback, onCreepStageChange, goTo } = context
 
     /**
      * pbAttacker 移除自身采集小组的封装
@@ -50,7 +50,7 @@ export const usePbAttacker = function (
             }
 
             // 朝目标移动
-            creep.goTo(targetFlag.pos, { range: 1, checkTarget: false })
+            goTo(creep, targetFlag.pos, { range: 1, checkTarget: false })
 
             let findPowerbank = true
             // 进入房间后搜索 pb 并缓存

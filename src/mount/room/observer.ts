@@ -1,6 +1,4 @@
-import { setCreepStand } from '@/modulesGlobal/move'
-import { WorkTaskType } from '@/modulesRoom'
-import { createHarvestController, HarvestMemory } from '@/modulesRoom/harvest'
+import { goTo, setCreepStand } from '@/modulesGlobal/move'
 import { createObserverController } from '@/modulesRoom/observer/controller'
 import { ObserverMemory } from '@/modulesRoom/observer/types'
 import { createEnvContext } from '@/utils'
@@ -17,6 +15,7 @@ declare global {
 }
 
 export const { getObserverController, globalShowObserver } = createObserverController({
+    goTo,
     getMemory: room => {
         if (!room.memory.observer) room.memory.observer = {}
         return room.memory.observer

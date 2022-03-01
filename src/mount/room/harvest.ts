@@ -3,6 +3,7 @@ import { WorkTaskType } from '@/modulesRoom'
 import { createHarvestController, HarvestMemory } from '@/modulesRoom/harvest'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
 import { createEnvContext } from '@/utils'
+import { CreepRole } from '../creep/types'
 import { addConstructionSite } from '../global/construction'
 import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
@@ -19,6 +20,8 @@ declare global {
 }
 
 export const getHarvestController = createHarvestController({
+    minerRole: CreepRole.Miner,
+    harvesterRole: CreepRole.Harvester,
     getMemory: room => {
         if (!room.memory.harvest) room.memory.harvest = {}
         return room.memory.harvest

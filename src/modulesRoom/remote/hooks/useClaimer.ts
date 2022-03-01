@@ -103,7 +103,7 @@ export const useClaimer = function (context: RemoteContext, releaseRemoteHelper:
                 // 任务完成，一路顺风
                 creep.suicide()
             }
-            else if (claimResult === ERR_GCL_NOT_ENOUGH) creep.log('GCL 不足，无法占领')
+            else if (claimResult === ERR_GCL_NOT_ENOUGH) env.log.warning('GCL 不足，无法占领')
             else creep.say(`占领 ${claimResult}`)
         },
         onCreepStageChange

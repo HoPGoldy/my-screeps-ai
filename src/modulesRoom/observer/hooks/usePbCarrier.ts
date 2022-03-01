@@ -12,7 +12,7 @@ export const getPbCarrierName = (flagName: string, index: number) => `${flagName
 export const usePbCarrier = function (context: ObserverContext) {
     const {
         env, getMemory, addSpawnTask, pbCarrierRole, onPbTransferFinish, addSpawnCallback,
-        onCreepStageChange
+        onCreepStageChange, goTo
     } = context
 
     const pbCarrier = createRole<PbCarrierMemory>({
@@ -30,7 +30,7 @@ export const usePbCarrier = function (context: ObserverContext) {
                 return false
             }
 
-            creep.goTo(targetFlag.pos, { checkTarget: false })
+            goTo(creep, targetFlag.pos, { checkTarget: false })
 
             return creep.pos.inRangeTo(targetFlag.pos, 3)
         },
@@ -43,7 +43,7 @@ export const usePbCarrier = function (context: ObserverContext) {
             // 没到搬运的时候就先待命
             if (targetFlag.memory.state !== PbHarvestState.Transfer) return false
             // 到行动阶段了就过去
-            creep.goTo(targetFlag.pos, { checkTarget: false })
+            goTo(creep, targetFlag.pos, { checkTarget: false })
 
             // 到房间里再进行下一步操作
             if (creep.room.name !== targetFlag.pos.roomName) return false
@@ -69,7 +69,7 @@ export const usePbCarrier = function (context: ObserverContext) {
             }
 
             // 存放资源
-            const result = creep.transferTo(workRoom.terminal, RESOURCE_POWER)
+            const result = creep.transfer(workRoom.terminal, RESOURCE_POWER)
             // 存好了就直接自杀并移除旗帜
             if (result === OK) {
                 creep.suicide()
@@ -78,6 +78,9 @@ export const usePbCarrier = function (context: ObserverContext) {
                 // workRoom.terminalController.balancePower()
 
                 return true
+            }
+            else if (result === ERR_NOT_IN_RANGE) {
+                goTo(creep, workRoom.terminal.pos)
             }
         },
         onCreepStageChange

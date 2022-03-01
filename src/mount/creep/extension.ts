@@ -6,32 +6,6 @@ import { MoveOpt } from '@/modulesGlobal/move/types'
 // creep 原型拓展
 export default class CreepExtension extends Creep {
     /**
-     * 发送日志
-     *
-     * @param content 日志内容
-     * @param instanceName 发送日志的实例名
-     * @param color 日志前缀颜色
-     * @param notify 是否发送邮件
-     */
-    log (content: string, color: Color = undefined, notify = false): void {
-        const roomName = createRoomLink(this.room.name)
-        log(content, roomName + this.name, color, notify)
-    }
-
-    /**
-     * 切换为能量获取状态
-     * 应在 target 阶段能量不足时调用
-     *
-     * @param creep 需要获取能量的 creep
-     * @returns true
-     */
-    backToGetEnergy (): true {
-        // 移除能量来源缓存，便于重新查找最近的
-        delete this.memory.sourceId
-        return true
-    }
-
-    /**
      * 无视 Creep 的寻路
      *
      * @param target 要移动到的位置
@@ -114,17 +88,5 @@ export default class CreepExtension extends Creep {
         if (result === ERR_NOT_IN_RANGE) this.goTo(target.pos, { range: 1 })
 
         return result
-    }
-
-    /**
-     * 转移资源到建筑
-     * 包含移动逻辑
-     *
-     * @param target 要转移到的目标
-     * @param RESOURCE 要转移的资源类型
-     */
-    public transferTo (target: AnyCreep | Structure, RESOURCE: ResourceConstant, moveOpt: MoveOpt = {}): ScreepsReturnCode {
-        this.goTo(target.pos, moveOpt)
-        return this.transfer(target, RESOURCE)
     }
 }

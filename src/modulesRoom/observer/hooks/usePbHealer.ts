@@ -10,7 +10,7 @@ export const getPbHealerName = (targetCreepName: string) => `${targetCreepName} 
  * 移动并治疗 pbAttacker, 请在 8 级时生成
  */
 export const usePbHealer = function (context: ObserverContext) {
-    const { env, getMemory, pbHealerRole, addSpawnTask, addSpawnCallback, onCreepStageChange } = context
+    const { env, getMemory, pbHealerRole, addSpawnTask, addSpawnCallback, onCreepStageChange, goTo } = context
 
     const pbHealer = createRole<PbHealerMemory>({
         getMemory: createMemoryGetter(getMemory, 'pbHealer', {}),
@@ -25,7 +25,7 @@ export const usePbHealer = function (context: ObserverContext) {
 
             // 移动到身边了就治疗
             if (creep.pos.isNearTo(targetCreep)) creep.heal(targetCreep)
-            else creep.goTo(targetCreep.pos, { range: 1, checkTarget: false })
+            else goTo(creep, targetCreep.pos, { range: 1, checkTarget: false })
         },
         onCreepStageChange
     })

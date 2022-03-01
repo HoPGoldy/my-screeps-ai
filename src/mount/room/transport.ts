@@ -1,6 +1,7 @@
 import { goTo, setCreepStand } from '@/modulesGlobal/move'
 import { createTransportController, TransportMemory } from '@/modulesRoom/taskTransport'
 import { createEnvContext } from '@/utils'
+import { CreepRole } from '../creep/types'
 import { sourceUtils } from '../global/source'
 import { getContainer, getStructure, getSource } from './shortcut'
 import { addSpawnCallback } from './spawn'
@@ -15,6 +16,7 @@ declare global {
 }
 
 export const getTransportController = createTransportController({
+    roleName: CreepRole.Manager,
     sourceUtils,
     goTo,
     getContainer, getStructure, getSource,

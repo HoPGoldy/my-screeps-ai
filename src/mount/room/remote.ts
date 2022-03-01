@@ -7,6 +7,7 @@ import { getLink, getContainer, getSource, getSpawn } from './shortcut'
 import { addSpawnCallback } from './spawn'
 import { confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
 import { setBaseCenter } from './autoPlanner'
+import { CreepRole } from '../creep/types'
 
 declare global {
     interface RoomMemory {
@@ -18,6 +19,11 @@ declare global {
 }
 
 export const getRemoteController = createRemoteController({
+    remoteHarvesterRole: CreepRole.RemoteHarvester,
+    reserverRole: CreepRole.Reserver,
+    claimerRole: CreepRole.Claimer,
+    remtoeHelperRole: CreepRole.RemoteHelper,
+    signerRole: CreepRole.Signer,
     withDelayCallback,
     goTo,
     getMemory: room => {

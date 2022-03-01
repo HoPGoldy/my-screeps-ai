@@ -1,4 +1,4 @@
-import { CreepRole } from '@/role/types/role'
+import { CreepRole } from '@/mount/creep/types'
 import { AllowCrossRuleFunc, CrossRules } from './types'
 
 /**
@@ -57,7 +57,7 @@ const crossRules: CrossRules = {
     // pb 治疗单位正在治疗时不允许其他治疗单位对穿
     [CreepRole.PbHealer]: noCrossWithStanding,
 
-    [CreepRole.RemoteBuilder]: noCrossWithStanding,
+    [CreepRole.RemoteHelper]: noCrossWithStanding,
     [CreepRole.RemoteHarvester]: noCrossWithStanding
 }
 

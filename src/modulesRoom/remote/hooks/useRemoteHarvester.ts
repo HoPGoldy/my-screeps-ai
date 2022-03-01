@@ -67,7 +67,7 @@ export const useRemoteHarvester = function (context: RemoteContext, getControlle
             if (creep.pos.isNearTo(source)) {
                 // 再检查下有没有工地, 没有则这辈子就不检查了
                 const constructionSites = source.room.find(FIND_CONSTRUCTION_SITES)
-                if (constructionSites.length > 0) creep.memory.dontBuild = true
+                if (constructionSites.length > 0) memory.dontBuild = true
                 return true
             }
 
@@ -118,7 +118,7 @@ export const useRemoteHarvester = function (context: RemoteContext, getControlle
             else if (harvestResult === ERR_NOT_IN_RANGE) {
                 creep.goTo(source.pos, { range: 1, checkTarget: false })
             }
-            else creep.log(`外矿采集异常，harvest 返回值 ${harvestResult}`)
+            else env.log.error(`${creep.name} 外矿采集异常，harvest 返回值 ${harvestResult}`)
         },
         runTarget: (creep, memory, spawnRoom) => {
             const { roomName, sourceId } = memory
@@ -131,11 +131,11 @@ export const useRemoteHarvester = function (context: RemoteContext, getControlle
             }
 
             // dontBuild 为 false 时表明还在建造阶段
-            if (!creep.memory.dontBuild) {
+            if (!memory.dontBuild) {
                 // 没有可建造的工地后就再也不建造
                 const buildResult = creep.buildRoom(roomName)
 
-                if (buildResult === ERR_NOT_FOUND) creep.memory.dontBuild = true
+                if (buildResult === ERR_NOT_FOUND) memory.dontBuild = true
                 // 能量不足了就去 source 阶段
                 else if (buildResult === ERR_NOT_ENOUGH_ENERGY) {
                     onCreepStageChange(creep, false)
@@ -153,11 +153,14 @@ export const useRemoteHarvester = function (context: RemoteContext, getControlle
             }
 
             // 再把剩余能量运回去
-            const result = creep.transferTo(target, RESOURCE_ENERGY, { range: 1 })
+            const result = creep.transfer(target, RESOURCE_ENERGY)
             // 报自己身上资源不足了就说明能量放完了
             if (result === ERR_NOT_ENOUGH_RESOURCES) return true
             else if (result === ERR_FULL) creep.say('满了啊')
-            else if (result === ERR_NOT_IN_RANGE) creep.say('在路上啦')
+            else if (result === ERR_NOT_IN_RANGE) {
+                goTo(creep, target.pos, { range: 1 })
+                creep.say('在路上啦')
+            }
             else if (result !== OK) env.log.error(`target 阶段 transfer 出现异常，错误码 ${result}`)
 
             return false

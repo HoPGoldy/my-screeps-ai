@@ -1,3 +1,4 @@
+import { Goto } from '@/modulesGlobal/move'
 import { EnvContext } from '@/utils'
 import { UseSpawnContext } from '../spawn'
 import { RoleMemory } from '../unitControl/types'
@@ -45,6 +46,11 @@ export type ObserverContext = {
      * pb 采集小组 - 搬运单位的角色名
      */
     pbCarrierRole?: string
+    /**
+     * 自定义移动
+     * 用于接入对穿移动
+     */
+    goTo: Goto
     /**
      * 获取 ob 的工作内存对象
      */

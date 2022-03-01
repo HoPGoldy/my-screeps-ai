@@ -18,7 +18,10 @@ export const useWorkerBuild = function (
         target: (creep, task, workRoom) => {
             const { removeTaskByKey, countWorkTime } = getWorkController(workRoom)
             countWorkTime()
-            if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
+            if (creep.store[RESOURCE_ENERGY] === 0) {
+                delete task.cacheSourceId
+                return true
+            }
 
             // 有新墙就先刷新墙
             if (creep.memory.fillWallId) {
@@ -36,7 +39,8 @@ export const useWorkerBuild = function (
             // 没有就建其他工地，如果找不到工地了，就算任务完成
             if (creep.buildRoom(workRoom.name) === ERR_NOT_FOUND) {
                 removeTaskByKey(task.key)
-                return creep.backToGetEnergy()
+                delete task.cacheSourceId
+                return true
             }
         }
     }

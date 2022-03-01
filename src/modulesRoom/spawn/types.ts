@@ -1,14 +1,13 @@
-import { CreepRole } from '@/role/types/role'
 import { BodyString, EnvContext } from '@/utils'
 
 export type SpawnContext = {
     /**
      * 重要角色数组
      * 应填写支持房间运维的角色，例如 source 采集或者搬运工
-     * 默认情况下如果一个爬因为能量不足而无法孵化时，将被挂起到队列末尾放置堵塞其他爬的孵化
+     * 默认情况下如果一个爬因为能量不足而无法孵化时，将被挂起到队列末尾防止堵塞其他爬的孵化
      * 而如果一个爬的 role 在此数组中，对应爬的孵化任务将会被卡在队列最前面直到可以孵化为止
      */
-    importantRoles?: string[]
+    importantRoles: string[]
     /**
      * 获取指定房间的 spawn 内存存放位置
      */
@@ -69,24 +68,12 @@ export interface SpawnTask {
 }
 
 /**
- * 房间运维基础单位
- */
-export type BaseUnits = CreepRole.Worker | CreepRole.Manager
-
-/**
  * 房间基础运维单位的动态调整上下限
  * 用于规定不同时期动态调整的范围
  */
 export type BaseUnitLimit = {
     MAX: number
     MIN: number
-}
-
-/**
- * 房间内所有基础单位的限制
- */
-export type RoomBaseUnitLimit = {
-    [role in BaseUnits]: BaseUnitLimit
 }
 
 /**

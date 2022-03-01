@@ -1,7 +1,8 @@
 import { TransportTaskType } from '@/modulesRoom'
 import { createEnvContext } from '@/utils'
 import { getSpawn } from './shortcut'
-import { createSpawnController, RoomBaseUnitLimit, SpawnTask } from '@/modulesRoom/spawn'
+import { createSpawnController, SpawnTask } from '@/modulesRoom/spawn'
+import { CreepRole } from '../creep/types'
 
 declare global {
     interface RoomMemory {
@@ -14,6 +15,7 @@ declare global {
 }
 
 export const { getSpawnController, addSpawnCallback } = createSpawnController({
+    importantRoles: [CreepRole.Harvester, CreepRole.Manager],
     getMemory: room => room.memory,
     getSpawn,
     requestFill: room => {

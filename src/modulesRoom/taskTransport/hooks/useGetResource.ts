@@ -5,7 +5,7 @@ import {
 } from '../types'
 
 export const useGetResource = function (context: TransportContext): ManagerActionStrategy {
-    const { getContainer, getSource, sourceUtils } = context
+    const { env, getContainer, getSource, sourceUtils } = context
 
     const getProcessingRequest = function (context: ManagerWorkContext) {
         const { manager, taskData } = context
@@ -117,7 +117,7 @@ export const useGetResource = function (context: TransportContext): ManagerActio
             else requireFinishTask(TaskFinishReason.Complete)
         }
         else {
-            manager.log(`物流任务获取资源出错！${operationResult} ${JSON.stringify(request)}`)
+            env.log.error(`${manager.name} 物流任务获取资源出错！${operationResult} ${JSON.stringify(request)}`)
         }
     }
 

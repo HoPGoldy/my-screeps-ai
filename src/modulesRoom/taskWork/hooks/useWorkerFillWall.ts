@@ -9,7 +9,7 @@ export const useWorkerFillWall = function (
     getEnergy: WorkerGetEnergy,
     getWorkController: WorkerRuntimeContext
 ): WorkerActionStrategy {
-    const { withDelayCallback } = context
+    const { env, withDelayCallback } = context
 
     /**
      * 当墙刷到上限后，会每隔一段时间回来看看是不是有墙掉回来了
@@ -26,9 +26,12 @@ export const useWorkerFillWall = function (
         source: getEnergy,
         target: (creep, task, workRoom) => {
             const { removeTaskByKey, countWorkTime } = getWorkController(workRoom)
-
-            if (creep.store.getUsedCapacity() === 0) return creep.backToGetEnergy()
             countWorkTime()
+
+            if (creep.store.getUsedCapacity() === 0) {
+                delete task.cacheSourceId
+                return true
+            }
 
             const targetWall = creep.room.towerController.getNeedFillWall()
             if (!targetWall) {
@@ -40,7 +43,7 @@ export const useWorkerFillWall = function (
             // 填充墙壁
             const result = creep.repair(targetWall)
             if (result === ERR_NOT_IN_RANGE) creep.goTo(targetWall.pos, { range: 3 })
-            else if (result !== OK) creep.log('刷墙任务出错！', result)
+            else if (result !== OK) env.log.error(`${creep.name} repair 出错！${result}`)
         }
     }
 }

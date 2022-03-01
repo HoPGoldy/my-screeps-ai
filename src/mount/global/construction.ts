@@ -3,7 +3,7 @@ import { ConstructionMemory, createConstructionController } from '@/modulesGloba
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
 import { createEnvContext } from '@/utils'
 import { WorkTaskType } from '@/modulesRoom/taskWork/types'
-import { CreepRole } from '@/role/types/role'
+import { CreepRole } from '@/mount/creep/types'
 import { getExtractor, updateStructure } from '../room/shortcut'
 import { sourceUtils } from './source'
 import { changeForStartContainer } from '@/mount/room/strategy/strategyOperation'

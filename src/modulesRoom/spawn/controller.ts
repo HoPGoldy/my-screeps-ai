@@ -1,4 +1,3 @@
-import { CreepRole } from '@/role/types/role'
 import { createCache, unserializeBody } from '@/utils'
 import { useSpawnCallback } from './hooks/useSpawnCallback'
 import { createMemoryAccessor } from './memory'

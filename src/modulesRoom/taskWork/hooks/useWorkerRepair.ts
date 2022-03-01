@@ -1,5 +1,5 @@
 import { useCache } from '@/utils'
-import { WorkTaskContext, WorkerActionStrategy, WorkerGetEnergy, WorkerRuntimeContext } from '../types'
+import { WorkTaskContext, WorkerActionStrategy, WorkerGetEnergy, WorkerRuntimeContext, WorkTaskType } from '../types'
 
 /**
  * 维修任务
@@ -8,7 +8,7 @@ export const useWorkerRepair = function (
     context: WorkTaskContext,
     getEnergy: WorkerGetEnergy,
     getWorkController: WorkerRuntimeContext
-): WorkerActionStrategy {
+): WorkerActionStrategy<WorkTaskType.Repair> {
     const { env } = context
 
     return {
@@ -16,7 +16,10 @@ export const useWorkerRepair = function (
         target: (creep, task, workRoom) => {
             const { removeTaskByKey, countWorkTime } = getWorkController(workRoom)
             countWorkTime()
-            if (creep.store[RESOURCE_ENERGY] === 0) return creep.backToGetEnergy()
+            if (creep.store[RESOURCE_ENERGY] === 0) {
+                delete task.cacheSourceId
+                return true
+            }
 
             // 找到受损建筑
             const target: AnyStructure = useCache(() => {
@@ -34,17 +37,20 @@ export const useWorkerRepair = function (
             // 没有需要维修的建筑，任务完成
             if (!target) {
                 removeTaskByKey(task.key)
-                delete creep.memory.repairStructureId
+                delete task.targetId
                 return true
             }
 
             // 修满了就换建筑
-            if (target.hits >= target.hitsMax) delete creep.memory.repairStructureId
+            if (target.hits >= target.hitsMax) delete task.targetId
 
             const result = creep.repair(target)
 
             if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 2 })
-            else if (result === ERR_NOT_ENOUGH_ENERGY) return creep.backToGetEnergy()
+            else if (result === ERR_NOT_ENOUGH_ENERGY) {
+                delete task.cacheSourceId
+                return true
+            }
             else if (result !== OK) {
                 creep.say(`给我修傻了${result}`)
                 env.log.error(`${creep.name} 维修任务异常，repair 返回值: ${result}`)

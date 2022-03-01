@@ -22,7 +22,8 @@ export const useWorkerUpgrade = function (
         target: (creep, task, workRoom) => {
             getWorkController(workRoom).countWorkTime()
             if (creep.upgradeRoom(workRoom.name) === ERR_NOT_ENOUGH_RESOURCES) {
-                return creep.backToGetEnergy()
+                delete task.cacheSourceId
+                return true
             }
 
             return false
