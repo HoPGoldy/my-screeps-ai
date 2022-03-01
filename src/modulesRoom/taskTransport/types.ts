@@ -223,4 +223,9 @@ export interface MoveTargetInfo<T = DestinationTarget> {
      * 这个值为空说明运输任务找不到目标或者任务完成了
      */
     pos?: RoomPosition
+    /**
+     * 要走到距离目标的距离
+     * 一般用于在目标附近等待资源时设置，不填则为 1
+     */
+    range?: number
 }

@@ -38,7 +38,7 @@ export const useHarvesterStart = function (context: HarvestContext): HarvesterAc
 
             targetPos = droppedPos || source.pos
         }
-        console.log('creep', creep)
+
         // 到了就不进行移动了
         if (creep.pos.isEqualTo(targetPos)) return { result: OK, targetPos, range }
 
@@ -63,6 +63,7 @@ export const useHarvesterStart = function (context: HarvestContext): HarvesterAc
             // 找一下这个位置上有没有容器
             const getContainerFilter = s => s.structureType === STRUCTURE_CONTAINER
             const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(getContainerFilter)
+            console.log('harvester 查找容器的位置', JSON.stringify(creep.pos))
             const posContinaerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(getContainerFilter)
 
             if (posContinaer.length > 0 && posContinaerSite.length > 0) return true

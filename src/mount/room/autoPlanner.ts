@@ -35,9 +35,12 @@ export const autoPlanner = createAutoPlanner({
             })
         }))
 
+        console.log('sitePosList', sitePosList)
         // 放置工地并发布建造任务
-        addConstructionSite(sitePosList)
-        room.work.addBuildTask()
+        if (sitePosList.length > 0) {
+            addConstructionSite(sitePosList)
+            room.work.addBuildTask()
+        }
         // 有墙壁的话就转交给房间防御模块负责建造
         if (wallPosList.length > 0) room.towerController.addNewWall(wallPosList)
     }

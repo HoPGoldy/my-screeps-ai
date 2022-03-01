@@ -43,9 +43,7 @@ export const getHarvestController = createHarvestController({
     },
     addBuildCotainerTask: (room, source) => {
         // container 建造任务的优先级应该是最高的
-        room.work.addTask({
-            type: WorkTaskType.BuildStartContainer, sourceId: source.id, priority: 4
-        })
+        room.work.addTask({ type: WorkTaskType.BuildContainer, sourceId: source.id, priority: 4 })
     },
     addRepairContainerTask: room => {
         // 修个小 container，派一个人来修就可以了

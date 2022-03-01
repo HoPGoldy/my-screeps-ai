@@ -79,7 +79,7 @@ export const useWorker = function (context: WorkTaskContext, getWorkController: 
      */
     const actionStrategys: { [type in WorkTaskType]: WorkerActionStrategy } = {
         [WorkTaskType.Upgrade]: useWorkerUpgrade(context, getEnergy, getWorkController),
-        [WorkTaskType.BuildStartContainer]: useWorkerBuildStartContainer(context, getWorkController),
+        [WorkTaskType.BuildContainer]: useWorkerBuildStartContainer(context, getWorkController),
         [WorkTaskType.Build]: useWorkerBuild(context, getEnergy, getWorkController),
         [WorkTaskType.FillWall]: useWorkerFillWall(context, getEnergy, getWorkController),
         [WorkTaskType.Repair]: useWorkerRepair(context, getEnergy, getWorkController)

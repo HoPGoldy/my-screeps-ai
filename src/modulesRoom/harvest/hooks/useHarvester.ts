@@ -11,7 +11,7 @@ import { useHarvesterTransport } from './useHarvesterTransport'
  * 生成能量矿采集单位的名字
  */
 export const getHarvesterName = (roomName: string, sourceId: Id<Source>) => {
-    return `${roomName} harvester${sourceId.slice(sourceId.length - 4)}`
+    return `${roomName} harvester ${sourceId.slice(sourceId.length - 4)}`
 }
 
 /**

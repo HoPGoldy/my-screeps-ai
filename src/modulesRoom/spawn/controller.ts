@@ -8,7 +8,7 @@ export const createSpawnController = function (context: SpawnContext) {
     const { runSpawnCallback, addSpawnCallback } = useSpawnCallback()
 
     const lazyLoader = function (roomName: string) {
-        const db = createMemoryAccessor(() => getMemory(env.getRoomByName(roomName)))
+        const db = createMemoryAccessor(context, () => getMemory(env.getRoomByName(roomName)))
 
         const runSpawn = function (spawn: StructureSpawn) {
             const task = db.queryCurrentTask()
@@ -24,16 +24,15 @@ export const createSpawnController = function (context: SpawnContext) {
                 db.deleteCurrentTask()
             }
             else if (spawnResult === ERR_NAME_EXISTS) {
-                env.log.normal(`${name} 已经存在 ${this.roomName} 将不再生成`)
+                env.log.normal(`${name} 已经存在 ${roomName} 将不再生成`)
                 db.deleteCurrentTask()
             }
             // 能量不足就挂起任务，但是如果是重要角色的话就会卡住然后优先孵化
-            else if (
-                spawnResult === ERR_NOT_ENOUGH_ENERGY &&
-                !importantRoles.includes(role)
-            ) db.hangTask()
+            else if (spawnResult === ERR_NOT_ENOUGH_ENERGY) {
+                if (!importantRoles.includes(role)) db.hangTask()
+            }
             else {
-                env.log.error(`生成失败, ${roomName} 任务 ${role} 挂起, 错误码 ${spawnResult}`)
+                env.log.error(`生成失败, ${roomName} 任务 ${role} 挂起, spawnCreep 错误码 ${spawnResult}`)
                 return spawnResult
             }
         }

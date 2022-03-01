@@ -73,6 +73,8 @@ interface BodyLevelInfo {
  *
  * 将会返回一个函数，函数接受可用于孵化的能量，然后从最后一行身体配置项开始尝试，并返回第一个可以孵化的身体部件
  *
+ * 如果找不到可以孵化的身体时，将返回 **第一个** 身体配置数组
+ *
  * 注意，该函数 **不会** 对传入的配置项按能量消耗大小排序，所以请保证传进来时第一个数组时消耗最小的，后面的消耗依次增大
  */
 export const createStaticBody = function (...bodySets: BodyRepeat[][]) {
@@ -91,7 +93,7 @@ export const createStaticBody = function (...bodySets: BodyRepeat[][]) {
         }
 
         const targetLevel = bodyLevelInfo.find(level => spawnEnergy >= level.cost)
-        if (!targetLevel) return []
+        if (!targetLevel) return bodyLevelInfo[bodyLevelInfo.length - 1].body
 
         return targetLevel.body
     }

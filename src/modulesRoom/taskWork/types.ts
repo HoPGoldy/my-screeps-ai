@@ -57,7 +57,7 @@ export type WorkTaskMemory = TaskBaseMemory<AllRoomWorkTask>
 export enum WorkTaskType {
     Upgrade = 'upgrade',
     Build = 'build',
-    BuildStartContainer = 'buildStartContainer',
+    BuildContainer = 'buildContainer',
     Repair = 'repair',
     FillWall = 'fillWall',
 }
@@ -86,7 +86,7 @@ export interface WorkTasks {
     /**
      * 初始 source container 建造任务
      */
-    [WorkTaskType.BuildStartContainer]: RoomTask<WorkTaskType.BuildStartContainer> & {
+    [WorkTaskType.BuildContainer]: RoomTask<WorkTaskType.BuildContainer> & {
         /**
          * 修建哪个 source 的 container
          * 会自己去找这个 source 周边的 container 工地去修

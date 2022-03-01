@@ -99,6 +99,7 @@ export const createWorkController = function (context: WorkTaskContext) {
         const run = function () {
             const workRoom = env.getRoomByName(roomName)
             worker.run(workRoom)
+            console.log(taskController.show())
         }
 
         return { run, getExpect, addBuildTask, supportRoom, ...taskController }

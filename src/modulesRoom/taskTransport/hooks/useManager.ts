@@ -45,6 +45,7 @@ export const useManager = function (context: TransportContext, getTransportContr
             return memory.creeps
         },
         onCreepDead: (creepName, memory, workRoom) => {
+            console.log('搬运工的死亡内存', JSON.stringify(memory))
             // 被炒鱿鱼了就停止孵化，否则就一直孵化
             if (memory.fired) return false
             releaseManager(workRoom, creepName)
@@ -67,6 +68,7 @@ export const useManager = function (context: TransportContext, getTransportContr
             if (manager.ticksToLive <= TRANSFER_DEATH_LIMIT) managerData.state = ManagerState.DeathClear
 
             // 执行对应的阶段
+            if (!managerData.state) managerData.state = ManagerState.GetResource
             const run = actionStrategys[managerData.state]
             run({
                 manager, workRoom, taskData, managerData,

@@ -1,7 +1,7 @@
 import { serializeBody } from '@/utils'
-import { SpawnMemory, SpawnTask } from './types'
+import { SpawnContext, SpawnMemory, SpawnTask } from './types'
 
-export const createMemoryAccessor = function (getMemory: () => SpawnMemory) {
+export const createMemoryAccessor = function (context: SpawnContext, getMemory: () => SpawnMemory) {
     /**
      * 向生产队列里推送一个生产任务
      *
@@ -11,7 +11,11 @@ export const createMemoryAccessor = function (getMemory: () => SpawnMemory) {
      * @param data 该 creep 的自定义数据
      * @returns 当前任务在队列中的排名
      */
-    const addTask = function (name: string, role: string, bodys: BodyPartConstant[], data?: Record<string, any>): number | ERR_NAME_EXISTS {
+    const addTask = function (name: string, role: string, bodys: BodyPartConstant[], data?: Record<string, any>): number | ERR_NAME_EXISTS | ERR_NO_BODYPART {
+        if (bodys.length <= 0) {
+            context.env.log.warning(`新孵化任务 ${name} 的身体部件为空，已移除任务`)
+            return ERR_NO_BODYPART
+        }
         const memory = getMemory()
 
         // 先检查下任务是不是已经在队列里了

@@ -28,6 +28,7 @@ export const useGetResource = function (context: TransportContext): ManagerActio
         const { manager, managerData, workRoom, requireFinishTask } = context
         let target: AnyStoreStructure
         let targetPos: RoomPosition
+        let targetRange = 1
 
         // 没有指定位置
         if (!request.from) {
@@ -39,6 +40,12 @@ export const useGetResource = function (context: TransportContext): ManagerActio
                 const energySource = getEnergyStore(manager, workRoom, managerData)
                 target = energySource.target
                 targetPos = energySource.pos
+
+                // 没找到能量来源，并且任务指定了 keep，就先往 source 旁边走着
+                if (!targetPos && request.keep) {
+                    targetPos = getSource(workRoom)[0].pos
+                    targetRange = 3
+                }
             }
         }
         // 来源是个位置
@@ -46,15 +53,17 @@ export const useGetResource = function (context: TransportContext): ManagerActio
             targetPos = new RoomPosition(...request.from as [number, number, string])
         }
         // 来源是个 id
-        else target = Game.getObjectById(request.from)
+        else {
+            target = Game.getObjectById(request.from)
+            targetPos = target.pos
+        }
 
-        if (!target) {
+        if (!targetPos) {
             requireFinishTask(TaskFinishReason.CantFindSource)
             return
         }
-        targetPos = target.pos
 
-        return { target, pos: targetPos }
+        return { target, pos: targetPos, range: targetRange }
     }
 
     const withdrawResource = function (
@@ -185,7 +194,7 @@ export const useGetResource = function (context: TransportContext): ManagerActio
 
         // 走过去
         if (!manager.pos.isNearTo(destination.pos)) {
-            manager.goTo(destination.pos, { range: 1 })
+            manager.goTo(destination.pos, { range: destination.range || 1 })
             return
         }
 

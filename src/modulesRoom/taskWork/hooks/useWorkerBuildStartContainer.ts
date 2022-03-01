@@ -10,7 +10,7 @@ import { WorkTaskContext, WorkerActionStrategy, WorkerRuntimeContext } from '../
 export const useWorkerBuildStartContainer = function (
     context: WorkTaskContext,
     getWorkController: WorkerRuntimeContext
-): WorkerActionStrategy<WorkTaskType.BuildStartContainer> {
+): WorkerActionStrategy<WorkTaskType.BuildContainer> {
     const { env, sourceUtils, goTo } = context
 
     return {
