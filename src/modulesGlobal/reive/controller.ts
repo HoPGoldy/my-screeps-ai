@@ -1,7 +1,26 @@
+import { useRevier } from './hooks/useRevier'
 import { ReiveContext } from './types'
 
 export const createReive = function (context: ReiveContext) {
     const { env, getMemory } = context
+
+    const { reiver, releaseReiver } = useRevier(context)
+
+    /**
+     * 开始掠夺房间
+     *
+     * @param targetRoomName 要掠夺的房间
+     * @param originRoomName 要存放到的房间（也是孵化房间）
+     * @param reiverNumber 要孵化的掠夺单位数量
+     */
+    const start = function (targetRoomName: string, originRoomName: string, reiverNumber = 2): string {
+        const spawnRoom = env.getRoomByName(originRoomName)
+        if (!spawnRoom) return `找不到 ${originRoomName}，无法发布掠夺单位`
+
+        for (let i = 0; i < reiverNumber; i++) {
+            releaseReiver(spawnRoom, targetRoomName)
+        }
+    }
 
     /**
      * 添加要掠夺的资源
@@ -39,19 +58,34 @@ export const createReive = function (context: ReiveContext) {
      */
     const show = function (): string {
         const memory = getMemory()
-        if (!memory.reiveList || memory.reiveList.length <= 0) return '暂无特指，将掠夺所有资源'
-        return `当前仅会掠夺如下资源：${memory.reiveList.join(' ')}`
+        const logs: string[] = []
+        if (!memory.reiveList || memory.reiveList.length <= 0) logs.push('暂无特指，将掠夺所有资源')
+        else logs.push(`当前仅会掠夺如下资源：${memory.reiveList.join(' ')}`)
+
+        if (!memory.reiveList) logs.push('暂无正在进行的掠夺工作')
+        else {
+            Object.entries(memory.reiver).forEach(([spawnRoomName, reivers]) => {
+                logs.push(` - ${spawnRoomName}: ${Object.keys(reivers).join(', ')}`)
+            })
+        }
+
+        return logs.join('\n')
     }
 
     const run = function () {
+        const memory = getMemory()
+        if (!memory.reiver) return
 
+        Object.keys(memory.reiver).forEach(spawnRoomName => {
+            const spawnRoom = env.getRoomByName(spawnRoomName)
+            reiver.run(spawnRoom)
+        })
     }
 
-    return { addTarget, removeTarget, show, run }
+    return { addTarget, removeTarget, show, run, start }
 }
 
 /**
- * 延迟任务创建器
- * 给该方法传入一个延迟任务回调，即可返回一个用于发布延迟任务的函数
+ * 掠夺控制器
  */
 export type ReiveController = ReturnType<typeof createReive>
