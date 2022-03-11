@@ -1,5 +1,5 @@
 import { getFreeSpace, serializePos, unserializePos } from '@/utils'
-import { HarvestContext, HarvesterActionStrategy, HarvesterMemory, HarvestMode } from '../types'
+import { HarvestContext, HarvesterActionStrategy, HarvestMode } from '../types'
 
 /**
  * 能量矿采集：转移模式
@@ -8,7 +8,7 @@ import { HarvestContext, HarvesterActionStrategy, HarvesterMemory, HarvestMode }
  * 采集能量 > 存放到指定建筑（在 memory.data.targetId 未指定是为 link）
  */
 export const useHarvesterTransport = function (context: HarvestContext): HarvesterActionStrategy {
-    const { env, requestPowerSource } = context
+    const { env, requestPowerSource, goTo } = context
 
     return {
         prepare: (creep, source, memory) => {
@@ -32,7 +32,7 @@ export const useHarvesterTransport = function (context: HarvestContext): Harvest
                 if (targetPos) memory.standPos = serializePos(targetPos)
             }
 
-            creep.goTo(targetPos || source.pos, { range: 0 })
+            goTo(creep, targetPos || source.pos, { range: 0 })
 
             // 如果没有找到又挨着 source 又挨着目标建筑的位置，走到 source 附近就算完成，找到了的话要走到位置上才算完成
             return targetPos ? creep.pos.isEqualTo(targetPos) : creep.pos.isNearTo(source.pos)
@@ -41,7 +41,7 @@ export const useHarvesterTransport = function (context: HarvestContext): Harvest
             if (creep.store.getFreeCapacity(RESOURCE_ENERGY) === 0) return true
 
             const result = creep.harvest(source)
-            if (result === ERR_NOT_IN_RANGE) creep.goTo(source.pos, { range: 1 })
+            if (result === ERR_NOT_IN_RANGE) goTo(creep, source.pos, { range: 1 })
             else if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 const { time } = env.getGame()
                 // 如果满足下列条件就重新发送 regen_source 任务
@@ -74,7 +74,7 @@ export const useHarvesterTransport = function (context: HarvestContext): Harvest
             const result = creep.transfer(target, RESOURCE_ENERGY)
 
             if (result === OK) return true
-            else if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos)
+            else if (result === ERR_NOT_IN_RANGE) goTo(creep, target.pos)
             else if (result !== ERR_FULL) {
                 env.log.warning(`${creep} 能量转移失败，transfer 错误码 ${result}`)
             }

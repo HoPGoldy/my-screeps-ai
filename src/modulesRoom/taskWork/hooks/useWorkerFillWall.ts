@@ -9,7 +9,7 @@ export const useWorkerFillWall = function (
     getEnergy: WorkerGetEnergy,
     getWorkController: WorkerRuntimeContext
 ): WorkerActionStrategy {
-    const { env, withDelayCallback } = context
+    const { env, withDelayCallback, goTo } = context
 
     /**
      * 当墙刷到上限后，会每隔一段时间回来看看是不是有墙掉回来了
@@ -42,7 +42,7 @@ export const useWorkerFillWall = function (
 
             // 填充墙壁
             const result = creep.repair(targetWall)
-            if (result === ERR_NOT_IN_RANGE) creep.goTo(targetWall.pos, { range: 3 })
+            if (result === ERR_NOT_IN_RANGE) goTo(creep, targetWall.pos, { range: 3 })
             else if (result !== OK) env.log.error(`${creep.name} repair 出错！${result}`)
         }
     }

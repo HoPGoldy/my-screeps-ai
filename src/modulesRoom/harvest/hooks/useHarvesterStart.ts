@@ -9,7 +9,8 @@ import { HarvestContext, HarvesterActionStrategy, HarvesterMemory } from '../typ
  */
 export const useHarvesterStart = function (context: HarvestContext): HarvesterActionStrategy {
     const {
-        env, addConstructionSite, addBuildCotainerTask, getRoomTransportor, sourceUtils, getSpawn
+        env, addConstructionSite, addBuildCotainerTask, getRoomTransportor, sourceUtils, getSpawn,
+        goTo
     } = context
 
     /**
@@ -43,7 +44,7 @@ export const useHarvesterStart = function (context: HarvestContext): HarvesterAc
         if (creep.pos.isEqualTo(targetPos)) return { result: OK, targetPos, range }
 
         // 执行移动
-        const result = creep.goTo(targetPos, { range, checkTarget: false })
+        const result = goTo(creep, targetPos, { range, checkTarget: false })
         return { result, targetPos, range }
     }
 
@@ -103,7 +104,7 @@ export const useHarvesterStart = function (context: HarvestContext): HarvesterAc
                 return false
             }
 
-            creep.goTo(targetSpawn.pos)
+            goTo(creep, targetSpawn.pos)
             creep.transfer(targetSpawn, RESOURCE_ENERGY)
         }
     }

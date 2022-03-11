@@ -1,4 +1,4 @@
-import { setCreepStand } from '@/modulesGlobal/move'
+import { goTo, setCreepStand } from '@/modulesGlobal/move'
 import { WorkTaskType } from '@/modulesRoom'
 import { createHarvestController, HarvestMemory } from '@/modulesRoom/harvest'
 import { WORK_TASK_PRIOIRY } from '@/modulesRoom/taskWork'
@@ -26,6 +26,7 @@ export const getHarvestController = createHarvestController({
         if (!room.memory.harvest) room.memory.harvest = {}
         return room.memory.harvest
     },
+    goTo,
     sourceUtils,
     withDelayCallback,
     getMineral,

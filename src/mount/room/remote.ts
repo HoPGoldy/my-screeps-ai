@@ -2,12 +2,12 @@ import { goTo, setCreepStand } from '@/modulesGlobal/move'
 import { createRemoteController, RemoteMemory } from '@/modulesRoom/remote'
 import { createEnvContext } from '@/utils'
 import { withDelayCallback } from '../global/delayQueue'
-import { sourceUtils } from '../global/source'
 import { getLink, getContainer, getSource, getSpawn } from './shortcut'
 import { addSpawnCallback } from './spawn'
 import { confirmBasePos, findBaseCenterPos } from '@/modulesGlobal/autoPlanning'
 import { setBaseCenter } from './autoPlanner'
 import { CreepRole } from '../creep/types'
+import { buildRoom } from '../creep/methods'
 
 declare global {
     interface RoomMemory {
@@ -30,6 +30,7 @@ export const getRemoteController = createRemoteController({
         if (!room.memory.remote) room.memory.remote = {}
         return room.memory.remote
     },
+    buildRoom,
     getLink,
     getContainer,
     getSource,

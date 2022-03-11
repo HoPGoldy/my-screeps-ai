@@ -6,7 +6,6 @@ import { ShareConsole } from './share'
 import TerminalConsole from './terminal'
 import { LabConsole } from './lab'
 import { RoomConsole } from './room'
-import { CreepExtension } from '../creep'
 
 export const mountConsole = function () {
     // 所有需要挂载的原型拓展
@@ -20,9 +19,7 @@ export const mountConsole = function () {
         [Room, ObserverConsole],
         // [Room, RemoteConsole],
         [Room, LabConsole],
-        [Room, PowerSpawnConsole],
-        // 模块拓展挂载
-        [Creep, CreepExtension]
+        [Room, PowerSpawnConsole]
     ]
 
     mountList.forEach(([targetClass, extensionClass]) => {

@@ -1,6 +1,28 @@
 import { ManagerActionStrategy, ManagerState, TransportContext } from '../types'
 
 export const useClearRemains = function (context: TransportContext): ManagerActionStrategy {
+    const { goTo } = context
+
+    /**
+     * 转移资源到指定建筑
+     *
+     * @param creep 携带资源的爬
+     * @param structure 要运输到的目标
+     * @param resType 要运输的资源类型
+     * @returns 无法转移返回 false，正在转移返回 true
+     */
+    const transferRes = function (creep: Creep, structure: StructureTerminal | StructureStorage, resType: ResourceConstant) {
+        if (!structure) return false
+
+        const storageFreeSpace = structure.store.getFreeCapacity() || 0
+        if (storageFreeSpace <= 0) return false
+
+        const transferAmount = Math.min(storageFreeSpace, creep.store[resType])
+        goTo(creep, structure.pos)
+        creep.transfer(structure, resType, transferAmount)
+        return true
+    }
+
     return (workContext) => {
         const { manager, workRoom, managerData } = workContext
 
@@ -21,24 +43,4 @@ export const useClearRemains = function (context: TransportContext): ManagerActi
 
         managerData.state = ManagerState.GetResource
     }
-}
-
-/**
- * 转移资源到指定建筑
- *
- * @param creep 携带资源的爬
- * @param structure 要运输到的目标
- * @param resType 要运输的资源类型
- * @returns 无法转移返回 false，正在转移返回 true
- */
-const transferRes = function (creep: Creep, structure: StructureTerminal | StructureStorage, resType: ResourceConstant) {
-    if (!structure) return false
-
-    const storageFreeSpace = structure.store.getFreeCapacity() || 0
-    if (storageFreeSpace <= 0) return false
-
-    const transferAmount = Math.min(storageFreeSpace, creep.store[resType])
-    creep.goTo(structure.pos)
-    creep.transfer(structure, resType, transferAmount)
-    return true
 }

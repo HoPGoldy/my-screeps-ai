@@ -10,7 +10,7 @@ export const useHarvesterSimple = function (
     context: HarvestContext,
     setHarvestMode: (source: Source, memory: HarvesterMemory) => void
 ): HarvesterActionStrategy {
-    const { env, addRepairContainerTask, hasTransportTask, addTransportTask, sourceUtils } = context
+    const { env, addRepairContainerTask, hasTransportTask, addTransportTask, sourceUtils, goTo } = context
 
     return {
         prepare: (creep, source, memory) => {
@@ -20,7 +20,7 @@ export const useHarvesterSimple = function (
                 return false
             }
 
-            creep.goTo(container.pos, { range: 0, checkTarget: false })
+            goTo(creep, container.pos, { range: 0, checkTarget: false })
             // 没抵达位置了就还没准备完成
             if (!creep.pos.isEqualTo(container.pos)) return false
 
@@ -39,7 +39,7 @@ export const useHarvesterSimple = function (
             if (creep.ticksToLive < 2) creep.drop(RESOURCE_ENERGY)
 
             const result = creep.harvest(source)
-            if (result === ERR_NOT_IN_RANGE) creep.goTo(source.pos, { range: 1 })
+            if (result === ERR_NOT_IN_RANGE) goTo(creep, source.pos, { range: 1 })
 
             const { storage } = source.room
             if (!storage || !storage.my || env.inInterval(20)) return false

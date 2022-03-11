@@ -6,6 +6,7 @@ import { CreepRole } from '../creep/types'
 import { withDelayCallback } from '../global/delayQueue'
 import { sourceUtils } from '../global/source'
 import { addSpawnCallback } from './spawn'
+import { buildRoom } from '../creep/methods'
 
 declare global {
     interface RoomMemory {
@@ -25,6 +26,7 @@ export const getWorkController = createWorkController({
         if (!room.memory.work) room.memory.work = {}
         return room.memory.work
     },
+    buildRoom,
     addSpawnTask: (room, ...args) => room.spawnController.addTask(...args),
     addSpawnCallback,
     getEnergyStructure: (room, pos) => {

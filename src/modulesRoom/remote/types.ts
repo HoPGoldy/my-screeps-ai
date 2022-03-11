@@ -1,6 +1,5 @@
 import { WithDelayCallback } from '@/modulesGlobal/delayQueue'
 import { Goto } from '@/modulesGlobal/move'
-import { SourceUtils } from '@/modulesGlobal/source'
 import { EnvContext } from '@/utils'
 import { UseSpawnContext } from '../spawn'
 import { RoleMemory } from '../unitControl'
@@ -64,6 +63,11 @@ export type RemoteContext = {
      * 创建延迟任务
      */
     withDelayCallback: WithDelayCallback
+    /**
+     * 建设指定房间中的工地
+     * 应包含移动逻辑
+     */
+    buildRoom: (creep: Creep, targetRoomName: string) => ScreepsReturnCode
     /**
      * 回调 - 当 creep 工作阶段发生变化
      * 例如 worker 从拿取能量转变为工作模式时

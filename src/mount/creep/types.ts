@@ -1,7 +1,3 @@
-import { MoveOpt } from '@/modulesGlobal/move/types'
-import { HarvestMode } from '@/modulesRoom/harvest'
-import { Color } from '@/utils'
-
 declare global {
     /**
      * creep 内存拓展
@@ -32,11 +28,7 @@ declare global {
      * 来自于 ./extension.ts
      */
     interface Creep {
-        goTo(target?: RoomPosition, moveOpt?: MoveOpt): ScreepsReturnCode
-        setWayPoint(target: string[] | string): ScreepsReturnCode
-        upgradeRoom(roomName: string): ScreepsReturnCode
         buildRoom(roomName: string): ScreepsReturnCode
-        getEngryFrom(target: AllEnergySource): ScreepsReturnCode
     }
 }
 

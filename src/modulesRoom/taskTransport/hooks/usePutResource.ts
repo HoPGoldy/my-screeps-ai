@@ -5,7 +5,7 @@ import {
 } from '../types'
 
 export const usePutResource = function (context: TransportContext): ManagerActionStrategy {
-    const { env, getStructure } = context
+    const { env, getStructure, goTo } = context
     /**
      * 获取指定物流请求的目标存放地
      *
@@ -201,7 +201,7 @@ export const usePutResource = function (context: TransportContext): ManagerActio
 
         // 走过去
         if (!manager.pos.isNearTo(destination.pos)) {
-            manager.goTo(destination.pos, { range: 1 })
+            goTo(manager, destination.pos, { range: 1 })
             return
         }
 

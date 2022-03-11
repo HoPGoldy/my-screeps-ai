@@ -1,4 +1,5 @@
 import { WithDelayCallback } from '@/modulesGlobal/delayQueue/creator'
+import { Goto } from '@/modulesGlobal/move'
 import { SourceUtils } from '@/modulesGlobal/source/sourceUtils'
 import { EnvContext } from '@/utils'
 import { UseSpawnContext } from '../spawn'
@@ -7,6 +8,11 @@ import { RoleMemory } from '../unitControl/types'
 
 export type HarvestContext = {
     getMemory: (room: Room) => HarvestMemory
+    /**
+     * 自定义移动
+     * 用于接入对穿移动
+     */
+    goTo: Goto
     /**
      * 指定元素矿采集单位的角色名，默认为 miner
      */

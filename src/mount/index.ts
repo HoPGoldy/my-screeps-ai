@@ -1,7 +1,7 @@
 import { Color, log } from '@/utils'
 import { AppLifecycleCallbacks } from '@/modulesGlobal/framework/types'
 import { onRoomLevelChange, scanRoomState } from './room/strategy/strategyCore'
-import mountCreep from './creep'
+import { mountCreep } from './creep/extension'
 import mountRoom from './room'
 import { mountGlobal } from './global'
 import { mountConsole } from './console'

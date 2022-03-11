@@ -1,6 +1,6 @@
 import { DelayTaskData } from '@/modulesGlobal/delayQueue'
 import { createRole } from '@/modulesRoom/unitControl/controller'
-import { createEnvContext, createStaticBody } from '@/utils'
+import { createStaticBody } from '@/utils'
 import { MINE_LIMIT, DEFAULT_MINER_ROLE } from '../constants'
 import { HarvestContext } from '../types'
 
@@ -30,7 +30,7 @@ export const getMinerBody = createStaticBody(
 export const useMiner = function (context: HarvestContext) {
     const {
         env, getMemory, withDelayCallback, getMineral, addSpawnTask, getResourceAmount,
-        minerRole = DEFAULT_MINER_ROLE, addSpawnCallback, onCreepStageChange
+        minerRole = DEFAULT_MINER_ROLE, addSpawnCallback, onCreepStageChange, goTo
     } = context
 
     /**
@@ -95,7 +95,7 @@ export const useMiner = function (context: HarvestContext) {
             }
 
             const harvestResult = creep.harvest(mineral)
-            if (harvestResult === ERR_NOT_IN_RANGE) creep.goTo(mineral.pos)
+            if (harvestResult === ERR_NOT_IN_RANGE) goTo(creep, mineral.pos)
         },
         /**
          * 运回存储建筑
@@ -108,7 +108,7 @@ export const useMiner = function (context: HarvestContext) {
                 return false
             }
 
-            creep.goTo(workRoom.terminal.pos)
+            goTo(creep, workRoom.terminal.pos)
             const result = creep.transfer(workRoom.terminal, Object.keys(creep.store)[0] as ResourceConstant)
             return result === OK
         },

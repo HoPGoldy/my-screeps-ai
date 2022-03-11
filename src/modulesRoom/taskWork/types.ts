@@ -32,6 +32,11 @@ export type WorkTaskContext = {
      */
     withDelayCallback: WithDelayCallback
     /**
+     * 建设指定房间中的工地
+     * 应包含移动逻辑
+     */
+    buildRoom: (creep: Creep, targetRoomName: string) => ScreepsReturnCode
+    /**
      * source 管理工具
      */
     sourceUtils: SourceUtils

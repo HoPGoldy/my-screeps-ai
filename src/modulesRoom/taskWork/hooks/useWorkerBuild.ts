@@ -13,6 +13,8 @@ export const useWorkerBuild = function (
     getEnergy: WorkerGetEnergy,
     getWorkController: WorkerRuntimeContext
 ): WorkerActionStrategy {
+    const { goTo, buildRoom } = context
+
     return {
         source: getEnergy,
         target: (creep, task, workRoom) => {
@@ -32,12 +34,12 @@ export const useWorkerBuild = function (
                 }
 
                 const result = creep.repair(wall)
-                if (result === ERR_NOT_IN_RANGE) creep.goTo(wall.pos, { range: 3 })
+                if (result === ERR_NOT_IN_RANGE) goTo(creep, wall.pos, { range: 3 })
                 return false
             }
 
             // 没有就建其他工地，如果找不到工地了，就算任务完成
-            if (creep.buildRoom(workRoom.name) === ERR_NOT_FOUND) {
+            if (buildRoom(creep, workRoom.name) === ERR_NOT_FOUND) {
                 removeTaskByKey(task.key)
                 delete task.cacheSourceId
                 return true

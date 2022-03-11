@@ -70,7 +70,7 @@ export const useWorkerBuildStartContainer = function (
             }, task, 'containerId')
 
             const result = creep.build(containerSite)
-            if (result === ERR_NOT_IN_RANGE) creep.goTo(containerSite.pos, { range: 3 })
+            if (result === ERR_NOT_IN_RANGE) goTo(creep, containerSite.pos, { range: 3 })
         }
     }
 }

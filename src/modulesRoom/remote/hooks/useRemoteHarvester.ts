@@ -116,7 +116,7 @@ export const useRemoteHarvester = function (context: RemoteContext, getControlle
                 }
             }
             else if (harvestResult === ERR_NOT_IN_RANGE) {
-                creep.goTo(source.pos, { range: 1, checkTarget: false })
+                goTo(creep, source.pos, { range: 1, checkTarget: false })
             }
             else env.log.error(`${creep.name} 外矿采集异常，harvest 返回值 ${harvestResult}`)
         },

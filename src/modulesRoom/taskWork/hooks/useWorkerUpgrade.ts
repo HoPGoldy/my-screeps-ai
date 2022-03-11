@@ -1,3 +1,4 @@
+import { getEngryFrom } from '@/utils/creep'
 import { WorkTaskContext, WorkerActionStrategy, WorkerGetEnergy, WorkerRuntimeContext } from '../types'
 
 export const useWorkerUpgrade = function (
@@ -5,6 +6,8 @@ export const useWorkerUpgrade = function (
     getEnergy: WorkerGetEnergy,
     getWorkController: WorkerRuntimeContext
 ): WorkerActionStrategy {
+    const { goTo } = context
+
     return {
         source: (creep, task, workRoom) => {
             if (creep.store[RESOURCE_ENERGY] > 10) return true
@@ -12,7 +15,7 @@ export const useWorkerUpgrade = function (
             // 优先使用 upgrade Link 的能量
             const upgradeLink = workRoom.linkController.getUpgradeLink()
             if (upgradeLink && upgradeLink.store.getUsedCapacity(RESOURCE_ENERGY) > 0) {
-                creep.getEngryFrom(upgradeLink)
+                getEngryFrom(creep, upgradeLink)
                 getWorkController(workRoom).countWorkTime()
                 return false
             }
@@ -21,7 +24,10 @@ export const useWorkerUpgrade = function (
         },
         target: (creep, task, workRoom) => {
             getWorkController(workRoom).countWorkTime()
-            if (creep.upgradeRoom(workRoom.name) === ERR_NOT_ENOUGH_RESOURCES) {
+            const result = creep.upgradeController(workRoom.controller)
+
+            if (result === ERR_NOT_IN_RANGE) goTo(creep, workRoom.controller.pos)
+            else if (result === ERR_NOT_ENOUGH_RESOURCES) {
                 delete task.cacheSourceId
                 return true
             }

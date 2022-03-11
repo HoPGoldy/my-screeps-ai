@@ -9,7 +9,7 @@ export const useWorkerRepair = function (
     getEnergy: WorkerGetEnergy,
     getWorkController: WorkerRuntimeContext
 ): WorkerActionStrategy<WorkTaskType.Repair> {
-    const { env } = context
+    const { env, goTo } = context
 
     return {
         source: getEnergy,
@@ -46,7 +46,7 @@ export const useWorkerRepair = function (
 
             const result = creep.repair(target)
 
-            if (result === ERR_NOT_IN_RANGE) creep.goTo(target.pos, { range: 2 })
+            if (result === ERR_NOT_IN_RANGE) goTo(creep, target.pos, { range: 2 })
             else if (result === ERR_NOT_ENOUGH_ENERGY) {
                 delete task.cacheSourceId
                 return true

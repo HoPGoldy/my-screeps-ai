@@ -5,7 +5,7 @@ import {
 } from '../types'
 
 export const useGetResource = function (context: TransportContext): ManagerActionStrategy {
-    const { env, getContainer, getSource, sourceUtils } = context
+    const { env, getContainer, getSource, sourceUtils, goTo } = context
 
     const getProcessingRequest = function (context: ManagerWorkContext) {
         const { manager, taskData } = context
@@ -194,7 +194,7 @@ export const useGetResource = function (context: TransportContext): ManagerActio
 
         // 走过去
         if (!manager.pos.isNearTo(destination.pos)) {
-            manager.goTo(destination.pos, { range: destination.range || 1 })
+            goTo(manager, destination.pos, { range: destination.range || 1 })
             return
         }
 

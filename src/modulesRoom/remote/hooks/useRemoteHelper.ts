@@ -1,5 +1,6 @@
 import { createRole } from '@/modulesRoom/unitControl'
 import { createStaticBody, getUniqueKey } from '@/utils'
+import { getEngryFrom } from '@/utils/creep'
 import { DEFAULT_REMOTE_HELPER } from '../constants'
 import { EnergySource, RemoteContext, RemoteHelperMemory } from '../types'
 
@@ -30,7 +31,7 @@ export const getRemoteHelperBody = createStaticBody(
 export const useRemoteHelper = function (context: RemoteContext) {
     const {
         remtoeHelperRole = DEFAULT_REMOTE_HELPER, getMemory, goTo, onCreepStageChange,
-        addSpawnCallback, addSpawnTask, getSource, getSpawn, getContainer, env
+        addSpawnCallback, addSpawnTask, getSource, getSpawn, getContainer, buildRoom, env
     } = context
 
     /**
@@ -104,7 +105,7 @@ export const useRemoteHelper = function (context: RemoteContext) {
             if (!memory.sourceId) memory.sourceId = getRoomSource(creep.room).id
             const source = env.getObjectById(memory.sourceId)
 
-            creep.getEngryFrom(source)
+            getEngryFrom(creep, source)
             return false
         },
         runTarget: (creep, memory, spawnRoom) => {
@@ -112,10 +113,20 @@ export const useRemoteHelper = function (context: RemoteContext) {
             const { targetRoomName, dontBuild } = memory
             const targetRoom = env.getRoomByName(targetRoomName)
 
-            if (dontBuild) creep.upgradeRoom(targetRoomName)
+            if (dontBuild) {
+                if (!targetRoom) {
+                    goTo(creep, new RoomPosition(25, 25, targetRoomName), { checkTarget: false })
+                    return false
+                }
+                const result = creep.upgradeController(targetRoom.controller)
+
+                if (result === ERR_NOT_IN_RANGE) goTo(creep, targetRoom.controller.pos)
+                return false
+                // creep.upgradeRoom(targetRoomName)
+            }
             // 没有就建其他工地
             else if (
-                creep.buildRoom(targetRoomName) === ERR_NOT_FOUND ||
+                buildRoom(creep, targetRoomName) === ERR_NOT_FOUND ||
                 targetRoom.controller.progress <= 3000
             ) memory.dontBuild = true
         },

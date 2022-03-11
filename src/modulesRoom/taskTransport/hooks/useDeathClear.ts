@@ -6,6 +6,8 @@ import { ManagerActionStrategy, ManagerState, TransportContext } from '../types'
 export const TRANSFER_DEATH_LIMIT = 20
 
 export const useDeathClear = function (context: TransportContext): ManagerActionStrategy {
+    const { goTo } = context
+
     return (workContext) => {
         const { manager, workRoom, managerData } = workContext
 
@@ -33,7 +35,7 @@ export const useDeathClear = function (context: TransportContext): ManagerAction
         if (!target) return false
 
         // 转移资源
-        manager.goTo(target.pos)
+        goTo(manager, target.pos)
         manager.transfer(target, firstResource)
     }
 }
