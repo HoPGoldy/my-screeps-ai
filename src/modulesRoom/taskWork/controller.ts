@@ -19,12 +19,15 @@ export const createWorkController = function (context: WorkTaskContext) {
     const { getMemory, withDelayCallback, roleName = DEFAULT_ROLE_NAME, env } = context
 
     const delayAddBuildTask = withDelayCallback('addBuildTask', ({ roomName, need }: BuildDelayTaskData) => {
-        const room = Game.rooms[roomName]
+        const room = env.getRoomByName(roomName)
         // 如果没有工地的话就创建并再次发布建造任务
         if (!room) {
             delayAddBuildTask({ roomName }, 2)
             return
         }
+
+        const existSites = room.find(FIND_CONSTRUCTION_SITES)
+        if (existSites.length <= 0) return
 
         // 发布建筑
         room.work.updateTask({
@@ -99,7 +102,7 @@ export const createWorkController = function (context: WorkTaskContext) {
         const run = function () {
             const workRoom = env.getRoomByName(roomName)
             worker.run(workRoom)
-            console.log(taskController.show())
+            // console.log(taskController.show())
         }
 
         return { run, getExpect, addBuildTask, supportRoom, ...taskController }

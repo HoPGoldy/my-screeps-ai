@@ -353,7 +353,7 @@ export const createTaskController = function <
         if (unitMemorys[creepName]) {
             removeTaskUnit(getTaskByKey(unitMemorys[creepName].doing))
         }
-        delete unitMemorys[creepName]
+        delete unitMemorys[creepName].doing
     }
 
     /**

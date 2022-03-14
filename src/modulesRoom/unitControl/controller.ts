@@ -181,8 +181,8 @@ export const createRole = function<M = unknown> (context: UnitControlContext<M>)
             // 死掉了就处理后事
             // 这里需要额外判断一下，注册单位是“还没到”的单位，不是“死掉”的单位
             if (!creep) {
-                console.log('死掉的 creep', creepName)
-                onCreepDead && !memory[creepName].registration && onCreepDead(creepName, memory[creepName], room)
+                if (onCreepDead && !memory[creepName].registration) onCreepDead(creepName, memory[creepName], room)
+
                 // 这里要重新检查下，如果在 onCreepDead 里重新注册了就不移除内存
                 if (!memory[creepName].registration) delete memory[creepName]
                 continue

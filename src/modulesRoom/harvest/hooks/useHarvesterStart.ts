@@ -63,11 +63,10 @@ export const useHarvesterStart = function (context: HarvestContext): HarvesterAc
 
             // 找一下这个位置上有没有容器
             const getContainerFilter = s => s.structureType === STRUCTURE_CONTAINER
-            const posContinaer = creep.pos.lookFor(LOOK_STRUCTURES).filter(getContainerFilter)
-            console.log('harvester 查找容器的位置', JSON.stringify(creep.pos))
-            const posContinaerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(getContainerFilter)
+            const posContainer = creep.pos.lookFor(LOOK_STRUCTURES).filter(getContainerFilter)
+            const posContainerSite = creep.pos.lookFor(LOOK_CONSTRUCTION_SITES).filter(getContainerFilter)
 
-            if (posContinaer.length > 0 && posContinaerSite.length > 0) return true
+            if (posContainer.length > 0 || posContainerSite.length > 0) return true
 
             // 如果脚下没有 container 也没有工地的话就放工地并发布建造任务
             addConstructionSite(creep.pos, STRUCTURE_CONTAINER)

@@ -32,7 +32,7 @@ export const useWorkerRepair = function (
 
                 // 找到最近的受损建筑并更新缓存
                 if (damagedStructures.length > 0) return creep.pos.findClosestByRange(damagedStructures)
-            }, creep.memory, 'repairStructureId')
+            }, task, 'targetId')
 
             // 没有需要维修的建筑，任务完成
             if (!target) {

@@ -35,7 +35,6 @@ export const autoPlanner = createAutoPlanner({
             })
         }))
 
-        console.log('sitePosList', sitePosList)
         // 放置工地并发布建造任务
         if (sitePosList.length > 0) {
             addConstructionSite(sitePosList)

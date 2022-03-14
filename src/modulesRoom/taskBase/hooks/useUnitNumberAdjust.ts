@@ -29,7 +29,7 @@ export const useUnitNumberAdjust = function (
 
         // 计算真实的调整数量
         const realAdjust = clacRealAdjust(adjust, allUnitNames.length, unitMin, unitMax)
-        console.log('真实调整', roleName, JSON.stringify(allUnitInfos), adjust, realAdjust)
+        // console.log('真实调整', roleName, adjust, realAdjust)
 
         const removeWhenDiedCreep: string[] = []
         const keepWhenDiedCreep: string[] = []
@@ -66,7 +66,9 @@ export const useUnitNumberAdjust = function (
             // 从末尾开始炒鱿鱼，注意这里的 realAdjust 是负数，所以应该用 +
             // 这里没有事先剔除掉被炒鱿鱼的单位，因为此时被炒鱿鱼的单位还在工作
             // 所以工作模块给出的期望实际上是包括这些单位在内的，如果此时将其剔除掉之后再进行炒鱿鱼的话，就会炒掉过多的人
-            allUnitNames.slice(allUnitNames.length + realAdjust).forEach(fireCreep)
+            const fireCreeps = allUnitNames.slice(allUnitNames.length + realAdjust)
+            fireCreeps.forEach(fireCreep)
+            fireCreeps.forEach(creepName => removeWhenDiedCreep.push(creepName))
         }
 
         if (realAdjust !== 0) {

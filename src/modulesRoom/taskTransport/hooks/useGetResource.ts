@@ -146,14 +146,14 @@ export const useGetResource = function (context: TransportContext): ManagerActio
         // 从工作房间查询并缓存能量来源
         const source = useCache(() => {
             const energyContainer = getContainer(workRoom).filter(container => {
-                return container.store[RESOURCE_ENERGY] >= manager.store.getFreeCapacity()
+                return container.store[RESOURCE_ENERGY] >= manager.store.getFreeCapacity() / 4
             })
             if (energyContainer.length > 0) {
                 return manager.pos.findClosestByRange(energyContainer)
             }
 
             const droppedEnergys = getSource(workRoom).map(source => sourceUtils.getDroppedInfo(source).energy)
-                .filter(energy => energy && energy.amount >= manager.store.getFreeCapacity())
+                .filter(energy => energy && energy.amount >= manager.store.getFreeCapacity() / 4)
 
             if (droppedEnergys.length > 0) {
                 return manager.pos.findClosestByRange(droppedEnergys)

@@ -45,7 +45,6 @@ export const useManager = function (context: TransportContext, getTransportContr
             return memory.creeps
         },
         onCreepDead: (creepName, memory, workRoom) => {
-            console.log('搬运工的死亡内存', JSON.stringify(memory))
             // 被炒鱿鱼了就停止孵化，否则就一直孵化
             if (memory.fired) return false
             releaseManager(workRoom, creepName)
