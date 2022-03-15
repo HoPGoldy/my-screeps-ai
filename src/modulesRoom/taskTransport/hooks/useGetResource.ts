@@ -136,7 +136,7 @@ export const useGetResource = function (context: TransportContext): ManagerActio
     const getwithdrawAmount = function (res: TransportRequestData, manager: Creep) {
         // 没有指定数里，能拿多少拿多少
         if (res.amount === undefined) return manager.store.getFreeCapacity()
-        return Math.max(res.amount - (res.arrivedAmount + manager.store[res.resType] || 0), 0)
+        return Math.max(res.amount - (res.arrivedAmount || 0) - (manager.store[res.resType] || 0), 0)
     }
 
     /**

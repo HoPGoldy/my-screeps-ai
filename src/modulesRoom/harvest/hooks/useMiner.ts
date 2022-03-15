@@ -66,7 +66,7 @@ export const useMiner = function (context: HarvestContext) {
         onCreepDead: (creepName, memory, workRoom) => {
             const mineral = getMineral(workRoom)
             // 房间中的矿床是否还有剩余产量
-            if (mineral.mineralAmount <= 0) {
+            if (!mineral || mineral.mineralAmount <= 0) {
                 delaySpawnMiner({ roomName: workRoom.name }, mineral.ticksToRegeneration + 1)
                 return false
             }
