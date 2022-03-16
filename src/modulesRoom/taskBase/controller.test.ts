@@ -1,5 +1,7 @@
-// import BaseTaskController from '../taskBase/controller'
+// import { createTaskController } from './controller'
 // import { getMockCreep, getMockRoom, mockGetObjectById } from '@test/mock'
+// import { RoomTask } from './types'
+// import { createEnvContext } from '@/utils'
 
 // describe('房间任务核心测试', () => {
 //     // 获取指定优先级的任务
@@ -14,6 +16,8 @@
 //         const task: RoomTask<'test'> = {
 //             type: 'test', priority: 10, key: taskKey, need: 1, unit: 0
 //         }
+
+//         const testMemory = {}
 //         const roomMemory = {
 //             transport: {
 //                 tasks: [task],
@@ -24,7 +28,11 @@
 //         Game.rooms[roomName] = getMockRoom({ name: roomName, memory: roomMemory })
 
 //         // 从控制器获取该工人的任务
-//         const controller = new BaseTaskController(roomName, 'transport')
+//         const controller = createTaskController({
+//             getMemory: () => testMemory,
+//             env: createEnvContext('test'),
+//             releaseUnit: () => {}
+//         })
 //         const doingTask = controller.getUnitTask(creep)
 
 //         // 可以获取到已关联的目标任务

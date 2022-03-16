@@ -6,18 +6,18 @@ import { ShareConsole } from './share'
 import TerminalConsole from './terminal'
 import { LabConsole } from './lab'
 import { RoomConsole } from './room'
+import { RemoteConsole } from './remote'
 
 export const mountConsole = function () {
-    // 所有需要挂载的原型拓展
+    // 挂载各个模块的手操接口
     const mountList = [
-        // 挂载各个模块的手操接口
         [Room, RoomConsole],
         [Room, FactoryConsole],
         [Room, TerminalConsole],
         [Room, StorageConsole],
         [Room, ShareConsole],
         [Room, ObserverConsole],
-        // [Room, RemoteConsole],
+        [Room, RemoteConsole],
         [Room, LabConsole],
         [Room, PowerSpawnConsole]
     ]
